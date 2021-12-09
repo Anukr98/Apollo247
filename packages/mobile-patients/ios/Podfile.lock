@@ -34,7 +34,6 @@ PODS:
     - JWT (~> 3.0.0-beta.12)
     - React-Core
     - SSZipArchive (~> 2.2.2)
-  - CTNotificationService (0.1.3)
   - DoubleConversion (1.1.6)
   - FBLazyVector (0.61.3)
   - FBReactNativeSpec (0.61.3):
@@ -175,16 +174,16 @@ PODS:
   - JuspaySafeBrowser (0.1.70)
   - JWT (3.0.0-beta.14):
     - Base64 (~> 1.1.2)
-  - JWTDecode (2.6.2)
-  - libwebp (1.2.0):
-    - libwebp/demux (= 1.2.0)
-    - libwebp/mux (= 1.2.0)
-    - libwebp/webp (= 1.2.0)
-  - libwebp/demux (1.2.0):
+  - JWTDecode (2.6.3)
+  - libwebp (1.2.1):
+    - libwebp/demux (= 1.2.1)
+    - libwebp/mux (= 1.2.1)
+    - libwebp/webp (= 1.2.1)
+  - libwebp/demux (1.2.1):
     - libwebp/webp
-  - libwebp/mux (1.2.0):
+  - libwebp/mux (1.2.1):
     - libwebp/demux
-  - libwebp/webp (1.2.0)
+  - libwebp/webp (1.2.1)
   - lottie-ios (3.2.3)
   - lottie-react-native (4.0.3):
     - lottie-ios (~> 3.2.3)
@@ -195,11 +194,11 @@ PODS:
   - nanopb/decode (1.30906.0)
   - nanopb/encode (1.30906.0)
   - OpenTok (2.21.2)
-  - opentok-react-native (0.17.2):
+  - opentok-react-native (0.18.0):
     - OpenTok
     - React
   - PromisesObjC (1.2.12)
-  - Protobuf (3.18.0)
+  - Protobuf (3.19.1)
   - QBImagePickerController (3.4.0)
   - RCTRequired (0.61.3)
   - RCTSystemSetting (1.7.6):
@@ -407,8 +406,8 @@ PODS:
     - React
   - react-native-user-agent (2.1.0):
     - React
-  - react-native-webengage (1.2.8):
-    - React
+  - react-native-webengage (1.2.10):
+    - React-Core
     - WebEngage
   - react-native-webview (8.2.1):
     - React
@@ -506,15 +505,15 @@ PODS:
     - React-Core
   - RNSVG (12.1.1):
     - React
-  - RNVectorIcons (6.7.0):
-    - React
+  - RNVectorIcons (9.0.0):
+    - React-Core
   - RNVoipPushNotification (2.1.0):
     - React-Core
   - RSKImageCropper (3.0.2)
   - Salvator (1.0.1)
-  - SDWebImage (5.11.1):
-    - SDWebImage/Core (= 5.11.1)
-  - SDWebImage/Core (5.11.1)
+  - SDWebImage (5.12.1):
+    - SDWebImage/Core (= 5.12.1)
+  - SDWebImage/Core (5.12.1)
   - SDWebImageWebPCoder (0.8.4):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.10)
@@ -529,6 +528,7 @@ PODS:
   - WebEngageAppEx/ContentExtension (0.12.0):
     - WebEngageAppEx/CoreApi
   - WebEngageAppEx/CoreApi (0.12.0)
+  - WebEngageBannerPush (0.12.0)
   - Yoga (1.14.0)
   - youtube-ios-player-helper (0.1.6)
 
@@ -538,7 +538,6 @@ DEPENDENCIES:
   - Charts (~> 3.3.0)
   - clevertap-react-native (from `../node_modules/clevertap-react-native`)
   - CodePush (from `../node_modules/react-native-code-push`)
-  - CTNotificationService
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - FBReactNativeSpec (from `../node_modules/react-native/Libraries/FBReactNativeSpec`)
@@ -624,6 +623,7 @@ DEPENDENCIES:
   - TwilioChatClient (= 2.6.6)
   - WebEngage (~> 5.0.2)
   - WebEngageAppEx/ContentExtension
+  - WebEngageBannerPush
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
   - youtube-ios-player-helper (~> 0.1.4)
 
@@ -635,7 +635,6 @@ SPEC REPOS:
     - boost-for-react-native
     - Charts
     - CleverTap-iOS-SDK
-    - CTNotificationService
     - Firebase
     - FirebaseABTesting
     - FirebaseAnalytics
@@ -677,6 +676,7 @@ SPEC REPOS:
     - TwilioChatClient
     - WebEngage
     - WebEngageAppEx
+    - WebEngageBannerPush
     - youtube-ios-player-helper
 
 EXTERNAL SOURCES:
@@ -837,7 +837,6 @@ SPEC CHECKSUMS:
   CleverTap-iOS-SDK: 38f386d9aed648de7ef3ca0e7e2c8531b4cf58e9
   clevertap-react-native: 5b6e13e432ece885eff7b5b7351844f7a158bb59
   CodePush: 23f72a4f0be1be2b08cb3d882b10178e204e419f
-  CTNotificationService: 910b253821ef6c08158bf8c7dedc421a4df4cd4c
   DoubleConversion: 5805e889d232975c086db112ece9ed034df7a0b2
   FBLazyVector: 5bc5b1606fc9a7ac6956de049f6e30901ed31c49
   FBReactNativeSpec: f7be9bcc5ce259f7c39509f3f4caf59020d11d4c
@@ -866,15 +865,15 @@ SPEC CHECKSUMS:
   IQKeyboardManager: 241cc94ccabc9deb8f8bd7d12f00d73288d13ecc
   JuspaySafeBrowser: 72f60fcd42bb61f6a6ad9b733b84810b63cc8c1b
   JWT: ef71dfb03e1f842081e64dc42eef0e164f35d251
-  JWTDecode: 2cc56f950540c95fd11b14ff6388f7c6cb9760ab
-  libwebp: e90b9c01d99205d03b6bb8f2c8c415e5a4ef66f0
+  JWTDecode: 33e5e26e5ddbd21b2065820894c08fef0cad9509
+  libwebp: 98a37e597e40bfdb4c911fc98f2c53d0b12d05fc
   lottie-ios: c058aeafa76daa4cf64d773554bccc8385d0150e
   lottie-react-native: 96361a9891cf651534ea35c4f85f33d4cf14ed13
   nanopb: 59317e09cf1f1a0af72f12af412d54edf52603fc
   OpenTok: 0060779ca05fca24242a10c8b9ee4982bcf7d795
-  opentok-react-native: 56e3213e14bcc5222bc2e3e244c3a3b6bb3758ac
+  opentok-react-native: d6a3cf709141009fbf4679f370f273440de6964a
   PromisesObjC: 3113f7f76903778cf4a0586bd1ab89329a0b7b97
-  Protobuf: 1a37ebea1338949e9ac35a3f06e80b3f536eec8d
+  Protobuf: 3724efa50cb2846d7ccebc8691c574e85fd74471
   QBImagePickerController: d54cf93db6decf26baf6ed3472f336ef35cae022
   RCTRequired: a72523286ea3381f97b28d87529c265baad3ad7d
   RCTSystemSetting: 5107b7350d63b3f7b42a1277d07e4e5d9df879be
@@ -903,7 +902,7 @@ SPEC CHECKSUMS:
   react-native-receive-sharing-intent: 648f1eb35ae70886a8733d6be949042aa5111ffb
   react-native-splash-screen: 200d11d188e2e78cea3ad319964f6142b6384865
   react-native-user-agent: 6ca9356042c87659876db9307109ebd653fd4429
-  react-native-webengage: d5c6eed417081e3146fe017058103917799d16cf
+  react-native-webengage: bc2390d176db9a4e4cfcd25a93b70d8c86c76695
   react-native-webview: d3cf75764f98fd433f1222f5a7ca8e355ada2a15
   React-RCTActionSheet: 94671eef55b01a93be735605822ef712d5ea208e
   React-RCTAnimation: 524ae33e73de9c0fe6501a7a4bda8e01d26499d9
@@ -935,11 +934,11 @@ SPEC CHECKSUMS:
   RNShare: 047d42214f875d731bde73a2b67418638af85ad9
   RNSound: 9253013eeaa051eab63d354fd4654f7aa67c82f0
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
-  RNVectorIcons: 368d6d8b8301224e5ffb6254191f4f8876c2be0d
+  RNVectorIcons: 4143ba35feebab8fdbe6bc43d1e776b393d47ac8
   RNVoipPushNotification: be6f70cac9d1fd73e020063093f635f64d97c9c6
   RSKImageCropper: 1ac71e9a82e3f41eea3eedfff8eacb0d3821c9ec
   Salvator: e388abcd1c8a526aff3e952ed94219bb4e12c85f
-  SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
+  SDWebImage: 4dc3e42d9ec0c1028b960a33ac6b637bb432207b
   SDWebImageWebPCoder: f93010f3f6c031e2f8fb3081ca4ee6966c539815
   SSZipArchive: 62d4947b08730e4cda640473b0066d209ff033c9
   Stylish: 28b6e4f177bfb94fae32fd8e6b31a31b38035318
@@ -948,9 +947,10 @@ SPEC CHECKSUMS:
   TwilioChatClient: 23168c2df8e306da1cedcad1d60ba69862235358
   WebEngage: b8f322ebfdd08c9cd56aec038f9d3c29c018335d
   WebEngageAppEx: 34f9f4788acff1e517f10a20182a01dd0a34161b
+  WebEngageBannerPush: a167dc02c06c568bd7908868bcb1692ea3905719
   Yoga: 02036f6383c0008edb7ef0773a0e6beb6ce82bd1
   youtube-ios-player-helper: 21ab92db027c7ff86cb17a3843a3f6eafc8158d2
 
 PODFILE CHECKSUM: 87efab4164c5e50ec36bc7acad94300fbec013cc
 
-COCOAPODS: 1.10.1
+COCOAPODS: 1.11.2
