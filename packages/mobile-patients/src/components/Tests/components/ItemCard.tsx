@@ -141,7 +141,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
           <View
             style={[
               styles.itemCardView,
-              { minHeight: isCircleSubscribed ? CARD_HEIGHT - 10 : CARD_HEIGHT },
+              { minHeight: isCircleSubscribed ? CARD_HEIGHT - 15 : CARD_HEIGHT },
               props?.isVertical ? {} : { marginLeft: item?.index == 0 ? 20 : 6 },
             ]}
           >
@@ -174,7 +174,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
               ) : null}
             </View>
             <Spearator
-              style={[styles.horizontalSeparator, { marginTop: isCircleSubscribed ? '6%' : '4%' }]}
+              style={[styles.horizontalSeparator, { marginTop: isCircleSubscribed ? '4%' : '4%' }]}
             />
 
             {renderPricesView(pricesForItem, packageMrpForItem)}
@@ -408,8 +408,9 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
           {hasSlashedPrice ? (
             <View style={styles.slashedPriceView}>
               <Text style={styles.slashedPriceText}>
-                MRP {string.common.Rs}
+                MRP{' '}
                 <Text style={{ textDecorationLine: 'line-through' }}>
+                  {string.common.Rs}
                   {`${convertNumberToDecimal(slashedPrice)}`}
                 </Text>
               </Text>
@@ -418,7 +419,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
             renderSlashedPriceFallBackHeight()
           )}
           {/**percentage dicount (main price discount + circle discount separately) */}
-          <View style={{ marginHorizontal: 5, justifyContent: 'center' }}>
+          <View style={{ marginHorizontal: 4, justifyContent: 'center' }}>
             {renderPercentageDiscount(
               promoteCircle && isCircleSubscribed
                 ? circleDiscount
@@ -477,7 +478,6 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
             return item?.id;
           })
         : null;
-
     DiagnosticAddToCartEvent(
       item?.itemTitle || item?.itemName,
       `${item?.itemId}`,
@@ -646,7 +646,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
         style={[
           styles.addToCartText,
           {
-            ...theme.viewStyles.text('B', isSmallDevice ? 13 : 14, '#fc9916', 1, 24),
+            ...theme.viewStyles.text('B', isSmallDevice ? 13 : 14, colors.APP_YELLOW, 1, 20),
             width: isAlreadyPartOfOrder ? '80%' : '70%',
           },
         ]}
@@ -799,15 +799,13 @@ const styles = StyleSheet.create({
   },
   mainPriceText: {
     ...theme.viewStyles.text('SB', isSmallDevice ? 15 : 16, theme.colors.SHERPA_BLUE),
-    lineHeight: 21,
+    lineHeight: 18,
     textAlign: 'left',
     alignSelf: 'flex-start',
   },
   slashedPriceText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE),
-    lineHeight: 21,
+    ...theme.viewStyles.text('SB', isSmallDevice ? 12.5 : 13.5, colors.SHERPA_BLUE, 0.6, 21),
     textAlign: 'center',
-    opacity: 0.6,
   },
   circleLogoIcon: {
     height: 15,

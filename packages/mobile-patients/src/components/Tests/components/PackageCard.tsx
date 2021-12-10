@@ -133,7 +133,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
           <View key={getItem?.itemId.toString()}>
             <View style={{ minHeight: !!inclusions && inclusions?.length > 0 ? 100 : 0 }}>
               <View style={styles.topPackageView}>
-                <View style={{ width: '75%' }}>
+                <View style={{ width: '82%' }}>
                   <Text style={styles.itemNameText} numberOfLines={2}>
                     {name}
                   </Text>
@@ -176,7 +176,14 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
                 </View>
               ) : null}
             </View>
-            <Spearator style={styles.horizontalSeparator} />
+            <Spearator
+              style={[
+                styles.horizontalSeparator,
+                {
+                  marginTop: isCircleSubscribed ? -6 : -12,
+                },
+              ]}
+            />
             {renderPricesView(pricesForItem, packageMrpForItem, getItem)}
           </View>
         </TouchableOpacity>
@@ -194,11 +201,13 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     const discountPrice =
       specialDiscount > 0 ? specialDiscount : hasOtherDiscount > 0 ? hasOtherDiscount : 0;
     return (
-      <DiscountPercentage
-        discount={discount}
-        isOnlyCircle={isOnlyCircle}
-        discountPrice={discountPrice}
-      />
+      <View style={[styles.discountPercentageView, isCircleSubscribed && { marginHorizontal: -6 }]}>
+        <DiscountPercentage
+          discount={discount}
+          isOnlyCircle={isOnlyCircle}
+          discountPrice={discountPrice}
+        />
+      </View>
     );
   };
 
@@ -291,8 +300,9 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
           ) : (
             <View style={{ alignItems: 'flex-start' }}>
               <Text style={styles.slashedPriceText}>
-                MRP {string.common.Rs}
+                MRP{' '}
                 <Text style={{ textDecorationLine: 'line-through' }}>
+                  {string.common.Rs}
                   {`${convertNumberToDecimal(slashedPrice)}`}
                 </Text>
               </Text>
@@ -326,13 +336,13 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     const nonCircleDiscountSaving = pricesForItem?.discountDiffPrice;
 
     return (
-      <View>
+      <View style={{ justifyContent: 'center', height: 20 }}>
         {isCircleSubscribed && circleDiscountSaving > 0 && !promoteDiscount ? (
-          <View style={styles.flexRow}>
+          <View style={[styles.flexRow, !isCircleSubscribed && { marginTop: -10 }]}>
             {renderSavingView(
               'save',
               circleDiscountSaving,
-              { marginHorizontal: '7%' },
+              { marginHorizontal: '5%' },
               styles.savingTextStyle
             )}
           </View>
@@ -341,7 +351,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
             {renderSavingView(
               'save',
               specialDiscountSaving,
-              { marginHorizontal: '7%' },
+              { marginHorizontal: '5%' },
               styles.savingTextStyle
             )}
           </View>
@@ -350,7 +360,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
             {renderSavingView(
               'save',
               nonCircleDiscountSaving,
-              { marginHorizontal: '7%' },
+              { marginHorizontal: '5%' },
               styles.savingTextStyle
             )}
           </View>
@@ -366,7 +376,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     textStyle: any
   ) => {
     return (
-      <View style={mainViewStyle}>
+      <View style={[mainViewStyle]}>
         <Text style={textStyle}>
           {text} {string.common.Rs}
           {convertNumberToDecimal(price)}
@@ -564,7 +574,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
         style={[
           styles.addToCartText,
           {
-            ...theme.viewStyles.text('B', isSmallDevice ? 13 : 14, '#fc9916', 1, 24),
+            ...theme.viewStyles.text('B', isSmallDevice ? 13 : 14, colors.APP_YELLOW, 1, 20),
           },
         ]}
         onPress={() =>
@@ -654,22 +664,22 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   topPackageView: {
-    minHeight: 50,
+    minHeight: 45,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   imagePlaceholderStyle: { backgroundColor: '#f7f8f5', opacity: 0.5, borderRadius: 5 },
   imageStyle: { height: 40, width: 40, marginBottom: 8 },
   itemNameText: {
-    ...theme.viewStyles.text('SB', isSmallDevice ? 16 : 17, theme.colors.SHERPA_BLUE, 1, 26),
+    ...theme.viewStyles.text('SB', isSmallDevice ? 15 : 16, theme.colors.SHERPA_BLUE, 1, 24),
     textAlign: 'left',
   },
   inclusionsText: {
-    ...theme.viewStyles.text('M', 12.5, theme.colors.SHERPA_BLUE, 1, 13),
+    ...theme.viewStyles.text('SB', 12, theme.colors.SHERPA_BLUE, 1, 13),
     textAlign: 'left',
-    marginTop: '5%',
+    marginTop: '4%',
     letterSpacing: 0.25,
-    marginBottom: '4%',
+    marginBottom: '2%',
   },
   horizontalSeparator: { marginBottom: 7.5 },
   flexRow: {
@@ -681,9 +691,8 @@ const styles = StyleSheet.create({
   },
   imageIcon: { height: 40, width: 40 },
   savingTextStyle: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 10.5 : 11, colors.SHERPA_BLUE, 1, 20),
-    textAlign: 'center',
-    alignSelf: 'center',
+    ...theme.viewStyles.text('M', isSmallDevice ? 10.5 : 11, colors.SHERPA_BLUE, 1, 18),
+    alignSelf: 'flex-end',
   },
   nonCirclePriceText: {
     ...theme.viewStyles.text('M', isSmallDevice ? 12.5 : 13, colors.SHERPA_BLUE),
@@ -693,20 +702,18 @@ const styles = StyleSheet.create({
   },
   mainPriceText: {
     ...theme.viewStyles.text('SB', isSmallDevice ? 15 : 16, colors.SHERPA_BLUE),
-    lineHeight: 21,
+    lineHeight: 18,
     textAlign: 'left',
     alignSelf: 'flex-start',
   },
   slashedPriceText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, colors.SHERPA_BLUE),
-    lineHeight: 21,
+    ...theme.viewStyles.text('SB', isSmallDevice ? 12.5 : 13.5, colors.SHERPA_BLUE, 0.6, 21),
     textAlign: 'center',
-    opacity: 0.5,
   },
   inclusionName: {
     ...theme.viewStyles.text('R', isSmallDevice ? 10.5 : 11, theme.colors.SHERPA_BLUE, 1, 13),
     letterSpacing: 0.25,
-    marginBottom: '2%',
+    marginBottom: '1.5%',
   },
   moreText: {
     ...theme.viewStyles.text('SB', isSmallDevice ? 11 : 12, theme.colors.APP_YELLOW, 1, 13),
@@ -743,4 +750,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  discountPercentageView: { justifyContent: 'center' },
 });

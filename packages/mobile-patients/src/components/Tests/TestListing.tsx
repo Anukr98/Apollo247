@@ -487,7 +487,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       !!actualItemsToShow &&
       actualItemsToShow?.map((item: any) => {
         const inclusions = item?.inclusionData;
-
+        //segregation of tests/packages
         !!inclusions && inclusions?.length > 1 ? itemPackages.push(item) : itemTests.push(item);
       });
 

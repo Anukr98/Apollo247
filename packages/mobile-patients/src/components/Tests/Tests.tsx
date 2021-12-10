@@ -929,11 +929,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }
       });
     });
-
-    const showRecommendations =
-      _recommendedBookings?.length > 10 ? _recommendedBookings?.slice(0, 10) : _recommendedBookings;
-    showRecommendations?.length >= 6
-      ? setPastOrderRecommendations(showRecommendations)
+    const showPastRecommendations =
+      _recommendedBookings > 10 ? _recommendedBookings.slice(0, 10) : _recommendedBookings;
+    showPastRecommendations?.length >= 6
+      ? setPastOrderRecommendations(showPastRecommendations)
       : setPastOrderRecommendations([]);
     setPriceAvailable(true);
     setPastOrderRecommendationShimmer(false);
