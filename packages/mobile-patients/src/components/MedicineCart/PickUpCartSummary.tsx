@@ -51,6 +51,7 @@ import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGat
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
 import { getCheckoutCompletedEventAttributes } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 export interface PickUpCartSummaryProps extends NavigationScreenProps {}
 
@@ -61,13 +62,15 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
     physicalPrescriptions,
     ePrescriptions,
     stores: storesFromContext,
-    setPhysicalPrescriptions,
     pharmacyCircleAttributes,
     circleSubscriptionId,
     circlePlanSelected,
     grandTotal,
     circleMembershipCharges,
+    serverCartItems,
+    cartPrescriptions,
   } = useShoppingCart();
+  const { uploadPhysicalPrescriptionsToServerCart, setUserActionPayload } = useServerCart();
   const client = useApolloClient();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
@@ -184,24 +187,7 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
     if (unUploadedPres.length > 0) {
       try {
         setloading!(true);
-        const data = await multiplePhysicalPrescriptionUpload(unUploadedPres);
-        const uploadUrls = data.map((item) =>
-          item.data!.uploadDocument.status
-            ? {
-                fileId: item.data!.uploadDocument.fileId!,
-                url: item.data!.uploadDocument.filePath!,
-              }
-            : null
-        );
-        const newuploadedPrescriptions = unUploadedPres.map(
-          (item, index) =>
-            ({
-              ...item,
-              uploadedUrl: uploadUrls![index]!.url,
-              prismPrescriptionFileId: uploadUrls![index]!.fileId,
-            } as PhysicalPrescription)
-        );
-        setPhysicalPrescriptions && setPhysicalPrescriptions([...newuploadedPrescriptions]);
+        uploadPhysicalPrescriptionsToServerCart(unUploadedPres);
         setisPhysicalUploadComplete(true);
       } catch (error) {
         CommonBugFender('PickUpCartSummary_physicalPrescriptionUpload', error);
@@ -237,6 +223,19 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
       const data = await createOrderInternal(orderAutoId, subscriptionId);
       const orders = [{ id: orderId, orderAutoId: orderAutoId, estimatedAmount: estimatedAmount }];
       if (data?.data?.createOrderInternal?.success) {
+        // empty server cart items and prescriptions
+        const itemsToRemoveFromCart = serverCartItems?.map((item) => ({
+          medicineSKU: item?.sku,
+          quantity: 0,
+        }));
+        const prescriptionsToRemove = cartPrescriptions?.map((item) => ({
+          prismPrescriptionFileId: item.prismPrescriptionFileId,
+          prescriptionImageUrl: '',
+        }));
+        setUserActionPayload?.({
+          medicineOrderCartLineItems: itemsToRemoveFromCart,
+          prescriptionDetails: prescriptionsToRemove,
+        });
         setauthToken?.('');
         const paymentId = data?.data?.createOrderInternal?.payment_order_id!;
         props.navigation.navigate(AppRoutes.PaymentMethods, {

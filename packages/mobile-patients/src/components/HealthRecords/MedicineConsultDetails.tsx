@@ -15,7 +15,10 @@ import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import RNFetchBlob from 'rn-fetch-blob';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import {
+  EPrescription,
+  useShoppingCart,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import moment from 'moment';
@@ -39,6 +42,8 @@ import {
   postCleverTapEvent,
 } from '../../helpers/helperFunctions';
 import { CleverTapEventName, CleverTapEvents } from '../../helpers/CleverTapEvents';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
+import { PrescriptionType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 export interface RecordDetailsProps
   extends NavigationScreenProps<{
@@ -61,7 +66,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
   const prismFile = props.navigation.state.params
     ? props.navigation.state.params.prismPrescriptionFileId
     : '';
-  const { addCartItem, addEPrescription } = useShoppingCart();
+  const { setUserActionPayload, uploadEPrescriptionsToServerCart } = useServerCart();
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const [pdfUri, setPDFUri] = useState<string>('');
@@ -114,17 +119,26 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           return;
         }
         const cartItem = formatToCartItem({ ...medicineDetails, image: '' });
-        addCartItem!({ ...cartItem, quantity: Number(data.quantity) || 1 });
+        setUserActionPayload?.({
+          medicineOrderCartLineItems: [
+            {
+              medicineSKU: cartItem.id,
+              quantity: Number(data.quantity) || 1,
+            },
+          ],
+        });
         if (medicineDetails.is_prescription_required == '1') {
-          addEPrescription!({
-            id: data!.id,
-            date: moment(me).format('DD MMMM YYYY'),
-            doctorName: `Meds Rx ${(data.id && data.id.substring(0, data.id.indexOf('-'))) || ''}`,
-            forPatient: (currentPatient && currentPatient.firstName) || '',
-            medicines: `${data.medicineName}`,
-            uploadedUrl: arr[0],
+          const presToAdd: EPrescription = {
+            uploadedUrl: arr?.[0],
+            id: prismFile,
             prismPrescriptionFileId: prismFile,
-          });
+            doctorName: `Meds Rx ${(data?.id && data?.id.substring(0, data?.id.indexOf('-'))) ||
+              ''}`,
+            forPatient: currentPatient?.firstName,
+            medicines: data?.medicineName,
+            date: moment(me).format('DD MMMM YYYY'),
+          };
+          uploadEPrescriptionsToServerCart([presToAdd]);
         }
 
         const eventAttributes: WebEngageEvents[WebEngageEventName.RE_ORDER_MEDICINE] = {
@@ -155,7 +169,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
         );
         postWebEngageEvent(WebEngageEventName.RE_ORDER_MEDICINE, eventAttributes);
 
-        props.navigation.navigate(AppRoutes.MedicineCart);
+        props.navigation.navigate(AppRoutes.ServerCart);
       })
       .catch((err) => {
         CommonBugFender('MedicineConsultDetails_addToCart', err);

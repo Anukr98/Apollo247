@@ -406,8 +406,8 @@ PODS:
     - React
   - react-native-user-agent (2.1.0):
     - React
-  - react-native-webengage (1.2.8):
-    - React
+  - react-native-webengage (1.2.10):
+    - React-Core
     - WebEngage
   - react-native-webview (8.2.1):
     - React
@@ -902,7 +902,7 @@ SPEC CHECKSUMS:
   react-native-receive-sharing-intent: 648f1eb35ae70886a8733d6be949042aa5111ffb
   react-native-splash-screen: 200d11d188e2e78cea3ad319964f6142b6384865
   react-native-user-agent: 6ca9356042c87659876db9307109ebd653fd4429
-  react-native-webengage: d5c6eed417081e3146fe017058103917799d16cf
+  react-native-webengage: bc2390d176db9a4e4cfcd25a93b70d8c86c76695
   react-native-webview: d3cf75764f98fd433f1222f5a7ca8e355ada2a15
   React-RCTActionSheet: 94671eef55b01a93be735605822ef712d5ea208e
   React-RCTAnimation: 524ae33e73de9c0fe6501a7a4bda8e01d26499d9

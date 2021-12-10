@@ -57,7 +57,6 @@ import {
   Card,
   CashbackIcon,
   WhiteArrowRight,
-  DeliveryInIcon,
   MedicineHomeIcon,
   TimeBlueIcon,
   WalletHomeHC,
@@ -255,6 +254,7 @@ import {
   useReferralProgram,
 } from '@aph/mobile-patients/src/components/ReferralProgramProvider';
 import { setItem, getItem } from '@aph/mobile-patients/src/helpers/TimedAsyncStorage';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 const { Vitals } = NativeModules;
 
@@ -275,6 +275,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: theme.colors.WHITE,
+  },
+  deliveryInTatText: {
+    ...theme.viewStyles.text('SB', 12, theme.colors.WHITE),
+    alignSelf: 'center',
+    marginTop: 1.5,
   },
   searchBarViewStyle: {
     backgroundColor: theme.colors.BLUE_FADED_FLAT,
@@ -1123,6 +1128,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     displayAskApolloNumber,
     setDisplayAskApolloNumber,
   } = useAppCommonData();
+  const { fetchServerCart } = useServerCart();
 
   // const startDoctor = string.home.startDoctor;
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
@@ -1164,7 +1170,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const { refreeReward, setRefreeReward, setRewardId, setCampaignId } = useReferralProgram();
   const [isReferrerAvailable, setReferrerAvailable] = useState<boolean>(false);
   const {
-    cartItems: shopCartItems,
     setHdfcPlanName,
     setIsFreeDelivery,
     setCircleSubscriptionId,
@@ -1183,8 +1188,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     circleSubPlanId,
     pinCode,
     isPharmacyPincodeServiceable,
+    serverCartItems,
   } = useShoppingCart();
-  const cartItemsCount = cartItems.length + shopCartItems.length;
+  const cartItemsCount = cartItems.length + serverCartItems?.length;
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [previousPatient, setPreviousPatient] = useState<any>([]);
@@ -1304,6 +1310,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const fetchUserAgent = () => {
     try {
       let userAgent = UserAgent?.getUserAgent();
+      if (userAgent) {
+        fetchServerCart(userAgent);
+      }
       AsyncStorage.setItem(USER_AGENT, userAgent);
     } catch {}
   };
@@ -2883,7 +2892,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
   const firebaseRemoteConfigForReferrer = async () => {
     try {
-      const bannerConfig = await remoteConfig().getValue('Referrer_Banner');
+      const RefBannerKey = AppConfig.APP_ENV == 'PROD' ? 'Referrer_Banner' : 'QA_Referrer_Banner';
+      const bannerConfig = await remoteConfig().getValue(RefBannerKey);
       setReferrerAvailable(bannerConfig.asBoolean());
     } catch (e) {}
   };
@@ -3502,6 +3512,26 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     );
   };
 
+  const renderDeliveryRibbonTag = () => {
+    return (
+      <View
+        style={{
+          marginLeft: -11,
+        }}
+      >
+        <ImageBackground
+          style={{ height: 26, width: 120 }}
+          {...props}
+          source={require('@aph/mobile-patients/src/components/ui/icons/green_ribbon.webp')}
+        >
+          <Text style={styles.deliveryInTatText}>
+            {AppConfig.Configuration.DeliveryIn_TAT_Text}
+          </Text>
+        </ImageBackground>
+      </View>
+    );
+  };
+
   const renderMenuOptions = () => {
     let arrayList = isProHealthActive ? listValuesForProHealth : listValues;
     return (
@@ -3515,9 +3545,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               return (
                 <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
                   <View style={[styles.bottom2CardView, { width: width - 32 }]}>
-                    <View style={{ marginLeft: -11 }}>
-                      <DeliveryInIcon />
-                    </View>
+                    {renderDeliveryRibbonTag()}
 
                     <View style={styles.topCardContentContainer}>
                       {item.image}
@@ -3704,7 +3732,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
           <Text
             style={{
-              ...theme.viewStyles.text('B', 20, offerDesignTemplate?.title_text_color, 1, 30),
+              ...theme.viewStyles.text('B', 18, offerDesignTemplate?.title_text_color, 1, 30),
               marginHorizontal: 10,
               marginTop: 'auto',
             }}
@@ -4282,11 +4310,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         style={[
           styles.circleContainer,
           {
-            borderWidth: circleStatus !== 'active' ? 1 : 0,
+            borderWidth: circleStatus !== 'active' ? 0 : 0,
             borderColor: circleStatus !== 'active' ? '#F9D5B4' : '',
           },
         ]}
-        colors={circleStatus === 'disabled' ? ['#FFEEDB', '#FFFCFA'] : ['#fff', '#fff']}
+        colors={circleStatus === 'disabled' ? ['#fff', '#fff'] : ['#fff', '#fff']}
       >
         {expiry > 0 && circleStatus === 'active' && renew && circleSavings > 0 ? (
           <CircleTypeCard1
@@ -4335,7 +4363,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             credits={healthCredits?.toString()}
             savings={circleSavings?.toString()}
           />
-        ) : circleStatus !== 'disabled' && circleSavings > 0 ? (
+        ) : circleStatus === 'disabled' && circleSavings > 0 ? (
           <CircleTypeCard5
             onButtonPress={() => {
               setShowCirclePlans(true);
@@ -4346,7 +4374,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             expired={expired}
             renew={renew}
           />
-        ) : circleStatus !== 'disabled' ? (
+        ) : circleStatus === 'disabled' ? (
           <CircleTypeCard6
             onButtonPress={() => {
               setShowCirclePlans(true);
@@ -4810,10 +4838,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     const onPressCart = () => {
       postVaccineWidgetEvents(CleverTapEventName.MY_CART_CLICKED, 'Top bar');
       const route =
-        (shopCartItems.length && cartItems.length) || (!shopCartItems.length && !cartItems.length)
+        (serverCartItems.length && cartItems.length) ||
+        (!serverCartItems.length && !cartItems.length)
           ? AppRoutes.MedAndTestCart
-          : shopCartItems.length
-          ? AppRoutes.MedicineCart
+          : serverCartItems.length
+          ? AppRoutes.ServerCart
           : AppRoutes.AddPatients;
       props.navigation.navigate(route);
     };
@@ -5800,6 +5829,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                   : renderHeadings('Offers For You')}
                 {offersListCache.length === 0 && offersListLoading && renderOffersForYouShimmer()}
                 {(offersListCache.length > 0 || !offersListLoading) && renderOffersForYou()}
+                {isReferrerAvailable && renderReferralBanner()}
                 {!appointmentLoading && currentAppointments === '0' && myDoctorsCount === 0
                   ? null
                   : renderHeadings('My Doctors')}
@@ -5807,7 +5837,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                   ? null
                   : renderListView('Active Appointments', 'normal')}
                 <View>{renderAllConsultedDoctors()}</View>
-                {isReferrerAvailable && renderReferralBanner()}
                 {renderHeadings('Circle Membership and More')}
                 {isCircleMember === '' && circleDataLoading && renderCircleShimmer()}
                 <View>{isCircleMember === 'yes' && !circleDataLoading && renderCircle()}</View>

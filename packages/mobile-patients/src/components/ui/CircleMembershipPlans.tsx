@@ -61,6 +61,8 @@ import {
   PaymentStatus,
   OrderCreate,
   OrderVerticals,
+  PLAN_ID,
+  PLAN,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import moment from 'moment';
@@ -88,6 +90,7 @@ import {
 import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
 import { Tooltip } from 'react-native-elements';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 const { width } = Dimensions.get('window');
 interface CircleMembershipPlansProps extends NavigationScreenProps {
@@ -152,6 +155,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     defaultCirclePlan,
     selectDefaultPlan,
     cartTotalCashback,
+    serverCartAmount,
     setIsCircleSubscription,
     setCircleMembershipCharges,
     setAutoCirlcePlanAdded,
@@ -162,6 +166,8 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     cartItems,
     circlePlanValidity,
   } = useShoppingCart();
+  const totalCashBack = serverCartAmount?.totalCashBack?.toFixed(2) || cartTotalCashback || 0;
+  const { setUserActionPayload } = useServerCart();
   const {
     setIsDiagnosticCircleSubscription,
     cartItems: diagnosticCartItems,
@@ -292,11 +298,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     }
   };
   const onPressMembershipPlans = (index: number) => {
-    fireMembershipPlanSelected();
-
     const membershipPlan = membershipPlans?.[index];
-    setCirclePlanSelected && setCirclePlanSelected(membershipPlan);
-    AsyncStorage.setItem('circlePlanSelected', JSON.stringify(membershipPlan));
     if (source === 'Pharma Cart') {
       postAppsFlyerCircleAddRemoveCartEvent(
         membershipPlan,
@@ -304,8 +306,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         'add',
         currentPatient
       );
-    }
-    if (isConsultJourney) {
+    } else if (isConsultJourney) {
       !isModal &&
         circleWebEngageEventForAddToCart(
           WebEngageEventName.VC_NON_CIRCLE_ADDS_CART,
@@ -320,8 +321,14 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       setCircleMembershipCharges && setCircleMembershipCharges(membershipPlan?.currentSellingPrice);
       onSelectMembershipPlan && onSelectMembershipPlan(membershipPlan);
     }
-    setDefaultCirclePlan && setDefaultCirclePlan(null);
-    setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
+    setUserActionPayload?.({
+      subscription: {
+        planId: PLAN_ID.CIRCLEPlan,
+        subPlanId: membershipPlan?.subPlanId,
+        TYPE: PLAN.CARE_PLAN,
+        subscriptionApplied: true,
+      },
+    });
   };
 
   const fireCircleKnowMoreEvent = () => {
@@ -575,12 +582,28 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
             setIsCircleSubscription && setIsCircleSubscription(false);
             setCircleMembershipCharges && setCircleMembershipCharges(0);
             selectDefaultPlan && selectDefaultPlan(membershipPlans);
+            setUserActionPayload?.({
+              subscription: {
+                planId: null,
+                subPlanId: null,
+                TYPE: null,
+                subscriptionApplied: false,
+              },
+            });
           } else {
             setIsCircleSubscription && setIsCircleSubscription(false);
             setCircleMembershipCharges && setCircleMembershipCharges(0);
             setDefaultCirclePlan && setDefaultCirclePlan(null);
             setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
           }
+          setUserActionPayload?.({
+            subscription: {
+              planId: null,
+              subPlanId: null,
+              TYPE: null,
+              subscriptionApplied: false,
+            },
+          });
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
           setCirclePlanSelected && setCirclePlanSelected(null);
           AsyncStorage.removeItem('circlePlanSelected');
@@ -749,15 +772,15 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
             {string.circlePharmacy.instantCashback}
           </Text>
           <Text
-            style={theme.viewStyles.text('R', 13, '#02475B')}
-          >{` of ₹${cartTotalCashback} on this order`}</Text>
+            style={theme.viewStyles.text('R', 13, '#02475B', 1, 20)}
+          >{` of ₹${totalCashBack} on this order`}</Text>
         </View>
         <View style={{ flexDirection: 'row' }}>
           <BlueTick style={styles.blueTickIcon} />
           <Text style={theme.viewStyles.text('SB', 13, '#02475B')}>
             {string.circlePharmacy.freeDelivery}
           </Text>
-          <Text style={theme.viewStyles.text('R', 13, '#02475B')}>{` on every order`}</Text>
+          <Text style={theme.viewStyles.text('R', 13, '#02475B', 1, 20)}>{` on every order`}</Text>
         </View>
       </View>
     );
@@ -819,6 +842,14 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     AsyncStorage.removeItem('circlePlanSelected');
     setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
     circleWebEngageEvent(WebEngageEventName.VC_NON_CIRCLE_REMOVES_CART);
+    setUserActionPayload?.({
+      subscription: {
+        planId: null,
+        subPlanId: null,
+        TYPE: null,
+        subscriptionApplied: false,
+      },
+    });
   };
 
   const onPurchasePlanThroughHC = async () => {
@@ -919,6 +950,14 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
               } else {
                 setCircleMembershipCharges &&
                   setCircleMembershipCharges(circlePlanSelected?.currentSellingPrice);
+                setUserActionPayload?.({
+                  subscription: {
+                    planId: PLAN_ID.CIRCLEPlan,
+                    subPlanId: circlePlanSelected?.subPlanId,
+                    TYPE: PLAN.CARE_PLAN,
+                    subscriptionApplied: true,
+                  },
+                });
                 setCircleSubPlanId && setCircleSubPlanId(circlePlanSelected?.subPlanId);
                 closeModal && closeModal();
               }
@@ -938,6 +977,14 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
             } else {
               setCircleMembershipCharges &&
                 setCircleMembershipCharges(circlePlanSelected?.currentSellingPrice);
+              setUserActionPayload?.({
+                subscription: {
+                  planId: PLAN_ID.CIRCLEPlan,
+                  subPlanId: circlePlanSelected?.subPlanId,
+                  TYPE: PLAN.CARE_PLAN,
+                  subscriptionApplied: true,
+                },
+              });
               setCircleSubPlanId && setCircleSubPlanId(circlePlanSelected?.subPlanId);
               closeModal && closeModal();
             }
@@ -960,6 +1007,14 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         setCircleSubPlanId && setCircleSubPlanId(defaultPlan[0].subPlanId);
         setCircleMembershipCharges &&
           setCircleMembershipCharges(defaultPlan[0]?.currentSellingPrice);
+        setUserActionPayload?.({
+          subscription: {
+            planId: PLAN_ID.CIRCLEPlan,
+            subPlanId: defaultPlan?.[0]?.subPlanId,
+            TYPE: PLAN.CARE_PLAN,
+            subscriptionApplied: true,
+          },
+        });
       }
     }
   };
@@ -1024,6 +1079,14 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
             setIsCircleSubscription && setIsCircleSubscription(false);
             setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
             setCircleMembershipCharges && setCircleMembershipCharges(0);
+            setUserActionPayload?.({
+              subscription: {
+                planId: null,
+                subPlanId: null,
+                TYPE: null,
+                subscriptionApplied: false,
+              },
+            });
             AsyncStorage.removeItem('circlePlanSelected');
           }}
         >

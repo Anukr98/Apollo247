@@ -47,6 +47,7 @@ import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/Diagnost
 import { Badge } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { SuggestedQuantityNudge } from '@aph/mobile-patients/src/components/SuggestedQuantityNudge/SuggestedQuantityNudge';
 import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 type RecentSearch = getPatientPastMedicineSearches_getPatientPastMedicineSearches;
 
@@ -74,6 +75,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     : '';
 
   const { currentPatient } = useAllCurrentPatients();
+  const { setUserActionPayload } = useServerCart();
   const {
     locationDetails,
     pharmacyLocation,
@@ -84,17 +86,16 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
   const {
     getCartItemQty,
     addCartItem,
-    updateCartItem,
-    removeCartItem,
     pinCode,
     pharmacyCircleAttributes,
-    cartItems,
     asyncPincode,
     axdcCode,
+    serverCartItems,
+    setAddToCartSource,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
 
-  const cartItemsCount = cartItems.length + diagnosticCartItems.length;
+  const cartItemsCount = serverCartItems?.length + diagnosticCartItems.length;
 
   const { data } = useQuery<
     getPatientPastMedicineSearches,
@@ -125,12 +126,12 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     }
   };
   useEffect(() => {
-    if (cartItems.find(({ id }) => id?.toUpperCase() === currentProductIdInCart)) {
+    if (serverCartItems.find(({ sku }) => sku?.toUpperCase() === currentProductIdInCart)) {
       if (shownNudgeOnce === false) {
         setShowSuggestedQuantityNudge(true);
       }
     }
-  }, [cartItems, currentProductQuantityInCart, currentProductIdInCart]);
+  }, [serverCartItems, currentProductQuantityInCart, currentProductIdInCart]);
 
   useEffect(() => {
     if (showSuggestedQuantityNudge === false) {
@@ -182,7 +183,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
         activeOpacity={1}
         onPress={() =>
           navigation.navigate(
-            diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.MedicineCart
+            diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.ServerCart
           )
         }
       >
@@ -329,7 +330,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
 
   const renderCategories = (array: MedSearchSectionBadgeViewProps[]) => {
     return array.map((item) => (
-      <MedSearchSectionBadgeView key={`${item.value}`} badgeStyle={styles.badge} {...item} />
+      <MedSearchSectionBadgeView key={`${item?.value}`} badgeStyle={styles.badge} {...item} />
     ));
   };
 
@@ -399,46 +400,69 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
       comingFromSearch: boolean,
       cleverTapSearchSuccessEventAttributes: object
     ) => {
-      setItemsAddingToCart({ ...itemsAddingToCart, [item.sku]: true });
+      setItemsAddingToCart({ ...itemsAddingToCart, [item?.sku]: true });
+      setAddToCartSource?.({ source: 'Pharmacy Full Search', categoryId: item?.category_id });
+      setUserActionPayload?.({
+        medicineOrderCartLineItems: [
+          {
+            medicineSKU: item?.sku,
+            quantity: 1,
+          },
+        ],
+      });
       addPharmaItemToCart(
         formatToCartItem(item),
         asyncPincode?.pincode || pharmacyPincode!,
-        addCartItem,
+        () => {},
         null,
         navigation,
         currentPatient,
         !!isPharmacyLocationServiceable,
-        { source: 'Pharmacy Partial Search', categoryId: item.category_id },
-        JSON.stringify(cartItems),
-        () => setItemsAddingToCart({ ...itemsAddingToCart, [item.sku]: false }),
+        { source: 'Pharmacy Partial Search', categoryId: item?.category_id },
+        JSON.stringify(serverCartItems),
+        () => setItemsAddingToCart({ ...itemsAddingToCart, [item?.sku]: false }),
         pharmacyCircleAttributes!,
         () => {},
         comingFromSearch,
         cleverTapSearchSuccessEventAttributes
       );
-      setCurrentProductIdInCart(item.sku);
-      item.pack_form ? setItemPackForm(item.pack_form) : setItemPackForm('');
-      item.suggested_qty ? setSuggestedQuantity(item.suggested_qty) : setSuggestedQuantity(null);
-      item.MaxOrderQty
-        ? setMaxOrderQty(item.MaxOrderQty)
-        : item.suggested_qty
-        ? setMaxOrderQty(+item.suggested_qty)
+      setCurrentProductIdInCart(item?.sku);
+      item?.pack_form ? setItemPackForm(item?.pack_form) : setItemPackForm('');
+      item?.suggested_qty ? setSuggestedQuantity(item?.suggested_qty) : setSuggestedQuantity(null);
+      item?.MaxOrderQty
+        ? setMaxOrderQty(item?.MaxOrderQty)
+        : item?.suggested_qty
+        ? setMaxOrderQty(+item?.suggested_qty)
         : setMaxOrderQty(0);
       setCurrentProductQuantityInCart(1);
     };
 
     const products: MedicineSearchSuggestionItemProps[] = searchResults.map((item, index) => {
-      const id = item.sku;
+      const id = item?.sku;
       const qty = getCartItemQty(id);
       const onPressAdd = () => {
-        if (qty < item.MaxOrderQty) {
-          updateCartItem!({ id, quantity: qty + 1 });
+        if (qty < item?.MaxOrderQty) {
           setCurrentProductQuantityInCart(qty + 1);
+          setUserActionPayload?.({
+            medicineOrderCartLineItems: [
+              {
+                medicineSKU: item?.sku,
+                quantity: qty + 1,
+              },
+            ],
+          });
         }
       };
       const onPressSubstract = () => {
-        qty == 1 ? removeCartItem!(id) : updateCartItem!({ id, quantity: qty - 1 });
         setCurrentProductQuantityInCart(qty - 1);
+        setUserActionPayload?.({
+          medicineOrderCartLineItems: [
+            {
+              medicineSKU: item?.sku,
+              quantity: qty - 1,
+            },
+          ],
+        });
       };
       const comingFromSearch = true;
 
@@ -463,14 +487,14 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
       return {
         data: item,
         quantity: qty,
-        maxOrderQty: item.MaxOrderQty,
+        maxOrderQty: item?.MaxOrderQty,
         onPress: () => onPress(id, item?.url_key, index, item),
         onPressAddToCart: () =>
           onPressAddToCart(item, comingFromSearch, cleverTapSearchSuccessEventAttributes),
         onPressAdd: onPressAdd,
         onPressSubstract: onPressSubstract,
-        onPressNotify: () => onPressNotify(item.name),
-        loading: itemsAddingToCart[item.sku],
+        onPressNotify: () => onPressNotify(item?.name),
+        loading: itemsAddingToCart[item?.sku],
       };
     });
     return <MedSearchSuggestions data={products} />;

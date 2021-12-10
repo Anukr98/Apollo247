@@ -31,6 +31,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import moment from 'moment';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 export interface SubstitutesProps {
   sku: string;
@@ -46,7 +47,8 @@ export interface SubstitutesProps {
 }
 
 export const Substitutes: React.FC<SubstitutesProps> = (props) => {
-  const { cartItems, removeCartItem, updateCartItem, productSubstitutes } = useShoppingCart();
+  const { serverCartItems, productSubstitutes } = useShoppingCart();
+  const { setUserActionPayload } = useServerCart();
   const {
     sku,
     name,
@@ -141,19 +143,33 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
   };
 
   const getItemQuantity = (id: string) => {
-    const foundItem = cartItems?.find((item) => item.id == id);
+    const foundItem = serverCartItems?.find((item) => item.sku == id);
     return foundItem ? foundItem.quantity : 0;
   };
 
   const onPressSubstract = (sku: string) => {
     const q = getItemQuantity(sku);
-    q == 1 ? removeCartItem?.(sku) : updateCartItem?.({ id: sku, quantity: q - 1 });
+    setUserActionPayload?.({
+      medicineOrderCartLineItems: [
+        {
+          medicineSKU: sku,
+          quantity: q - 1,
+        },
+      ],
+    });
   };
 
   const onPressAdd = (sku: string, maxOrderQty: number) => {
     const q = getItemQuantity(sku);
     if (q == getMaxQtyForMedicineItem(maxOrderQty)) return;
-    updateCartItem!({ id: sku, quantity: q + 1 });
+    setUserActionPayload?.({
+      medicineOrderCartLineItems: [
+        {
+          medicineSKU: sku,
+          quantity: q + 1,
+        },
+      ],
+    });
   };
 
   const renderQuantityView = (sku: string, maxOrderQty: number) => {

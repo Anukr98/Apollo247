@@ -102,7 +102,7 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
           {renderProfilePic(item)}
           <View style={styles.infoContainer}>
             <Text numberOfLines={1} style={styles.doctorName}>
-              {item?.fullName}
+              {item?.displayName}
             </Text>
             <Text numberOfLines={1} style={styles.speciality}>
               {item?.specialty?.name}
