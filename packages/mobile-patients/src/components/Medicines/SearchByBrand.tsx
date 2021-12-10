@@ -221,7 +221,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     });
 
   const onAddCartItem = (item: MedicineProduct, suggestionItem?: boolean) => {
-    const { sku } = item;
+    const { sku, category_id } = item;
     suggestionItem && setItemsLoading({ ...itemsLoading, [sku]: true });
     setUserActionPayload?.({
       medicineOrderCartLineItems: [
@@ -340,7 +340,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         onPress={() => {
           props.navigation.navigate(AppRoutes.ProductDetailPage, {
             urlKey: item?.url_key,
-            sku: item.sku,
+            sku: item?.sku,
             movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
           });
           resetSearchState();
@@ -349,11 +349,11 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           onAddCartItem(item, true);
         }}
         onPressNotify={() => {
-          onNotifyMeClick(item.name);
+          onNotifyMeClick(item?.name);
         }}
         onPressAdd={() => {
-          const q = getItemQuantity(item.sku);
-          if (q == getMaxQtyForMedicineItem(item.MaxOrderQty)) return;
+          const q = getItemQuantity(item?.sku);
+          if (q == getMaxQtyForMedicineItem(item?.MaxOrderQty)) return;
           setUserActionPayload?.({
             medicineOrderCartLineItems: [
               {
@@ -364,7 +364,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           });
         }}
         onPressSubstract={() => {
-          const q = getItemQuantity(item.sku);
+          const q = getItemQuantity(item?.sku);
           setUserActionPayload?.({
             medicineOrderCartLineItems: [
               {
@@ -374,15 +374,15 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
             ],
           });
         }}
-        quantity={getItemQuantity(item.sku)}
+        quantity={getItemQuantity(item?.sku)}
         data={item}
-        loading={itemsLoading[item.sku]}
+        loading={itemsLoading[item?.sku]}
         showSeparator={index !== medicineList.length - 1}
         style={{
           marginHorizontal: 20,
           paddingBottom: index == medicineList.length - 1 ? 10 : 0,
         }}
-        maxOrderQty={getMaxQtyForMedicineItem(item.MaxOrderQty)}
+        maxOrderQty={getMaxQtyForMedicineItem(item?.MaxOrderQty)}
         removeCartItem={() => onRemoveCartItem(item)}
       />
     );
@@ -461,8 +461,8 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     });
   };
   const getItemQuantity = (id: string) => {
-    const foundItem = serverCartItems?.find((item) => item.id == id);
-    return foundItem ? foundItem.quantity : 0;
+    const foundItem = serverCartItems?.find((item) => item?.sku == id);
+    return foundItem ? foundItem?.quantity : 0;
   };
 
   const renderMedicineCard = (
@@ -519,12 +519,12 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         onPressAddQuantity={() =>
           getItemQuantity(medicine.sku) == getMaxQtyForMedicineItem(medicine.MaxOrderQty)
             ? null
-            : onUpdateCartItem(medicine, getItemQuantity(medicine.sku) + 1)
+            : onUpdateCartItem(medicine, getItemQuantity(medicine?.sku) + 1)
         }
         onPressSubtractQuantity={() =>
           getItemQuantity(medicine.sku) == 1
             ? onRemoveCartItem(medicine)
-            : onUpdateCartItem(medicine, getItemQuantity(medicine.sku) - 1)
+            : onUpdateCartItem(medicine, getItemQuantity(medicine?.sku) - 1)
         }
         isInStock={!!medicine.is_in_stock}
         isPrescriptionRequired={medicine.is_prescription_required == '1'}
@@ -592,12 +592,12 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         onPressAddQuantity={() =>
           getItemQuantity(medicine.sku) == getMaxQtyForMedicineItem(medicine.MaxOrderQty)
             ? null
-            : onUpdateCartItem(medicine, getItemQuantity(medicine.sku) + 1)
+            : onUpdateCartItem(medicine, getItemQuantity(medicine?.sku) + 1)
         }
         onPressSubtractQuantity={() =>
           getItemQuantity(medicine.sku) == 1
             ? onRemoveCartItem(medicine)
-            : onUpdateCartItem(medicine, getItemQuantity(medicine.sku) - 1)
+            : onUpdateCartItem(medicine, getItemQuantity(medicine?.sku) - 1)
         }
         isInStock={!!medicine.is_in_stock}
         isPrescriptionRequired={medicine.is_prescription_required == '1'}
@@ -694,16 +694,16 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     if (typeof price.from == 'number' || typeof price.to == 'number') {
       filteredProductsList = filteredProductsList.filter(
         (item) =>
-          (price.from ? item.price >= price.from! : true) &&
-          (price.to ? item.price <= price.to! : true)
+          (price.from ? item?.price >= price.from! : true) &&
+          (price.to ? item?.price <= price.to! : true)
       );
     }
     // Discount
     if (typeof discount.from == 'number' && typeof discount.to == 'number') {
       filteredProductsList = filteredProductsList.filter((item) => {
-        if (!item.special_price) return discount.from == 0 || discount.from == undefined;
-        const specialPrice = getSpecialPrice(item.special_price);
-        const discountPercentage = ((item.price - specialPrice!) / item.price) * 100;
+        if (!item?.special_price) return discount.from == 0 || discount.from == undefined;
+        const specialPrice = getSpecialPrice(item?.special_price);
+        const discountPercentage = ((item?.price - specialPrice!) / item?.price) * 100;
 
         return discountPercentage >= (discount.from || 0) && discountPercentage <= discount.to!
           ? true

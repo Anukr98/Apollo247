@@ -1048,8 +1048,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
   }, [orders, coupon, cartItems, deliveryCharges, grandTotal]);
 
   useEffect(() => {
-    if (asyncPincode?.pincode) {
-      checkIfPincodeIsServiceable(asyncPincode?.pincode)
+    if (cartLocationDetails?.pincode) {
+      checkIfPincodeIsServiceable(cartLocationDetails?.pincode)
         .then((response) => {
           setAxdcCode(response?.axdcCode);
           setVdcType(response?.vdcType);
@@ -1057,7 +1057,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         })
         .catch((error) => {});
     }
-  }, [asyncPincode]);
+  }, [cartLocationDetails]);
 
   function updateShipments() {
     let shipmentsArray: (MedicineOrderShipmentInput | null)[] = [];

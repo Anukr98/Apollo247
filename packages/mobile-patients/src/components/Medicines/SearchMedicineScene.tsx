@@ -364,7 +364,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     });
 
   const onAddCartItem = (item: MedicineProduct, suggestionItem?: boolean) => {
-    const { sku, category_id } = item;
+    const { sku, category_id, name } = item;
     savePastSeacrh(sku, name).catch((e) => {
       aphConsole.log({ e });
     });
