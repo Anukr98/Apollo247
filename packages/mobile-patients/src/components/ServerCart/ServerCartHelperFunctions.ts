@@ -125,6 +125,8 @@ export const reviewCartPageViewClevertapEvent = (
   appliedCoupon: string,
   isCircleMember: boolean,
   prescriptionOption: string,
+  userType: string,
+  mobileNumber: string,
   circleMembershipValue?: number,
   tatDayTwo?: string,
 ) => {
@@ -142,6 +144,8 @@ export const reviewCartPageViewClevertapEvent = (
       Coupon_Applied: appliedCoupon,
       Circle_Member: isCircleMember ? 'Yes' : 'No',
       Circle_Membership_Value: circleMembershipValue,
+      User_Type: userType,
+      User_Mobile_Number: mobileNumber,
     };
     postCleverTapEvent(CleverTapEventName.PHARMACY_CART_REVIEW_ORDER_PAGE_VIEWED, eventAttributes);
   } catch (e) {}
