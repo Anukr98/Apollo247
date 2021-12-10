@@ -661,28 +661,19 @@ export const Tests: React.FC<TestsProps> = (props) => {
       // res < 10 -> append rest from the drupal (post filtering common items)
       //res + append (post filtering common items) < 6  -> don't show the widget
       if (!!pastOrders) {
-        if (pastOrders?.length >= 10) {
-          //fetchPrices
-          getWidgetPricesWithInclusions(
-            pastOrders,
-            cityId,
-            string.diagnostics.homepagePastOrderRecommendations
-          );
-        } else {
-          const findRank =
-            !!drupalWidgetData &&
-            drupalWidgetData?.length > 0 &&
-            drupalWidgetData?.filter((item: any) => item?.diagnosticwidgetsRankOrder === '0');
-          const getRecommendationsFromDrupal = findRank?.[0]?.diagnosticWidgetData;
-          const appenedRecommendations = [
-            ...new Set(pastOrders?.concat(getRecommendationsFromDrupal)),
-          ];
-          getWidgetPricesWithInclusions(
-            appenedRecommendations,
-            cityId,
-            string.diagnostics.homepagePastOrderRecommendations
-          );
-        }
+        const findRank =
+          !!drupalWidgetData &&
+          drupalWidgetData?.length > 0 &&
+          drupalWidgetData?.filter((item: any) => item?.diagnosticwidgetsRankOrder === '0');
+        const getRecommendationsFromDrupal = findRank?.[0]?.diagnosticWidgetData;
+        const appenedRecommendations = [
+          ...new Set(pastOrders?.concat(getRecommendationsFromDrupal)),
+        ];
+        getWidgetPricesWithInclusions(
+          appenedRecommendations,
+          cityId,
+          string.diagnostics.homepagePastOrderRecommendations
+        );
       } else {
         setDrupalRecommendationsAsPastRecommendations();
       }
@@ -933,8 +924,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }
       });
     });
-    _recommendedBookings?.length >= 6
-      ? setPastOrderRecommendations(_recommendedBookings)
+    const showPastRecommendations =
+      _recommendedBookings > 10 ? _recommendedBookings.slice(0, 10) : _recommendedBookings;
+    showPastRecommendations?.length >= 6
+      ? setPastOrderRecommendations(showPastRecommendations)
       : setPastOrderRecommendations([]);
     setPriceAvailable(true);
     setPastOrderRecommendationShimmer(false);
