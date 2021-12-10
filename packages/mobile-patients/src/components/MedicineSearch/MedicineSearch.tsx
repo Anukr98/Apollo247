@@ -330,7 +330,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
 
   const renderCategories = (array: MedSearchSectionBadgeViewProps[]) => {
     return array.map((item) => (
-      <MedSearchSectionBadgeView key={`${item.value}`} badgeStyle={styles.badge} {...item} />
+      <MedSearchSectionBadgeView key={`${item?.value}`} badgeStyle={styles.badge} {...item} />
     ));
   };
 
@@ -400,7 +400,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
       comingFromSearch: boolean,
       cleverTapSearchSuccessEventAttributes: object
     ) => {
-      setItemsAddingToCart({ ...itemsAddingToCart, [item.sku]: true });
+      setItemsAddingToCart({ ...itemsAddingToCart, [item?.sku]: true });
       setAddToCartSource?.({ source: 'Pharmacy Full Search', categoryId: item?.category_id });
       setUserActionPayload?.({
         medicineOrderCartLineItems: [
@@ -418,30 +418,30 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
         navigation,
         currentPatient,
         !!isPharmacyLocationServiceable,
-        { source: 'Pharmacy Partial Search', categoryId: item.category_id },
+        { source: 'Pharmacy Partial Search', categoryId: item?.category_id },
         JSON.stringify(serverCartItems),
-        () => setItemsAddingToCart({ ...itemsAddingToCart, [item.sku]: false }),
+        () => setItemsAddingToCart({ ...itemsAddingToCart, [item?.sku]: false }),
         pharmacyCircleAttributes!,
         () => {},
         comingFromSearch,
         cleverTapSearchSuccessEventAttributes
       );
-      setCurrentProductIdInCart(item.sku);
-      item.pack_form ? setItemPackForm(item.pack_form) : setItemPackForm('');
-      item.suggested_qty ? setSuggestedQuantity(item.suggested_qty) : setSuggestedQuantity(null);
-      item.MaxOrderQty
-        ? setMaxOrderQty(item.MaxOrderQty)
-        : item.suggested_qty
-        ? setMaxOrderQty(+item.suggested_qty)
+      setCurrentProductIdInCart(item?.sku);
+      item?.pack_form ? setItemPackForm(item?.pack_form) : setItemPackForm('');
+      item?.suggested_qty ? setSuggestedQuantity(item?.suggested_qty) : setSuggestedQuantity(null);
+      item?.MaxOrderQty
+        ? setMaxOrderQty(item?.MaxOrderQty)
+        : item?.suggested_qty
+        ? setMaxOrderQty(+item?.suggested_qty)
         : setMaxOrderQty(0);
       setCurrentProductQuantityInCart(1);
     };
 
     const products: MedicineSearchSuggestionItemProps[] = searchResults.map((item, index) => {
-      const id = item.sku;
+      const id = item?.sku;
       const qty = getCartItemQty(id);
       const onPressAdd = () => {
-        if (qty < item.MaxOrderQty) {
+        if (qty < item?.MaxOrderQty) {
           setCurrentProductQuantityInCart(qty + 1);
           setUserActionPayload?.({
             medicineOrderCartLineItems: [
@@ -487,14 +487,14 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
       return {
         data: item,
         quantity: qty,
-        maxOrderQty: item.MaxOrderQty,
+        maxOrderQty: item?.MaxOrderQty,
         onPress: () => onPress(id, item?.url_key, index, item),
         onPressAddToCart: () =>
           onPressAddToCart(item, comingFromSearch, cleverTapSearchSuccessEventAttributes),
         onPressAdd: onPressAdd,
         onPressSubstract: onPressSubstract,
-        onPressNotify: () => onPressNotify(item.name),
-        loading: itemsAddingToCart[item.sku],
+        onPressNotify: () => onPressNotify(item?.name),
+        loading: itemsAddingToCart[item?.sku],
       };
     });
     return <MedSearchSuggestions data={products} />;
