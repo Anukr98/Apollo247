@@ -1578,6 +1578,8 @@ export interface CleverTapEvents {
     'Coupon_Applied': string;
     'Circle_Member': YesOrNo;
     'Circle_Membership_Value'?: number;
+    'User_Type': string;
+    'User_Mobile_Number': string;
   };
 
   // ********** Diagnostic Events *******

@@ -81,7 +81,7 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
     cartLocationDetails,
   } = useShoppingCart();
   const client = useApolloClient();
-  const { setauthToken, pharmacyUserTypeAttribute } = useAppCommonData();
+  const { setauthToken, pharmacyUserTypeAttribute, pharmacyUserType } = useAppCommonData();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
@@ -105,9 +105,11 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
         serverCartAmount?.isDeliveryFree ? 0 : serverCartAmount?.deliveryCharges,
         serverCartAmount?.cartTotal,
         isPrescriptionCartItem >= 0,
-        cartCoupon?.coupon || '',
+        cartCoupon?.coupon && cartCoupon?.valid ? cartCoupon?.coupon : '',
         isCircleCart,
         isPrescriptionCartItem >= 0 ? cartPrescriptionType : '',
+        pharmacyUserType,
+        currentPatient?.mobileNumber,
         cartSubscriptionDetails?.currentSellingPrice,
         shipmentArray?.[1]?.tat
       );
