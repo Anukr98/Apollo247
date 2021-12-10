@@ -563,7 +563,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       isPharmacyPincodeServiceable ? '' : 'Services unavailable. Change delivery location.'
     );
     setPharmacyLocationServiceable!(!!isPharmacyPincodeServiceable);
-    if (!isPharmacyPincodeServiceable && asyncPincode?.pincode) callNearbyStoreApi();
+    if (!isPharmacyPincodeServiceable && pharmacyPincode) callNearbyStoreApi();
   }, [isPharmacyPincodeServiceable]);
 
   const callNearbyStoreApi = () => {
@@ -597,7 +597,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         paddingLeft: 12,
       },
     });
-    getNearByStoreDetailsApi(asyncPincode?.pincode)
+    getNearByStoreDetailsApi(pharmacyPincode)
       .then((response: any) => {
         showAphAlert!({
           title: 'We’ve got you covered !!',
@@ -680,7 +680,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const CalltheNearestPharmacyEvent = () => {
     let eventAttributes: WebEngageEvents[WebEngageEventName.CALL_THE_NEAREST_PHARMACY] = {
-      pincode: asyncPincode?.pincode,
+      pincode: pharmacyPincode,
       'Mobile Number': currentPatient.mobileNumber,
     };
     postWebEngageEvent(WebEngageEventName.CALL_THE_NEAREST_PHARMACY, eventAttributes);
