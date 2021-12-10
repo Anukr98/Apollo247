@@ -119,6 +119,8 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
           inclusion?.incObservationData?.filter((item: any) => item?.mandatoryValue === '1')
         );
 
+      const getInclusionCount = !!inclusions && inclusions?.length > 0 ? inclusions?.length : 1;
+
       const getMandatoryParameterCount =
         !!getMandatoryParamter &&
         getMandatoryParamter?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
@@ -159,10 +161,11 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
                 {name}
               </Text>
             </View>
-            <View style={{ minHeight: isSmallDevice ? 20 : 25 }}>
-              {getMandatoryParameterCount > 0 ? (
+            <View style={{ minHeight: isSmallDevice ? 25 : 30 }}>
+              {getMandatoryParameterCount > 0 || !!getInclusionCount ? (
                 <Text style={styles.parameterText}>
-                  {getMandatoryParameterCount} {getMandatoryParameterCount == 1 ? 'test' : 'tests'}{' '}
+                  {getMandatoryParameterCount || getInclusionCount}{' '}
+                  {(getMandatoryParameterCount || getInclusionCount) == 1 ? 'test' : 'tests'}{' '}
                   included
                 </Text>
               ) : null}
