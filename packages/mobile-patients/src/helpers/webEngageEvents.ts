@@ -8,7 +8,8 @@ import {
   UploadPrescSource,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE, DIAGNOSTIC_PINCODE_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
-import { DiagnosticHomePageSource } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { DiagnosticHomePageSource, DIAGNOSTICS_ITEM_TYPE } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { DiagnosticsDetailsPageViewedSource } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 
 type YesOrNo = 'Yes' | 'No';
 type HdfcPlan = 'SILVER' | 'GOLD' | 'PLATINUM';
@@ -1258,25 +1259,15 @@ export interface WebEngageEvents {
     'Category Name'?: string;
   };
   [WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION]: {
-    Source:
-      | 'Full Search'
-      | 'Home Page'
-      | 'Cart page'
-      | 'Partial Search'
-      | 'Deeplink'
-      | 'Popular search'
-      | 'Category page';
+    'Item Id': string | number;
     'Item Name': string;
-    'Item Type'?: string;
-    'Item Code': string;
-    'Patient Name': string;
-    'Patient UHID': string;
-    'Item ID': string | number;
-    'Item Price'?: number | string;
+    'Item Type': DIAGNOSTICS_ITEM_TYPE;
+    'Item Price': number | string;
+    Source: DiagnosticsDetailsPageViewedSource;
     'Circle user'?: string;
     'Original Item ids'?: any;
     'Section name'?: string;
-  };
+    };
 
   [WebEngageEventName.DIAGNOSTIC_CART_VIEWED]: {
     'Page source': string;
@@ -1341,8 +1332,10 @@ export interface WebEngageEvents {
     'Thing to Improve selected': string;
   };
   [WebEngageEventName.DIAGNOSTIC_ADD_TO_CART]: {
+    'Item Id': string; // (SKUID) //type?
     'Item Name': string;
-    'Item ID': string; // (SKUID)
+    'Item Type': DIAGNOSTICS_ITEM_TYPE;
+    'Item Price': number; //type
     Source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE;
     'Section name'?: string;
     'Circle user': string;

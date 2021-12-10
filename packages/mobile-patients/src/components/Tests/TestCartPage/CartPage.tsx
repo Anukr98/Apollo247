@@ -233,7 +233,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   var overallDuplicateArray = [] as any;
 
   useEffect(() => {
-    triggerCartPageViewed();
+    triggerCartPageViewed(false, cartItems);
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setIsFocused(true);
       BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -359,7 +359,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       ...new Set(selectedUniqueItems?.map((item) => Number(item?.id))),
     ];
 
-    const findPackageSKU = selectedUniqueItems?.find((_item) => _item?.inclusions?.length > 1);
+    const findPackageSKU = selectedUniqueItems?.find((_item: any) => _item?.inclusions?.length > 1);
     const hasPackageSKU = !!findPackageSKU;
     return {
       selectedUniqueItems,
@@ -381,9 +381,10 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   }, [cartItems?.length, addressCityId]);
 
   const recomData = recommedationData?.length > 2 ? recommedationData : alsoAddListData;
+
   useEffect(() => {
     const isRecommendationShown = recommedationData?.length > 2;
-    if (cartItems?.length > 0 && recomData?.length > 0 && !loading) {
+    if (cartItems?.length > 0 && recomData?.length > 0 && !loading && isFocused) {
       const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
       const pinCodeFromAddress = addressToUse?.zipcode!;
       const cityFromAddress = addressToUse?.city;
@@ -1570,6 +1571,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                 source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.CART_PAGE}
                 sourceScreen={AppRoutes.CartPage}
                 changeCTA={true}
+                widgetHeading={
+                  recommedationData?.length > 2 ? 'Recommendations' : 'You can also order'
+                }
               />
             </View>
           </ScrollView>

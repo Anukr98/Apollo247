@@ -127,6 +127,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [amount, setAmount] = useState<number>(props.navigation.getParam('amount'));
   const orderDetails = props.navigation.getParam('orderDetails');
   const eventAttributes = props.navigation.getParam('eventAttributes');
+  const verticalSpecificEventAttributes = props.navigation.getParam('verticalSpecificData');
   const businessLine = props.navigation.getParam('businessLine');
   const isDiagnostic = businessLine === 'diagnostics';
   const disableCod = props.navigation.getParam('disableCOD');
@@ -530,7 +531,15 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   function triggerWebengege(type: string, instrument: string, paymentModeName?: string) {
     paymentType.current = type;
-    PaymentInitiated(amount, businessLine, type, paymentId, instrument, paymentModeName);
+    PaymentInitiated(
+      amount,
+      businessLine,
+      type,
+      paymentId,
+      instrument,
+      paymentModeName,
+      verticalSpecificEventAttributes
+    );
   }
 
   function triggerUserPaymentAbortedEvent(errorCode: string) {
@@ -793,6 +802,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           defaultClevertapEventParams: defaultClevertapEventParams,
           payload: payload,
           isCircleAddedToCart: isCircleAddedToCart,
+          verticalSpecificEventAttributes,
         });
         break;
       case 'consult':

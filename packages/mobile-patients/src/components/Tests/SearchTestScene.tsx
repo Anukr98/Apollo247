@@ -63,6 +63,7 @@ import {
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import _ from 'lodash';
 import {
+  diagnosticsDisplayPrice,
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   getPricesForItem,
   sourceHeaders,
@@ -80,9 +81,9 @@ import { searchDiagnosticItem_searchDiagnosticItem_data } from '@aph/mobile-pati
 import { DiagnosticsSearchResultItem } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticSearchResultItem';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { DIAGNOSTICS_ITEM_TYPE } from '../../helpers/CleverTapEvents';
 
 type searchResults = searchDiagnosticItem_searchDiagnosticItem_data;
-import DeviceInfo from 'react-native-device-info';
 
 const GO_TO_CART_HEIGHT = 50;
 const isIphoneX = DeviceInfo.hasNotch();
@@ -322,14 +323,20 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     id: string,
     price: number,
     discountedPrice: number,
-    source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE
+    source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
+    inclusions?: any
   ) => {
+    const itemType =
+      !!inclusions && inclusions?.length > 1
+        ? DIAGNOSTICS_ITEM_TYPE.PACKAGE
+        : DIAGNOSTICS_ITEM_TYPE.TEST;
     DiagnosticAddToCartEvent(
       name,
       id,
-      price,
-      discountedPrice,
+      price, //mrp
+      discountedPrice, //actual price
       source,
+      itemType,
       undefined,
       currentPatient,
       isDiagnosticCircleSubscription
@@ -344,16 +351,26 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     itemId: string | number,
     itemName: string,
     source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
+    inclusions?: any[],
     rate?: number,
     collectionType?: TEST_COLLECTION_TYPE,
     pricesObject?: any,
     promoteCircle?: boolean,
     promoteDiscount?: boolean,
-    selectedPlan?: any,
-    inclusions?: any[]
+    selectedPlan?: any
   ) => {
+    const priceToShow = !!pricesObject
+      ? diagnosticsDisplayPrice(pricesObject, isDiagnosticCircleSubscription)?.priceToShow
+      : 0;
     savePastSearch(`${itemId}`, itemName).catch((e) => {});
-    postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, 0, 0, source);
+    postDiagnosticAddToCartEvent(
+      stripHtml(itemName),
+      `${itemId}`,
+      !!rate ? rate : 0,
+      priceToShow,
+      source,
+      inclusions
+    );
     const addedItem = {
       id: `${itemId}`,
       name: stripHtml(itemName),
@@ -620,6 +637,38 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     );
   };
 
+  function fetchPrices(data: any) {
+    const pricesForItem = getPricesForItem(
+      data?.diagnostic_item_price,
+      data?.packageCalculatedMrp!
+    );
+    const obj = {
+      id: data?.diagnostic_item_id,
+      name: data?.diagnostic_item_name,
+      mou: 1,
+      price: pricesForItem?.price!,
+      thumbnail: null,
+      specialPrice: pricesForItem?.specialPrice!,
+      circlePrice: pricesForItem?.circlePrice,
+      circleSpecialPrice: pricesForItem?.circleSpecialPrice!,
+      discountPrice: pricesForItem?.discountPrice!,
+      discountSpecialPrice: pricesForItem?.discountSpecialPrice!,
+      collectionMethod: TEST_COLLECTION_TYPE.HC,
+      groupPlan: pricesForItem?.planToConsider?.groupPlan,
+      packageMrp: data?.packageCalculatedMrp!,
+      inclusions: data?.diagnostic_inclusions,
+    };
+    onAddCartItem(
+      data?.diagnostic_item_id,
+      data?.diagnostic_item_name,
+      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PARTIAL_SEARCH,
+      data?.diagnostic_inclusions,
+      obj?.price,
+      TEST_COLLECTION_TYPE.HC,
+      obj
+    );
+  }
+
   const renderTestCard = (product: any, index: number, array: searchResults[]) => {
     return (
       <DiagnosticsSearchResultItem
@@ -632,11 +681,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           });
         }}
         onPressAddToCart={() => {
-          onAddCartItem(
-            product?.diagnostic_item_id,
-            product?.diagnostic_item_name,
-            DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PARTIAL_SEARCH
-          );
+          fetchPrices(product);
         }}
         data={product}
         loading={true}
@@ -768,7 +813,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           onAddCartItem(
             item?.diagnostic_item_id,
             item?.diagnostic_item_name,
-            DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.POPULAR_SEARCH
+            DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.POPULAR_SEARCH,
+            item?.diagnostic_inclusions
           );
         }}
         data={item}
@@ -925,30 +971,6 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     backgroundColor: 'white',
     marginBottom: GO_TO_CART_HEIGHT,
-  },
-  cartDetailView: {
-    position: 'absolute',
-    backgroundColor: theme.colors.APP_YELLOW_COLOR,
-    bottom: isIphoneX ? 10 : 0,
-    height: GO_TO_CART_HEIGHT,
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  itemAddedText: {
-    marginLeft: 20,
-    ...theme.viewStyles.text('SB', isSmallDevice ? 13 : 14, theme.colors.WHITE),
-    lineHeight: 16,
-    textAlign: 'left',
-    alignSelf: 'center',
-  },
-  goToCartText: {
-    marginRight: 20,
-    ...theme.viewStyles.text('SB', isSmallDevice ? 15 : 16, theme.colors.WHITE),
-    lineHeight: 20,
-    textAlign: 'right',
-    alignSelf: 'center',
   },
   cartDetailView: {
     position: 'absolute',
