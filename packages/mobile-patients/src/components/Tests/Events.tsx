@@ -669,10 +669,16 @@ export function DiagnosticRemoveFromCartClicked(
   pincode: string | number,
   mode: 'Customer' | 'Automated',
   currentPatient?: any,
-  isDiagnosticCircleSubscription?: boolean | undefined
+  isDiagnosticCircleSubscription?: boolean | undefined,
+  cartItems?: DiagnosticsCartItem[]
 ) {
   try {
     const getPatientAttributes = createPatientAttributes(currentPatient);
+    const newCart = cartItems?.filter((item: any) => {
+      if (item?.id != itemId) {
+        return item;
+      }
+    });
     const eventAttributes:
       | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE]
       | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE] = {
@@ -682,6 +688,16 @@ export function DiagnosticRemoveFromCartClicked(
       Pincode: pincode,
       Mode: mode,
       'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+      itemIdsInCart: JSON.stringify(
+        newCart?.map((item: any) => {
+          return item?.id;
+        })
+      ),
+      itemNamesinCart: JSON.stringify(
+        newCart?.map((item: any) => {
+          return item?.name;
+        })
+      ),
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE, eventAttributes);
     postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE, eventAttributes);

@@ -2293,7 +2293,10 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         itemIdsToRemove_global?.join(', '),
         itemNamesToRemove_global?.join(', '),
         addresses?.[selectedAddressIndex]?.zipcode!,
-        'Automated'
+        'Automated',
+        currentPatient,
+        isDiagnosticCircleSubscription,
+        cartItems
       );
       setDuplicateNameArray(conflictWithPatients);
       setDuplicateItemsArray?.(conflictWithPatients);
