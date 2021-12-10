@@ -978,6 +978,7 @@ const styles = StyleSheet.create({
   topCardContentContainer: {
     flexDirection: 'row',
     marginBottom: 2,
+    marginTop: 16,
     paddingVertical: 4,
     marginLeft: 10,
     justifyContent: 'flex-start',
@@ -3510,7 +3511,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     return (
       <View
         style={{
-          marginLeft: -11,
+          marginLeft: -7,
+          position: 'absolute',
+          top: 2,
+          zIndex: 999,
         }}
       >
         <ImageBackground
@@ -3538,34 +3542,40 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             if (item?.id === 1) {
               return (
                 <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
-                  <View style={[styles.bottom2CardView, { width: width - 32 }]}>
+                  <View style={{}}>
                     {renderDeliveryRibbonTag()}
-
-                    <View style={styles.topCardContentContainer}>
-                      {item.image}
-                      <Text style={[styles.topTextStyle, { color: theme.colors.LIGHT_BLUE }]}>
-                        {item.title}
-                      </Text>
-
-                      <ArrowRight style={{ marginRight: 'auto' }} />
-                    </View>
-                    <View
-                      style={[
-                        styles.bottom2SubCardView,
-                        {
-                          backgroundColor: item.subCardColor,
-                        },
-                      ]}
+                    <LinearGradientComponent
+                      style={[styles.bottom2CardView, { width: width - 32, height: 100 }]}
+                      colors={['#0A4D6B', '#128797']}
                     >
-                      <View style={styles.bottom2ImageView}>{item.image2}</View>
-                      <View style={styles.bottom2TextView}>
-                        <Text style={[theme.viewStyles.text('M', 11, item.subtitleColor!, 1, 18)]}>
-                          {healthCredits && healthCredits >= 30
-                            ? '₹' + healthCredits + ' ' + item.subtitle
-                            : 'Get 100% Genuine Medicines'}
+                      <View style={styles.topCardContentContainer}>
+                        {item.image}
+                        <Text style={[styles.topTextStyle, { color: theme.colors.WHITE }]}>
+                          {item.title}
                         </Text>
+
+                        <ArrowRight style={{ marginRight: 'auto', tintColor: '#fff' }} />
                       </View>
-                    </View>
+                      <View
+                        style={[
+                          styles.bottom2SubCardView,
+                          {
+                            backgroundColor: item.subCardColor,
+                          },
+                        ]}
+                      >
+                        <View style={styles.bottom2ImageView}>{item.image2}</View>
+                        <View style={styles.bottom2TextView}>
+                          <Text
+                            style={[theme.viewStyles.text('M', 11, item.subtitleColor!, 1, 18)]}
+                          >
+                            {healthCredits && healthCredits >= 30
+                              ? '₹' + healthCredits + ' ' + item.subtitle
+                              : 'Get 100% Genuine Medicines'}
+                          </Text>
+                        </View>
+                      </View>
+                    </LinearGradientComponent>
                   </View>
                 </TouchableOpacity>
               );
@@ -4304,11 +4314,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         style={[
           styles.circleContainer,
           {
-            borderWidth: circleStatus !== 'active' ? 0 : 0,
-            borderColor: circleStatus !== 'active' ? '#F9D5B4' : '',
+            borderWidth: circleStatus === 'active' && !renew ? 1 : 0,
+            borderColor: circleStatus === 'active' && !renew ? '#F9D5B4' : '',
           },
         ]}
-        colors={circleStatus === 'disabled' ? ['#fff', '#fff'] : ['#fff', '#fff']}
+        colors={circleStatus === 'active' && !renew ? ['#FFEEDB', '#FFFCFA'] : ['#fff', '#fff']}
       >
         {expiry > 0 && circleStatus === 'active' && renew && circleSavings > 0 ? (
           <CircleTypeCard1
