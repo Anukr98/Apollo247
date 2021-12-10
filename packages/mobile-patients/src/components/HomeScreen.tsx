@@ -991,7 +991,7 @@ const styles = StyleSheet.create({
     marginTop: 'auto',
   },
   offersCardsContainer: {
-    width: width / 1.9,
+    width: width / 1.3,
     justifyContent: 'center',
     alignItems: 'flex-start',
     height: 165,
@@ -1030,6 +1030,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#FC9916',
     marginVertical: 4,
     marginRight: 4,
+  },
+  deliveryRibbon: {
+    marginLeft: -7,
+    position: 'absolute',
+    top: 2,
+    zIndex: 999,
   },
 });
 
@@ -3509,14 +3515,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
   const renderDeliveryRibbonTag = () => {
     return (
-      <View
-        style={{
-          marginLeft: -7,
-          position: 'absolute',
-          top: 2,
-          zIndex: 999,
-        }}
-      >
+      <View style={styles.deliveryRibbon}>
         <ImageBackground
           style={{ height: 26, width: 120 }}
           {...props}
