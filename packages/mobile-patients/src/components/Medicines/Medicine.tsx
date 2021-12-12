@@ -313,6 +313,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     newAddressAdded,
     setNewAddressAdded,
     setAddToCartSource,
+    circleSubscriptionId,
   } = useShoppingCart();
   const {
     setUserActionPayload,
@@ -1229,11 +1230,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         'Mobile Number': g(currentPatient, 'mobileNumber'),
         'Customer ID': g(currentPatient, 'id'),
         User_Type: getUserType(allCurrentPatients),
-        'Nav src': 'Medicine Page',
-        'Circle Member':
-          getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
-          undefined,
-        'Device Id': getUniqueId(),
+        'Nav src': comingFrom,
+        'Page name': 'Medicine page',
+        'Circle Member': !!circleSubscriptionId ? 'True' : 'False',
       };
       postCleverTapEvent(CleverTapEventName.HOME_ICON_CLICKED, eventAttributes);
     };

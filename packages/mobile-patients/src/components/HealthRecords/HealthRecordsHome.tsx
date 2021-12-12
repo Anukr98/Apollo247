@@ -478,7 +478,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     currentPatient?.patientMedicalHistory?.weight !== 'No Idea' &&
     currentPatient?.patientMedicalHistory?.weight !== 'Not Recorded';
 
-  const { pharmacyCircleAttributes } = useShoppingCart();
+  const { circleSubscriptionId } = useShoppingCart();
 
   useEffect(() => {
     removeObjectNullUndefinedProperties(currentPatient);
@@ -861,7 +861,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     let eventAttributes = {
       'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
-      Relation: g(currentPatient, 'relation'),
       'Patient age': Math.round(
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
@@ -869,11 +868,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
       User_Type: getUserType(allCurrentPatients),
-      'Nav src': 'Health record',
-      'Circle Member':
-        getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
-        undefined,
-      'Device Id': getUniqueId(),
+      'Page name': 'Health Record',
+      'Nav src': 'Health Record',
+      'Circle Member': !!circleSubscriptionId ? 'True' : 'False',
     };
     postCleverTapEvent(CleverTapEventName.HOME_ICON_CLICKED, eventAttributes);
   };

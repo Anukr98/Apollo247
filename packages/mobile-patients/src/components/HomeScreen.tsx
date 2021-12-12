@@ -1292,9 +1292,28 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
   useEffect(() => {
     const handler = BackHandler.addEventListener('hardwareBackPress', handleSearchClose);
+    if (isSearchFocus) {
+      cleverTapEventForSearchBarClick();
+    }
     return () => handler.remove();
   }, [isSearchFocus, searchText]);
 
+  const cleverTapEventForSearchBarClick = () => {
+    let eventAttributes = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      User_Type: getUserType(allCurrentPatients),
+      'Page name': 'HomePage',
+      'Circle Member': !!circleSubscriptionId ? 'True' : 'False',
+    };
+    postCleverTapEvent(CleverTapEventName.SEARCH_BAR_CLICKED, eventAttributes);
+  };
   const handleCachedData = async () => {
     const cacheDataStringBuffer = await appGlobalCache.getAll();
     const offersListStringBuffer = cacheDataStringBuffer?.offersList?.value || '[]';
@@ -1668,7 +1687,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       CommonBugFender('ConsultRoom_getPatientFutureAppointmentCount', error);
     }
   };
-
   const showFreeConsultOverlay = (params: any) => {
     const { isJdQuestionsComplete, appointmentDateTime, doctorInfo } = params?.appointmentData;
     const { skipAutoQuestions, isPhysicalConsultBooked } = params;
@@ -4833,6 +4851,24 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     );
   };
 
+  const cleverTapEventForHomeIconClick = () => {
+    let eventAttributes = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      User_Type: getUserType(allCurrentPatients),
+      'Page name': 'HomePage Header',
+      'Nav src': 'HomePage Header',
+      'Circle Member': !!circleSubscriptionId ? 'True' : 'False',
+    };
+    postCleverTapEvent(CleverTapEventName.HOME_ICON_CLICKED, eventAttributes);
+  };
+
   const renderTopIcons = () => {
     const onPressCart = () => {
       postVaccineWidgetEvents(CleverTapEventName.MY_CART_CLICKED, 'Top bar');
@@ -4858,7 +4894,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         }}
       >
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+          <TouchableOpacity activeOpacity={1} onPress={cleverTapEventForHomeIconClick}>
             <ApolloLogo style={{ width: 57, height: 37 }} resizeMode="contain" />
           </TouchableOpacity>
           {renderProfileDrop()}
@@ -5590,7 +5626,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     );
   };
 
-  const onClickSearchItem = (key: string, pdp: boolean = false, nav_props: any = {}) => {
+  const onClickSearchItem = (
+    key: string,
+    pdp: boolean = false,
+    nav_props: any = {},
+    data?: any
+  ) => {
     // todo: for view all results
     // postHomeCleverTapEvent(
     //   CleverTapEventName.VIEW_ALL_SEARCH_RESULT_CLICKED,
@@ -5602,14 +5643,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       case MedicalRecordType.MEDICATION:
         postHomeCleverTapEvent(
           CleverTapEventName.OPTION_FROM_MEDICINE_CLICKED_ON_SEARCH_BAR_PAGE,
-          'Search bar'
+          'Search bar',
+          { Keyword: searchText }
         );
         props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
         break;
       case MedicalRecordType.TEST_REPORT:
         postHomeCleverTapEvent(
           CleverTapEventName.OPTION_FROM_DIAGNOSTIC_CLICKED_ON_SEARCH_BAR_PAGE,
-          'Search bar'
+          'Search bar',
+          { 'Test Name': data?.testName }
         );
         pdp
           ? props.navigation.navigate(AppRoutes.TestDetails, nav_props)
@@ -5618,7 +5661,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       case MedicalRecordType.CONSULTATION:
         postHomeCleverTapEvent(
           CleverTapEventName.OPTION_FROM_CONSULT_CLICKED_ON_SEARCH_BAR_PAGE,
-          'Search bar'
+          'Search bar',
+          { 'Doctor Name': data?.doctorName, Speciality: data?.speciality }
         );
         pdp
           ? props.navigation.navigate(AppRoutes.DoctorDetails, nav_props)
@@ -5710,8 +5754,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             doctorId: item?.id,
           }
         : {};
+    const data = {
+      testName: item?.diagnostic_item_name,
+      doctorName: item?.displayName,
+      speciality: item?.specialtydisplayName,
+    };
     return (
-      <TouchableOpacity onPress={() => onClickSearchItem(key, true, nav_props)}>
+      <TouchableOpacity onPress={() => onClickSearchItem(key, true, nav_props, data)}>
         <View style={{ marginBottom: 6 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
             <View style={styles.searchItemIcon}>

@@ -354,6 +354,7 @@ export enum CleverTapEventName {
   VIEW_ALL_SEARCH_RESULT_CLICKED = 'When someone clicks on veiw all search result',
   HOMEPAGE_SEARCH_BAR_QUERY_INPUT = 'Homepage Search Bar Query Input',
   SCREEN_SCROLLED = 'Screen Scrolled',
+  SEARCH_BAR_CLICKED = 'Search bar clicked',
 
   FAQs_ARTICLES_CLICKED = 'Vaccination FAQs & Articles clicked',
   VACCINATION_CALL_A_DOCTOR_CLICKED = 'Vaccination Call a doctor clicked',
@@ -1567,17 +1568,17 @@ export interface CleverTapEvents {
 
   [CleverTapEventName.PHARMACY_CART_REVIEW_ORDER_PAGE_VIEWED]: {
     Pincode: string;
-    'TAT_1_Hour': string;
-    'TAT_1_Day': number;
-    'TAT_2_Hour'?: string;
-    'TAT_2_Day'?: number;
-    'Shipping_Charges': number;
-    'Amount_To_Pay': number;
-    'Prescription_Required': YesOrNo;
-    'Prescription_Option_Selected'?: string;
-    'Coupon_Applied': string;
-    'Circle_Member': YesOrNo;
-    'Circle_Membership_Value'?: number;
+    TAT_1_Hour: string;
+    TAT_1_Day: number;
+    TAT_2_Hour?: string;
+    TAT_2_Day?: number;
+    Shipping_Charges: number;
+    Amount_To_Pay: number;
+    Prescription_Required: YesOrNo;
+    Prescription_Option_Selected?: string;
+    Coupon_Applied: string;
+    Circle_Member: YesOrNo;
+    Circle_Membership_Value?: number;
   };
 
   // ********** Diagnostic Events *******

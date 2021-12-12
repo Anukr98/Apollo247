@@ -267,7 +267,11 @@ export interface TestsProps
   }> {}
 
 export const Tests: React.FC<TestsProps> = (props) => {
-  const { setAddresses: setMedAddresses, pharmacyCircleAttributes } = useShoppingCart();
+  const {
+    setAddresses: setMedAddresses,
+    pharmacyCircleAttributes,
+    circleSubscriptionId,
+  } = useShoppingCart();
   const {
     cartItems,
     isDiagnosticCircleSubscription,
@@ -2496,8 +2500,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         currentPatient,
         getUserType(allCurrentPatients),
         'Dignostic Page',
-        circleMemberAtt,
-        deviceId
+        !!circleSubscriptionId ? 'True' : 'False'
       );
     };
 
