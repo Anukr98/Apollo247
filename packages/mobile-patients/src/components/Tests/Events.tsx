@@ -958,7 +958,6 @@ export function DiagnosticHomePageClicked(
     'Mobile Number': currentPatient?.mobileNumber,
     'Customer ID': currentPatient?.id,
     User_Type: userType,
-    'Nav src': navSrc,
     'Circle Member': circleMember,
     'Page name': navSrc,
   };

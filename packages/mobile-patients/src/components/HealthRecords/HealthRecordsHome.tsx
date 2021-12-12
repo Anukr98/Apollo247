@@ -869,7 +869,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       'Customer ID': g(currentPatient, 'id'),
       User_Type: getUserType(allCurrentPatients),
       'Page name': 'Health Record',
-      'Nav src': 'Health Record',
       'Circle Member': !!circleSubscriptionId ? 'True' : 'False',
     };
     postCleverTapEvent(CleverTapEventName.HOME_ICON_CLICKED, eventAttributes);

@@ -205,7 +205,7 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { ScrollView, Switch } from 'react-native-gesture-handler';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import WebEngage from 'react-native-webengage';
-import { NavigationScreenProps, FlatList } from 'react-navigation';
+import { NavigationScreenProps, FlatList, NavigationEvents } from 'react-navigation';
 import {
   addVoipPushToken,
   addVoipPushTokenVariables,
@@ -4863,7 +4863,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       'Customer ID': g(currentPatient, 'id'),
       User_Type: getUserType(allCurrentPatients),
       'Page name': 'HomePage Header',
-      'Nav src': 'HomePage Header',
       'Circle Member': !!circleSubscriptionId ? 'True' : 'False',
     };
     postCleverTapEvent(CleverTapEventName.HOME_ICON_CLICKED, eventAttributes);
@@ -5935,6 +5934,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.WHITE }}>
+      <NavigationEvents
+        onDidFocus={() => {
+          scrollCount.current = 0;
+        }}
+        onDidBlur={postScrollScreenEvent}
+      />
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
         {isSearchFocus ? null : renderTopIcons()}
         {renderGlobalSearch()}
@@ -5949,9 +5954,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             style={styles.scrollView}
             bounces={false}
             scrollEventThrottle={0}
-            onScroll={() => {
-              scrollCount.current += 1;
-              postScrollScreenEvent();
+            onScroll={(event) => {
+              const currentOffset = event.nativeEvent.contentOffset?.y;
+              currentOffset > (this.offset || 0) && (scrollCount.current += 1);
+              this.offset = currentOffset;
             }}
           >
             <View style={{ width: '100%' }}>

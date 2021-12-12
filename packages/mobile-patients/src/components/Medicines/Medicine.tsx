@@ -153,7 +153,7 @@ import {
 import ContentLoader from 'react-native-easy-content-loader';
 import { Divider, Image, ListItem } from 'react-native-elements';
 import Carousel from 'react-native-snap-carousel';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, NavigationEvents } from 'react-navigation';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 const { width: winWidth, height: winHeight } = Dimensions.get('window');
 import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -1230,7 +1230,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         'Mobile Number': g(currentPatient, 'mobileNumber'),
         'Customer ID': g(currentPatient, 'id'),
         User_Type: getUserType(allCurrentPatients),
-        'Nav src': comingFrom,
         'Page name': 'Medicine page',
         'Circle Member': !!circleSubscriptionId ? 'True' : 'False',
       };
@@ -2438,16 +2437,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       });
 
     return (
-      <ScrollView
-        removeClippedSubviews={true}
-        bounces={false}
-        style={styles.scrollViewStyle}
-        scrollEventThrottle={0}
-        onScroll={() => {
-          scrollCount.current += 1;
-          postScrollScreenEvent();
-        }}
-      >
+      <ScrollView removeClippedSubviews={true} bounces={false} style={styles.scrollViewStyle}>
         <CategoryAndSpecialOffers
           containerStyle={styles.categoryAndSpecialOffers}
           onPressShopByCategory={() => setCategoryTreeVisible(true)}
@@ -2590,12 +2580,24 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   return (
     <View style={{ flex: 1 }}>
+      <NavigationEvents
+        onDidFocus={() => {
+          scrollCount.current = 0;
+        }}
+        onDidBlur={postScrollScreenEvent}
+      />
       <SafeAreaView style={{ ...viewStyles.container }}>
         <KeyboardAwareScrollView
           ref={scrollViewRef}
           bounces={false}
+          scrollEventThrottle={0}
           keyboardShouldPersistTaps="always"
           onScroll={(event) => {
+            //increments only for down scroll
+            const currentOffset = event.nativeEvent.contentOffset?.y;
+            currentOffset > (this.offset || 0) && (scrollCount.current += 1);
+            this.offset = currentOffset;
+
             bannerScrollRef.current &&
               bannerScrollRef.current.measure(
                 (x: any, y: any, width: any, height: any, pagex: any, pagey: any) => {

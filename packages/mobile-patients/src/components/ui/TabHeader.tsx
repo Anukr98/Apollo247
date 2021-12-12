@@ -72,7 +72,6 @@ export const TabHeader: React.FC<TabHeaderProps> = (props) => {
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
       User_Type: getUserType(allCurrentPatients),
-      'Nav src': props.screenAsSource,
       'Page name': props.screenAsSource,
       'Circle Member': !!circleSubscriptionId ? 'True' : 'False',
     };
