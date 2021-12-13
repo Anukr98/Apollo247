@@ -240,7 +240,7 @@ export const TestItemCard: React.FC<TestItemCardProps> = (props) => {
             <Text style={styles.reportGenTextStyle}>{reportGenItem?.itemPrepration}</Text>
           </View>
         ) : null}
-        {props.isComingFrom == AppRoutes.TestsCart &&
+        {props.isComingFrom == AppRoutes.CartPage &&
         props.showCartInclusions &&
         !!inclusionItemToShow ? (
           <View style={styles.reportGenViewStyle}>

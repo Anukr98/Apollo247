@@ -382,7 +382,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           : renderReportError(string.diagnostics.responseUnavailableForReport);
       })
       .catch((error) => {
-        CommonBugFender('OrderedTestStatus_fetchTestReportsData', error);
+        CommonBugFender('TestOrderDetails_fetchTestReportsData', error);
         currentPatient && handleGraphQlError(error);
       })
       .finally(() => setLoading?.(false));
@@ -408,7 +408,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   );
 
   const handleBack = () => {
-    if (goToHomeOnBack && source === AppRoutes.TestsCart) {
+    if (goToHomeOnBack && source === AppRoutes.CartPage) {
       navigateToScreenWithEmptyStack(props.navigation, AppRoutes.YourOrdersTest, {
         source: AppRoutes.OrderStatus,
       });

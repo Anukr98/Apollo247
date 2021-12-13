@@ -175,7 +175,10 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { OrderCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/OrderCardCarousel';
 import { PrescriptionCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/PrescriptionCardCarousel';
 import { getUniqueId } from 'react-native-device-info';
-import { DiagnosticHomePageSource } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import {
+  DiagnosticHomePageSource,
+  DIAGNOSTICS_ITEM_TYPE,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 import DocumentPicker, { DocumentPickerResponse } from 'react-native-document-picker';
 import ImageResizer from 'react-native-image-resizer';
@@ -406,9 +409,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
   useEffect(() => {
     if (currentPatient) {
       fetchAddress();
-      triggerLandingPageViewedEvent();
     }
   }, [currentPatient]);
+
+  useEffect(() => {
+    triggerLandingPageViewedEvent();
+  }, [pastOrderRecommendations]);
 
   //if new address is added on cart page
   useEffect(() => {
@@ -533,7 +539,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
       isDiagnosticCircleSubscription,
       movedFrom === string.diagnostics.deeplink
         ? DiagnosticHomePageSource.DEEPLINK
-        : homeScreenAttributes?.Source
+        : homeScreenAttributes?.Source,
+      !!pastOrderRecommendations && pastOrderRecommendations?.length > 0 ? 'Yes' : 'No'
     );
   }
 
@@ -657,32 +664,20 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
       const pastOrders =
         getPastOrderRecommendation?.data?.getDiagnosticItemRecommendationsByPastOrders?.itemsData;
-      //show top 10 , res > 10
-      // res < 10 -> append rest from the drupal (post filtering common items)
-      //res + append (post filtering common items) < 6  -> don't show the widget
       if (!!pastOrders) {
-        if (pastOrders?.length >= 10) {
-          //fetchPrices
-          getWidgetPricesWithInclusions(
-            pastOrders,
-            cityId,
-            string.diagnostics.homepagePastOrderRecommendations
-          );
-        } else {
-          const findRank =
-            !!drupalWidgetData &&
-            drupalWidgetData?.length > 0 &&
-            drupalWidgetData?.filter((item: any) => item?.diagnosticwidgetsRankOrder === '0');
-          const getRecommendationsFromDrupal = findRank?.[0]?.diagnosticWidgetData;
-          const appenedRecommendations = [
-            ...new Set(pastOrders?.concat(getRecommendationsFromDrupal)),
-          ];
-          getWidgetPricesWithInclusions(
-            appenedRecommendations,
-            cityId,
-            string.diagnostics.homepagePastOrderRecommendations
-          );
-        }
+        const findRank =
+          !!drupalWidgetData &&
+          drupalWidgetData?.length > 0 &&
+          drupalWidgetData?.filter((item: any) => item?.diagnosticwidgetsRankOrder === '0');
+        const getRecommendationsFromDrupal = findRank?.[0]?.diagnosticWidgetData;
+        const appenedRecommendations = [
+          ...new Set(pastOrders?.concat(getRecommendationsFromDrupal)),
+        ];
+        getWidgetPricesWithInclusions(
+          appenedRecommendations,
+          cityId,
+          string.diagnostics.homepagePastOrderRecommendations
+        );
       } else {
         setDrupalRecommendationsAsPastRecommendations();
       }
@@ -929,12 +924,15 @@ export const Tests: React.FC<TestsProps> = (props) => {
             diagnosticPricing: _diagItems?.diagnosticPricing,
             packageCalculatedMrp: _diagItems?.packageCalculatedMrp,
             inclusions: _diagItems?.inclusions,
+            inclusionData: _diagItems?.inclusions,
           });
         }
       });
     });
-    _recommendedBookings?.length >= 6
-      ? setPastOrderRecommendations(_recommendedBookings)
+    const showPastRecommendations =
+      _recommendedBookings > 10 ? _recommendedBookings.slice(0, 10) : _recommendedBookings;
+    showPastRecommendations?.length >= 6
+      ? setPastOrderRecommendations(showPastRecommendations)
       : setPastOrderRecommendations([]);
     setPriceAvailable(true);
     setPastOrderRecommendationShimmer(false);
@@ -1385,7 +1383,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           props.navigation.push(AppRoutes.AddAddressNew, {
             KeyName: 'Update',
             addressDetails: address,
-            ComingFrom: AppRoutes.TestsCart,
+            ComingFrom: AppRoutes.CartPage,
             updateLatLng: true,
             source: 'Diagnostics Cart' as AddressSource,
           });
@@ -1752,6 +1750,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 navigation={props.navigation}
                 source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME}
                 sourceScreen={AppRoutes.Tests}
+                widgetHeading={data?.diagnosticWidgetTitle}
               />
             )}
           </>
@@ -1822,6 +1821,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 navigation={props.navigation}
                 source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME}
                 sourceScreen={AppRoutes.Tests}
+                widgetHeading={data?.diagnosticWidgetTitle}
               />
             )}
           </>
@@ -2269,6 +2269,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }
         const getItemNames = tests?.map((item) => item?.name)?.join(', ');
         const getItemIds = tests?.map((item) => Number(item?.id))?.join(', ');
+        const getInclusion = tests?.map((item) => Number(item?.inclusions));
+        const itemType =
+          !!getInclusion &&
+          getInclusion?.map((item: any) =>
+            item?.count > 1 ? DIAGNOSTICS_ITEM_TYPE.PACKAGE : DIAGNOSTICS_ITEM_TYPE.TEST
+          );
         setLoadingContext?.(false);
         DiagnosticAddToCartEvent(
           getItemNames,
@@ -2276,6 +2282,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
           0,
           0,
           DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PRESCRIPTION,
+          itemType?.join(','),
+          undefined,
           currentPatient,
           isDiagnosticCircleSubscription
         );
@@ -2649,7 +2657,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 isVertical={false}
                 navigation={props.navigation}
                 source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME}
-                sourceScreen={AppRoutes.Tests}
+                sourceScreen={'Recommendations'}
+                widgetHeading={drupalRecommendations?.[0]?.diagnosticWidgetTitle}
               />
             )}
           </>

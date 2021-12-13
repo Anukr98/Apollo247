@@ -398,6 +398,7 @@ export enum DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE {
   CART_PAGE = 'Cart page',
   CONSULT_ROOM = 'Consult Room',
   PHR = 'PHR Prescription',
+  DEEP_LINK = "Deeplink"
 }
 export const diagnosticsDisplayPrice = (item: DiagnosticsCartItem , isCircleMember : boolean) =>{
   const itemPackageMrp = item?.packageMrp!;

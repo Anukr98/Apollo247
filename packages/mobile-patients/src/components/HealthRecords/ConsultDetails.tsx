@@ -74,6 +74,7 @@ import {
 import {
   CleverTapEventName,
   CleverTapEvents,
+  DIAGNOSTICS_ITEM_TYPE,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -859,13 +860,20 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     pharmacyLocation,
   } = useAppCommonData();
 
-  function postDiagnosticAddToCart(itemId: string, itemName: string) {
+  function postDiagnosticAddToCart(itemId: string, itemName: string, inclusions: any) {
+    const itemType =
+      !!inclusions &&
+      inclusions?.map((item: any) =>
+        item?.count > 1 ? DIAGNOSTICS_ITEM_TYPE.PACKAGE : DIAGNOSTICS_ITEM_TYPE.TEST
+      );
     DiagnosticAddToCartEvent(
       itemName,
       itemId,
       0,
       0,
       DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PHR,
+      itemType?.join(','),
+      undefined,
       currentPatient,
       !!circleSubscriptionId
     );
@@ -921,8 +929,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         const unAvailableItems = unAvailableItemsArray.map((item) => item.itemname).join(', ');
         const getItemNames = tests?.map((item) => item?.name)?.join(', ');
         const getItemIds = tests?.map((item) => Number(item?.id))?.join(', ');
+        const getInclusionCount = tests?.map((item) => Number(item?.inclusions));
 
-        if (tests.length) {
+        if (tests?.length) {
           addMultipleTestCartItems!(tests);
           addMultipleTestEPrescriptions!([
             {
@@ -965,7 +974,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           });
         }
         setLoading?.(false);
-        postDiagnosticAddToCart(getItemIds, getItemNames);
+        postDiagnosticAddToCart(getItemIds, getItemNames, getInclusionCount);
       })
       .catch((e) => {
         setLoading?.(false);
