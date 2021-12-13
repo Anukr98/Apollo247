@@ -634,7 +634,6 @@ export const Login: React.FC<LoginProps> = (props) => {
         setLoading?.(true);
         await TruecallerAuthModule.authenticate()
           .then(async (res: any) => {
-            console.log(res);
             setLoading?.(false);
             if (res?.successful) {
               cleverTapEventForUserContinueThroughTrueCallerLogin();
@@ -643,7 +642,6 @@ export const Login: React.FC<LoginProps> = (props) => {
             } else handleTruecallerFailure(res);
           })
           .catch((err: any) => {
-            console.log(err, 'error');
             showAphAlert!({
               title: string.truecaller.errorTitle,
               description: 'Something went wrong while processing your request',
