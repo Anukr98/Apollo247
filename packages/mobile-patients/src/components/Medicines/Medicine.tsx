@@ -1471,9 +1471,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 Source: 'Home',
                 User_Type: pharmacyUserType,
               };
-              const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED] = {
+              const cleverTapEventAttributes : CleverTapEvents[CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED] = {
                 'Nav src': 'Home',
                 'User type': pharmacyUserType,
+                patient_name: currentPatient?.firstName,
+                patient_uhid: currentPatient?.uhid,
+                relation: currentPatient?.relation,
+                gender: currentPatient?.gender,
+                mobile_number: currentPatient?.mobileNumber,
+                age: moment().year() - moment(currentPatient?.dateOfBirth).year(),
+                customerId: currentPatient?.id
               };
               postCleverTapEvent(
                 CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED,

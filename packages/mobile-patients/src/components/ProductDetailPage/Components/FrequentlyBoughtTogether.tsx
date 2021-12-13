@@ -14,9 +14,12 @@ import {
   getDiscountPercentage,
   productsThumbnailUrl,
   getIsMedicine,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 export interface FrequentlyBoughtTogetherProps {
   boughtTogetherArray: MedicineProduct[];
@@ -45,6 +48,7 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
   const [totalPrice, setTotalPrice] = useState<number>(defaultTotalPrice || 0);
 
   const { setUserActionPayload } = useServerCart();
+  const { allCurrentPatients, currentPatient } = useAllCurrentPatients()
 
   const onPressIcon = (id: number, itemPrice: number, item) => {
     const newArr = [...selectedProductsId];
@@ -66,9 +70,21 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
     setSelectedProductsId(newArr);
   };
 
+  const postFrequentlyBoughtTogetherEvent = async (item: object) => {
+    const eventAttributes = {
+      item,
+      source: "Frequently Bought Together",
+      user: currentPatient?.firstName,
+      mobile_number: currentPatient?.mobileNumber,
+      customer_id: currentPatient?.id
+    }
+    postCleverTapEvent(CleverTapEventName.FRQUENTLY_BOUGHT_TOGETHER, eventAttributes)
+  }
+
   const onPressAdd = (selectedProductsArray) => {
     if (selectedProductsArray.length > 0) {
       selectedProductsArray.map((item) => {
+        postFrequentlyBoughtTogetherEvent(item)
         setUserActionPayload?.({
           medicineOrderCartLineItems: [
             {
