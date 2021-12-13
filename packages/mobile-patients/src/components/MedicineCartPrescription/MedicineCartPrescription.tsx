@@ -13,11 +13,15 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { PrescriptionType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import AsyncStorage from '@react-native-community/async-storage';
 import React, { useEffect, useRef } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Divider } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
+import { CleverTapEvents, CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { postCleverTapEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 export interface Props extends NavigationScreenProps {}
 
@@ -31,6 +35,8 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
     serverCartItems,
     cartPrescriptions,
     serverCartLoading,
+    pharmacyCircleAttributes,
+    serverCartAmount
   } = useShoppingCart();
   const {
     setUserActionPayload,
@@ -38,12 +44,16 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
     uploadEPrescriptionsToServerCart,
   } = useServerCart();
   const { showAphAlert, setLoading } = useUIElements();
+  const { currentPatient } = useAllCurrentPatients()
 
   useEffect(() => {
     setLoading?.(serverCartLoading);
   }, [serverCartLoading]);
 
   useEffect(() => {
+    navigation.addListener('didFocus', () => {
+      postPrescriptionEvent("pageViewed")
+    })
     setConsultProfile(null);
   }, []);
 
@@ -116,8 +126,41 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
     );
   };
 
+  const postPrescriptionEvent = async (eventType: "pageViewed" | "noPrescription") => {
+    const user_type = await AsyncStorage.getItem("PharmacyUserType");
+    let prescription_items: string[] = [], prescription_items_nos = 0, prescription_required = false;
+    serverCartItems?.forEach(item => {
+      if(item?.isPrescriptionRequired) {
+        prescription_items.push(item?.name)
+        prescription_items_nos++
+        prescription_required = true
+      }
+    })
+    const eventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_PRESCRIPTION_PAGE_VIEWED] = {
+      cartItems: serverCartItems,
+      order_value: serverCartAmount?.estimatedAmount,
+      shipping_charges: serverCartAmount?.deliveryCharges,
+      prescription_items,
+      prescription_items_nos,
+      user_type,
+      loggedIn: true,
+      circle_member: pharmacyCircleAttributes?.['Circle Membership Added'],
+      circle_membership_value: pharmacyCircleAttributes?.['Circle Membership Value'] ? pharmacyCircleAttributes?.['Circle Membership Value'] : 0,
+      prescription_required,
+      user: currentPatient?.firstName,
+      mobile_number: currentPatient?.mobileNumber,
+      "Customer id": currentPatient?.id
+    }
+    if(eventType === 'noPrescription')
+      postCleverTapEvent(CleverTapEventName.PHARMACY_DONT_HAVE_PRESCRIPTION, eventAttributes)
+    if(eventType === 'pageViewed')
+      postCleverTapEvent(CleverTapEventName.PHARMACY_PRESCRIPTION_PAGE_VIEWED, eventAttributes)
+  }
+
   const onPressContinue = async () => {
     try {
+      if(cartPrescriptionType === PrescriptionType.CONSULT)
+        postPrescriptionEvent("noPrescription")
       navigation.navigate(AppRoutes.ReviewCart);
       postEvent(cartPrescriptionType);
     } catch (error) {

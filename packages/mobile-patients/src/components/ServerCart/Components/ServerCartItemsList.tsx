@@ -10,6 +10,9 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 import { NudgeMessage } from '@aph/mobile-patients/src/components/Medicines/Components/NudgeMessage';
 import { ServerCartItem } from '@aph/mobile-patients/src/components/ServerCart/Components/ServerCartItem';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
+import { CleverTapEventName, CleverTapEvents } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import AsyncStorage from '@react-native-community/async-storage';
+import { postCleverTapEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 export interface ServerCartItemsListProps {
   screen: 'summary' | 'serverCart';
@@ -18,7 +21,7 @@ export interface ServerCartItemsListProps {
 }
 
 export const ServerCartItemsList: React.FC<ServerCartItemsListProps> = (props) => {
-  const { pharmaCartNudgeMessage, serverCartItems } = useShoppingCart();
+  const { pharmaCartNudgeMessage, serverCartItems, addresses, cartAddressId, pharmacyCircleAttributes, cartCoupon } = useShoppingCart();
   const { setUserActionPayload } = useServerCart();
   const { screen, onPressProduct, setloading } = props;
   const { currentPatient } = useAllCurrentPatients();
@@ -43,7 +46,26 @@ export const ServerCartItemsList: React.FC<ServerCartItemsListProps> = (props) =
     );
   };
 
-  const onUpdateQuantity = ({ sku }: ShoppingCartItem, unit: number) => {
+  const onUpdateQuantity = async ({ sku, name, isPrescriptionRequired, price, sellingPrice, ...props }: ShoppingCartItem, unit: number) => {
+    console.log(typeof isPrescriptionRequired)
+    const pincode = addresses.find(item => item?.id === cartAddressId)?.zipcode
+    const eventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CART_ITEM_QUANTITY_CHANGED] = {
+      quantity: unit,
+      id: sku,
+      name,
+      user: currentPatient?.firstName,
+      mobile_number: currentPatient?.mobileNumber,
+      user_type: await AsyncStorage.getItem("PharmacyUserType"),
+      circle_member: pharmacyCircleAttributes?.['Circle Membership Added'],
+      circle_membership_value: pharmacyCircleAttributes?.['Circle Membership Value'] ? pharmacyCircleAttributes?.['Circle Membership Value'] : 0,
+      prescriptionRequired: isPrescriptionRequired === '1' ? true : false,
+      total_items_in_cart: serverCartItems?.length,
+      price,
+      special_price: sellingPrice ? sellingPrice : price,
+      pincode,
+      coupon: cartCoupon ? cartCoupon?.coupon : null
+    }
+    postCleverTapEvent(CleverTapEventName.PHARMACY_CART_ITEM_QUANTITY_CHANGED, eventAttributes)
     setUserActionPayload?.({
       medicineOrderCartLineItems: [
         {
