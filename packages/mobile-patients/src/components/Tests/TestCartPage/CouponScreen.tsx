@@ -90,6 +90,7 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
         setLoading?.(false);
         setCouponsList(getCoupons);
       } else {
+        setLoading?.(false);
         setCouponsList([]);
       }
     } catch (error) {
