@@ -210,17 +210,20 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
   };
 
   const postChangeAddressEvent = async () => {
-    const currentAddress = addresses?.find(item => item?.id === cartAddressId)
-    const eventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CART_CHANGE_ADDRESS_CLICKED] = {
-      currentAddress: formatAddress(currentAddress!),
-      pincode: currentAddress?.zipcode,
-      user: currentPatient?.firstName,
-      mobile_number: currentAddress?.mobileNumber ? currentAddress?.mobileNumber : "",
-      user_type: await AsyncStorage.getItem("PharmacyUserType"),
-      circle_member: pharmacyCircleAttributes?.['Circle Membership Added'],
-      circle_membership_value: pharmacyCircleAttributes?.['Circle Membership Value'] ? pharmacyCircleAttributes?.['Circle Membership Value'] : 0,
+    try {
+      const currentAddress = addresses?.find(item => item?.id === cartAddressId)
+      const eventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CART_CHANGE_ADDRESS_CLICKED] = {
+        currentAddress: formatAddress(currentAddress!),
+        pincode: currentAddress?.zipcode,
+        user: currentPatient?.firstName,
+        mobile_number: currentAddress?.mobileNumber ? currentAddress?.mobileNumber : "",
+        user_type: await AsyncStorage.getItem("PharmacyUserType"),
+        circle_member: pharmacyCircleAttributes?.['Circle Membership Added'],
+        circle_membership_value: pharmacyCircleAttributes?.['Circle Membership Value'] ? pharmacyCircleAttributes?.['Circle Membership Value'] : 0,
+      }
+      postCleverTapEvent(CleverTapEventName.PHARMACY_CART_CHANGE_ADDRESS_CLICKED, eventAttributes);
     }
-    postCleverTapEvent(CleverTapEventName.PHARMACY_CART_CHANGE_ADDRESS_CLICKED, eventAttributes);
+    catch(err) {}
   }
 
   async function showAddressPopup() {
