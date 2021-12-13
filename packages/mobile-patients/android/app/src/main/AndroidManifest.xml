@@ -150,6 +150,14 @@
                     android:scheme="https"
                     android:host="www.apollo247.com"
                     android:pathPrefix="/pay-online-consult" />
+                 <data 
+                    android:scheme="https"
+                    android:host="www.apollo247.com"
+                    android:pathPrefix="/consultpackagelist" />
+                <data 
+                    android:scheme="https"
+                    android:host="www.apollo247.com"
+                    android:pathPrefix="/consultpackage" />
             </intent-filter>
 
             <!--  support sharing images into app-->

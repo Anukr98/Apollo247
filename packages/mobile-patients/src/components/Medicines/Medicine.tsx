@@ -345,7 +345,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const IMG_HEIGHT_DEFAULT = 175;
   const [imgHeight, setImgHeight] = useState(IMG_HEIGHT_DEFAULT);
   const [bannerLoading, setBannerLoading] = useState(false);
-  const defaultAddress = addresses.find((item) => item.id == cartAddressId);
+  const defaultAddress = addresses.find((item) => item?.id == cartAddressId);
   const hasLocation = !!cartLocationDetails?.pincode || !!defaultAddress;
   const pharmacyPincode = cartLocationDetails?.pincode || defaultAddress?.zipcode;
   const [isFocused, setIsFocused] = useState<boolean>(false);
@@ -564,7 +564,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       isPharmacyPincodeServiceable ? '' : 'Services unavailable. Change delivery location.'
     );
     setPharmacyLocationServiceable!(!!isPharmacyPincodeServiceable);
-    if (!isPharmacyPincodeServiceable && asyncPincode?.pincode) callNearbyStoreApi();
+    if (!isPharmacyPincodeServiceable && pharmacyPincode) callNearbyStoreApi();
   }, [isPharmacyPincodeServiceable]);
 
   const callNearbyStoreApi = () => {
@@ -598,7 +598,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         paddingLeft: 12,
       },
     });
-    getNearByStoreDetailsApi(asyncPincode?.pincode)
+    getNearByStoreDetailsApi(pharmacyPincode)
       .then((response: any) => {
         showAphAlert!({
           title: 'We’ve got you covered !!',
@@ -681,7 +681,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const CalltheNearestPharmacyEvent = () => {
     let eventAttributes: WebEngageEvents[WebEngageEventName.CALL_THE_NEAREST_PHARMACY] = {
-      pincode: asyncPincode?.pincode,
+      pincode: pharmacyPincode,
       'Mobile Number': currentPatient.mobileNumber,
     };
     postWebEngageEvent(WebEngageEventName.CALL_THE_NEAREST_PHARMACY, eventAttributes);
@@ -815,7 +815,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   async function fetchAddress() {
     try {
       if (addresses?.length) {
-        const deliveryAddress = addresses.find((item) => item.id == cartAddressId);
+        const deliveryAddress = addresses.find((item) => item?.id == cartAddressId);
         if (deliveryAddress) {
           updateServiceability(deliveryAddress?.zipcode!);
           const formattedLocation = formatAddressToLocation(deliveryAddress);
@@ -837,7 +837,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
       const addressList = (response.data.getPatientAddressList.addressList as Address[]) || [];
       setAddresses!(addressList);
-      const deliveryAddress = addressList.find((item) => item.id == cartAddressId);
+      const deliveryAddress = addressList.find((item) => item?.id == cartAddressId);
       if (deliveryAddress) {
         updateServiceability(deliveryAddress?.zipcode!);
         const formattedLocation = formatAddressToLocation(deliveryAddress);
@@ -872,7 +872,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       const patientAddress = data?.makeAdressAsDefault?.patientAddress;
       const updatedAddresses = addresses.map((item) => ({
         ...item,
-        defaultAddress: patientAddress?.id == item.id ? patientAddress?.defaultAddress : false,
+        defaultAddress: patientAddress?.id == item?.id ? patientAddress?.defaultAddress : false,
       }));
       setAddresses!(updatedAddresses);
       const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
@@ -1249,7 +1249,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       text.length > count ? `${text.slice(0, count)}...` : text;
 
     const renderDeliverToLocationCTA = () => {
-      const deliveryAddress = addresses.find((item) => item.id == cartAddressId);
+      const deliveryAddress = addresses.find((item) => item?.id == cartAddressId);
       const location = cartLocationDetails?.pincode
         ? `${formatText(cartLocationDetails?.city || cartLocationDetails?.state || '', 18)} ${
             cartLocationDetails?.pincode
@@ -1366,20 +1366,20 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
       postWebEngageEvent(WebEngageEventName.PHARMACY_BANNER_CLICK, eventAttributes);
       postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_BANNER, cleverTapEventAttributes);
-      if (item.category_id) {
+      if (item?.category_id) {
         props.navigation.navigate(AppRoutes.MedicineListing, {
-          category_id: item.category_id,
-          title: item.name || 'Products',
+          category_id: item?.category_id,
+          title: item?.name || 'Products',
         });
-      } else if (item.sku) {
+      } else if (item?.sku) {
         props.navigation.navigate(AppRoutes.ProductDetailPage, {
-          sku: item.sku,
+          sku: item?.sku,
           movedFrom: ProductPageViewedSource.BANNER,
         });
       }
     };
 
-    let imageUrl = productsThumbnailUrl(item.image) + '?imwidth=' + Math.floor(winWidth);
+    let imageUrl = productsThumbnailUrl(item?.image) + '?imwidth=' + Math.floor(winWidth);
 
     return (
       <TouchableOpacity activeOpacity={1} onPress={handleOnPress}>
@@ -1662,10 +1662,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           data={categories}
           renderItem={({ item, index }) => {
             return renderCatalogCard(
-              item.title,
-              productsThumbnailUrl(item.image_url),
+              item?.title,
+              productsThumbnailUrl(item?.image_url),
               () => {
-                postwebEngageCategoryClickedEvent(item.category_id, item.title, title, 'Home');
+                postwebEngageCategoryClickedEvent(item?.category_id, item?.title, title, 'Home');
 
                 getBrandPagesData(item?.url_key)
                   .then(({ data }) => {
@@ -1674,21 +1674,21 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                       props.navigation.navigate(AppRoutes.BrandPages, {
                         movedFrom: 'home',
                         brandData: response?.data,
-                        category_id: item.category_id,
-                        title: item.title || 'Products',
+                        category_id: item?.category_id,
+                        title: item?.title || 'Products',
                       });
                     } else {
                       props.navigation.navigate(AppRoutes.MedicineListing, {
-                        category_id: item.category_id,
-                        title: item.title || 'Products',
+                        category_id: item?.category_id,
+                        title: item?.title || 'Products',
                       });
                     }
                   })
                   .catch(({ error }) => {
                     CommonBugFender('MedicinePage_fetchBrandPageData', error);
                     props.navigation.navigate(AppRoutes.MedicineListing, {
-                      category_id: item.category_id,
-                      title: item.title || 'Products',
+                      category_id: item?.category_id,
+                      title: item?.title || 'Products',
                     });
                   });
               },
@@ -1787,9 +1787,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => {
-                  postwebEngageCategoryClickedEvent(item.category_id, 'Banner', title, 'Home');
+                  postwebEngageCategoryClickedEvent(item?.category_id, 'Banner', title, 'Home');
                   props.navigation.navigate(AppRoutes.MedicineListing, {
-                    category_id: item.category_id,
+                    category_id: item?.category_id,
                     title: title,
                   });
                 }}
@@ -1806,7 +1806,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               >
                 <ImageNative
                   source={{
-                    uri: productsThumbnailUrl(item.image_url),
+                    uri: productsThumbnailUrl(item?.image_url),
                   }}
                   resizeMode="contain"
                   style={{
@@ -1895,11 +1895,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           horizontal
           data={shopByBrand}
           renderItem={({ item, index }) => {
-            const imgUrl = productsThumbnailUrl(item.image_url);
+            const imgUrl = productsThumbnailUrl(item?.image_url);
             return renderBrandCard(
               imgUrl,
               () => {
-                postwebEngageCategoryClickedEvent(item.category_id, item.title, title, 'Home');
+                postwebEngageCategoryClickedEvent(item?.category_id, item?.title, title, 'Home');
 
                 getBrandPagesData(item?.url_key)
                   .then(({ data }) => {
@@ -1908,21 +1908,21 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                       props.navigation.navigate(AppRoutes.BrandPages, {
                         movedFrom: 'home',
                         brandData: response?.data,
-                        category_id: item.category_id,
-                        title: item.title || 'Products',
+                        category_id: item?.category_id,
+                        title: item?.title || 'Products',
                       });
                     } else {
                       props.navigation.navigate(AppRoutes.MedicineListing, {
-                        category_id: item.category_id,
-                        title: item.title || 'Products',
+                        category_id: item?.category_id,
+                        title: item?.title || 'Products',
                       });
                     }
                   })
                   .catch(({ error }) => {
                     CommonBugFender('MedicinePage_fetchBrandPageData', error);
                     props.navigation.navigate(AppRoutes.MedicineListing, {
-                      category_id: item.category_id,
-                      title: item.title || 'Products',
+                      category_id: item?.category_id,
+                      title: item?.title || 'Products',
                     });
                   });
               },
@@ -2110,7 +2110,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     comingFromSearch: boolean,
     cleverTapSearchSuccessEventAttributes: object
   ) => {
-    const { sku } = item;
+    const { sku, category_id } = item;
     setItemsLoading({ ...itemsLoading, [sku]: true });
     addPharmaItemToCart(
       formatToCartItem(item),
@@ -2131,7 +2131,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const getItemQuantity = (id: string) => {
-    const foundItem = serverCartItems?.find((item) => item.sku == id);
+    const foundItem = serverCartItems?.find((item) => item?.sku == id);
     return foundItem ? foundItem.quantity : 0;
   };
 
@@ -2191,11 +2191,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           if (item?.url_key || item?.sku) {
             props.navigation.navigate(AppRoutes.ProductDetailPage, {
               urlKey: item?.url_key,
-              sku: item.sku,
+              sku: item?.sku,
               movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
             });
-            const pincode = asyncPincode?.pincode || pinCode || pharmacyPincode;
-            const availability = getAvailabilityForSearchSuccess(pincode, item?.sku);
+            const availability = getAvailabilityForSearchSuccess(pharmacyPincode, item?.sku);
             const discount = getDiscountPercentage(item?.price, item?.special_price);
             const discountPercentage = discount ? discount + '%' : '0%';
             const cleverTapEventAttributes = {
@@ -2397,7 +2396,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       'whatsappRedirectionBanner',
     ];
     const sectionsView = metaData
-      .filter((item) => item.visible)
+      .filter((item) => item?.visible)
       .sort((a, b) => Number(a.section_position) - Number(b.section_position))
       .map(({ section_key, section_name }) => {
         const isStaticSection = staticSectionKeys.includes(section_key);

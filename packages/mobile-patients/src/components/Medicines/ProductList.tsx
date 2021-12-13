@@ -141,7 +141,7 @@ export const ProductList: React.FC<Props> = ({
       });
     }
     if (comingFromSearch !== false) {
-      const pincode = asyncPincode?.pincode || pharmacyPincode;
+      const pincode = cartLocationDetails?.pincode;
       const availability = getAvailabilityForSearchSuccess(pincode, item?.sku);
       const discount = getDiscountPercentage(item?.price, item?.special_price);
       const discountPercentage = discount ? discount + '%' : '0%';
