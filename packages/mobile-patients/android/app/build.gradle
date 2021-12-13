@@ -134,7 +134,6 @@ android {
     }
 
     defaultConfig {
-        multiDexEnabled true
         applicationId "com.apollo.patientapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
@@ -222,7 +221,6 @@ android {
 }
 
 dependencies {
-    implementation "com.truecaller.android.sdk:truecaller-sdk:2.6.0"
     implementation project(':react-native-receive-sharing-intent')
     implementation project(':react-native-user-agent')
     implementation project(':react-native-in-app-review')
