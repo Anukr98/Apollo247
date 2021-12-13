@@ -90,7 +90,7 @@ import {
   Platform,
 } from 'react-native';
 import { Image } from 'react-native-elements';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, NavigationEvents } from 'react-navigation';
 import {
   CALL_TO_ORDER_CTA_PAGE_ID,
   DIAGNOSTIC_ORDER_STATUS,
@@ -267,7 +267,11 @@ export interface TestsProps
   }> {}
 
 export const Tests: React.FC<TestsProps> = (props) => {
-  const { setAddresses: setMedAddresses, pharmacyCircleAttributes } = useShoppingCart();
+  const {
+    setAddresses: setMedAddresses,
+    pharmacyCircleAttributes,
+    circleSubscriptionId,
+  } = useShoppingCart();
   const {
     cartItems,
     isDiagnosticCircleSubscription,
@@ -2496,8 +2500,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         currentPatient,
         getUserType(allCurrentPatients),
         'Dignostic Page',
-        circleMemberAtt,
-        deviceId
+        !!circleSubscriptionId ? 'True' : 'False'
       );
     };
 
@@ -2844,12 +2847,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
       'Nav src': homeScreenAttributes?.Source,
       Scrolls: scrollCount.current,
     };
-
     postCleverTapEvent(CleverTapEventName.SCREEN_SCROLLED, eventAttributes);
   };
 
   return (
     <View style={{ flex: 1 }}>
+      <NavigationEvents
+        onDidFocus={() => {
+          scrollCount.current = 0;
+        }}
+        onDidBlur={postScrollScreenEvent}
+      />
       <SafeAreaView style={{ ...viewStyles.container }}>
         {pageLoading ? (
           <View style={{ backgroundColor: colors.WHITE }}>
@@ -2915,10 +2923,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 keyboardShouldPersistTaps="always"
                 showsVerticalScrollIndicator={false}
                 nestedScrollEnabled={true}
-                onScroll={() => {
+                onScroll={(event) => {
                   setSlideCallToOrder(true);
-                  scrollCount.current += 1;
-                  postScrollScreenEvent();
+                  //increments only for down scroll
+                  const currentOffset = event.nativeEvent.contentOffset?.y;
+                  currentOffset > (this.offset || 0) && (scrollCount.current += 1);
+                  this.offset = currentOffset;
                 }}
               >
                 {renderSections()}
