@@ -4060,6 +4060,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           successCallback={() => {
             getUserSubscriptionsWithBenefits();
           }}
+          postHomeBannerEvent={postHomeBannerEvent}
           circleEventSource={'Landing Home Page banners'}
         />
       );
@@ -4937,9 +4938,34 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   async function _navigateProHealth() {
+    postHomeBannerEvent(1, true);
     //call the jwt token again.
     regenerateJWTToken('bookings');
   }
+
+  const postHomeBannerEvent = (
+    bannerIndex: number,
+    isProHealth: boolean,
+    bannerId?: string,
+    bannerTitle?: string
+  ) => {
+    const eventAttributes = {
+      User_Type: getUserType(allCurrentPatients),
+      'Patient Name': currentPatient?.firstName,
+      'Patient UHID': currentPatient?.uhid,
+      'Patient age': getAge(currentPatient?.dateOfBirth),
+      'Circle Member': circleSubscriptionId ? 'True' : 'False',
+      'Customer ID': currentPatient?.id,
+      'Patient gender': currentPatient?.gender,
+      'Mobile number': currentPatient?.mobileNumber,
+      'Page name': 'HomePage',
+      'Section Name': isProHealth ? 'Pro health' : 'Homepage Banner',
+      'Banner position': String(bannerIndex),
+      'Banner id': isProHealth ? 'NA' : bannerId,
+      'Banner title': isProHealth ? 'NA' : bannerTitle,
+    };
+    postCleverTapEvent(CleverTapEventName.BANNER_CLICKED_VIEWED, eventAttributes);
+  };
 
   const regenerateJWTToken = async (source: string, id?: string) => {
     let deviceType =

@@ -355,6 +355,7 @@ export enum CleverTapEventName {
   HOMEPAGE_SEARCH_BAR_QUERY_INPUT = 'Homepage Search Bar Query Input',
   SCREEN_SCROLLED = 'Screen Scrolled',
   SEARCH_BAR_CLICKED = 'Search bar clicked',
+  BANNER_CLICKED_VIEWED = 'Banner clicked / Viewed',
 
   FAQs_ARTICLES_CLICKED = 'Vaccination FAQs & Articles clicked',
   VACCINATION_CALL_A_DOCTOR_CLICKED = 'Vaccination Call a doctor clicked',
