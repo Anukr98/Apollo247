@@ -18,7 +18,7 @@ export const CartHeader: React.FC<CartHeaderProps> = (props) => {
   const shoppingCart = useShoppingCart()
   const { currentPatient } = useAllCurrentPatients()
 
-  const postPharmacyCartAddItemsClicked = async () => {
+  const postPharmacyCartAddItemsClickedEvent = async () => {
     let prescription_required = false, total_discount = 0, subtotal = 0;
     for (let i = 0; i < shoppingCart?.serverCartItems?.length; i++) {
       if (shoppingCart?.serverCartItems[i]?.isPrescriptionRequired === '1') {
@@ -57,7 +57,7 @@ export const CartHeader: React.FC<CartHeaderProps> = (props) => {
         activeOpacity={0.5}
         onPress={() => {
           // setCoupon!(null);
-          postPharmacyCartAddItemsClicked()
+          postPharmacyCartAddItemsClickedEvent()
           navigateToScreenWithEmptyStack(props.navigation, AppRoutes.Medicine);
         }}
       >

@@ -45,10 +45,10 @@ export const ServerCartItemsList: React.FC<ServerCartItemsListProps> = (props) =
       </View>
     );
   };
-
-  const onUpdateQuantity = async ({ sku, name, isPrescriptionRequired, price, sellingPrice, ...props }: ShoppingCartItem, unit: number) => {
-    console.log(typeof isPrescriptionRequired)
-    const pincode = addresses.find(item => item?.id === cartAddressId)?.zipcode
+  
+  const postUpdateQuantityEvent = async (sku, name, isPrescriptionRequired, price, sellingPrice, unit) => {
+    try {
+      const pincode = addresses.find(item => item?.id === cartAddressId)?.zipcode
     const eventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CART_ITEM_QUANTITY_CHANGED] = {
       quantity: unit,
       id: sku,
@@ -66,6 +66,12 @@ export const ServerCartItemsList: React.FC<ServerCartItemsListProps> = (props) =
       coupon: cartCoupon ? cartCoupon?.coupon : null
     }
     postCleverTapEvent(CleverTapEventName.PHARMACY_CART_ITEM_QUANTITY_CHANGED, eventAttributes)
+    }
+    catch(err) {}
+  }
+
+  const onUpdateQuantity = async ({ sku, name, isPrescriptionRequired, price, sellingPrice }: ShoppingCartItem, unit: number) => {
+    postUpdateQuantityEvent(sku, name, isPrescriptionRequired, price, sellingPrice, unit)
     setUserActionPayload?.({
       medicineOrderCartLineItems: [
         {
