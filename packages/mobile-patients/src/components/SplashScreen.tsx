@@ -208,7 +208,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     DeviceEventEmitter.addListener('accept', (params) => {
       if (getCurrentRoute() !== AppRoutes.ChatRoom) {
         voipCallType.current = params.call_type;
-        callPermissions();
+        callPermissions(() => {}, undefined, currentPatient);
         getAppointmentDataAndNavigate(params.appointment_id, true);
       }
     });

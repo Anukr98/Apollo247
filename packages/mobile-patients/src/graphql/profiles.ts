@@ -225,9 +225,16 @@ export const GET_PATIENT_PAST_SEARCHES = gql`
       typeId
       name
       image
+      languages
       specialty
+      specialtyId
       symptoms
       allowBookingRequest
+      facility {
+        city
+        name
+      }
+      fee
     }
   }
 `;

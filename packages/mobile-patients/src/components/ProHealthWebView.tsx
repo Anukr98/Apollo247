@@ -18,6 +18,7 @@ import {
 import { WebView } from 'react-native-webview';
 import { NavigationRoute, NavigationScreenProp, NavigationScreenProps } from 'react-navigation';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { useAllCurrentPatients } from '../hooks/authHooks';
 
 export interface ProHealthWebViewProps
   extends NavigationScreenProps<{
@@ -33,6 +34,7 @@ export const ProHealthWebView: React.FC<ProHealthWebViewProps> = (props) => {
   const [canGoBack, setCanGoBack] = useState<boolean>(false);
   const [token, setToken] = useState<string | null>('');
   const [userMobileNumber, setUserMobileNumber] = useState<string | null>('');
+  const { currentPatient } = useAllCurrentPatients();
 
   useEffect(() => {
     const saveSessionValues = async () => {
@@ -65,7 +67,13 @@ export const ProHealthWebView: React.FC<ProHealthWebViewProps> = (props) => {
   const requestMicrophonePermission = () => {
     if (microPhonePermission) {
       setTimeout(() => {
-        permissionHandler(string.microphone, string.enableMicrophoneToRecordCough, () => {});
+        permissionHandler(
+          string.microphone,
+          string.enableMicrophoneToRecordCough,
+          () => {},
+          undefined,
+          currentPatient
+        );
       }, 500);
     }
   };

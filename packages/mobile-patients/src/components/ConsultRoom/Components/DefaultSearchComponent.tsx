@@ -14,6 +14,7 @@ import {
   postConsultPastSearchSpecialityClicked,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { useShoppingCart } from '../../ShoppingCartProvider';
 
 interface defaultSearchProps extends NavigationScreenProps {
   consultedDoctors: any;
@@ -43,6 +44,7 @@ export const DefaultSearchComponent: React.FC<defaultSearchProps> = (props) => {
   } = props;
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { locationDetails } = useAppCommonData();
+  const { circleSubscriptionId, circleSubPlanId } = useShoppingCart();
 
   const renderTrackSymptoms = () => {
     return (
@@ -113,6 +115,16 @@ export const DefaultSearchComponent: React.FC<defaultSearchProps> = (props) => {
                 onPress={() => {
                   if (isSearchTypeDoctor) {
                     CommonLogEvent(AppRoutes.DoctorSearch, 'Doctor Search Move clicked');
+                    postConsultPastSearchSpecialityClicked(
+                      currentPatient,
+                      allCurrentPatients,
+                      item,
+                      {
+                        circleSubscriptionId: circleSubscriptionId,
+                        circleSubPlanId: circleSubPlanId,
+                      },
+                      true
+                    );
                     props.navigation.navigate(AppRoutes.SlotSelection, {
                       doctorId: item?.typeId,
                       callSaveSearch: 'false',
@@ -128,7 +140,11 @@ export const DefaultSearchComponent: React.FC<defaultSearchProps> = (props) => {
                       postConsultPastSearchSpecialityClicked(
                         currentPatient,
                         allCurrentPatients,
-                        item
+                        item,
+                        {
+                          circleSubscriptionId: circleSubscriptionId,
+                          circleSubPlanId: circleSubPlanId,
+                        }
                       );
                       if (item?.typeId && item?.name) {
                         postSpecialityEvent?.(item?.name, item?.typeId, 'Past searches');
@@ -150,7 +166,11 @@ export const DefaultSearchComponent: React.FC<defaultSearchProps> = (props) => {
                           postConsultPastSearchSpecialityClicked(
                             currentPatient,
                             allCurrentPatients,
-                            item
+                            item,
+                            {
+                              circleSubscriptionId: circleSubscriptionId,
+                              circleSubPlanId: circleSubPlanId,
+                            }
                           );
                           if (item?.typeId && item?.name) {
                             postSpecialityEvent?.(item?.name, item?.typeId, 'Past searches');

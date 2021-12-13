@@ -70,6 +70,7 @@ import {
   postCleverTapPHR,
   postCleverTapEvent,
   getCleverTapCircleMemberValues,
+  removeObjectNullUndefinedProperties,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   CleverTapEventName,
@@ -1200,6 +1201,18 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     ) : null;
   };
 
+  const postOrderMedsPHREvent = () => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_ORDER_PHR_MEDS] = {
+      ...caseSheetDetails,
+      ...removeObjectNullUndefinedProperties(currentPatient),
+    };
+    postCleverTapEvent(CleverTapEventName.CONSULT_ORDER_PHR_MEDS, eventAttributes);
+  };
+
+  const orderMedicinesHandler = () => {
+    postOrderMedsPHREvent();
+    onAddToCart();
+  };
   const renderPrescriptions = () => {
     return (
       <>
@@ -1236,7 +1249,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                     </>
                   );
               })}
-              <TouchableOpacity style={styles.tatContainer} onPress={onAddToCart}>
+              <TouchableOpacity style={styles.tatContainer} onPress={orderMedicinesHandler}>
                 {tatContent.length ? (
                   <View>
                     {priscTatText()}
@@ -1404,12 +1417,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     if (caseSheetDetails!.doctorType !== 'JUNIOR' && g(caseSheetDetails, 'blobName')) {
       return (
         <View style={styles.bottomButtonContainer}>
-          <TouchableOpacity
-            style={styles.orderMedicinesButton}
-            onPress={() => {
-              onAddToCart();
-            }}
-          >
+          <TouchableOpacity style={styles.orderMedicinesButton} onPress={orderMedicinesHandler}>
             <Text style={styles.orderMedicineText}>ORDER MEDICINES NOW</Text>
           </TouchableOpacity>
         </View>

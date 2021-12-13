@@ -1354,7 +1354,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                   postConsultPastSearchSpecialityClicked(
                     currentPatient,
                     allCurrentPatients,
-                    rowData
+                    rowData,
+                    { circleSubscriptionId: circleSubscriptionId, circleSubPlanId: circleSubPlanId }
                   );
                   onClickSearch(
                     rowData?.typeId,
@@ -1377,7 +1378,11 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                       postConsultPastSearchSpecialityClicked(
                         currentPatient,
                         allCurrentPatients,
-                        rowData
+                        rowData,
+                        {
+                          circleSubscriptionId: circleSubscriptionId,
+                          circleSubPlanId: circleSubPlanId,
+                        }
                       );
                       onClickSearch(
                         rowData?.typeId,
@@ -1850,11 +1855,13 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       | CleverTapEvents[CleverTapEventName.SYMPTOM_TRACKER_CLICKED_ON_SPECIALITY_SCREEN] = {
       'Patient UHID': g(currentPatient, 'uhid'),
       'Patient ID': g(currentPatient, 'id'),
-      'Patient Name': g(currentPatient, 'firstName'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
-      'Date of Birth': g(currentPatient, 'dateOfBirth'),
-      Email: g(currentPatient, 'emailAddress'),
+      'Patient name': g(currentPatient, 'firstName'),
+      'Mobile number': g(currentPatient, 'mobileNumber'),
       Relation: g(currentPatient, 'relation'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
     };
     postWebEngageEvent(
       WebEngageEventName.SYMPTOM_TRACKER_CLICKED_ON_SPECIALITY_SCREEN,

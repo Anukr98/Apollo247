@@ -7,7 +7,16 @@ import React, { FC } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import PaymentConstants from '../../constants';
+import PaymentConstants from '@aph/mobile-patients/src/components/MyPayments/constants';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { getUserType, postCleverTapEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+  HomeScreenAttributes,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import moment from 'moment';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 interface FooterButtonProps {
   item: any;
@@ -16,6 +25,8 @@ interface FooterButtonProps {
 }
 const FooterButton: FC<FooterButtonProps> = (props) => {
   const { SUCCESS, FAILED, REFUND } = PaymentConstants;
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+  const { circleSubscriptionId, circleSubPlanId } = useShoppingCart();
   const statusItemValues = () => {
     const { paymentFor, item } = props;
     let status = 'PENDING';
@@ -84,13 +95,47 @@ const FooterButton: FC<FooterButtonProps> = (props) => {
       }
     }
   };
+
+  const postGoToConsultRoomEvent = (item: any) => {
+    const commonAttributes = {
+      'Patient name': `${currentPatient?.firstName} ${currentPatient?.lastName}` || '',
+      'Patient UHID': currentPatient?.uhid || '',
+      'Patient gender': currentPatient?.gender || '',
+      'Patient age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
+    };
+    const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_GO_TO_CONSULT_ROOM_CLICKED] = {
+      ...commonAttributes,
+      'Doctor name': item?.doctor?.name || '',
+      'Doctor ID': item?.id || '',
+      Source: 'My Account',
+      'Appointment datetime': moment(item?.appointmentDateTime).toDate(),
+      'Display ID': item?.displayId,
+      'Consult mode': item?.appointmentType || '',
+    };
+
+    const activeAppointmentsAttributes: HomeScreenAttributes = {
+      ...commonAttributes,
+      'Mobile Number': currentPatient?.mobileNumber,
+      'Customer ID': currentPatient?.id,
+      'Nav src': 'My Account',
+      'Circle Member': !!circleSubscriptionId,
+      'Circle Plan type': circleSubPlanId || '',
+      'Page Name': 'Payment Status',
+      User_Type: getUserType(allCurrentPatients),
+      Relation: currentPatient?.relation || '',
+    };
+    postCleverTapEvent(CleverTapEventName.CONSULT_ACTIVE_APPOINTMENTS, activeAppointmentsAttributes);
+    postCleverTapEvent(CleverTapEventName.CONSULT_GO_TO_CONSULT_ROOM_CLICKED, eventAttributes);
+  };
+
   const navigateTo = () => {
     const { status, orderID } = statusItemValues();
-    const { paymentFor } = props;
+    const { paymentFor, item } = props;
     if (paymentFor === 'consult') {
       if (status === FAILED) {
         props.navigationProps.navigate(AppRoutes.DoctorSearch, {});
       } else if (status === SUCCESS) {
+        postGoToConsultRoomEvent(item);
         props.navigationProps.navigate(AppRoutes.Consult, {});
       } else {
         props.navigationProps.navigate(AppRoutes.ConsultRoom, {});

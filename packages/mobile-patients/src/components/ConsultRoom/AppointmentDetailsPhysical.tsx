@@ -80,6 +80,7 @@ import { NavigationScreenProps } from 'react-navigation';
 import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments } from '../../graphql/types/getPatientAllAppointments';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { useShoppingCart } from '../ShoppingCartProvider';
 
 const { width, height } = Dimensions.get('window');
 
@@ -438,6 +439,7 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
   const { getPatientApiCall } = useAuth();
   const minutes = moment.duration(moment(data.appointmentDateTime).diff(new Date())).asMinutes();
   const [appointmentDiffMin, setAppointmentDiffMin] = useState<number>(0);
+  const { circleSubscriptionId, circleSubPlanId } = useShoppingCart();
   let cancelAppointmentTitle = '';
   if (appointmentDiffMin >= 15) {
     cancelAppointmentTitle =
@@ -1020,7 +1022,8 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
                 CleverTapEventName.CONSULT_CANCEL_CLICKED_BY_PATIENT,
                 data,
                 currentPatient,
-                secretaryData
+                secretaryData,
+                { circleSubscriptionId: circleSubscriptionId, circleSubPlanId: circleSubPlanId }
               );
               CommonLogEvent(AppRoutes.AppointmentDetailsPhysical, 'CANCEL CONSULT_CLICKED');
               setShowCancelPopup(false);

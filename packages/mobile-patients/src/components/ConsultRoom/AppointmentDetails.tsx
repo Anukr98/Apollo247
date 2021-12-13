@@ -77,6 +77,7 @@ import { NavigationScreenProps } from 'react-navigation';
 import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments } from '../../graphql/types/getPatientAllAppointments';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { useShoppingCart } from '../ShoppingCartProvider';
 
 const { width, height } = Dimensions.get('window');
 
@@ -176,6 +177,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
   const minutes = moment.duration(moment(data.appointmentDateTime).diff(new Date())).asMinutes();
+  const { circleSubscriptionId, circleSubPlanId } = useShoppingCart();
 
   useEffect(() => {
     getSecretaryData();
@@ -815,7 +817,11 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                       CleverTapEventName.CONSULT_CANCEL_CLICKED_BY_PATIENT,
                       data,
                       currentPatient,
-                      secretaryData
+                      secretaryData,
+                      {
+                        circleSubscriptionId: circleSubscriptionId,
+                        circleSubPlanId: circleSubPlanId,
+                      }
                     );
                     CommonLogEvent(
                       AppRoutes.AppointmentDetails,

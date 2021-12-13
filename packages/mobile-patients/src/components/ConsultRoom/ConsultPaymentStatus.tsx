@@ -346,7 +346,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         !locationDetails && askLocationPermission();
       } else {
         overlyCallPermissions(
-          currentPatient.firstName,
+          currentPatient,
           doctorName,
           showAphAlert,
           hideAphAlert,
@@ -858,10 +858,31 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     }
   };
 
+  const postGoToConsultRoomEvent = () => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_GO_TO_CONSULT_ROOM_CLICKED] = {
+      'Patient name': `${currentPatient?.firstName} ${currentPatient?.lastName}` || '',
+      'Patient UHID': currentPatient?.uhid || '',
+      'Doctor name': orderDetails?.doctor?.fullName || '',
+      'Speciality name': orderDetails?.doctor?.specialty?.name || '',
+      'Doctor ID': orderDetails?.doctorID || '',
+      'Speciality ID': orderDetails?.doctor?.specialty?.id || '',
+      'Patient gender': currentPatient?.gender || '',
+      'Patient age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
+      'Hospital name': orderDetails?.doctor?.doctorHospital?.[0]?.facility?.name || '',
+      'Hospital city': orderDetails?.doctor?.doctorHospital?.[0]?.facility?.city || '',
+      Source: 'Payment confirmation screen',
+      'Appointment datetime': moment(orderDetails?.appointmentDateTime).toDate(),
+      'Display ID': orderDetails?.displayId,
+      'Consult mode': orderDetails?.appointmentType || '',
+    };
+    postCleverTapEvent(CleverTapEventName.CONSULT_GO_TO_CONSULT_ROOM_CLICKED, eventAttributes);
+  };
+
   const handleButton = (navigateToChatRoom?: boolean) => {
     const { navigation } = props;
     const { navigate } = navigation;
     if (status == success) {
+      postGoToConsultRoomEvent();
       getAppointmentInfo(navigateToChatRoom);
     } else if (status == failure) {
       // navigate(AppRoutes.DoctorSearch);
@@ -1197,7 +1218,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
               {locationDetails?.pincode ? `, ${locationDetails?.pincode}` : ''}
             </Text>
           </View>
-          
         </View>
       </View>
     );

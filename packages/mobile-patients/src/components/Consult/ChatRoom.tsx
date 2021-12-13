@@ -748,7 +748,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: theme.colors.PORCELAIN_GRAY
+    borderColor: theme.colors.PORCELAIN_GRAY,
   },
 
   externalMeetingLinkText: {
@@ -770,7 +770,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: theme.colors.PORCELAIN_GRAY
+    borderColor: theme.colors.PORCELAIN_GRAY,
   },
   exeternalMeetingLinkMeetingCTAText: {
     ...theme.viewStyles.text('M', 11, theme.colors.APP_YELLOW),
@@ -840,7 +840,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.shadowStyle,
     alignSelf: 'center',
     borderWidth: 2,
-    borderColor: theme.colors.PORCELAIN_GRAY
+    borderColor: theme.colors.PORCELAIN_GRAY,
   },
   rescheduleBtn: {
     flex: 0.6,
@@ -864,7 +864,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     borderWidth: 2,
     borderColor: theme.colors.PORCELAIN_GRAY,
-    height: 230
+    height: 230,
   },
   prescriptionText: {
     marginStart: 10,
@@ -876,7 +876,7 @@ const styles = StyleSheet.create({
   pdfView: {
     width: 220,
     height: 110,
-    alignSelf: 'center'
+    alignSelf: 'center',
   },
   pdfThumbnail: {
     width: 216,
@@ -907,7 +907,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 4,
     borderWidth: 2,
-    borderColor: theme.colors.PORCELAIN_GRAY
+    borderColor: theme.colors.PORCELAIN_GRAY,
   },
   drUnavailableText: {
     lineHeight: 22,
@@ -924,7 +924,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 4,
     borderWidth: 2,
-    borderColor: theme.colors.PORCELAIN_GRAY
+    borderColor: theme.colors.PORCELAIN_GRAY,
   },
   slotChangeText: {
     color: theme.colors.LIGHT_BLUE,
@@ -950,7 +950,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     borderRadius: 10,
     marginVertical: 2,
-    flexDirection: 'row', 
+    flexDirection: 'row',
     justifyContent: 'flex-start',
   },
   msgImageView: {
@@ -1003,14 +1003,14 @@ const styles = StyleSheet.create({
   pdfLogo: {
     height: 20,
     width: 15,
-    marginHorizontal: 4
+    marginHorizontal: 4,
   },
   apptCompleteView: {
     backgroundColor: theme.colors.WHITE,
     marginLeft: 38,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: theme.colors.PORCELAIN_GRAY
+    borderColor: theme.colors.PORCELAIN_GRAY,
   },
   presGuideText: {
     color: theme.colors.LIGHT_BLUE,
@@ -1025,7 +1025,7 @@ const styles = StyleSheet.create({
     marginLeft: 38,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: theme.colors.PORCELAIN_GRAY
+    borderColor: theme.colors.PORCELAIN_GRAY,
   },
   msgSubView: {
     backgroundColor: 'white',
@@ -1067,9 +1067,9 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: theme.colors.PORCELAIN_GRAY,
   },
-  callLogo: { 
+  callLogo: {
     width: 20,
-    height: 20
+    height: 20,
   },
   doctorTypingText: {
     width: 250,
@@ -1082,12 +1082,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE, 1, 16),
     bottom: Platform.OS == 'android' ? 60 : 100,
-    position: 'absolute'
+    position: 'absolute',
   },
-  listView: { 
-    flex: 1, 
+  listView: {
+    flex: 1,
     marginBottom: 65,
-    backgroundColor: theme.colors.WHITE 
+    backgroundColor: theme.colors.WHITE,
   },
   rescheduleText: {
     color: theme.colors.LIGHT_BLUE,
@@ -1103,7 +1103,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginVertical: 8,
     paddingHorizontal: 14,
-    paddingVertical: 4
+    paddingVertical: 4,
   },
   automatedMsgView: {
     backgroundColor: theme.colors.WHITE,
@@ -1122,7 +1122,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: theme.colors.PORCELAIN_GRAY,
     alignItems: 'center',
-    paddingStart: 18
+    paddingStart: 18,
   },
   patientImgView: {
     backgroundColor: 'transparent',
@@ -1151,11 +1151,11 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     paddingBottom: 6,
   },
-  separator: { 
-    backgroundColor: 'transparent', 
-    height: 4, 
-    width: 20
-  }, 
+  separator: {
+    backgroundColor: 'transparent',
+    height: 4,
+    width: 20,
+  },
 });
 
 const urlRegEx = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG)/;
@@ -1284,7 +1284,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     ...theme.viewStyles.cardViewStyle,
   });
 
-
   const disAllowReschedule =
     g(appointmentData, 'appointmentState') != APPOINTMENT_STATE.AWAITING_RESCHEDULE;
 
@@ -1406,7 +1405,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const patientId = appointmentData.patientId;
   const doctorId = appointmentData.doctorInfo.id;
   const channel = useRef<string>(`${patientId}-${doctorId}`);
-  const {id: apptId} = appointmentData || {};
+  const { id: apptId } = appointmentData || {};
 
   let intervalId: any;
   let stoppedTimer: number;
@@ -1433,7 +1432,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const canPublishTyping = useRef<boolean>(true);
   const typingThrottleTime = 200; //0.2 seconds
   const typingClearTime = 1000; //1 seconds
-  const clearTimerId = useRef<NodeJS.Timeout>()
+  const clearTimerId = useRef<NodeJS.Timeout>();
 
   let cancelAppointmentTitle = '';
   if (appointmentDiffMin >= 15) {
@@ -1987,7 +1986,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   useEffect(() => {
     if (!disableChat && status.current !== STATUS.COMPLETED && isInFuture && !fromIncomingCall) {
-      callPermissions();
+      callPermissions(() => {}, 'Consult Chat Screen', currentPatient);
     }
   }, []);
 
@@ -2014,8 +2013,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   function analyzeMessages(messages: any) {
     const prescUploadIndex = messages
       .reverse()
-      .findIndex((item: any) => item?.id == doctorId && item?.message == followupconsult
-        && item?.transferInfo?.appointmentId == apptId);
+      .findIndex(
+        (item: any) =>
+          item?.id == doctorId &&
+          item?.message == followupconsult &&
+          item?.transferInfo?.appointmentId == apptId
+      );
     messages.reverse();
     const guideLinesIndex = messages
       .reverse()
@@ -2231,16 +2234,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (callType && !fromIncomingCall) {
       AsyncStorage.setItem('callDisconnected', 'false');
 
-      callPermissions(() => {
-        if (callType === 'VIDEO') {
-          isVoipCall || fromIncomingCall ? setOnSubscribe(false) : setOnSubscribe(true);
-          isAudio.current = false;
-        } else if (callType === 'AUDIO') {
-          isVoipCall || fromIncomingCall ? setOnSubscribe(false) : setOnSubscribe(true);
-          isAudio.current = true;
-          callhandelBack = false;
-        }
-      });
+      callPermissions(
+        () => {
+          if (callType === 'VIDEO') {
+            isVoipCall || fromIncomingCall ? setOnSubscribe(false) : setOnSubscribe(true);
+            isAudio.current = false;
+          } else if (callType === 'AUDIO') {
+            isVoipCall || fromIncomingCall ? setOnSubscribe(false) : setOnSubscribe(true);
+            isAudio.current = true;
+            callhandelBack = false;
+          }
+        },
+        'Consult Chat Screen',
+        currentPatient
+      );
     }
     if (prescription) {
       // write code for opening prescripiton
@@ -2823,39 +2830,43 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     } else if (nextAppState === 'active') {
       const permissionSettings: string | null = await AsyncStorage.getItem('permissionHandler');
       if (permissionSettings && permissionSettings === 'true') {
-        callPermissions(() => {
-          if (callType) {
-            if (callType === 'VIDEO') {
-              setOnSubscribe(true);
-              isAudio.current = false;
-            } else if (callType === 'AUDIO') {
-              setOnSubscribe(true);
-              isAudio.current = true;
-              callhandelBack = false;
-            }
-            !jrDoctorJoined.current && setDoctorJoinedChat && setDoctorJoinedChat(true);
-          } else {
-            if (onSubscribe) {
-              setOnSubscribe(false);
-              setCallAccepted(true);
-              setHideStatusBar(true);
-              setChatReceived(false);
-              Keyboard.dismiss();
-              setConvertVideo(false);
-              setDowngradeToAudio(false);
-              setCallerAudio(true);
-              setCallerVideo(true);
-              changeVideoStyles();
-              setDropdownVisible(false);
-              if (token) {
-                PublishAudioVideo();
-              } else {
-                makeUpdateAppointmentCall.current = true;
-                APICallAgain(true);
+        callPermissions(
+          () => {
+            if (callType) {
+              if (callType === 'VIDEO') {
+                setOnSubscribe(true);
+                isAudio.current = false;
+              } else if (callType === 'AUDIO') {
+                setOnSubscribe(true);
+                isAudio.current = true;
+                callhandelBack = false;
+              }
+              !jrDoctorJoined.current && setDoctorJoinedChat && setDoctorJoinedChat(true);
+            } else {
+              if (onSubscribe) {
+                setOnSubscribe(false);
+                setCallAccepted(true);
+                setHideStatusBar(true);
+                setChatReceived(false);
+                Keyboard.dismiss();
+                setConvertVideo(false);
+                setDowngradeToAudio(false);
+                setCallerAudio(true);
+                setCallerVideo(true);
+                changeVideoStyles();
+                setDropdownVisible(false);
+                if (token) {
+                  PublishAudioVideo();
+                } else {
+                  makeUpdateAppointmentCall.current = true;
+                  APICallAgain(true);
+                }
               }
             }
-          }
-        });
+          },
+          'Consult Chat Screen',
+          currentPatient
+        );
         AsyncStorage.removeItem('permissionHandler');
       }
     }
@@ -3427,7 +3438,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   useEffect(() => {
     const launchDate = AppConfig.Configuration.LONG_CHAT_LAUNCH_DATE;
     const apptDateTime = appointmentData?.appointmentDateTime;
-    if(moment(launchDate, 'DD/MM/YYYY') > moment.utc(apptDateTime)){
+    if (moment(launchDate, 'DD/MM/YYYY') > moment.utc(apptDateTime)) {
       channel.current = appointmentData?.id;
     }
     console.ignoredYellowBox = ['Warning: Each', 'Warning: Failed'];
@@ -3443,7 +3454,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }
       },
       signal: (payload) => {
-        if(payload.message == doctorTypingOn){          
+        if (payload.message == doctorTypingOn) {
           setDoctorTyping(true);
           clearTimerId.current && clearTimeout(clearTimerId.current);
           clearTimerId.current = setTimeout(() => {
@@ -3462,7 +3473,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           postAppointmentWEGEvent(WebEngageEventName.JD_COMPLETED);
         } else if (messageType == startConsultMsg) {
           postAppointmentWEGEvent(WebEngageEventName.SD_CONSULTATION_STARTED);
-
         } else if (messageType == videoCallMsg && name == 'DOCTOR') {
           postAppointmentWEGEvent(WebEngageEventName.SD_VIDEO_CALL_STARTED);
         }
@@ -4361,9 +4371,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               </View>
             )}
             <View style={styles.rescheduleView}>
-              <Text style={styles.rescheduleText}>
-                Your appointment has been transferred to —
-              </Text>
+              <Text style={styles.rescheduleText}>Your appointment has been transferred to —</Text>
               <View style={{ marginVertical: 12, marginHorizontal: 16 }}>
                 <View
                   style={{
@@ -4539,9 +4547,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const followUpView = (rowData: any, index: number, type: string) => {
     return (
       <>
-        <View
-          style={styles.followUpView}
-        >
+        <View style={styles.followUpView}>
           {leftComponent === 1 && (
             <View
               style={{
@@ -4564,13 +4570,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             </View>
           )}
           <View style={styles.prescriptionView}>
-            <Text style={styles.prescriptionText}>
-              {string.appointments.presShared}
-            </Text>
-            <Pdf
-              source={{ uri: rowData?.transferInfo?.pdfUrl }}
-              style={styles.pdfView}
-            />
+            <Text style={styles.prescriptionText}>{string.appointments.presShared}</Text>
+            <Pdf source={{ uri: rowData?.transferInfo?.pdfUrl }} style={styles.pdfView} />
             <StickyBottomComponent
               style={{
                 paddingHorizontal: 0,
@@ -4607,9 +4608,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               />
             </StickyBottomComponent>
           </View>
-          <Text style={styles.prescTimeText}>
-          {convertChatTime(rowData)}
-        </Text>
+          <Text style={styles.prescTimeText}>{convertChatTime(rowData)}</Text>
         </View>
       </>
     );
@@ -4693,6 +4692,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     postCleverTapEvent(CleverTapEventName.CONSULT_ORDER_MEDICINES_IN_CHATROOM_CLICKED, {
       ...UserInfo,
       'Order Type': isCartOrder ? 'Cart' : 'Non-Cart',
+      'Patient name': `${currentPatient?.firstName} ${currentPatient?.lastName}` || '',
+      'Patient age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
     });
   };
 
@@ -4829,9 +4830,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             </View>
           )}
           <View style={styles.MsgTextCont}>
-          <Text style={{ ...styles.autoGenText, paddingStart: 0 }}>
-            {string.appointments.autoGenerated}
-          </Text>
+            <Text style={{ ...styles.autoGenText, paddingStart: 0 }}>
+              {string.appointments.autoGenerated}
+            </Text>
             <Text style={styles.MsgText}>
               {
                 'Order Medicines in one click and get free home delivery in 2-4 hours. We also have home sample collections for diagnostic tests.'
@@ -5197,9 +5198,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       style={styles.msgImage}
                     />
                   </View>
-                  <Text style={styles.chatTimeText}>
-                  {convertChatTime(rowData)}
-                </Text>
+                  <Text style={styles.chatTimeText}>{convertChatTime(rowData)}</Text>
                 </TouchableOpacity>
               ) : (
                 <TouchableOpacity
@@ -5209,10 +5208,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   }}
                 >
                   <View style={styles.pdfContainer}>
-                    <Pdf
-                      source={{ uri: rowData.url }}
-                      style={styles.pdfThumbnail}
-                    />
+                    <Pdf source={{ uri: rowData.url }} style={styles.pdfThumbnail} />
                   </View>
                 </TouchableOpacity>
               )}
@@ -5227,58 +5223,37 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   )}
                 </Text>
               </View>
-              <Text style={styles.chatTimeText}>
-              {convertChatTime(rowData)}
-            </Text>
-          </>
+              <Text style={styles.chatTimeText}>{convertChatTime(rowData)}</Text>
+            </>
           ) : rowData.message === startConsultjr ? (
             <View style={styles.apptCompleteView}>
-              <Text style={styles.autoGenText}>
-                {string.appointments.byJrDoctor}
-              </Text>
+              <Text style={styles.autoGenText}>{string.appointments.byJrDoctor}</Text>
               {rowData.automatedText ? (
                 <>
-                  <Text style={styles.presGuideText}>
-                    {rowData.automatedText}
-                  </Text>
+                  <Text style={styles.presGuideText}>{rowData.automatedText}</Text>
                   <View style={styles.separator} />
-                  <Text style={styles.chatTimeText}>
-                    {convertChatTime(rowData)}
-                  </Text>
+                  <Text style={styles.chatTimeText}>{convertChatTime(rowData)}</Text>
                 </>
               ) : null}
             </View>
           ) : rowData.message === startConsultMsg ? (
             <>
-            <View style={styles.apptCompleteView}>
-              <Text style={styles.autoGenText}>
-                {string.appointments.autoGenerated}
-              </Text>
-              {rowData.automatedText ? (
-                <>
-                  <Text style={styles.presGuideText}>
-                    {rowData.automatedText}
-                  </Text>
-                </>
-              ) : null}
-            </View>
-            <Text style={styles.chatTimeText}>
-             {convertChatTime(rowData)}
-            </Text>
-          </>
+              <View style={styles.apptCompleteView}>
+                <Text style={styles.autoGenText}>{string.appointments.autoGenerated}</Text>
+                {rowData.automatedText ? (
+                  <>
+                    <Text style={styles.presGuideText}>{rowData.automatedText}</Text>
+                  </>
+                ) : null}
+              </View>
+              <Text style={styles.chatTimeText}>{convertChatTime(rowData)}</Text>
+            </>
           ) : rowData.message === stopConsultJr ? (
-            
             <View style={styles.apptCompleteView}>
-              <Text style={styles.autoGenText}>
-                {string.appointments.byJrDoctor}
-              </Text>
+              <Text style={styles.autoGenText}>{string.appointments.byJrDoctor}</Text>
               {rowData.automatedText ? (
                 <>
-                  <Text
-                    style={styles.presGuideText}
-                  >
-                    {rowData.automatedText}
-                  </Text>
+                  <Text style={styles.presGuideText}>{rowData.automatedText}</Text>
                   <Text
                     style={{
                       color: '#ffffff',
@@ -5309,10 +5284,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           ) : rowData.message === exotelCall ? (
             <View style={styles.exotelCallView}>
               <>
-                <Text
-                  style={styles.presGuideText}
-                  selectable={true}
-                >
+                <Text style={styles.presGuideText} selectable={true}>
                   {doctorName +
                     strings.common.exotelMessage +
                     rowData.exotelNumber +
@@ -5335,14 +5307,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           ) : (
             <View>
               <View style={styles.msgSubView}>
-                <Text style={styles.msgText}>
-                  {rowData.message}
-                </Text>
+                <Text style={styles.msgText}>{rowData.message}</Text>
               </View>
               <View style={styles.separator} />
-              <Text style={styles.textMsgTime}>
-                  {convertChatTime(rowData)}
-                </Text>
+              <Text style={styles.textMsgTime}>{convertChatTime(rowData)}</Text>
             </View>
           )}
         </View>
@@ -5535,7 +5503,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 >
                   Duration - {rowData.duration}
                 </Text>
-                
               </View>
               <View style={styles.separator} />
             </View>
@@ -5579,24 +5546,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             />
           </View>
         )}
-        <View
-          style={{ ...styles.apptCompleteView, marginBottom: 0 }}
-        >
-          <Text style={styles.autoGenText}>
-            {string.appointments.autoGenerated}
-          </Text>
+        <View style={{ ...styles.apptCompleteView, marginBottom: 0 }}>
+          <Text style={styles.autoGenText}>{string.appointments.autoGenerated}</Text>
           {rowData.automatedText ? (
             <View>
-              <Text style={styles.presGuideText}>
-                {rowData.automatedText}
-              </Text>
+              <Text style={styles.presGuideText}>{rowData.automatedText}</Text>
               <View style={styles.separator} />
             </View>
           ) : null}
         </View>
-        <Text style={styles.chatTimeText}>
-          {convertChatTime(rowData)}
-        </Text>
+        <Text style={styles.chatTimeText}>{convertChatTime(rowData)}</Text>
       </View>
     );
   };
@@ -5672,22 +5631,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           </View>
         )}
         <View style={styles.automatedMsgView}>
-          <Text style={styles.autoGenText}>
-            {string.appointments.autoGenerated}
-          </Text>
+          <Text style={styles.autoGenText}>{string.appointments.autoGenerated}</Text>
           {rowData.automatedText ? (
             <>
-              <Text style={styles.presGuideText}>
-                {rowData.automatedText}
-              </Text>
-              
+              <Text style={styles.presGuideText}>{rowData.automatedText}</Text>
+
               <View style={styles.separator} />
             </>
           ) : null}
         </View>
-        <Text style={styles.chatTimeText}>
-          {convertChatTime(rowData)}
-        </Text>
+        <Text style={styles.chatTimeText}>{convertChatTime(rowData)}</Text>
       </View>
     );
   };
@@ -5759,14 +5712,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rightComponent = 0;
       return (
         <View style={{ marginHorizontal: 20, paddingTop: 8 }}>
-          {
-            !moment(rowData?.messageDate).isSame(messages[index-1]?.messageDate,'day') &&
+          {!moment(rowData?.messageDate).isSame(messages[index - 1]?.messageDate, 'day') && (
             <View style={styles.dateSeparator}>
-              <Text style={{
-                ...theme.viewStyles.text('M', 12, theme.colors.SLATE_GRAY),
-              }}>{moment(rowData?.messageDate).format('DD MMM, YYYY h:mm A')}</Text>
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 12, theme.colors.SLATE_GRAY),
+                }}
+              >
+                {moment(rowData?.messageDate).format('DD MMM, YYYY h:mm A')}
+              </Text>
             </View>
-          }
+          )}
           {leftComponent === 1 && (
             <View
               style={{
@@ -5819,14 +5775,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rightComponent++;
       return (
         <View style={{ marginHorizontal: 20 }}>
-          {
-            !moment(rowData?.messageDate).isSame(messages[index-1]?.messageDate,'day') &&
+          {!moment(rowData?.messageDate).isSame(messages[index - 1]?.messageDate, 'day') && (
             <View style={styles.dateSeparator}>
-              <Text style={{
-                ...theme.viewStyles.text('M', 12, theme.colors.SLATE_GRAY),
-              }}>{moment(rowData?.messageDate).format('DD MMM, YYYY h:mm A')}</Text>
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 12, theme.colors.SLATE_GRAY),
+                }}
+              >
+                {moment(rowData?.messageDate).format('DD MMM, YYYY h:mm A')}
+              </Text>
             </View>
-          }
+          )}
           {rightComponent == 1 ? (
             <View
               style={{
@@ -5898,9 +5857,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                           style={styles.msgImage}
                         />
                       </View>
-                      <Text style={styles.chatTimeText}>
-                      {convertChatTime(rowData)}
-                      </Text>
+                      <Text style={styles.chatTimeText}>{convertChatTime(rowData)}</Text>
                     </TouchableOpacity>
                   ) : (
                     <TouchableOpacity
@@ -5909,32 +5866,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         openPopUp(rowData);
                       }}
                     >
-                      <View
-                        style={styles.pdfContainer}
-                      >
-                        <Pdf
-                          source={{ uri: rowData.url }}
-                          style={styles.pdfThumbnail}
-                        />
+                      <View style={styles.pdfContainer}>
+                        <Pdf source={{ uri: rowData.url }} style={styles.pdfThumbnail} />
                       </View>
-                      <Text
-                        style={styles.chatTimeText}
-                      >
-                      {convertChatTime(rowData)}
-                      </Text>
+                      <Text style={styles.chatTimeText}>{convertChatTime(rowData)}</Text>
                     </TouchableOpacity>
                   )}
                 </View>
               ) : (
                 <>
                   <View style={styles.patientMsgView}>
-                    <Text style={styles.patientMsgText}>
-                      {rowData.message}
-                    </Text>
+                    <Text style={styles.patientMsgText}>{rowData.message}</Text>
                   </View>
-                  <Text style={styles.chatTimeText}>
-                      {convertChatTime(rowData)}
-                  </Text>
+                  <Text style={styles.chatTimeText}>{convertChatTime(rowData)}</Text>
                 </>
               )}
             </View>
@@ -6009,7 +5953,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       const dateValidate = moment(moment().format('YYYY-MM-DD')).diff(
         moment(timeStamp.messageDate).format('YYYY-MM-DD')
       );
-    utcString = moment
+      utcString = moment
         .utc(timeStamp.messageDate)
         .local()
         .format('DD MMM, YYYY h:mm A');
@@ -6197,8 +6141,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const diffMin = Math.ceil(moment(appointmentTime).diff(moment(), 'minutes', true));
     const diffHours = Math.floor(moment(appointmentTime).diff(moment(), 'hours', true));
     const diffDays = Math.round(moment(appointmentTime).diff(moment(), 'days', true));
-    const isPrescriptionReady = messages?.filter((item) => item?.message === followupconsult
-      && item?.transferInfo?.appointmentId == apptId);
+    const isPrescriptionReady = messages?.filter(
+      (item) => item?.message === followupconsult && item?.transferInfo?.appointmentId == apptId
+    );
     // checkAutomatedPatientText();
     if (textChange && !jrDoctorJoined.current) {
       // Consult in Progress
@@ -6294,21 +6239,25 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const joinCallHandler = () => {
-    callPermissions(() => {
-      AsyncStorage.setItem('leftSoundPlayed', 'false');
-      callStatus.current = '';
-      callToastStatus.current = '';
-      setLoading(true);
-      setCallAccepted(true);
-      setHideStatusBar(true);
-      setChatReceived(false);
-      Keyboard.dismiss();
-      changeVideoStyles();
-      setDropdownVisible(false);
-      setCallerVideo(true);
-      makeUpdateAppointmentCall.current = true;
-      APICallAgain(true);
-    });
+    callPermissions(
+      () => {
+        AsyncStorage.setItem('leftSoundPlayed', 'false');
+        callStatus.current = '';
+        callToastStatus.current = '';
+        setLoading(true);
+        setCallAccepted(true);
+        setHideStatusBar(true);
+        setChatReceived(false);
+        Keyboard.dismiss();
+        changeVideoStyles();
+        setDropdownVisible(false);
+        setCallerVideo(true);
+        makeUpdateAppointmentCall.current = true;
+        APICallAgain(true);
+      },
+      'Consult Chat Screen',
+      currentPatient
+    );
     //startCallConnectionUpdate();
   };
 
@@ -7401,25 +7350,25 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const eventAttributes:
       | WebEngageEvents[WebEngageEventName.CONSULT_FEEDBACK_GIVEN]
       | CleverTapEvents[CleverTapEventName.CONSULT_FEEDBACK_GIVEN] = {
-      'Doctor Name': g(data, 'doctorInfo', 'fullName')!,
+      'Doctor name': g(data, 'doctorInfo', 'fullName')!,
       'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
-      'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,
-      'Doctor Category': g(data, 'doctorInfo', 'doctorType')!,
-      'Consult Date Time': moment(g(data, 'appointmentDateTime')).toDate(),
-      'Consult Mode': g(data, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
-      'Hospital Name': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name')!,
-      'Hospital City': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'city')!,
+      'Speciality name': g(data, 'doctorInfo', 'specialty', 'name')!,
+      'Doctor category': g(data, 'doctorInfo', 'doctorType')!,
+      'Appointment datetime': moment(g(data, 'appointmentDateTime')).toDate(),
+      'Consult mode': g(data, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
+      'Hospital name': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name')!,
+      'Hospital city': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'city')!,
       'Consult ID': g(data, 'id')!,
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
-      'Patient Age': Math.round(
+      'Patient age': Math.round(
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
-      'Patient Gender': g(currentPatient, 'gender'),
+      'Patient gender': g(currentPatient, 'gender'),
       'Customer ID': g(currentPatient, 'id'),
       Rating: rating,
-      'Rating Reason': reason,
+      'Rating reason': reason,
     };
     postWebEngageEvent(WebEngageEventName.CONSULT_FEEDBACK_GIVEN, eventAttributes);
     postCleverTapEvent(CleverTapEventName.CONSULT_FEEDBACK_GIVEN, eventAttributes);
@@ -7595,19 +7544,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const publishTypingEvent = () => {
-    if(canPublishTyping.current) {
-      pubnub.signal(
-        {
-          channel: channel.current,
-          message: patientTypingOn,
-        }
-      );
+    if (canPublishTyping.current) {
+      pubnub.signal({
+        channel: channel.current,
+        message: patientTypingOn,
+      });
       canPublishTyping.current = false;
       setTimeout(() => {
         canPublishTyping.current = true;
       }, typingThrottleTime);
     }
-  }
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
@@ -7990,12 +7937,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             }}
           />
         )}
-        {
-          doctorTyping &&
-            <Text style={styles.doctorTypingText}>
-              {string.appointments.doctorTyping}
-            </Text>
-        }
+        {doctorTyping && (
+          <Text style={styles.doctorTypingText}>{string.appointments.doctorTyping}</Text>
+        )}
       </SafeAreaView>
       {showRescheduleCancel && (
         <RescheduleCancelPopup
@@ -8063,7 +8007,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               CleverTapEventName.CONSULT_CANCEL_CLICKED_BY_PATIENT,
               appointmentData,
               currentPatient,
-              secretaryData
+              secretaryData,
+              {
+                circleSubscriptionId: circleSubscriptionId,
+                circleSubPlanId: circleSubPlanId,
+              }
             );
             CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'CANCEL CONSULT_CLICKED');
             setShowCancelPopup(false);

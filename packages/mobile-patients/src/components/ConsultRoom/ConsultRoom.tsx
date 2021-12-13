@@ -1161,7 +1161,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           showFreeConsultOverlay(params);
         } else if (!params?.isPhysicalConsultBooked) {
           overlyCallPermissions(
-            currentPatient!.firstName!,
+            currentPatient!,
             params?.doctorName,
             showAphAlert,
             hideAphAlert,
@@ -1217,7 +1217,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           showFreeConsultOverlay(params);
         } else if (!params?.isPhysicalConsultBooked) {
           overlyCallPermissions(
-            currentPatient!.firstName!,
+            currentPatient!,
             params?.doctorName,
             showAphAlert,
             hideAphAlert,
@@ -1301,7 +1301,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           getCurrentRoute() !== AppRoutes.ChatRoom
         ) {
           overlyCallPermissions(
-            currentPatient!.firstName!,
+            currentPatient!,
             'the doctor',
             showAphAlert,
             hideAphAlert,
@@ -1314,6 +1314,26 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     } catch (error) {
       CommonBugFender('ConsultRoom_getPatientFutureAppointmentCount', error);
     }
+  };
+
+  const postGoToConsultRoomEvent = (item: any) => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_GO_TO_CONSULT_ROOM_CLICKED] = {
+      'Patient name': `${currentPatient?.firstName} ${currentPatient?.lastName}` || '',
+      'Patient UHID': currentPatient?.uhid || '',
+      'Doctor name': item?.doctorInfo?.fullName || '',
+      'Speciality name': item?.doctorInfo?.specialty?.name || '',
+      'Doctor ID': item?.doctorId || '',
+      'Speciality ID': item?.doctorInfo?.specialty?.id || '',
+      'Patient gender': currentPatient?.gender || '',
+      'Patient age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
+      'Hospital name': item?.doctorInfo?.doctorHospital?.[0]?.facility?.name || '',
+      'Hospital city': item?.doctorInfo?.doctorHospital?.[0]?.facility?.city || '',
+      Source: 'Payment confirmation screen',
+      'Appointment datetime': moment(item?.appointmentDateTime).toDate(),
+      'Display ID': item?.displayId,
+      'Consult mode': item?.appointmentType || '',
+    };
+    postCleverTapEvent(CleverTapEventName.CONSULT_GO_TO_CONSULT_ROOM_CLICKED, eventAttributes);
   };
 
   const showFreeConsultOverlay = (params: any) => {
@@ -1380,6 +1400,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 props.navigation.navigate(AppRoutes.ChatRoom, {
                   data: params?.appointmentData,
                 });
+                postGoToConsultRoomEvent(params?.appointmentData);
               }}
             >
               <Text style={theme.viewStyles.yellowTextStyle}>GO TO CONSULT ROOM</Text>
@@ -1538,7 +1559,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (eventName == CleverTapEventName.CONSULT_ACTIVE_APPOINTMENTS) {
       eventAttributes = {
         ...eventAttributes,
-        'Nav src': source === 'Home Screen' ? 'homepage bar' : 'Bottom bar',
+        'Nav src': source === 'Home Screen' ? 'Homepage' : 'Bottom bar',
+        'Circle Member': !!circleSubscriptionId,
+        'Circle Plan type': circleSubPlanId || '',
       };
     }
     if (eventName == CleverTapEventName.HDFC_HEALTHY_LIFE) {

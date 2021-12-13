@@ -834,23 +834,19 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           Moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
         ),
         'Patient gender': g(currentPatient, 'gender'),
-        doctorId: g(doctorDetails, 'id')!,
-        doctorName: g(doctorDetails, 'fullName')!,
-        specialtyName: g(doctorDetails, 'specialty', 'name')! || undefined,
-        specialtyId: g(doctorDetails, 'specialty', 'id')! || undefined,
+        'Doctor ID': g(doctorDetails, 'id')!,
+        'Doctor name': g(doctorDetails, 'fullName')!,
+        'Specialty name': g(doctorDetails, 'specialty', 'name')! || undefined,
+        'Specialty ID': g(doctorDetails, 'specialty', 'id')! || undefined,
         User_Type: getUserType(allCurrentPatients),
         fee: Number(doctorDetails?.onlineConsultationFees),
-        isConsulted: getUserType(allCurrentPatients),
-        city: g(doctorDetails, 'doctorHospital', 0, 'facility', 'city') || undefined,
-        doctorHospital: g(doctorDetails, 'doctorHospital', 0, 'facility', 'name') || undefined,
-        address: `${g(doctorDetails, 'doctorHospital', 0, 'facility', 'name') || ''}, ${g(
-          doctorDetails,
-          'doctorHospital',
-          0,
-          'facility',
-          'city'
-        ) || ''}`,
-        languages: g(doctorDetails, 'languages') || undefined,
+        'Hospital City': g(doctorDetails, 'doctorHospital', 0, 'facility', 'city') || undefined,
+        'Doctor hospital': g(doctorDetails, 'doctorHospital', 0, 'facility', 'name') || undefined,
+        Languages: g(doctorDetails, 'languages') || undefined,
+        'Customer ID': currentPatient?.id || '',
+        'Circle Member': !!circleSubscriptionId,
+        'Circle Plan type': circleSubPlanId,
+        'Mobile number': currentPatient?.mobileNumber || '',
       };
       callCleverTapEvent.current &&
         postCleverTapEvent(
@@ -1043,16 +1039,16 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     const eventAttributes:
       | WebEngageEvents[WebEngageEventName.SHARE_CLICK_DOC_LIST_SCREEN]
       | CleverTapEvents[CleverTapEventName.CONSULT_SHARE_ICON_CLICKED] = {
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
-      'Patient Age': Math.round(
+      'Patient age': Math.round(
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
-      'Patient Gender': g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile number': g(currentPatient, 'mobileNumber'),
       'Doctor ID': g(doctorDetails, 'id')!,
-      'Doctor Name': g(doctorDetails, 'fullName')!,
-      'Speciality Name': g(doctorDetails, 'specialty', 'name')!,
+      'Doctor name': g(doctorDetails, 'fullName')!,
+      'Speciality name': g(doctorDetails, 'specialty', 'name')!,
       'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
       Source: 'Doctor profile',
     };
@@ -1190,21 +1186,26 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                         const eventAttributes:
                           | WebEngageEvents[WebEngageEventName.TYPE_OF_CONSULT_SELECTED]
                           | CleverTapEvents[CleverTapEventName.CONSULT_MODE_SELECTED] = {
-                          'Doctor Speciality': g(doctorDetails, 'specialty', 'name')!,
-                          'Patient Name': `${g(currentPatient, 'firstName')} ${g(
+                          'Doctor speciality': g(doctorDetails, 'specialty', 'name')!,
+                          "Speciality name": g(doctorDetails, 'specialty', 'name')!,
+                          'Patient name': `${g(currentPatient, 'firstName')} ${g(
                             currentPatient,
                             'lastName'
                           )}`,
                           'Patient UHID': g(currentPatient, 'uhid'),
                           Relation: g(currentPatient, 'relation'),
-                          'Patient Age': Math.round(
+                          'Patient age': Math.round(
                             Moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
                           ),
-                          'Patient Gender': g(currentPatient, 'gender'),
+                          'Patient gender': g(currentPatient, 'gender'),
                           'Customer ID': g(currentPatient, 'id'),
                           'Doctor ID': g(doctorDetails, 'id')!,
                           'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
-                          'Consultation Type': 'online',
+                          'Consultation type': 'online',
+                          User_Type: getUserType(allCurrentPatients),
+                          'Circle Member': !!circleSubscriptionId,
+                          "Circle Plan type": circleSubPlanId || undefined,
+                          "Mobile number": currentPatient?.mobileNumber || undefined
                         };
                         postWebEngageEvent(
                           WebEngageEventName.TYPE_OF_CONSULT_SELECTED,
@@ -1324,6 +1325,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       | WebEngageEvents[WebEngageEventName.TYPE_OF_CONSULT_SELECTED]
       | CleverTapEvents[CleverTapEventName.CONSULT_MODE_SELECTED] = {
       'Doctor Speciality': g(doctorDetails, 'specialty', 'name')!,
+      'Speciality name': g(doctorDetails, 'specialty', 'name')!,
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
@@ -1334,7 +1336,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Customer ID': g(currentPatient, 'id'),
       'Doctor ID': g(doctorDetails, 'id')!,
       'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
-      'Consultation Type': 'physical',
+      'Consultation type': 'physical',
+      User_Type: getUserType(allCurrentPatients),
+      'Circle Member': !!circleSubscriptionId,
+      'Circle Plan type': circleSubPlanId || undefined,
+      'Mobile number': currentPatient?.mobileNumber || undefined,
     };
     postWebEngageEvent(WebEngageEventName.TYPE_OF_CONSULT_SELECTED, eventAttributes);
     postCleverTapEvent(CleverTapEventName.CONSULT_MODE_SELECTED, eventAttributes);
