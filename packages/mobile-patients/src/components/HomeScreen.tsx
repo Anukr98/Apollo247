@@ -205,7 +205,7 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { ScrollView, Switch } from 'react-native-gesture-handler';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import WebEngage from 'react-native-webengage';
-import { NavigationScreenProps, FlatList } from 'react-navigation';
+import { NavigationScreenProps, FlatList, NavigationEvents } from 'react-navigation';
 import {
   addVoipPushToken,
   addVoipPushTokenVariables,
@@ -1292,9 +1292,28 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
   useEffect(() => {
     const handler = BackHandler.addEventListener('hardwareBackPress', handleSearchClose);
+    if (isSearchFocus) {
+      cleverTapEventForSearchBarClick();
+    }
     return () => handler.remove();
   }, [isSearchFocus, searchText]);
 
+  const cleverTapEventForSearchBarClick = () => {
+    let eventAttributes = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      User_Type: getUserType(allCurrentPatients),
+      'Page name': 'HomePage',
+      'Circle Member': !!circleSubscriptionId ? 'True' : 'False',
+    };
+    postCleverTapEvent(CleverTapEventName.SEARCH_BAR_CLICKED, eventAttributes);
+  };
   const handleCachedData = async () => {
     const cacheDataStringBuffer = await appGlobalCache.getAll();
     const offersListStringBuffer = cacheDataStringBuffer?.offersList?.value || '[]';
@@ -1668,7 +1687,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       CommonBugFender('ConsultRoom_getPatientFutureAppointmentCount', error);
     }
   };
-
   const showFreeConsultOverlay = (params: any) => {
     const { isJdQuestionsComplete, appointmentDateTime, doctorInfo } = params?.appointmentData;
     const { skipAutoQuestions, isPhysicalConsultBooked } = params;
@@ -4043,6 +4061,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           successCallback={() => {
             getUserSubscriptionsWithBenefits();
           }}
+          postHomeBannerEvent={postHomeBannerEvent}
           circleEventSource={'Landing Home Page banners'}
         />
       );
@@ -4834,6 +4853,23 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     );
   };
 
+  const cleverTapEventForHomeIconClick = () => {
+    let eventAttributes = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      User_Type: getUserType(allCurrentPatients),
+      'Page name': 'HomePage Header',
+      'Circle Member': !!circleSubscriptionId ? 'True' : 'False',
+    };
+    postCleverTapEvent(CleverTapEventName.HOME_ICON_CLICKED, eventAttributes);
+  };
+
   const renderTopIcons = () => {
     const onPressCart = () => {
       postVaccineWidgetEvents(CleverTapEventName.MY_CART_CLICKED, 'Top bar');
@@ -4859,7 +4895,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         }}
       >
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+          <TouchableOpacity activeOpacity={1} onPress={cleverTapEventForHomeIconClick}>
             <ApolloLogo style={{ width: 57, height: 37 }} resizeMode="contain" />
           </TouchableOpacity>
           {renderProfileDrop()}
@@ -4903,9 +4939,34 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   async function _navigateProHealth() {
+    postHomeBannerEvent(1, true);
     //call the jwt token again.
     regenerateJWTToken('bookings');
   }
+
+  const postHomeBannerEvent = (
+    bannerIndex: number,
+    isProHealth: boolean,
+    bannerId?: string,
+    bannerTitle?: string
+  ) => {
+    const eventAttributes = {
+      User_Type: getUserType(allCurrentPatients),
+      'Patient Name': currentPatient?.firstName,
+      'Patient UHID': currentPatient?.uhid,
+      'Patient age': getAge(currentPatient?.dateOfBirth),
+      'Circle Member': circleSubscriptionId ? 'True' : 'False',
+      'Customer ID': currentPatient?.id,
+      'Patient gender': currentPatient?.gender,
+      'Mobile number': currentPatient?.mobileNumber,
+      'Page name': 'HomePage',
+      'Section Name': isProHealth ? 'Pro health' : 'Homepage Banner',
+      'Banner position': String(bannerIndex),
+      'Banner id': isProHealth ? 'NA' : bannerId,
+      'Banner title': isProHealth ? 'NA' : bannerTitle,
+    };
+    postCleverTapEvent(CleverTapEventName.BANNER_CLICKED_VIEWED, eventAttributes);
+  };
 
   const regenerateJWTToken = async (source: string, id?: string) => {
     let deviceType =
@@ -5258,11 +5319,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     setSearchResults(newState);
   };
 
-  const postSearchInputEvent = (
-    status: 'Success' | 'Fail',
-    request: 'Pharma' | 'Diagnostic' | 'Consult',
-    input?: string
-  ) => {
+  const postSearchInputEvent = (status: 'Success' | 'Fail', request: string, input?: string) => {
     const eventAttributes: CleverTapEvents[CleverTapEventName.HOMEPAGE_SEARCH_BAR_QUERY_INPUT] = {
       User_Type: getUserType(allCurrentPatients),
       'Patient Name': currentPatient?.firstName,
@@ -5297,45 +5354,135 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     postCleverTapEvent(CleverTapEventName.SCREEN_SCROLLED, eventAttributes);
   };
 
+  //Polyfill for allsettled
+  Promise.allSettled = function(promises) {
+    let mappedPromises = promises.map((p) => {
+      return p
+        .then((value) => {
+          return {
+            status: 'fulfilled',
+            value,
+          };
+        })
+        .catch((reason) => {
+          return {
+            status: 'rejected',
+            reason,
+          };
+        });
+    });
+    return Promise.all(mappedPromises);
+  };
+
   const onSearchExecute = async (_searchText: string) => {
     setSearchLoading(true);
     setSearchResults([]);
-    onSearchTests(_searchText)
-      .then(() => {
-        Keyboard.dismiss();
-        postSearchInputEvent('Success', 'Diagnostic', _searchText);
-      })
-      .catch((e) => {
-        Keyboard.dismiss();
-        postSearchInputEvent('Fail', 'Diagnostic', _searchText);
-        CommonBugFender('HomeScreen_ConsultRoom_onSearchTests', e);
-      });
 
-    onSearchMedicines(_searchText, null, {}, [])
-      .then(() => {
-        postSearchInputEvent('Success', 'Pharma', _searchText);
-      })
-      .catch((e) => {
-        Keyboard.dismiss();
-        postSearchInputEvent('Fail', 'Pharma', _searchText);
-        CommonBugFender('HomeScreen_ConsultRoom_onSearchMedicinesFunction', e);
-      });
-
-    onSearchConsults(_searchText)
-      .then(() => {
-        Keyboard.dismiss();
-        postSearchInputEvent('Success', 'Consult', _searchText);
-      })
-      .catch((e) => {
-        Keyboard.dismiss();
-        postSearchInputEvent('Fail', 'Consult', _searchText);
-        CommonBugFender('HomeScreen_ConsultRoom_onSearchConsultsFunction', e);
-      });
+    // search api requests using promised.allfulfilled
+    getSearchResults(_searchText);
 
     const save = _.debounce(saveRecentSearchTerm, 500);
     try {
       save(_searchText);
     } catch (e) {}
+  };
+
+  const getSearchResults = (_searchText: string) => {
+    const cityId =
+      locationForDiagnostics?.cityId != ''
+        ? locationForDiagnostics?.cityId
+        : !!diagnosticServiceabilityData && diagnosticServiceabilityData?.city != ''
+        ? diagnosticServiceabilityData?.cityId
+        : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID;
+
+    testSearchResults.current = [];
+    medSearchResults.current = [];
+    Promise.allSettled([
+      getDiagnosticSearchResults(client, _searchText, Number(cityId), 5),
+      searchMedicineApi(_searchText, 1, null, {}, axdcCode, pinCode),
+      getDoctorList(_searchText),
+    ])
+      .then((results) => {
+        let testResponse, medicineResponse, consultResponse;
+        [testResponse, medicineResponse, consultResponse] = results;
+        let successRequests = [],
+          failedRequests = [];
+        if (testResponse?.status == 'fulfilled') {
+          successRequests.push('Diagnostic');
+          let finalProducts = [];
+
+          if (testResponse?.value?.data?.searchDiagnosticItem) {
+            const products = testResponse?.value?.data?.searchDiagnosticItem?.data || [];
+
+            finalProducts = products.slice(0, 3);
+
+            testSearchResults.current = finalProducts;
+          } else {
+            testSearchResults.current = [];
+          }
+          updateSearchResultList(MedicalRecordType.TEST_REPORT, testSearchResults.current);
+        } else {
+          failedRequests.push('Diagnostic');
+          CommonBugFender('HomeScreen_ConsultRoom_onSearchTests', testResponse?.reason);
+          updateSearchResultList(MedicalRecordType.TEST_REPORT, []);
+        }
+
+        if (medicineResponse?.status == 'fulfilled') {
+          successRequests.push('Pharmacy');
+          let finalProducts: any[] = [];
+
+          if (medicineResponse?.value?.data?.products.length > 1) {
+            finalProducts = [{ name: _searchText }];
+
+            medSearchResults.current = finalProducts;
+          } else {
+            medSearchResults.current = [];
+          }
+
+          updateSearchResultList(MedicalRecordType.MEDICATION, finalProducts);
+        } else {
+          failedRequests.push('Pharmacy');
+          updateSearchResultList(MedicalRecordType.MEDICATION, []);
+          CommonBugFender(
+            'HomeScreen_ConsultRoom_onSearchMedicinesFunction',
+            medicineResponse?.reason
+          );
+        }
+
+        if (consultResponse?.status == 'fulfilled') {
+          successRequests.push('Consult');
+          let finalProducts: any[] = [];
+          const doctors = consultResponse?.value?.data?.getDoctorList?.doctors || [];
+          const specialities = consultResponse?.value?.data?.getDoctorList?.specialties || [];
+
+          if (doctors.length !== 0 || specialities.length !== 0) {
+            const finalDoctors = doctors.slice(0, 3);
+            const finalSpecialities = specialities.slice(0, 1);
+            finalProducts = [...finalDoctors, ...finalSpecialities];
+
+            consultSearchResults.current = finalProducts;
+          } else {
+            consultSearchResults.current = [];
+          }
+
+          updateSearchResultList(MedicalRecordType.CONSULTATION, consultSearchResults.current);
+        } else {
+          failedRequests.push('Consult');
+          updateSearchResultList(MedicalRecordType.CONSULTATION, []);
+          CommonBugFender(
+            'HomeScreen_ConsultRoom_onSearchConsultsFunction',
+            consultResponse?.reason
+          );
+        }
+        successRequests?.length > 0 &&
+          postSearchInputEvent('Success', successRequests?.join(', '), _searchText);
+        failedRequests?.length > 0 &&
+          postSearchInputEvent('Fail', failedRequests?.join(', '), _searchText);
+      })
+      .finally(() => {
+        Keyboard.dismiss();
+        setSearchLoading(false);
+      });
   };
 
   interface searchHeaders {
@@ -5591,7 +5738,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     );
   };
 
-  const onClickSearchItem = (key: string, pdp: boolean = false, nav_props: any = {}) => {
+  const onClickSearchItem = (
+    key: string,
+    pdp: boolean = false,
+    nav_props: any = {},
+    data?: any
+  ) => {
     // todo: for view all results
     // postHomeCleverTapEvent(
     //   CleverTapEventName.VIEW_ALL_SEARCH_RESULT_CLICKED,
@@ -5603,14 +5755,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       case MedicalRecordType.MEDICATION:
         postHomeCleverTapEvent(
           CleverTapEventName.OPTION_FROM_MEDICINE_CLICKED_ON_SEARCH_BAR_PAGE,
-          'Search bar'
+          'Search bar',
+          { Keyword: searchText }
         );
         props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
         break;
       case MedicalRecordType.TEST_REPORT:
         postHomeCleverTapEvent(
           CleverTapEventName.OPTION_FROM_DIAGNOSTIC_CLICKED_ON_SEARCH_BAR_PAGE,
-          'Search bar'
+          'Search bar',
+          { 'Test Name': data?.testName }
         );
         pdp
           ? props.navigation.navigate(AppRoutes.TestDetails, nav_props)
@@ -5619,7 +5773,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       case MedicalRecordType.CONSULTATION:
         postHomeCleverTapEvent(
           CleverTapEventName.OPTION_FROM_CONSULT_CLICKED_ON_SEARCH_BAR_PAGE,
-          'Search bar'
+          'Search bar',
+          { 'Doctor Name': data?.doctorName, Speciality: data?.speciality }
         );
         pdp
           ? props.navigation.navigate(AppRoutes.DoctorDetails, nav_props)
@@ -5711,8 +5866,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             doctorId: item?.id,
           }
         : {};
+    const data = {
+      testName: item?.diagnostic_item_name,
+      doctorName: item?.displayName,
+      speciality: item?.specialtydisplayName,
+    };
     return (
-      <TouchableOpacity onPress={() => onClickSearchItem(key, true, nav_props)}>
+      <TouchableOpacity onPress={() => onClickSearchItem(key, true, nav_props, data)}>
         <View style={{ marginBottom: 6 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
             <View style={styles.searchItemIcon}>
@@ -5801,6 +5961,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.WHITE }}>
+      <NavigationEvents
+        onDidFocus={() => {
+          scrollCount.current = 0;
+        }}
+        onDidBlur={postScrollScreenEvent}
+      />
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
         {isSearchFocus ? null : renderTopIcons()}
         {renderGlobalSearch()}
@@ -5815,9 +5981,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             style={styles.scrollView}
             bounces={false}
             scrollEventThrottle={0}
-            onScroll={() => {
-              scrollCount.current += 1;
-              postScrollScreenEvent();
+            onScroll={(event) => {
+              const currentOffset = event.nativeEvent.contentOffset?.y;
+              currentOffset > (this.offset || 0) && (scrollCount.current += 1);
+              this.offset = currentOffset;
             }}
           >
             <View style={{ width: '100%' }}>

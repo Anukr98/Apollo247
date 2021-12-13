@@ -78,7 +78,7 @@ import {
   Platform,
   ImageBackground,
 } from 'react-native';
-import { NavigationParams, NavigationScreenProps, ScrollView } from 'react-navigation';
+import { NavigationEvents, NavigationScreenProps, ScrollView } from 'react-navigation';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import _ from 'lodash';
 import { getDoctorList } from '@aph/mobile-patients/src/graphql/types/getDoctorList';
@@ -2272,7 +2272,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       'Nav src': '',
       Scrolls: scrollCount.current,
     };
-
     postCleverTapEvent(CleverTapEventName.SCREEN_SCROLLED, eventAttributes);
   };
   const renderPackages = () => {
@@ -2410,6 +2409,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
+      <NavigationEvents
+        onDidFocus={() => {
+          scrollCount.current = 0;
+        }}
+        onDidBlur={postScrollScreenEvent}
+      />
       <SafeAreaView
         style={{
           flex: 1,
@@ -2427,9 +2432,11 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               <ScrollView
                 style={{ flex: 1 }}
                 scrollEventThrottle={0}
-                onScroll={() => {
-                  scrollCount.current += 1;
-                  postScrollScreenEvent();
+                onScroll={(event) => {
+                  //increments only for down scroll
+                  const currentOffset = event.nativeEvent.contentOffset?.y;
+                  currentOffset > (this.offset || 0) && (scrollCount.current += 1);
+                  this.offset = currentOffset;
                 }}
                 keyboardDismissMode="on-drag"
                 onScrollBeginDrag={Keyboard.dismiss}
