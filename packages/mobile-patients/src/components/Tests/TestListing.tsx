@@ -390,21 +390,23 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     const newArray = widgetsData?.diagnosticWidgetData?.map((item: any) => {
       const inclusions = item?.inclusionData;
 
-      const getMandatoryParamter =
-        !!inclusions &&
-        inclusions?.length > 0 &&
-        inclusions?.map((inclusion: any) =>
-          inclusion?.incObservationData?.filter((item: any) => item?.mandatoryValue === '1')
-        );
+      //segregation of tests/packages
+      !!inclusions && inclusions?.length > 1 ? itemPackages.push(item) : itemTests.push(item);
+      // const getMandatoryParamter =
+      //   !!inclusions &&
+      //   inclusions?.length > 0 &&
+      //   inclusions?.map((inclusion: any) =>
+      //     inclusion?.incObservationData?.filter((item: any) => item?.mandatoryValue === '1')
+      //   );
 
-      const getMandatoryParameterCount =
-        !!getMandatoryParamter &&
-        getMandatoryParamter?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
-      if (getMandatoryParameterCount == 1) {
-        itemTests.push(item);
-      } else {
-        itemPackages.push(item);
-      }
+      // const getMandatoryParameterCount =
+      //   !!getMandatoryParamter &&
+      //   getMandatoryParamter?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
+      // if (getMandatoryParameterCount == 1) {
+      //   itemTests.push(item);
+      // } else {
+      //   itemPackages.push(item);
+      // }
     });
     return (
       <>

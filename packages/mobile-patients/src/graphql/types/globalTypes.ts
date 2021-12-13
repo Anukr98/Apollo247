@@ -630,13 +630,6 @@ export enum PlanPurchaseType {
   renew = 'renew',
 }
 
-export enum PrescriptionType {
-  CONSULT = 'CONSULT',
-  LATER = 'LATER',
-  NA = 'NA',
-  UPLOADED = 'UPLOADED',
-}
-
 export enum REFUND_STATUS {
   REFUND_FAILED = 'REFUND_FAILED',
   REFUND_REQUEST_NOT_RAISED = 'REFUND_REQUEST_NOT_RAISED',
@@ -2293,6 +2286,68 @@ export enum TRUECALLER_FAILURE {
 
 export interface TruecallerFailure {
   error: TRUECALLER_FAILURE
+}
+
+export enum CouponApplicable {
+  APPLIED = "APPLIED",
+  ITEM_AT_HIGHER_DISCOUNT = "ITEM_AT_HIGHER_DISCOUNT",
+  NOT_APPLICABLE = "NOT_APPLICABLE",
+}
+
+export enum PLAN_ID {
+  CIRCLEPlan = "CIRCLEPlan",
+}
+
+export interface InputCartLineItems {
+  medicineSKU: string;
+  quantity?: number | null;
+}
+
+export enum PrescriptionType {
+  CONSULT = "CONSULT",
+  LATER = "LATER",
+  NA = "NA",
+  UPLOADED = "UPLOADED",
+}
+
+export interface CartInputData {
+  patientId: string;
+  medicineOrderCartLineItems?: (InputCartLineItems | null)[] | null;
+  zipcode?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  patientAddressId?: string | null;
+  coupon?: string | null;
+  prescriptionDetails?: (CartPrescriptionDetails | null)[] | null;
+  prescriptionType?: PrescriptionType | null;
+  subscription?: CartSubscription | null;
+}
+
+export interface CartPrescriptionDetails {
+  prescriptionImageUrl?: string | null;
+  prismPrescriptionFileId?: string | null;
+  uhid?: string | null;
+  appointmentId?: string | null;
+  meta?: any | null;
+}
+
+export interface CartSubscription {
+  userSubscriptionId?: string | null;
+  planId?: PLAN_ID | null;
+  subPlanId?: string | null;
+  TYPE?: PLAN | null;
+  subscriptionApplied?: boolean | null;
+}
+
+export interface SaveMedicineOrderV3Input {
+  patientId: string;
+  cartType: MEDICINE_ORDER_TYPE;
+  medicineDeliveryType?: MEDICINE_DELIVERY_TYPE | null;
+  bookingSource?: BOOKING_SOURCE | null;
+  deviceType?: DEVICE_TYPE | null;
+  appVersion?: string | null;
+  customerComment?: string | null;
+  showPrescriptionAtStore?: boolean | null;
 }
 
 //==============================================================

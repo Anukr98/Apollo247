@@ -81,17 +81,10 @@ export interface PrescriptionOrderSummaryProps extends NavigationScreenProps {}
 
 export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> = (props) => {
   const {
-    cartItems,
     addresses,
     deliveryAddressId,
     setDeliveryAddressId,
-    uploadPrescriptionRequired,
-    physicalPrescriptions,
-    ePrescriptions,
-    setCartItems,
-    setPhysicalPrescriptions,
     setAddresses,
-    deliveryTime,
     setdeliveryTime,
     storeId,
     stores,
@@ -443,7 +436,7 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
             props.navigation.push(AppRoutes.AddAddressNew, {
               KeyName: 'Update',
               addressDetails: address,
-              ComingFrom: AppRoutes.MedicineCart,
+              ComingFrom: AppRoutes.ServerCart,
             });
             hideAphAlert!();
           }}

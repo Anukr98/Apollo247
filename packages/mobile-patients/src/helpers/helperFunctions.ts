@@ -1747,7 +1747,7 @@ export const postAppointmentCleverTapEvents = (
     | CleverTapEvents[CleverTapEventName.CONSULT_CONTINUE_CONSULTATION_CLICKED]
     | CleverTapEvents[CleverTapEventName.CONSULT_CANCELLED_BY_PATIENT]
     | CleverTapEvents[CleverTapEventName.CONSULT_RESCHEDULED_BY_THE_PATIENT] = {
-    'Doctor name': g(data, 'doctorInfo', 'fullName')!,
+    'Doctor name': g(data, 'doctorInfo', 'displayName'),
     'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
     'Speciality name': g(data, 'doctorInfo', 'specialty', 'name')!,
     'Doctor category': g(data, 'doctorInfo', 'doctorType')!,
@@ -2254,7 +2254,7 @@ export const InitiateAppsFlyer = (
           const responseData = res.data;
           setAppReferralData({
             af_channel: responseData.af_channel,
-            af_referrer_customer_id: responseData.af_referrer_customer_id,
+            af_referrer_customer_id: responseData.referrerId,
             campaign: responseData.campaign,
             rewardId: responseData.rewardId,
             shortlink: responseData.shortlink,

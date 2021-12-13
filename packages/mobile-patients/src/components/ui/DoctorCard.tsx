@@ -993,7 +993,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CONNECT_CARD_CLICK] = {
           Fee: Number(nonCircleDoctorFees),
           'Doctor Speciality': g(rowData, 'specialty', 'name')!,
-          'Doctor Name': g(rowData, 'fullName')!,
+          'Doctor Name': g(rowData, 'displayName')!,
           Source: 'List',
           'Language known': rowData.languages,
         };

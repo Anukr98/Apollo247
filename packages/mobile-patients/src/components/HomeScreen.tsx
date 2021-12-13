@@ -254,6 +254,7 @@ import {
   useReferralProgram,
 } from '@aph/mobile-patients/src/components/ReferralProgramProvider';
 import { setItem, getItem } from '@aph/mobile-patients/src/helpers/TimedAsyncStorage';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 const { Vitals } = NativeModules;
 
@@ -1127,6 +1128,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     displayAskApolloNumber,
     setDisplayAskApolloNumber,
   } = useAppCommonData();
+  const { fetchServerCart } = useServerCart();
 
   // const startDoctor = string.home.startDoctor;
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
@@ -1168,7 +1170,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const { refreeReward, setRefreeReward, setRewardId, setCampaignId } = useReferralProgram();
   const [isReferrerAvailable, setReferrerAvailable] = useState<boolean>(false);
   const {
-    cartItems: shopCartItems,
     setHdfcPlanName,
     setIsFreeDelivery,
     setCircleSubscriptionId,
@@ -1187,8 +1188,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     circleSubPlanId,
     pinCode,
     isPharmacyPincodeServiceable,
+    serverCartItems,
   } = useShoppingCart();
-  const cartItemsCount = cartItems.length + shopCartItems.length;
+  const cartItemsCount = cartItems.length + serverCartItems?.length;
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [previousPatient, setPreviousPatient] = useState<any>([]);
@@ -1308,6 +1310,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const fetchUserAgent = () => {
     try {
       let userAgent = UserAgent?.getUserAgent();
+      if (userAgent) {
+        fetchServerCart(userAgent);
+      }
       AsyncStorage.setItem(USER_AGENT, userAgent);
     } catch {}
   };
@@ -2887,7 +2892,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
   const firebaseRemoteConfigForReferrer = async () => {
     try {
-      const bannerConfig = await remoteConfig().getValue('Referrer_Banner');
+      const RefBannerKey = AppConfig.APP_ENV == 'PROD' ? 'Referrer_Banner' : 'QA_Referrer_Banner';
+      const bannerConfig = await remoteConfig().getValue(RefBannerKey);
       setReferrerAvailable(bannerConfig.asBoolean());
     } catch (e) {}
   };
@@ -4832,10 +4838,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     const onPressCart = () => {
       postVaccineWidgetEvents(CleverTapEventName.MY_CART_CLICKED, 'Top bar');
       const route =
-        (shopCartItems.length && cartItems.length) || (!shopCartItems.length && !cartItems.length)
+        (serverCartItems.length && cartItems.length) ||
+        (!serverCartItems.length && !cartItems.length)
           ? AppRoutes.MedAndTestCart
-          : shopCartItems.length
-          ? AppRoutes.MedicineCart
+          : serverCartItems.length
+          ? AppRoutes.ServerCart
           : AppRoutes.AddPatients;
       props.navigation.navigate(route);
     };
@@ -5822,6 +5829,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                   : renderHeadings('Offers For You')}
                 {offersListCache.length === 0 && offersListLoading && renderOffersForYouShimmer()}
                 {(offersListCache.length > 0 || !offersListLoading) && renderOffersForYou()}
+                {isReferrerAvailable && renderReferralBanner()}
                 {!appointmentLoading && currentAppointments === '0' && myDoctorsCount === 0
                   ? null
                   : renderHeadings('My Doctors')}
@@ -5829,7 +5837,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                   ? null
                   : renderListView('Active Appointments', 'normal')}
                 <View>{renderAllConsultedDoctors()}</View>
-                {isReferrerAvailable && renderReferralBanner()}
                 {renderHeadings('Circle Membership and More')}
                 {isCircleMember === '' && circleDataLoading && renderCircleShimmer()}
                 <View>{isCircleMember === 'yes' && !circleDataLoading && renderCircle()}</View>
