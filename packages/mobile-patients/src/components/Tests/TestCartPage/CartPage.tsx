@@ -1236,14 +1236,20 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         id,
         name,
         addresses?.[selectedAddressIndex]?.zipcode!,
-        'Customer'
+        'Customer',
+        currentPatient,
+        isDiagnosticCircleSubscription,
+        cartItems
       );
     } else {
       DiagnosticRemoveFromCartClicked(
         id,
         name,
         diagnosticLocation?.pincode! || locationDetails?.pincode!,
-        'Customer'
+        'Customer',
+        currentPatient,
+        isDiagnosticCircleSubscription,
+        cartItems
       );
     }
   };
