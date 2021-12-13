@@ -1262,7 +1262,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     return (
       <>
         {renderHeadingView(
-          'Diagnosis',
+          'Diagnosis / Provisional Diagnosis',
           <PhrDiagnosisIcon style={{ width: 20, height: 20, marginRight: 12 }} />
         )}
         {caseSheetDetails?.diagnosis !== null ? (
