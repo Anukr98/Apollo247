@@ -170,7 +170,10 @@
     "consult_via_visit": "Wish to consult with a doctor at hospital?",
     "selectSpeciality": "Select Speciality",
     "apollo247UniversalLink": "www.apollo247.com",
-    "apolloPharmacyUniversalLink": "www.apollopharmacy.in"
+    "apolloPharmacyUniversalLink": "www.apollopharmacy.in",
+    "cancelAppointmentTitleHeading": "Appointment Cancellation",
+    "cancelAppointmentBody": "Confirm if you would like to proceed with the cancellation of your ",
+    "cancelRefundBody": "We regret the inconvenience caused. We’ll issue you a full refund."
   },
   "diagnosticsLocation": {
     "savedAddressText": "Saved Addresses",
