@@ -127,34 +127,39 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
   };
 
   const postPrescriptionEvent = async (eventType: "pageViewed" | "noPrescription") => {
-    const user_type = await AsyncStorage.getItem("PharmacyUserType");
-    let prescription_items: string[] = [], prescription_items_nos = 0, prescription_required = false;
-    serverCartItems?.forEach(item => {
-      if(item?.isPrescriptionRequired) {
-        prescription_items.push(item?.name)
-        prescription_items_nos++
-        prescription_required = true
+    try {
+      const user_type = await AsyncStorage.getItem("PharmacyUserType");
+      let prescription_items: string[] = [], prescription_items_nos = 0, prescription_required = false;
+      serverCartItems?.forEach(item => {
+        if(item?.isPrescriptionRequired) {
+          prescription_items.push(item?.name)
+          prescription_items_nos++
+          prescription_required = true
+        }
+      })
+      const eventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_PRESCRIPTION_PAGE_VIEWED] = {
+        cartItems: serverCartItems,
+        order_value: serverCartAmount?.estimatedAmount,
+        shipping_charges: serverCartAmount?.deliveryCharges,
+        prescription_items,
+        prescription_items_nos,
+        user_type,
+        loggedIn: true,
+        circle_member: pharmacyCircleAttributes?.['Circle Membership Added'],
+        circle_membership_value: pharmacyCircleAttributes?.['Circle Membership Value'] ? pharmacyCircleAttributes?.['Circle Membership Value'] : 0,
+        prescription_required,
+        user: currentPatient?.firstName,
+        mobile_number: currentPatient?.mobileNumber,
+        "Customer id": currentPatient?.id
       }
-    })
-    const eventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_PRESCRIPTION_PAGE_VIEWED] = {
-      cartItems: serverCartItems,
-      order_value: serverCartAmount?.estimatedAmount,
-      shipping_charges: serverCartAmount?.deliveryCharges,
-      prescription_items,
-      prescription_items_nos,
-      user_type,
-      loggedIn: true,
-      circle_member: pharmacyCircleAttributes?.['Circle Membership Added'],
-      circle_membership_value: pharmacyCircleAttributes?.['Circle Membership Value'] ? pharmacyCircleAttributes?.['Circle Membership Value'] : 0,
-      prescription_required,
-      user: currentPatient?.firstName,
-      mobile_number: currentPatient?.mobileNumber,
-      "Customer id": currentPatient?.id
+      if(eventType === 'noPrescription')
+        postCleverTapEvent(CleverTapEventName.PHARMACY_DONT_HAVE_PRESCRIPTION, eventAttributes)
+      if(eventType === 'pageViewed')
+        postCleverTapEvent(CleverTapEventName.PHARMACY_PRESCRIPTION_PAGE_VIEWED, eventAttributes)
     }
-    if(eventType === 'noPrescription')
-      postCleverTapEvent(CleverTapEventName.PHARMACY_DONT_HAVE_PRESCRIPTION, eventAttributes)
-    if(eventType === 'pageViewed')
-      postCleverTapEvent(CleverTapEventName.PHARMACY_PRESCRIPTION_PAGE_VIEWED, eventAttributes)
+    catch(e) {
+
+    }
   }
 
   const onPressContinue = async () => {
