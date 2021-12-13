@@ -292,6 +292,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     }
   };
   const onPressMembershipPlans = (index: number) => {
+    console.log({ source });
     fireMembershipPlanSelected();
 
     const membershipPlan = membershipPlans?.[index];
@@ -305,6 +306,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         currentPatient
       );
     }
+    console.log({ isConsultJourney });
     if (isConsultJourney) {
       !isModal &&
         circleWebEngageEventForAddToCart(
@@ -314,6 +316,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       !isModal && fireCirclePlanToCartEvent(membershipPlan);
       onSelectMembershipPlan && onSelectMembershipPlan();
     } else {
+      console.log('po');
       setIsCircleSubscription && setIsCircleSubscription(true);
       setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
       !isModal && fireCirclePlanToCartEvent(membershipPlan);

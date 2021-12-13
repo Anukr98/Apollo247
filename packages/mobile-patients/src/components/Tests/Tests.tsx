@@ -32,6 +32,7 @@ import {
   CameraIcon,
   CrossPopup,
   CircleLogo,
+  ArrowUpGreen,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
@@ -86,6 +87,7 @@ import {
   FlatList,
   Modal,
   Platform,
+  Animated,
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
@@ -105,7 +107,7 @@ import {
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
-import _, { filter } from 'lodash';
+import _ from 'lodash';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import {
   GetSubscriptionsOfUserByStatus,
@@ -194,14 +196,13 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Cache } from 'react-native-cache';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 import { TestPdfRender } from '@aph/mobile-patients/src/components/Tests/components/TestPdfRender';
-import { apiBaseUrl, apiRoutes } from '../../helpers/apiRoutes';
-import firebaseAuth from '@react-native-firebase/auth';
-import { AuthContextProps } from '../AuthProvider';
+import { CartSummaryView } from './components/CartSummaryView';
+import { BottomSheet } from './components/BottomSheet';
 const rankArr = ['1', '2', '3', '4', '5', '6'];
 const { width: winWidth, height: winHeight } = Dimensions.get('window');
 const AUTO_SCROLL_INTERVAL = 3000;
 const divisionFactor = winHeight > 750 ? 2.2 : winHeight > 650 ? 1.7 : 1.5;
-const GO_TO_CART_HEIGHT = 60;
+const GO_TO_CART_HEIGHT = 70;
 const NON_CIRCLE_NUDGE_HEIGHT = 35;
 export interface DiagnosticData {
   cityId: string;
@@ -326,6 +327,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [patientOpenOrders, setPatientOpenOrders] = useState([] as any);
   const [patientClosedOrders, setPatientClosedOrders] = useState([] as any);
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
+  const [showCartSummary, setShowCartSummary] = useState<boolean>(false);
   const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
   const defaultAddress = addresses?.find((item) => item?.defaultAddress);
 
@@ -2667,21 +2669,30 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
+  function gestureHandler(e) {
+    const pp = e?.nativeEvent?.contentOffset?.y;
+    console.log('oopopp');
+    console.log({ pp });
+    if (pp > 0) {
+      setShowCartSummary(true);
+    } else if (pp < 0) {
+      setShowCartSummary(false);
+    }
+  }
+
+  function _openCartSummaryView() {
+    setShowCartSummary(true);
+  }
+
   const renderCartDetails = () => {
+    const itemCount = cartItems?.length > 9 ? `${cartItems?.length}` : `0${cartItems?.length}`;
     return (
-      <View style={styles.cartDetailView}>
-        <Text style={styles.itemAddedText}>
-          {cartItems?.length}{' '}
-          {cartItems?.length == 1 ? string.diagnostics.itemAdded : string.diagnostics.itemsAdded}
-        </Text>
-        <View style={styles.goToCartView}>
-          <Button
-            title={nameFormater(string.diagnostics.goToCart, 'upper')}
-            onPress={() => _navigateToPatientsPage()}
-            style={{ width: '90%' }}
-          />
-        </View>
-      </View>
+      <BottomSheet
+        itemCount={itemCount}
+        cartCount={cartItems?.length}
+        onPressGoToCart={() => _navigateToPatientsPage()}
+        height={GO_TO_CART_HEIGHT}
+      />
     );
   };
 
@@ -3009,7 +3020,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <View style={[styles.nudgeMsgHeight, { bottom: isCartAvailable ? GO_TO_CART_HEIGHT : 0 }]}>
         <CircleLogo style={styles.circleIcon} />
-        <View style={{ width: '80%' }}>
+        <View style={styles.nudgeMsgView}>
           <Text style={styles.nudgeMsgText}>
             {AppConfig.Configuration.DIAGNOSTICS_NUDGE_MESSAGE_TEXT}
           </Text>
@@ -3115,6 +3126,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         {showLocationPopup && renderLocationSearch()}
         {showUnserviceablePopup && renderNonServiceableToolTip(false)}
         {showNoLocationPopUp && renderNonServiceableToolTip(true)}
+        {showCartSummary && renderCartSummary()}
       </SafeAreaView>
       {showViewReportModal ? renderViewReportModal() : null}
       {showbookingStepsModal ? renderBookingStepsModal() : null}
@@ -3295,20 +3307,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 15, theme.colors.SHERPA_BLUE, 0.5, 20),
     textAlign: 'left',
   },
-  itemAddedText: {
-    marginLeft: 20,
-    ...theme.viewStyles.text('SB', isSmallDevice ? 13 : 14, colors.SHERPA_BLUE),
-    lineHeight: 16,
-    textAlign: 'left',
-    alignSelf: 'center',
-  },
-  goToCartText: {
-    marginRight: 20,
-    ...theme.viewStyles.text('SB', isSmallDevice ? 15 : 16, theme.colors.WHITE),
-    lineHeight: 20,
-    textAlign: 'right',
-    alignSelf: 'center',
-  },
+
   cartDetailView: {
     position: 'absolute',
     backgroundColor: colors.WHITE,
@@ -3488,11 +3487,10 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 5,
     paddingBottom: 5,
-    backgroundColor: '#FFF6DE',
+    backgroundColor: colors.ORANGE_BG,
     flexDirection: 'row',
     width: '100%',
     position: 'absolute',
-    alignItems: 'center',
   },
   circleIcon: {
     height: isSmallDevice ? 16 : 19,
@@ -3501,8 +3499,8 @@ const styles = StyleSheet.create({
     marginRight: 8,
     marginLeft: 20,
   },
+  nudgeMsgView: { width: '80%', justifyContent: 'center' },
   nudgeMsgText: { ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1, 18) },
-  goToCartView: { marginRight: 12, alignItems: 'flex-end' },
   certificateViewTitle: {
     color: colors.SHERPA_BLUE,
     ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 12 : 13),
