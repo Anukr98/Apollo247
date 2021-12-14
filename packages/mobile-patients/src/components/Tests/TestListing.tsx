@@ -389,25 +389,10 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     let itemTests: any[] = [];
     const newArray = widgetsData?.diagnosticWidgetData?.map((item: any) => {
       const inclusions = item?.inclusionData;
-
       //segregation of tests/packages
       !!inclusions && inclusions?.length > 1 ? itemPackages.push(item) : itemTests.push(item);
-      // const getMandatoryParamter =
-      //   !!inclusions &&
-      //   inclusions?.length > 0 &&
-      //   inclusions?.map((inclusion: any) =>
-      //     inclusion?.incObservationData?.filter((item: any) => item?.mandatoryValue === '1')
-      //   );
-
-      // const getMandatoryParameterCount =
-      //   !!getMandatoryParamter &&
-      //   getMandatoryParamter?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
-      // if (getMandatoryParameterCount == 1) {
-      //   itemTests.push(item);
-      // } else {
-      //   itemPackages.push(item);
-      // }
     });
+
     return (
       <>
         {!!actualItemsToShow && actualItemsToShow?.length > 0 ? (
@@ -418,7 +403,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
             }}
             scrollEventThrottle={16}
           >
-            {itemPackages?.length && (
+            {!!itemPackages && itemPackages?.length > 0 && (
               <>
                 <Text style={styles.headingText}>
                   {nameFormater(deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle, 'upper')}{' '}
@@ -449,7 +434,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
             {!error && !loading && itemPackages?.length && itemPackages?.length > packageOffset
               ? renderLoadAll('packages', itemPackages?.length)
               : null}
-            {itemTests?.length && (
+            {!!itemTests && itemTests?.length > 0 && (
               <>
                 <Text style={styles.headingText}>
                   {nameFormater(deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle, 'upper')}{' '}
