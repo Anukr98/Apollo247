@@ -2894,7 +2894,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
   const firebaseRemoteConfigForReferrer = async () => {
     try {
-      const bannerConfig = await remoteConfig().getValue('Referrer_Banner');
+      const RefBannerKey = AppConfig.APP_ENV == 'PROD' ? 'Referrer_Banner' : 'QA_Referrer_Banner';
+      const bannerConfig = await remoteConfig().getValue(RefBannerKey);
       setReferrerAvailable(bannerConfig.asBoolean());
     } catch (e) {}
   };
@@ -5833,14 +5834,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                   : renderHeadings('Offers For You')}
                 {offersListCache.length === 0 && offersListLoading && renderOffersForYouShimmer()}
                 {(offersListCache.length > 0 || !offersListLoading) && renderOffersForYou()}
-                {!appointmentLoading && currentAppointments === '0' && myDoctorsCount === 0
+                {isReferrerAvailable && renderReferralBanner()}
+                {!appointmentLoading && currentAppointments === '0'
                   ? null
                   : renderHeadings('My Doctors')}
                 {!appointmentLoading && currentAppointments === '0'
                   ? null
                   : renderListView('Active Appointments', 'normal')}
                 <View>{renderAllConsultedDoctors()}</View>
-                {isReferrerAvailable && renderReferralBanner()}
+
                 {renderHeadings('Circle Membership and More')}
                 {isCircleMember === '' && circleDataLoading && renderCircleShimmer()}
                 <View>{isCircleMember === 'yes' && !circleDataLoading && renderCircle()}</View>
