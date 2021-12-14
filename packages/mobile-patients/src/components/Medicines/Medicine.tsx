@@ -313,7 +313,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     newAddressAdded,
     setNewAddressAdded,
     setAddToCartSource,
-    circleSubscriptionId,
+    cartCircleSubscriptionId,
   } = useShoppingCart();
   const {
     setUserActionPayload,
@@ -1223,7 +1223,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         'Customer ID': g(currentPatient, 'id'),
         User_Type: getUserType(allCurrentPatients),
         'Page name': 'Medicine page',
-        'Circle Member': !!circleSubscriptionId ? 'True' : 'False',
+        'Circle Member': cartCircleSubscriptionId ? 'True' : 'False',
       };
       postCleverTapEvent(CleverTapEventName.HOME_ICON_CLICKED, eventAttributes);
     };
@@ -1463,7 +1463,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 Source: 'Home',
                 User_Type: pharmacyUserType,
               };
-              const cleverTapEventAttributes : CleverTapEvents[CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED] = {
+              const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED] = {
                 'Nav src': 'Home',
                 'User type': pharmacyUserType,
                 patient_name: currentPatient?.firstName,
@@ -1472,7 +1472,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 gender: currentPatient?.gender,
                 mobile_number: currentPatient?.mobileNumber,
                 age: moment().year() - moment(currentPatient?.dateOfBirth).year(),
-                customerId: currentPatient?.id
+                customerId: currentPatient?.id,
               };
               postCleverTapEvent(
                 CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED,
@@ -2358,7 +2358,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       'Patient Name': currentPatient?.firstName,
       'Patient UHID': currentPatient?.uhid,
       'Patient age': getAge(currentPatient?.dateOfBirth),
-      'Circle Member': circleSubscriptionId ? 'True' : 'False',
+      'Circle Member': cartCircleSubscriptionId ? 'True' : 'False',
       'Customer ID': currentPatient?.id,
       'Patient gender': currentPatient?.gender,
       'Mobile number': currentPatient?.mobileNumber,
