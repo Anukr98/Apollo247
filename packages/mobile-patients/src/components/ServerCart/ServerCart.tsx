@@ -60,7 +60,10 @@ import { EmptyCart } from '@aph/mobile-patients/src/components/ServerCart/Compon
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { saveCart_saveCart_data_medicineOrderCartLineItems } from '@aph/mobile-patients/src/graphql/types/saveCart';
 import { FreeDelivery } from '@aph/mobile-patients/src/components/ServerCart/Components/FreeDelivery';
-import { CleverTapEventName, CleverTapEvents } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import AsyncStorage from '@react-native-community/async-storage';
 
 export interface ServerCartProps extends NavigationScreenProps {}
@@ -211,23 +214,24 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
 
   const postChangeAddressEvent = async () => {
     try {
-      const currentAddress = addresses?.find(item => item?.id === cartAddressId)
+      const currentAddress = addresses?.find((item) => item?.id === cartAddressId);
       const eventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CART_CHANGE_ADDRESS_CLICKED] = {
         currentAddress: formatAddress(currentAddress!),
         pincode: currentAddress?.zipcode,
         user: currentPatient?.firstName,
-        mobile_number: currentAddress?.mobileNumber ? currentAddress?.mobileNumber : "",
-        user_type: await AsyncStorage.getItem("PharmacyUserType"),
+        mobile_number: currentAddress?.mobileNumber ? currentAddress?.mobileNumber : '',
+        user_type: await AsyncStorage.getItem('PharmacyUserType'),
         circle_member: pharmacyCircleAttributes?.['Circle Membership Added'],
-        circle_membership_value: pharmacyCircleAttributes?.['Circle Membership Value'] ? pharmacyCircleAttributes?.['Circle Membership Value'] : 0,
-      }
+        circle_membership_value: pharmacyCircleAttributes?.['Circle Membership Value']
+          ? pharmacyCircleAttributes?.['Circle Membership Value']
+          : 0,
+      };
       postCleverTapEvent(CleverTapEventName.PHARMACY_CART_CHANGE_ADDRESS_CLICKED, eventAttributes);
-    }
-    catch(err) {}
-  }
+    } catch (err) {}
+  };
 
   async function showAddressPopup() {
-    postChangeAddressEvent()
+    postChangeAddressEvent();
     showAphAlert!({
       title: string.common.selectAddress,
       removeTopIcon: true,
@@ -412,10 +416,10 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
           }}
         >
           {!!serverCartItems?.length ? renderScreen() : renderEmptyCart()}
-          {serverCartLoading && <Spinner />}
         </ScrollView>
         {!!serverCartItems?.length && renderProceedBar()}
       </SafeAreaView>
+      {serverCartLoading && <Spinner />}
     </View>
   );
 };
