@@ -3759,8 +3759,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
           <Text
             style={{
-              ...theme.viewStyles.text('B', 18, offerDesignTemplate?.title_text_color, 1, 30),
+              ...theme.viewStyles.text('B', 18, offerDesignTemplate?.title_text_color, 1, 28),
               marginHorizontal: 10,
+              marginTop: 28,
               marginBottom: 'auto',
             }}
           >
