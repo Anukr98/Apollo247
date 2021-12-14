@@ -127,7 +127,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const { addCartItem, removeCartItem, updateCartItem, cartItems } = useDiagnosticsCart();
-  const { cartItems: shopCartItems } = useShoppingCart();
+  const { serverCartItems: shopCartItems } = useShoppingCart();
   const { getPatientApiCall } = useAuth();
   const { locationForDiagnostics, locationDetails } = useAppCommonData();
   const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();

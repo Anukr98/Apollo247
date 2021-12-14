@@ -14,8 +14,12 @@ import {
   getDiscountPercentage,
   productsThumbnailUrl,
   getIsMedicine,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 export interface FrequentlyBoughtTogetherProps {
   boughtTogetherArray: MedicineProduct[];
@@ -43,7 +47,8 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
   );
   const [totalPrice, setTotalPrice] = useState<number>(defaultTotalPrice || 0);
 
-  const { cartItems, updateCartItem, addMultipleCartItems } = useShoppingCart();
+  const { setUserActionPayload } = useServerCart();
+  const { allCurrentPatients, currentPatient } = useAllCurrentPatients()
 
   const onPressIcon = (id: number, itemPrice: number, item) => {
     const newArr = [...selectedProductsId];
@@ -65,42 +70,30 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
     setSelectedProductsId(newArr);
   };
 
+  const postFrequentlyBoughtTogetherEvent = async (item: object) => {
+    const eventAttributes = {
+      item,
+      source: "Frequently Bought Together",
+      user: currentPatient?.firstName,
+      mobile_number: currentPatient?.mobileNumber,
+      customer_id: currentPatient?.id
+    }
+    postCleverTapEvent(CleverTapEventName.FRQUENTLY_BOUGHT_TOGETHER, eventAttributes)
+  }
+
   const onPressAdd = (selectedProductsArray) => {
     if (selectedProductsArray.length > 0) {
-      const itemsList = selectedProductsArray.map((item) => {
-        if (cartItems.find(({ id }) => id?.toUpperCase() === item?.sku?.toUpperCase())) {
-          updateCartItem?.({
-            id: item?.sku,
-            quantity: 1,
-          });
-          return null;
-        } else {
-          return {
-            id: item?.sku,
-            mou: item?.mou,
-            name: item?.name,
-            price: item?.price,
-            specialPrice: item?.special_price
-              ? typeof item?.special_price == 'string'
-                ? Number(item?.special_price)
-                : item?.special_price
-              : undefined,
-            prescriptionRequired: item?.is_prescription_required === '1',
-            isMedicine: getIsMedicine(item?.type_id?.toLowerCase()) || '0',
-            quantity: 1,
-            thumbnail: item?.thumbnail,
-            isInStock: true,
-            maxOrderQty: item?.MaxOrderQty,
-            productType: item?.type_id,
-            url_key: item?.url_key,
-            subcategory: item?.subcategory,
-          };
-        }
+      selectedProductsArray.map((item) => {
+        postFrequentlyBoughtTogetherEvent(item)
+        setUserActionPayload?.({
+          medicineOrderCartLineItems: [
+            {
+              medicineSKU: item?.sku,
+              quantity: 1,
+            },
+          ],
+        });
       });
-      if (!itemsList.every((element) => element === null)) {
-        const finalItemsList = itemsList.filter((element) => element !== null);
-        addMultipleCartItems!(finalItemsList);
-      }
       setShowAddedToCart(true);
       setTimeout(() => {
         setShowAddedToCart(false);

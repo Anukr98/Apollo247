@@ -236,6 +236,7 @@ import {
   createVonageSessionToken,
   createVonageSessionTokenVariables,
 } from '../../graphql/types/createVonageSessionToken';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 interface OpentokStreamObject {
   connection: {
@@ -747,7 +748,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: theme.colors.PORCELAIN_GRAY
+    borderColor: theme.colors.PORCELAIN_GRAY,
   },
 
   externalMeetingLinkText: {
@@ -769,7 +770,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: theme.colors.PORCELAIN_GRAY
+    borderColor: theme.colors.PORCELAIN_GRAY,
   },
   exeternalMeetingLinkMeetingCTAText: {
     ...theme.viewStyles.text('M', 11, theme.colors.APP_YELLOW),
@@ -839,7 +840,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.shadowStyle,
     alignSelf: 'center',
     borderWidth: 2,
-    borderColor: theme.colors.PORCELAIN_GRAY
+    borderColor: theme.colors.PORCELAIN_GRAY,
   },
   rescheduleBtn: {
     flex: 0.6,
@@ -863,7 +864,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     borderWidth: 2,
     borderColor: theme.colors.PORCELAIN_GRAY,
-    height: 230
+    height: 230,
   },
   prescriptionText: {
     marginStart: 10,
@@ -875,7 +876,7 @@ const styles = StyleSheet.create({
   pdfView: {
     width: 220,
     height: 110,
-    alignSelf: 'center'
+    alignSelf: 'center',
   },
   pdfThumbnail: {
     width: 216,
@@ -906,7 +907,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 4,
     borderWidth: 2,
-    borderColor: theme.colors.PORCELAIN_GRAY
+    borderColor: theme.colors.PORCELAIN_GRAY,
   },
   drUnavailableText: {
     lineHeight: 22,
@@ -923,7 +924,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 4,
     borderWidth: 2,
-    borderColor: theme.colors.PORCELAIN_GRAY
+    borderColor: theme.colors.PORCELAIN_GRAY,
   },
   slotChangeText: {
     color: theme.colors.LIGHT_BLUE,
@@ -949,7 +950,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     borderRadius: 10,
     marginVertical: 2,
-    flexDirection: 'row', 
+    flexDirection: 'row',
     justifyContent: 'flex-start',
   },
   msgImageView: {
@@ -1002,14 +1003,14 @@ const styles = StyleSheet.create({
   pdfLogo: {
     height: 20,
     width: 15,
-    marginHorizontal: 4
+    marginHorizontal: 4,
   },
   apptCompleteView: {
     backgroundColor: theme.colors.WHITE,
     marginLeft: 38,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: theme.colors.PORCELAIN_GRAY
+    borderColor: theme.colors.PORCELAIN_GRAY,
   },
   presGuideText: {
     color: theme.colors.LIGHT_BLUE,
@@ -1024,7 +1025,7 @@ const styles = StyleSheet.create({
     marginLeft: 38,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: theme.colors.PORCELAIN_GRAY
+    borderColor: theme.colors.PORCELAIN_GRAY,
   },
   msgSubView: {
     backgroundColor: 'white',
@@ -1066,9 +1067,9 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: theme.colors.PORCELAIN_GRAY,
   },
-  callLogo: { 
+  callLogo: {
     width: 20,
-    height: 20
+    height: 20,
   },
   doctorTypingText: {
     width: 250,
@@ -1081,12 +1082,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE, 1, 16),
     bottom: Platform.OS == 'android' ? 60 : 100,
-    position: 'absolute'
+    position: 'absolute',
   },
-  listView: { 
-    flex: 1, 
+  listView: {
+    flex: 1,
     marginBottom: 65,
-    backgroundColor: theme.colors.WHITE 
+    backgroundColor: theme.colors.WHITE,
   },
   rescheduleText: {
     color: theme.colors.LIGHT_BLUE,
@@ -1102,7 +1103,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginVertical: 8,
     paddingHorizontal: 14,
-    paddingVertical: 4
+    paddingVertical: 4,
   },
   automatedMsgView: {
     backgroundColor: theme.colors.WHITE,
@@ -1121,7 +1122,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: theme.colors.PORCELAIN_GRAY,
     alignItems: 'center',
-    paddingStart: 18
+    paddingStart: 18,
   },
   patientImgView: {
     backgroundColor: 'transparent',
@@ -1150,11 +1151,11 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     paddingBottom: 6,
   },
-  separator: { 
-    backgroundColor: 'transparent', 
-    height: 4, 
-    width: 20
-  }, 
+  separator: {
+    backgroundColor: 'transparent',
+    height: 4,
+    width: 20,
+  },
 });
 
 const urlRegEx = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG)/;
@@ -1247,12 +1248,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     addMultipleCartItems: addMultipleTestCartItems,
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
   } = useDiagnosticsCart();
-  const {
-    setEPrescriptions,
-    addMultipleCartItems,
-    circleSubPlanId,
-    circleSubscriptionId,
-  } = useShoppingCart();
+  const { circleSubPlanId, circleSubscriptionId } = useShoppingCart();
+  const { uploadEPrescriptionsToServerCart } = useServerCart();
   const [name, setname] = useState<string>('');
   const [showRescheduleCancel, setShowRescheduleCancel] = useState<boolean>(false);
   const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
@@ -1282,7 +1279,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     borderRadius: 12,
     ...theme.viewStyles.cardViewStyle,
   });
-
 
   const disAllowReschedule =
     g(appointmentData, 'appointmentState') != APPOINTMENT_STATE.AWAITING_RESCHEDULE;
@@ -1405,7 +1401,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const patientId = appointmentData.patientId;
   const doctorId = appointmentData.doctorInfo.id;
   const channel = useRef<string>(`${patientId}-${doctorId}`);
-  const {id: apptId} = appointmentData || {};
+  const { id: apptId } = appointmentData || {};
 
   let intervalId: any;
   let stoppedTimer: number;
@@ -1432,7 +1428,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const canPublishTyping = useRef<boolean>(true);
   const typingThrottleTime = 200; //0.2 seconds
   const typingClearTime = 1000; //1 seconds
-  const clearTimerId = useRef<NodeJS.Timeout>()
+  const clearTimerId = useRef<NodeJS.Timeout>();
 
   let cancelAppointmentTitle = '';
   if (appointmentDiffMin >= 15) {
@@ -1592,7 +1588,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       | WebEngageEvents[WebEngageEventName.VIEW_PRESCRIPTION_IN_CONSULT_DETAILS]
       | WebEngageEvents[WebEngageEventName.PATIENT_JOINED_CONSULT]
       | WebEngageEvents[WebEngageEventName.PATIENT_ENDED_CONSULT] = {
-      'Doctor Name': g(data, 'doctorInfo', 'fullName')!,
+      'Doctor Name': g(data, 'doctorInfo', 'displayName')!,
       'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
       'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,
       'Doctor Category': g(data, 'doctorInfo', 'doctorType')!,
@@ -1675,7 +1671,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
       'Patient Gender': g(currentPatient, 'gender'),
-      'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName')!,
+      'Doctor Name': g(appointmentData, 'doctorInfo', 'displayName')!,
       'Doctor ID': doctorId,
       'Speciality name': g(appointmentData, 'doctorInfo', 'specialty', 'name')!,
       'Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id')!,
@@ -1782,7 +1778,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       const eventAttributes:
         | WebEngageEvents[WebEngageEventName.CHAT_WITH_DOCTOR]
         | WebEngageEvents[WebEngageEventName.PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT] = {
-        'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName')!,
+        'Doctor Name': g(appointmentData, 'doctorInfo', 'displayName')!,
         'Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id')!,
         'Speciality Name': g(appointmentData, 'doctorInfo', 'specialty', 'name')!,
         'Doctor Category': g(appointmentData, 'doctorInfo', 'doctorType')!,
@@ -1844,7 +1840,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       'Appointment Date time': moment(g(appointmentData, 'appointmentDateTime')).toDate(),
       'Appointment display ID': g(appointmentData, 'displayId')!,
       'Appointment ID': g(appointmentData, 'id')!,
-      'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName')!,
+      'Doctor Name': g(appointmentData, 'doctorInfo', 'displayName')!,
       'Speciality Name': g(appointmentData, 'doctorInfo', 'specialty', 'name')!,
       'Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id')!,
       'Doctor Type': g(appointmentData, 'doctorInfo', 'doctorType')!,
@@ -2013,8 +2009,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   function analyzeMessages(messages: any) {
     const prescUploadIndex = messages
       .reverse()
-      .findIndex((item: any) => item?.id == doctorId && item?.message == followupconsult
-        && item?.transferInfo?.appointmentId == apptId);
+      .findIndex(
+        (item: any) =>
+          item?.id == doctorId &&
+          item?.message == followupconsult &&
+          item?.transferInfo?.appointmentId == apptId
+      );
     messages.reverse();
     const guideLinesIndex = messages
       .reverse()
@@ -3288,7 +3288,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const postOpentokError = (errorName: string, errorData: any) => {
     const eventAttributes: CleverTapEvents[CleverTapEventName.OPENTOK_ERROR_RECEIVED] = {
       'Doctor ID': g(appointmentData, 'doctorInfo', 'id')!,
-      'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName'),
+      'Doctor Name': g(appointmentData, 'doctorInfo', 'displayName'),
       'Doctor Number': g(appointmentData, 'doctorInfo', 'mobileNumber'),
       'Doctor Type': g(appointmentData, 'doctorInfo', 'doctorType'),
       'Doctor Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id'),
@@ -3325,7 +3325,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const postOpentokEvent = (eventName: string, eventData: any) => {
     const eventAttributes: CleverTapEvents[CleverTapEventName.OPENTOK_EVENT_RECEIVED] = {
       'Doctor ID': g(appointmentData, 'doctorInfo', 'id')!,
-      'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName'),
+      'Doctor Name': g(appointmentData, 'doctorInfo', 'displayName'),
       'Doctor Number': g(appointmentData, 'doctorInfo', 'mobileNumber'),
       'Doctor Type': g(appointmentData, 'doctorInfo', 'doctorType'),
       'Doctor Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id'),
@@ -3371,7 +3371,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       | getPatinetAppointments_getPatinetAppointments_patinetAppointments = appointmentData
   ) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.CALL_ENDED] = {
-      'Doctor Name': g(data, 'doctorInfo', 'fullName')!,
+      'Doctor Name': g(data, 'doctorInfo', 'displayName')!,
       'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
       'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,
       'Consult Date Time': moment(g(data, 'appointmentDateTime')).toDate(),
@@ -3425,7 +3425,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   useEffect(() => {
     const launchDate = AppConfig.Configuration.LONG_CHAT_LAUNCH_DATE;
     const apptDateTime = appointmentData?.appointmentDateTime;
-    if(moment(launchDate, 'DD/MM/YYYY') > moment.utc(apptDateTime)){
+    if (moment(launchDate, 'DD/MM/YYYY') > moment.utc(apptDateTime)) {
       channel.current = appointmentData?.id;
     }
     console.ignoredYellowBox = ['Warning: Each', 'Warning: Failed'];
@@ -3441,7 +3441,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }
       },
       signal: (payload) => {
-        if(payload.message == doctorTypingOn){          
+        if (payload.message == doctorTypingOn) {
           setDoctorTyping(true);
           clearTimerId.current && clearTimeout(clearTimerId.current);
           clearTimerId.current = setTimeout(() => {
@@ -3460,7 +3460,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           postAppointmentWEGEvent(WebEngageEventName.JD_COMPLETED);
         } else if (messageType == startConsultMsg) {
           postAppointmentWEGEvent(WebEngageEventName.SD_CONSULTATION_STARTED);
-
         } else if (messageType == videoCallMsg && name == 'DOCTOR') {
           postAppointmentWEGEvent(WebEngageEventName.SD_VIDEO_CALL_STARTED);
         }
@@ -4308,7 +4307,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             consultID: g(appointmentData, 'id')!,
             displayId: String(g(appointmentData, 'displayId')!),
             consultMode: ConsultMode.ONLINE,
-            doctorFullName: g(appointmentData, 'doctorInfo', 'fullName')!,
+            doctorFullName: g(appointmentData, 'doctorInfo', 'displayName')!,
             message,
             chatFormat: msgType,
             source: 'APP',
@@ -4359,9 +4358,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               </View>
             )}
             <View style={styles.rescheduleView}>
-              <Text style={styles.rescheduleText}>
-                Your appointment has been transferred to —
-              </Text>
+              <Text style={styles.rescheduleText}>Your appointment has been transferred to —</Text>
               <View style={{ marginVertical: 12, marginHorizontal: 16 }}>
                 <View
                   style={{
@@ -4537,9 +4534,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const followUpView = (rowData: any, index: number, type: string) => {
     return (
       <>
-        <View
-          style={styles.followUpView}
-        >
+        <View style={styles.followUpView}>
           {leftComponent === 1 && (
             <View
               style={{
@@ -4562,13 +4557,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             </View>
           )}
           <View style={styles.prescriptionView}>
-            <Text style={styles.prescriptionText}>
-              {string.appointments.presShared}
-            </Text>
-            <Pdf
-              source={{ uri: rowData?.transferInfo?.pdfUrl }}
-              style={styles.pdfView}
-            />
+            <Text style={styles.prescriptionText}>{string.appointments.presShared}</Text>
+            <Pdf source={{ uri: rowData?.transferInfo?.pdfUrl }} style={styles.pdfView} />
             <StickyBottomComponent
               style={{
                 paddingHorizontal: 0,
@@ -4605,9 +4595,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               />
             </StickyBottomComponent>
           </View>
-          <Text style={styles.prescTimeText}>
-          {convertChatTime(rowData)}
-        </Text>
+          <Text style={styles.prescTimeText}>{convertChatTime(rowData)}</Text>
         </View>
       </>
     );
@@ -4643,31 +4631,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (isCartOrder) {
       try {
         setLoading(true);
-        const response: AxiosResponse<MedicineProductDetailsResponse>[] = await Promise.all(
-          medPrescription.map((item) => getMedicineDetailsApi(item?.id!))
-        );
-        const cartItems = response
-          .filter(({ data }) => {
-            const medicine = data?.productdp?.[0];
-            return medicine?.id && medicine?.sku;
-          })
-          .map(({ data }, index) => ({
-            ...formatToCartItem({ ...data?.productdp?.[0]!, image: '' }),
-            quantity: getPrescriptionItemQuantity(
-              medPrescription?.[index]?.medicineUnit,
-              medPrescription?.[index]?.medicineTimings,
-              medPrescription?.[index]?.medicineDosage,
-              medPrescription?.[index]?.medicineCustomDosage,
-              medPrescription?.[index]?.medicineConsumptionDurationInDays,
-              medPrescription?.[index]?.medicineConsumptionDurationUnit,
-              parseInt(data?.productdp?.[0]?.mou || '1', 10)
-            ),
-          }));
-        addMultipleCartItems?.(cartItems);
-        setEPrescriptions?.([presToAdd]);
+        let cartItemsToAdd: any[] = [];
+        medPrescription?.forEach((item) => {
+          cartItemsToAdd.push({
+            medicineSKU: item?.id,
+            quantity: 1,
+          });
+        });
+        uploadEPrescriptionsToServerCart([presToAdd], cartItemsToAdd);
         setLoading(false);
         postCleverTapUploadPrescriptionEvents('Consult Room', 'Cart');
-        props.navigation.push(AppRoutes.MedicineCart);
+        props.navigation.push(AppRoutes.ServerCart);
       } catch (error) {
         setLoading(false);
         showAphAlert?.({
@@ -4678,7 +4652,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
       return;
     }
-    setEPrescriptions?.([presToAdd]);
+    uploadEPrescriptionsToServerCart([presToAdd]);
     postCleverTapUploadPrescriptionEvents('Consult Room', 'Non-Cart');
     props.navigation.navigate(AppRoutes.UploadPrescription, {
       ePrescriptionsProp: [presToAdd],
@@ -4827,9 +4801,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             </View>
           )}
           <View style={styles.MsgTextCont}>
-          <Text style={{ ...styles.autoGenText, paddingStart: 0 }}>
-            {string.appointments.autoGenerated}
-          </Text>
+            <Text style={{ ...styles.autoGenText, paddingStart: 0 }}>
+              {string.appointments.autoGenerated}
+            </Text>
             <Text style={styles.MsgText}>
               {
                 'Order Medicines in one click and get free home delivery in 2-4 hours. We also have home sample collections for diagnostic tests.'
@@ -5195,9 +5169,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       style={styles.msgImage}
                     />
                   </View>
-                  <Text style={styles.chatTimeText}>
-                  {convertChatTime(rowData)}
-                </Text>
+                  <Text style={styles.chatTimeText}>{convertChatTime(rowData)}</Text>
                 </TouchableOpacity>
               ) : (
                 <TouchableOpacity
@@ -5207,10 +5179,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   }}
                 >
                   <View style={styles.pdfContainer}>
-                    <Pdf
-                      source={{ uri: rowData.url }}
-                      style={styles.pdfThumbnail}
-                    />
+                    <Pdf source={{ uri: rowData.url }} style={styles.pdfThumbnail} />
                   </View>
                 </TouchableOpacity>
               )}
@@ -5225,58 +5194,37 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   )}
                 </Text>
               </View>
-              <Text style={styles.chatTimeText}>
-              {convertChatTime(rowData)}
-            </Text>
-          </>
+              <Text style={styles.chatTimeText}>{convertChatTime(rowData)}</Text>
+            </>
           ) : rowData.message === startConsultjr ? (
             <View style={styles.apptCompleteView}>
-              <Text style={styles.autoGenText}>
-                {string.appointments.byJrDoctor}
-              </Text>
+              <Text style={styles.autoGenText}>{string.appointments.byJrDoctor}</Text>
               {rowData.automatedText ? (
                 <>
-                  <Text style={styles.presGuideText}>
-                    {rowData.automatedText}
-                  </Text>
+                  <Text style={styles.presGuideText}>{rowData.automatedText}</Text>
                   <View style={styles.separator} />
-                  <Text style={styles.chatTimeText}>
-                    {convertChatTime(rowData)}
-                  </Text>
+                  <Text style={styles.chatTimeText}>{convertChatTime(rowData)}</Text>
                 </>
               ) : null}
             </View>
           ) : rowData.message === startConsultMsg ? (
             <>
-            <View style={styles.apptCompleteView}>
-              <Text style={styles.autoGenText}>
-                {string.appointments.autoGenerated}
-              </Text>
-              {rowData.automatedText ? (
-                <>
-                  <Text style={styles.presGuideText}>
-                    {rowData.automatedText}
-                  </Text>
-                </>
-              ) : null}
-            </View>
-            <Text style={styles.chatTimeText}>
-             {convertChatTime(rowData)}
-            </Text>
-          </>
+              <View style={styles.apptCompleteView}>
+                <Text style={styles.autoGenText}>{string.appointments.autoGenerated}</Text>
+                {rowData.automatedText ? (
+                  <>
+                    <Text style={styles.presGuideText}>{rowData.automatedText}</Text>
+                  </>
+                ) : null}
+              </View>
+              <Text style={styles.chatTimeText}>{convertChatTime(rowData)}</Text>
+            </>
           ) : rowData.message === stopConsultJr ? (
-            
             <View style={styles.apptCompleteView}>
-              <Text style={styles.autoGenText}>
-                {string.appointments.byJrDoctor}
-              </Text>
+              <Text style={styles.autoGenText}>{string.appointments.byJrDoctor}</Text>
               {rowData.automatedText ? (
                 <>
-                  <Text
-                    style={styles.presGuideText}
-                  >
-                    {rowData.automatedText}
-                  </Text>
+                  <Text style={styles.presGuideText}>{rowData.automatedText}</Text>
                   <Text
                     style={{
                       color: '#ffffff',
@@ -5307,10 +5255,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           ) : rowData.message === exotelCall ? (
             <View style={styles.exotelCallView}>
               <>
-                <Text
-                  style={styles.presGuideText}
-                  selectable={true}
-                >
+                <Text style={styles.presGuideText} selectable={true}>
                   {doctorName +
                     strings.common.exotelMessage +
                     rowData.exotelNumber +
@@ -5333,14 +5278,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           ) : (
             <View>
               <View style={styles.msgSubView}>
-                <Text style={styles.msgText}>
-                  {rowData.message}
-                </Text>
+                <Text style={styles.msgText}>{rowData.message}</Text>
               </View>
               <View style={styles.separator} />
-              <Text style={styles.textMsgTime}>
-                  {convertChatTime(rowData)}
-                </Text>
+              <Text style={styles.textMsgTime}>{convertChatTime(rowData)}</Text>
             </View>
           )}
         </View>
@@ -5533,7 +5474,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 >
                   Duration - {rowData.duration}
                 </Text>
-                
               </View>
               <View style={styles.separator} />
             </View>
@@ -5577,24 +5517,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             />
           </View>
         )}
-        <View
-          style={{ ...styles.apptCompleteView, marginBottom: 0 }}
-        >
-          <Text style={styles.autoGenText}>
-            {string.appointments.autoGenerated}
-          </Text>
+        <View style={{ ...styles.apptCompleteView, marginBottom: 0 }}>
+          <Text style={styles.autoGenText}>{string.appointments.autoGenerated}</Text>
           {rowData.automatedText ? (
             <View>
-              <Text style={styles.presGuideText}>
-                {rowData.automatedText}
-              </Text>
+              <Text style={styles.presGuideText}>{rowData.automatedText}</Text>
               <View style={styles.separator} />
             </View>
           ) : null}
         </View>
-        <Text style={styles.chatTimeText}>
-          {convertChatTime(rowData)}
-        </Text>
+        <Text style={styles.chatTimeText}>{convertChatTime(rowData)}</Text>
       </View>
     );
   };
@@ -5604,7 +5536,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       const mobileKey = Object.keys(metaData).find((key) => metaData[key] === el);
       if (mobileKey) {
         const eventAttributes = {
-          'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName')!,
+          'Doctor Name': g(appointmentData, 'doctorInfo', 'displayName')!,
           'Doctor Number': g(appointmentData, 'doctorInfo', 'mobileNumber')!,
           'Doctor ID': doctorId,
           'Display Speciality Name': g(appointmentData, 'doctorInfo', 'specialty', 'name')!,
@@ -5670,22 +5602,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           </View>
         )}
         <View style={styles.automatedMsgView}>
-          <Text style={styles.autoGenText}>
-            {string.appointments.autoGenerated}
-          </Text>
+          <Text style={styles.autoGenText}>{string.appointments.autoGenerated}</Text>
           {rowData.automatedText ? (
             <>
-              <Text style={styles.presGuideText}>
-                {rowData.automatedText}
-              </Text>
-              
+              <Text style={styles.presGuideText}>{rowData.automatedText}</Text>
+
               <View style={styles.separator} />
             </>
           ) : null}
         </View>
-        <Text style={styles.chatTimeText}>
-          {convertChatTime(rowData)}
-        </Text>
+        <Text style={styles.chatTimeText}>{convertChatTime(rowData)}</Text>
       </View>
     );
   };
@@ -5757,14 +5683,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rightComponent = 0;
       return (
         <View style={{ marginHorizontal: 20, paddingTop: 8 }}>
-          {
-            !moment(rowData?.messageDate).isSame(messages[index-1]?.messageDate,'day') &&
+          {!moment(rowData?.messageDate).isSame(messages[index - 1]?.messageDate, 'day') && (
             <View style={styles.dateSeparator}>
-              <Text style={{
-                ...theme.viewStyles.text('M', 12, theme.colors.SLATE_GRAY),
-              }}>{moment(rowData?.messageDate).format('DD MMM, YYYY h:mm A')}</Text>
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 12, theme.colors.SLATE_GRAY),
+                }}
+              >
+                {moment(rowData?.messageDate).format('DD MMM, YYYY h:mm A')}
+              </Text>
             </View>
-          }
+          )}
           {leftComponent === 1 && (
             <View
               style={{
@@ -5817,14 +5746,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rightComponent++;
       return (
         <View style={{ marginHorizontal: 20 }}>
-          {
-            !moment(rowData?.messageDate).isSame(messages[index-1]?.messageDate,'day') &&
+          {!moment(rowData?.messageDate).isSame(messages[index - 1]?.messageDate, 'day') && (
             <View style={styles.dateSeparator}>
-              <Text style={{
-                ...theme.viewStyles.text('M', 12, theme.colors.SLATE_GRAY),
-              }}>{moment(rowData?.messageDate).format('DD MMM, YYYY h:mm A')}</Text>
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 12, theme.colors.SLATE_GRAY),
+                }}
+              >
+                {moment(rowData?.messageDate).format('DD MMM, YYYY h:mm A')}
+              </Text>
             </View>
-          }
+          )}
           {rightComponent == 1 ? (
             <View
               style={{
@@ -5896,9 +5828,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                           style={styles.msgImage}
                         />
                       </View>
-                      <Text style={styles.chatTimeText}>
-                      {convertChatTime(rowData)}
-                      </Text>
+                      <Text style={styles.chatTimeText}>{convertChatTime(rowData)}</Text>
                     </TouchableOpacity>
                   ) : (
                     <TouchableOpacity
@@ -5907,32 +5837,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         openPopUp(rowData);
                       }}
                     >
-                      <View
-                        style={styles.pdfContainer}
-                      >
-                        <Pdf
-                          source={{ uri: rowData.url }}
-                          style={styles.pdfThumbnail}
-                        />
+                      <View style={styles.pdfContainer}>
+                        <Pdf source={{ uri: rowData.url }} style={styles.pdfThumbnail} />
                       </View>
-                      <Text
-                        style={styles.chatTimeText}
-                      >
-                      {convertChatTime(rowData)}
-                      </Text>
+                      <Text style={styles.chatTimeText}>{convertChatTime(rowData)}</Text>
                     </TouchableOpacity>
                   )}
                 </View>
               ) : (
                 <>
                   <View style={styles.patientMsgView}>
-                    <Text style={styles.patientMsgText}>
-                      {rowData.message}
-                    </Text>
+                    <Text style={styles.patientMsgText}>{rowData.message}</Text>
                   </View>
-                  <Text style={styles.chatTimeText}>
-                      {convertChatTime(rowData)}
-                  </Text>
+                  <Text style={styles.chatTimeText}>{convertChatTime(rowData)}</Text>
                 </>
               )}
             </View>
@@ -5950,7 +5867,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <Text style={styles.externalMeetingLinkText}>
             {strings.externalMeetingLink.click_to_open.replace(
               'XYZ',
-              g(appointmentData, 'doctorInfo', 'fullName')
+              g(appointmentData, 'doctorInfo', 'displayName')
             )}
           </Text>
 
@@ -5976,7 +5893,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       Linking.openURL(rowData.url);
 
       postWebEngageEvent(WebEngageEventName.PATIENT_EXTERNAL_MEETING_LINK_CLICKED, {
-        'Doctor name': appointmentData?.doctorInfo?.fullName,
+        'Doctor name': appointmentData?.doctorInfo?.displayName,
         'Patient name': `${appointmentData?.patientInfo?.firstName} ${appointmentData?.patientInfo?.lastName}`,
         'Patient ID': appointmentData?.patientInfo?.id,
         'Doctor ID': appointmentData?.doctorInfo?.id,
@@ -6007,7 +5924,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       const dateValidate = moment(moment().format('YYYY-MM-DD')).diff(
         moment(timeStamp.messageDate).format('YYYY-MM-DD')
       );
-    utcString = moment
+      utcString = moment
         .utc(timeStamp.messageDate)
         .local()
         .format('DD MMM, YYYY h:mm A');
@@ -6178,7 +6095,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         AsyncStorage.setItem('showSchduledPopup', 'true');
         const params = {
           Data: data?.data?.bookRescheduleAppointment?.appointmentDetails,
-          DoctorName: props.navigation.state.params?.data?.doctorInfo?.fullName,
+          DoctorName: props.navigation.state.params?.data?.doctorInfo?.displayName,
         };
         navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar, params);
       })
@@ -6195,8 +6112,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const diffMin = Math.ceil(moment(appointmentTime).diff(moment(), 'minutes', true));
     const diffHours = Math.floor(moment(appointmentTime).diff(moment(), 'hours', true));
     const diffDays = Math.round(moment(appointmentTime).diff(moment(), 'days', true));
-    const isPrescriptionReady = messages?.filter((item) => item?.message === followupconsult
-      && item?.transferInfo?.appointmentId == apptId);
+    const isPrescriptionReady = messages?.filter(
+      (item) => item?.message === followupconsult && item?.transferInfo?.appointmentId == apptId
+    );
     // checkAutomatedPatientText();
     if (textChange && !jrDoctorJoined.current) {
       // Consult in Progress
@@ -6373,7 +6291,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
       'Doctor ID': g(item, 'doctorId') || '',
-      'Doctor Name': g(item, 'doctorInfo', 'fullName') || '',
+      'Doctor Name': g(item, 'doctorInfo', 'displayName') || '',
       'Doctor Category': g(item, 'doctorInfo', 'doctorType'),
       'Doctor City': g(item, 'doctorInfo', 'city') || '',
       'Speciality ID': g(item, 'doctorInfo', 'specialty', 'id') || '',
@@ -6395,7 +6313,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
       'Doctor ID': g(item, 'doctorId') || undefined,
-      'Doctor name': g(item, 'doctorInfo', 'fullName') || undefined,
+      'Doctor name': g(item, 'doctorInfo', 'displayName') || undefined,
       'Doctor city': g(item, 'doctorInfo', 'city') || undefined,
       'Speciality ID': g(item, 'doctorInfo', 'specialty', 'id') || undefined,
       'Speciality name': g(item, 'doctorInfo', 'specialty', 'name') || undefined,
@@ -7399,7 +7317,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const eventAttributes:
       | WebEngageEvents[WebEngageEventName.CONSULT_FEEDBACK_GIVEN]
       | CleverTapEvents[CleverTapEventName.CONSULT_FEEDBACK_GIVEN] = {
-      'Doctor Name': g(data, 'doctorInfo', 'fullName')!,
+      'Doctor Name': g(data, 'doctorInfo', 'displayName')!,
       'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
       'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,
       'Doctor Category': g(data, 'doctorInfo', 'doctorType')!,
@@ -7437,7 +7355,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       | WebEngageEvents[WebEngageEventName.CONTINUE_CONSULTATION_CLICKED]
       | WebEngageEvents[WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER]
       | WebEngageEvents[WebEngageEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER] = {
-      'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName')!,
+      'Doctor Name': g(appointmentData, 'doctorInfo', 'displayName')!,
       'Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id')!,
       'Speciality Name': g(appointmentData, 'doctorInfo', 'specialty', 'name')!,
       'Doctor Category': g(appointmentData, 'doctorInfo', 'doctorType')!,
@@ -7593,19 +7511,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const publishTypingEvent = () => {
-    if(canPublishTyping.current) {
-      pubnub.signal(
-        {
-          channel: channel.current,
-          message: patientTypingOn,
-        }
-      );
+    if (canPublishTyping.current) {
+      pubnub.signal({
+        channel: channel.current,
+        message: patientTypingOn,
+      });
       canPublishTyping.current = false;
       setTimeout(() => {
         canPublishTyping.current = true;
       }, typingThrottleTime);
     }
-  }
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
@@ -7988,12 +7904,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             }}
           />
         )}
-        {
-          doctorTyping &&
-            <Text style={styles.doctorTypingText}>
-              {string.appointments.doctorTyping}
-            </Text>
-        }
+        {doctorTyping && (
+          <Text style={styles.doctorTypingText}>{string.appointments.doctorTyping}</Text>
+        )}
       </SafeAreaView>
       {showRescheduleCancel && (
         <RescheduleCancelPopup

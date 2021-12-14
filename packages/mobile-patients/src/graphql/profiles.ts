@@ -2798,6 +2798,7 @@ export const GET_PRESCRIPTIONS_BY_MOBILE_NUMBER = gql`
             id
             fileName
             mimeType
+            file_Url
           }
         }
         errorCode
@@ -2819,6 +2820,7 @@ export const GET_PRESCRIPTIONS_BY_MOBILE_NUMBER = gql`
             id
             fileName
             mimeType
+            file_Url
           }
           hospital_name
           hospitalId
@@ -2852,6 +2854,7 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS_BY_MOBILE = gql`
         displayId
         bookingDate
         caseSheet {
+          prismFileId
           notes
           blobName
           consultType
@@ -6818,14 +6821,102 @@ export const GET_PACKAGE_PURCHASE_INFO = gql`
   }
 `;
 
-export const SAVE_RECENT_SEARCH=gql`
-mutation saveRecent($searchText: String!){
-  saveRecentSearchData(saveRecentSearchTextInput: {
-    searchText: $searchText
-  }){
-    success
+export const SERVER_CART_SAVE_CART = gql`
+  mutation saveCart($cartInputData: CartInputData!) {
+    saveCart(cartInput: $cartInputData) {
+      statusCode
+      errorMessage
+      cartMessage
+      data {
+        patientId
+        amount {
+          estimatedAmount
+          deliveryCharges
+          isDeliveryFree
+          cartSavings
+          couponSavings
+          totalCashBack
+          cartTotal
+          packagingCharges
+          circleSavings {
+            membershipCashBack
+            circleDelivery
+          }
+        }
+        noOfShipments
+        longitude
+        latitude
+        zipcode
+        city
+        state
+        patientAddressId
+        couponDetails {
+          coupon
+          couponMessage
+          valid
+          textOffer
+          reason
+          circleBenefits
+        }
+        prescriptionDetails {
+          prescriptionImageUrl
+          prismPrescriptionFileId
+          uhid
+          appointmentId
+          meta
+        }
+        prescriptionType
+        subscriptionDetails {
+          userSubscriptionId
+          planId
+          subPlanId
+          type
+          planAmount
+          currentSellingPrice
+          validDuration
+          durationInMonth
+          subscriptionApplied
+        }
+        medicineOrderCartLineItems {
+          sku
+          magentoId
+          magentoStatus
+          name
+          quantity
+          price
+          sellingPrice
+          mou
+          couponDiscountPrice
+          thumbnail
+          isExpress
+          isPrescriptionRequired
+          subcategory
+          typeId
+          urlKey
+          isInStock
+          maxOrderQty
+          sellOnline
+          tat
+          tatDuration
+          isCouponApplicable
+          cashback
+          isShippable
+          freeProduct
+          shipmentNo
+        }
+      }
+    }
   }
-}
+`;
+
+export const SAVE_RECENT_SEARCH=gql`
+  mutation saveRecent($searchText: String!){
+    saveRecentSearchData(saveRecentSearchTextInput: {
+      searchText: $searchText
+    }){
+      success
+    }
+  }
 `; 
 
 export const BOOK_PACKAGE_CONSULT = gql`
@@ -6844,6 +6935,213 @@ export const BOOK_PACKAGE_CONSULT = gql`
       doctorId
       isError
       error
+    }
+  }
+`;
+
+export const SERVER_CART_FETCH_CART = gql`
+  query fetchCart($patientId: String!) {
+    fetchCart(patientId: $patientId) {
+      statusCode
+      errorMessage
+      cartMessage
+      data {
+        patientId
+        amount {
+          estimatedAmount
+          deliveryCharges
+          isDeliveryFree
+          cartSavings
+          couponSavings
+          totalCashBack
+          cartTotal
+          packagingCharges
+          circleSavings {
+            membershipCashBack
+            circleDelivery
+          }
+        }
+        noOfShipments
+        longitude
+        latitude
+        zipcode
+        city
+        state
+        patientAddressId
+        couponDetails {
+          coupon
+          couponMessage
+          valid
+          textOffer
+          reason
+          circleBenefits
+        }
+        prescriptionDetails {
+          prescriptionImageUrl
+          prismPrescriptionFileId
+          uhid
+          appointmentId
+          meta
+        }
+        prescriptionType
+        subscriptionDetails {
+          userSubscriptionId
+          planId
+          subPlanId
+          type
+          planAmount
+          currentSellingPrice
+          validDuration
+          durationInMonth
+          subscriptionApplied
+        }
+        medicineOrderCartLineItems {
+          sku
+          magentoId
+          magentoStatus
+          name
+          quantity
+          price
+          sellingPrice
+          mou
+          couponDiscountPrice
+          thumbnail
+          isExpress
+          isPrescriptionRequired
+          subcategory
+          typeId
+          urlKey
+          isInStock
+          maxOrderQty
+          sellOnline
+          tat
+          tatDuration
+          isCouponApplicable
+          cashback
+          isShippable
+          freeProduct
+          shipmentNo
+        }
+      }
+    }
+  }
+`;
+
+export const SERVER_CART_REVIEW_CART = gql`
+  query reviewCartPage($patientId: String!) {
+    reviewCartPage(patientId: $patientId) {
+      statusCode
+      errorMessage
+      cartMessage
+      data {
+        patientId
+        amount {
+          estimatedAmount
+          deliveryCharges
+          isDeliveryFree
+          cartSavings
+          couponSavings
+          totalCashBack
+          cartTotal
+          packagingCharges
+          circleSavings {
+            membershipCashBack
+            circleDelivery
+          }
+        }
+        noOfShipments
+        longitude
+        latitude
+        zipcode
+        city
+        state
+        patientAddressId
+        couponDetails {
+          coupon
+          couponMessage
+          valid
+          textOffer
+          reason
+          circleBenefits
+        }
+        prescriptionDetails {
+          prescriptionImageUrl
+          prismPrescriptionFileId
+          uhid
+          appointmentId
+          meta
+        }
+        prescriptionType
+        subscriptionDetails {
+          userSubscriptionId
+          planId
+          subPlanId
+          type
+          planAmount
+          currentSellingPrice
+          validDuration
+          durationInMonth
+          subscriptionApplied
+        }
+        medicineOrderCartLineItems {
+          sku
+          magentoId
+          magentoStatus
+          name
+          quantity
+          price
+          sellingPrice
+          mou
+          couponDiscountPrice
+          thumbnail
+          isExpress
+          isPrescriptionRequired
+          subcategory
+          typeId
+          urlKey
+          isInStock
+          maxOrderQty
+          sellOnline
+          tat
+          tatDuration
+          isCouponApplicable
+          cashback
+          isShippable
+          freeProduct
+          shipmentNo
+        }
+      }
+    }
+  }
+`;
+
+export const DELETE_SERVER_CART = gql`
+  mutation deletecart($patientId: String!, $paymentSuccess: Boolean!, $paymentOrderId: String!) {
+    deletecart(patientId: $patientId, paymentSuccess: $paymentSuccess, paymentOrderId: $paymentOrderId) {
+      success
+    }
+  }
+`;
+
+export const SAVE_MEDICINE_ORDER_V3 = gql`
+  mutation saveMedicineOrderV3($medicineOrderInput: SaveMedicineOrderV3Input) {
+    saveMedicineOrderV3(medicineOrderInput: $medicineOrderInput) {
+      errorCode
+      errorMessage
+      data {
+        transactionId
+        orders {
+          id
+          orderAutoId
+          estimatedAmount
+        }
+        isSubstitution
+        substitutionTime
+        substitutionMessage
+        isCodEligible
+        codMessage
+        paymentOrderId
+      }
     }
   }
 `;

@@ -10,6 +10,7 @@ import {
 import { CircleEventSource, PAGE_ID_TYPE } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { ShoppingCartItem } from '../components/ShoppingCartProvider';
 import { DIAGNOSTIC_SLOT_TYPE } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { saveCart_saveCart_data_medicineOrderCartLineItems } from '@aph/mobile-patients/src/graphql/types/saveCart';
 
 type YesOrNo = 'Yes' | 'No';
 type HdfcPlan = 'SILVER' | 'GOLD' | 'PLATINUM';
@@ -169,6 +170,12 @@ export enum CleverTapEventName {
   PHARMACY_SPECIAL_OFFERS_CLICKED = 'Special Offers Clicked',
   PHARMACY_CHRONIC_UPSELL_NUDGE = 'Chronic Upsell Nudge',
   PHARMACY_SEARCH_SUCCESS = 'Pharmacy Search Success',
+  PHARMACY_CART_REVIEW_ORDER_PAGE_VIEWED = 'Pharmacy Cart Review Order Page Viewed',
+  PHARMACY_DONT_HAVE_PRESCRIPTION = "Pharmacy don't have prescription",
+  PHARMACY_CART_ITEM_QUANTITY_CHANGED = 'Pharmacy cart item quantity changed',
+  PHARMACY_CART_ADD_ITEMS_CLICKED = 'Pharmacy cart add items clicked',
+  PHARMACY_CART_CHANGE_ADDRESS_CLICKED = 'Pharmacy cart change address clicked',
+  FRQUENTLY_BOUGHT_TOGETHER = 'Frequently bought together',
 
   // Help Section Events
   BACK_NAV_ON_NEED_HELP_CLICKED = 'Back Nav On Need Help Clicked',
@@ -353,6 +360,8 @@ export enum CleverTapEventName {
   VIEW_ALL_SEARCH_RESULT_CLICKED = 'When someone clicks on veiw all search result',
   HOMEPAGE_SEARCH_BAR_QUERY_INPUT = 'Homepage Search Bar Query Input',
   SCREEN_SCROLLED = 'Screen Scrolled',
+  SEARCH_BAR_CLICKED = 'Search bar clicked',
+  BANNER_CLICKED_VIEWED = 'Banner clicked / Viewed',
 
   FAQs_ARTICLES_CLICKED = 'Vaccination FAQs & Articles clicked',
   VACCINATION_CALL_A_DOCTOR_CLICKED = 'Vaccination Call a doctor clicked',
@@ -567,6 +576,7 @@ export enum CleverTapEventName {
   PHARMA_WEBVIEW_PLAN3 = 'App Pharma Plan 3 in Pharmacy Web View',
   PHARMA_WEBVIEW_PLAN_SELECTED = 'App Pharma WebView Plan Selected',
   PURCHASE_CIRCLE = 'Circle Plan Purchased',
+  PHARMACY_PRESCRIPTION_PAGE_VIEWED = 'Pharmacy Prescription Page Viewed',
 
   //Diagnostic Circle Events
   DIAGNOSTICS_CIRCLE_BANNER_CLICKED = 'App Non-circle banner clicked - Diagnostics',
@@ -1104,7 +1114,7 @@ export interface CleverTapEvents {
     'Page name': string;
     Keyword: string;
     Status: 'Success' | 'Fail';
-    Vertical: 'Pharma' | 'Diagnostic' | 'Consult';
+    Vertical: string;
   };
   [CleverTapEventName.SCREEN_SCROLLED]: {
     User_Type: string;
@@ -1241,6 +1251,66 @@ export interface CleverTapEvents {
     'Phone number clicked': string;
   };
   // ********** PharmacyEvents ********** \\
+
+  [CleverTapEventName.PHARMACY_CART_CHANGE_ADDRESS_CLICKED]: {
+    currentAddress: string;
+    pincode: string | null | undefined;
+    user: string;
+    mobile_number: string | null;
+    user_type: string | null | undefined;
+    circle_member: string | undefined;
+    circle_membership_value: number;
+  }
+
+  [CleverTapEventName.PHARMACY_CART_ADD_ITEMS_CLICKED]: {
+    user: string;
+    mobile_number: string;
+    user_type: string | null;
+    circle_member: string | undefined;
+    circle_membership_value: number;
+    cartItems: saveCart_saveCart_data_medicineOrderCartLineItems[];
+    prescription_required: boolean;
+    order_value: number | null | undefined;
+    total_discount: number;
+    total_items_in_cart: number;
+    subtotal: number;
+    coupon: string | null;
+    customerId: string;
+    pincode: string | null | undefined;
+  }
+
+  [CleverTapEventName.PHARMACY_CART_ITEM_QUANTITY_CHANGED]: {
+    name: string;
+    id: string;
+    quantity: number,
+    user: string;
+    mobile_number: string;
+    user_type: string | null;
+    circle_member: string | undefined;
+    circle_membership_value: number;
+    prescriptionRequired: boolean;
+    total_items_in_cart: number;
+    price: number;
+    special_price: number;
+    pincode: string | null | undefined;
+    coupon: string | null;
+  }
+
+  [CleverTapEventName.PHARMACY_PRESCRIPTION_PAGE_VIEWED]: {
+    cartItems: saveCart_saveCart_data_medicineOrderCartLineItems[];
+    prescription_required: boolean;
+    order_value: number | null | undefined;
+    shipping_charges: number | null | undefined;
+    loggedIn: boolean;
+    circle_member: string | undefined;
+    circle_membership_value: number;
+    prescription_items: String[];
+    prescription_items_nos: number;
+    user_type: string | null;
+    user: string;
+    mobile_number: string;
+    'Customer id': string;
+  };
 
   [CleverTapEventName.PHARMACY_SEARCH]: {
     keyword: string;
@@ -1422,6 +1492,13 @@ export interface CleverTapEvents {
   [CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED]: {
     'Nav src': 'Home' | 'Cart';
     'User type'?: PharmaUserStatus;
+    patient_name: string;
+    patient_uhid: string;
+    relation: string;
+    gender: string;
+    mobile_number: string;
+    age: number;
+    customerId: string;
   };
   [CleverTapEventName.CART_UPLOAD_PRESCRIPTION_CLICKED]: {
     'Customer ID': string;
@@ -1562,6 +1639,23 @@ export interface CleverTapEvents {
     'SKU ID'?: string;
     'Product name'?: string;
     Discount?: string;
+  };
+
+  [CleverTapEventName.PHARMACY_CART_REVIEW_ORDER_PAGE_VIEWED]: {
+    Pincode: string;
+    TAT_1_Hour: string;
+    TAT_1_Day: number;
+    TAT_2_Hour?: string;
+    TAT_2_Day?: number;
+    Shipping_Charges: number;
+    Amount_To_Pay: number;
+    Prescription_Required: YesOrNo;
+    Prescription_Option_Selected?: string;
+    Coupon_Applied: string;
+    Circle_Member: YesOrNo;
+    Circle_Membership_Value?: number;
+    User_Type: string;
+    User_Mobile_Number: string;
   };
 
   // ********** Diagnostic Events *******

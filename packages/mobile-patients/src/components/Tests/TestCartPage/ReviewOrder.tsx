@@ -154,6 +154,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const screenWidth = Dimensions.get('window').width;
+const screenHeight = Dimensions.get('window').height;
 type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
 
 enum BOOKING_TYPE {
@@ -1763,7 +1764,12 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
   const renderMainView = () => {
     return (
-      <View style={{ flex: 1, marginBottom: 180 }}>
+      <View
+        style={{
+          flex: 1,
+          marginBottom: Platform.OS == 'android' ? (screenHeight > 700 ? 210 : 190) : 180,
+        }}
+      >
         {renderAddressHeading()}
         {renderCartItems()}
         {isModifyFlow ? renderPreviouslyAddedItems() : null}

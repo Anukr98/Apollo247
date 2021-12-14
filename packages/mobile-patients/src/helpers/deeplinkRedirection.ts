@@ -4,7 +4,7 @@ import {
   StackActions,
   NavigationActions,
 } from 'react-navigation';
-import { setBugFenderLog } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { CommonBugFender, setBugFenderLog } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { postCleverTapEvent, postWebEngageEvent, navigateToScreenWithEmptyStack, } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEvents,
@@ -18,6 +18,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CleverTapEventName, CleverTapEvents } from './CleverTapEvents';
 import remoteConfig from '@react-native-firebase/remote-config';
+import { getBrandPagesData } from './apiCalls';
 
 export const handleOpenURL = (event: any) => {
   try {
@@ -172,8 +173,6 @@ export const handleOpenURL = (event: any) => {
         break;
 
       case 'shop-by-health-conditions':
-      case 'shop-by-category':
-      case 'shop-by-brand':
       case 'explore-popular-products':
         if (linkId) {
           return {
@@ -186,6 +185,21 @@ export const handleOpenURL = (event: any) => {
           };
         }
         break;
+
+      case 'shop-by-category':
+      case 'shop-by-brand':
+        if (linkId) {
+          return {
+            // if brand data exist it will go to brand pages else it will be redirected to medicine listing page
+            routeName: 'BrandPages',
+            id: linkId,
+          };
+        } else {
+          return {
+            routeName: 'Medicine',
+          };
+        }
+      break;  
 
       case 'medicinesearch':
         return {
@@ -587,7 +601,7 @@ export const pushTheView = (
       }
       break;
     case 'MedicineCart':
-      navigateToView(navigation, AppRoutes.MedicineCart, {
+      navigateToView(navigation, AppRoutes.ServerCart, {
         movedFrom: 'splashscreen',
       });
       break;
@@ -775,6 +789,24 @@ export const pushTheView = (
           navigation.replace(AppRoutes.HomeScreen);
         }
       })
+      break;
+    case 'BrandPages':
+      getBrandPagesData(id)
+        .then(({ data }) => {
+          const response = data;
+          if (response?.success === true && response?.data?.length) {
+            !!movedFromBrandPages ? navigation.navigate(AppRoutes.BrandPages, { movedFrom: 'brandPages', brandData: response?.data, categoryName: id }) :
+            navigateToView(navigation, AppRoutes.BrandPages, { movedFrom: 'deeplink', brandData: response?.data, categoryName: id });
+          } else {
+            !!movedFromBrandPages ? navigation.navigate(AppRoutes.MedicineListing, { categoryName: id, movedFrom: 'brandPages' }) :
+            navigateToView(navigation, AppRoutes.MedicineListing, { categoryName: id, movedFrom: 'deeplink' });
+          }
+        })
+        .catch(({ error }) => {
+          CommonBugFender('Deeplink_fetchBrandPageData', error);
+          !!movedFromBrandPages ? navigation.navigate(AppRoutes.MedicineListing, { categoryName: id, movedFrom: 'brandPages' }) :
+          navigateToView(navigation, AppRoutes.MedicineListing, { categoryName: id, movedFrom: 'deeplink' });
+        });
       break;
     default:
       const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {

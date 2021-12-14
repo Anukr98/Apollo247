@@ -12,6 +12,7 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 export interface SuggestedQuantityNudgeProps {
   suggested_qty: string | null;
@@ -36,9 +37,10 @@ export const SuggestedQuantityNudge: React.FC<SuggestedQuantityNudgeProps> = (pr
     setCurrentProductQuantityInCart,
   } = props;
 
-  const { updateCartItem, pharmacyCircleAttributes } = useShoppingCart();
+  const { pharmacyCircleAttributes } = useShoppingCart();
+  const { setUserActionPayload } = useServerCart();
 
-  const { cartItems } = useShoppingCart();
+  const { serverCartItems } = useShoppingCart();
   const [selectedQuantity, setSelectedQuantity] = useState<number>(+suggested_qty);
   const title = 'Recommended for monthly purchase';
   const mainText = 'It is recommended that you to buy ';
@@ -144,13 +146,19 @@ export const SuggestedQuantityNudge: React.FC<SuggestedQuantityNudgeProps> = (pr
                 <TouchableOpacity
                   onPress={() => {
                     onPressCloseBottomSheet();
-                    if (cartItems.find(({ id }) => id?.toUpperCase() === sku?.toUpperCase())) {
-                      const itemAddedFromNudge = cartItems.find(
-                        ({ id }) => id?.toUpperCase() === sku?.toUpperCase()
+                    if (
+                      serverCartItems?.find(({ sku }) => sku?.toUpperCase() === sku?.toUpperCase())
+                    ) {
+                      const itemAddedFromNudge = serverCartItems?.find(
+                        ({ sku }) => sku?.toUpperCase() === sku?.toUpperCase()
                       );
-                      updateCartItem?.({
-                        id: sku,
-                        quantity: selectedQuantity,
+                      setUserActionPayload?.({
+                        medicineOrderCartLineItems: [
+                          {
+                            medicineSKU: sku,
+                            quantity: 1,
+                          },
+                        ],
                       });
                       setCurrentProductQuantityInCart(selectedQuantity);
 
@@ -161,7 +169,7 @@ export const SuggestedQuantityNudge: React.FC<SuggestedQuantityNudgeProps> = (pr
                         'Section Name': undefined,
                         'Category ID': undefined,
                         Price: itemAddedFromNudge?.price,
-                        'Discounted Price': Number(itemAddedFromNudge?.specialPrice) || undefined,
+                        'Discounted Price': Number(itemAddedFromNudge?.sellingPrice) || undefined,
                         Quantity: selectedQuantity,
                         Source: source,
                         'Circle Member':

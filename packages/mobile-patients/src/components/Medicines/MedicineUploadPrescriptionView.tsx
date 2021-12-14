@@ -32,6 +32,7 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -86,15 +87,9 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
   const { currentPatient } = useAllCurrentPatients();
   const { pharmacyUserType } = useAppCommonData();
 
-  const {
-    uploadPrescriptionRequired,
-    setPhysicalPrescriptions,
-    physicalPrescriptions,
-    removePhysicalPrescription,
-    ePrescriptions,
-    setEPrescriptions,
-    removeEPrescription,
-  } = isTest ? useDiagnosticsCart() : useShoppingCart();
+  const { uploadPrescriptionRequired, physicalPrescriptions, ePrescriptions } = isTest
+    ? useDiagnosticsCart()
+    : useShoppingCart();
 
   const {
     showPrescriptionAtStore,
@@ -102,6 +97,11 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
     deliveryAddressId,
     setDeliveryAddressId,
   } = useShoppingCart();
+  const {
+    uploadPhysicalPrescriptionsToServerCart,
+    removePrescriptionFromCart,
+    uploadEPrescriptionsToServerCart,
+  } = useServerCart();
 
   const renderLabel = (label: string, rightText?: string) => {
     return (
@@ -112,11 +112,11 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
     );
   };
 
-  const updatePhysicalPrescriptions = (uplPhyPrescriptions: PhysicalPrescription[]) => {
+  const updatePhysicalPrescriptions = async (uplPhyPrescriptions: PhysicalPrescription[]) => {
     const itemsToAdd = uplPhyPrescriptions.filter(
       (p) => !physicalPrescriptions.find((pToFind) => pToFind.base64 == p.base64)
     );
-    setPhysicalPrescriptions && setPhysicalPrescriptions([...itemsToAdd, ...physicalPrescriptions]);
+    uploadPhysicalPrescriptionsToServerCart([...itemsToAdd, ...physicalPrescriptions]);
   };
 
   const uploadPrescriptionPopup = () => {
@@ -216,7 +216,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
               }}
               onPress={() => {
                 CommonLogEvent('MEDICINE_UPLOAD_PRESCRIPTION', `removePhysicalPrescription`);
-                removePhysicalPrescription && removePhysicalPrescription(item.title);
+                removePrescriptionFromCart(item?.prismPrescriptionFileId);
               }}
             >
               <CrossYellow />
@@ -237,7 +237,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
           if (selectedEPres.length == 0) {
             return;
           }
-          setEPrescriptions && setEPrescriptions([...selectedEPres]);
+          uploadEPrescriptionsToServerCart(selectedEPres);
         }}
         selectedEprescriptionIds={ePrescriptions.map((item) => item.id)}
         isVisible={isSelectPrescriptionVisible}
@@ -258,7 +258,9 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
         doctorName={item.doctorName}
         forPatient={item.forPatient}
         onRemove={() => {
-          removeEPrescription && removeEPrescription(item.id);
+          if (!isTest) {
+            removePrescriptionFromCart(item?.prismPrescriptionFileId);
+          }
         }}
       />
     );

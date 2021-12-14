@@ -197,7 +197,6 @@ export interface SelectEPrescriptionModalProps {
   displayMedicalRecords?: boolean;
   showLabResults?: boolean;
   movedFrom?: string;
-  navigation?: any;
 }
 
 export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> = (props) => {
@@ -339,11 +338,17 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
     }[] = [];
     if (props.showLabResults) {
       labResults?.forEach((item) => {
-        mergeArray.push({ type: 'lab', data: item });
+        const fileDetails = item?.testResultFiles?.[0];
+        if (fileDetails?.fileName && fileDetails?.file_Url) {
+          mergeArray.push({ type: 'lab', data: item });
+        }
       });
     }
     prescriptions?.forEach((item) => {
-      mergeArray.push({ type: 'prescription', data: item });
+      const fileDetails = item?.prescriptionFiles?.[0];
+      if (fileDetails?.fileName && fileDetails?.file_Url) {
+        mergeArray.push({ type: 'prescription', data: item });
+      }
     });
     setCombination(sordByDate(mergeArray));
   }, [labResults, prescriptions]);
@@ -520,6 +525,15 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
     return url?.blobName ? `${AppConfig.Configuration.DOCUMENT_BASE_URL}${url?.blobName}` : '';
   };
 
+  const getPrismFileIdFromCasesheet = (
+    caseSheet:
+      | getLinkedProfilesPastConsultsAndPrescriptionsByMobile_getLinkedProfilesPastConsultsAndPrescriptionsByMobile_consults_caseSheet[]
+      | null
+  ) => {
+    const url = caseSheet?.find((casesheet) => !!casesheet?.prismFileId);
+    return url?.prismFileId || '';
+  };
+
   const formattedEPrescriptions = ePrescriptions
     .map(
       (item) =>
@@ -533,24 +547,28 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
           prismPrescriptionFileId: item!.prismPrescriptionFileId,
         } as EPrescription)
     )
+    .filter((item) => !!item.prismPrescriptionFileId)
     .concat(
-      ePrescriptionsFromConsults.map(
-        (item) =>
-          ({
-            id: item!.id,
-            appointmentId: item?.id,
-            date: moment(item!.appointmentDateTime).format(DATE_FORMAT),
-            uploadedUrl: getBlobUrl(item?.caseSheet),
-            doctorName: item!.doctorInfo ? `${item!.doctorInfo.fullName}` : '',
-            forPatient: (currentPatient && currentPatient.firstName) || '',
-            medicines: (
-              (getCaseSheet(item!.caseSheet as any) || { medicinePrescription: [] })
-                .medicinePrescription || []
-            )
-              .map((item) => item!.medicineName)
-              .join(', '),
-          } as EPrescription)
-      )
+      ePrescriptionsFromConsults
+        .map(
+          (item) =>
+            ({
+              id: item!.id,
+              appointmentId: item?.id,
+              date: moment(item!.appointmentDateTime).format(DATE_FORMAT),
+              uploadedUrl: getBlobUrl(item?.caseSheet),
+              doctorName: item!.doctorInfo ? `${item!.doctorInfo?.displayName}` : '',
+              forPatient: (currentPatient && currentPatient.firstName) || '',
+              prismPrescriptionFileId: getPrismFileIdFromCasesheet(item?.caseSheet),
+              medicines: (
+                (getCaseSheet(item!.caseSheet as any) || { medicinePrescription: [] })
+                  .medicinePrescription || []
+              )
+                .map((item) => item!.medicineName)
+                .join(', '),
+            } as EPrescription)
+        )
+        .filter((item) => !!item.prismPrescriptionFileId)
     )
     .filter((item) => !!item.uploadedUrl)
     .sort(
@@ -778,7 +796,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
           if (type === 'lab') {
             date = data?.date;
             name = data?.labTestName || '-';
-            fileName = g(data, 'testResultFiles', '0', 'fileName') || '';
+            fileName = data?.prescriptionFiles?.[0]?.fileName || '';
             message = `${data?.labTestSource || ''} Report\n`;
             message += `Test Name: ${name}\n`;
             message += `UHID: ${(currentPatient && currentPatient.uhid) || '-'}\n`;
@@ -803,21 +821,21 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
               }
             });
             message = message.slice(0, -1);
-            prismImages = data?.id;
+            prismImages = data?.prescriptionFiles?.[0]?.fileName;
             urls = data?.fileUrl ? data?.fileUrl : ''; //prismImages;
           } else if (type === 'prescription') {
             date = data?.date;
             name = data?.prescriptionName || '-';
-            fileName = g(data, 'prescriptionFiles', '0', 'fileName') || '';
+            fileName = data?.prescriptionFiles?.[0]?.fileName || '';
             message = `${data?.source || ''} Report\n`;
             message += `Test Name: ${name}\n`;
-            message += `UHID: ${(currentPatient && currentPatient.uhid) || '-'}\n`;
+            message += `UHID: ${currentPatient?.uhid || '-'}\n`;
             message += `Test Date: ${date || '-'}\n`;
             message += `${data?.notes ? `Additional Notes: ${data?.notes}\n` : ``}`;
             message += `---------------\n`;
             message = message.slice(0, -1);
-            prismImages = data?.id;
-            urls = data?.fileUrl ? data?.fileUrl : ''; //prismImages;
+            prismImages = data?.prescriptionFiles?.[0]?.fileName;
+            urls = data?.prescriptionFiles?.[0]?.file_Url || '';
           } else if (type === 'medical') {
             date = data?.testDate;
             name = data?.testName;
@@ -840,7 +858,8 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
               }
             });
             message = message.slice(0, -1);
-            prismImages = data?.prismFileIds;
+            fileName = data?.prescriptionFiles?.[0]?.fileName || '';
+            prismImages = data?.prescriptionFiles?.[0]?.fileName;
             urls = data?.documentURLs;
           } else if (type === 'health') {
             date = data?.healthCheckName;
@@ -853,6 +872,8 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
               data?.healthCheckPrismFileIds &&
               data?.healthCheckPrismFileIds?.filter((i) => i)?.join(',');
             urls = '';
+            fileName = data?.prescriptionFiles?.[0]?.fileName || '';
+            prismImages = data?.prescriptionFiles?.[0]?.fileName;
           } else if (type === 'hospital') {
             date = data?.dateOfHospitalization;
             name = 'Hospitalizations';
@@ -864,6 +885,8 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
               data?.hospitalizationPrismFileIds &&
               data?.hospitalizationPrismFileIds?.filter((i) => i)?.join(',');
             urls = '';
+            fileName = data?.prescriptionFiles?.[0]?.fileName || '';
+            prismImages = data?.prescriptionFiles?.[0]?.fileName;
           }
           submitValues.push({
             id: data?.id,

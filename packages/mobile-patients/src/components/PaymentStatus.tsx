@@ -501,7 +501,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
         orderAutoId,
       });
     } else if (status == failure || status == aborted) {
-      navigate(AppRoutes.MedicineCart);
+      navigate(AppRoutes.ServerCart);
     } else {
       moveToHome();
     }

@@ -1,21 +1,27 @@
 import {
   Events,
-  Helpers,
   PrescriptionOptions,
 } from '@aph/mobile-patients/src/components/MedicineCartPrescription';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
+import {
+  EPrescription,
+  useShoppingCart,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { PrescriptionType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import AsyncStorage from '@react-native-community/async-storage';
 import React, { useEffect, useRef } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Divider } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
+import { CleverTapEvents, CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { postCleverTapEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 export interface Props extends NavigationScreenProps {}
 
@@ -23,21 +29,31 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
   const scrollViewRef = useRef<ScrollView | null>(null);
 
   const {
-    cartItems,
-    prescriptionType,
-    setPrescriptionType,
-    physicalPrescriptions,
-    ePrescriptions,
-    setPhysicalPrescriptions,
-    setEPrescriptions,
+    cartPrescriptionType,
     consultProfile,
     setConsultProfile,
+    serverCartItems,
+    cartPrescriptions,
+    serverCartLoading,
+    pharmacyCircleAttributes,
+    serverCartAmount
   } = useShoppingCart();
-  const client = useApolloClient();
-  const { currentPatient } = useAllCurrentPatients();
-  const { setLoading, showAphAlert } = useUIElements();
+  const {
+    setUserActionPayload,
+    uploadPhysicalPrescriptionsToServerCart,
+    uploadEPrescriptionsToServerCart,
+  } = useServerCart();
+  const { showAphAlert, setLoading } = useUIElements();
+  const { currentPatient } = useAllCurrentPatients()
 
   useEffect(() => {
+    setLoading?.(serverCartLoading);
+  }, [serverCartLoading]);
+
+  useEffect(() => {
+    navigation.addListener('didFocus', () => {
+      postPrescriptionEvent("pageViewed")
+    })
     setConsultProfile(null);
   }, []);
 
@@ -53,7 +69,9 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
   };
 
   const renderItemsNeedPrescription = () => {
-    const reqItems = cartItems.filter(({ prescriptionRequired }) => prescriptionRequired);
+    const reqItems = serverCartItems?.filter(
+      ({ isPrescriptionRequired }) => isPrescriptionRequired == '1'
+    );
     const count = reqItems.length;
     const heading = `${count} ITEM${count > 1 ? 'S' : ''} IN CART NEED PRESCRIPTION`;
     const items = reqItems.map(({ name }) => (
@@ -77,24 +95,30 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
       <View style={[styles.prescriptionOptions]}>
         <PrescriptionOptions
           navigation={navigation}
-          selectedOption={prescriptionType || PrescriptionType.UPLOADED}
+          selectedOption={cartPrescriptionType || PrescriptionType.UPLOADED}
           patientId={consultProfile?.id || null}
           onSelectPatient={(patient) => {
             setConsultProfile(patient || null);
           }}
           onSelectOption={(option, ePres, physPres) => {
-            setPrescriptionType(option);
-            if (option === PrescriptionType.CONSULT) {
-              setTimeout(() => {
-                scrollViewRef.current?.scrollToEnd?.();
-              }, 100);
-            }
             if (option === PrescriptionType.UPLOADED) {
-              setEPrescriptions?.(ePres || []);
-              setPhysicalPrescriptions?.(physPres || []);
+              uploadEPrescriptionsToServerCart(ePres || []);
+              uploadPhysicalPrescriptionsToServerCart(physPres || []);
             } else {
-              setEPrescriptions?.([]);
-              setPhysicalPrescriptions?.([]);
+              // clear prescription
+              const prescriptionsToDelete = cartPrescriptions?.map((prescription) => ({
+                prismPrescriptionFileId: prescription.prismPrescriptionFileId,
+                prescriptionImageUrl: '',
+              }));
+              setUserActionPayload?.({
+                prescriptionType: option,
+                prescriptionDetails: prescriptionsToDelete,
+              });
+              if (option === PrescriptionType.CONSULT) {
+                setTimeout(() => {
+                  scrollViewRef.current?.scrollToEnd?.();
+                }, 100);
+              }
             }
           }}
         />
@@ -102,25 +126,49 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
     );
   };
 
+  const postPrescriptionEvent = async (eventType: "pageViewed" | "noPrescription") => {
+    try {
+      const user_type = await AsyncStorage.getItem("PharmacyUserType");
+      let prescription_items: string[] = [], prescription_items_nos = 0, prescription_required = false;
+      serverCartItems?.forEach(item => {
+        if(item?.isPrescriptionRequired) {
+          prescription_items.push(item?.name)
+          prescription_items_nos++
+          prescription_required = true
+        }
+      })
+      const eventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_PRESCRIPTION_PAGE_VIEWED] = {
+        cartItems: serverCartItems,
+        order_value: serverCartAmount?.estimatedAmount,
+        shipping_charges: serverCartAmount?.deliveryCharges,
+        prescription_items,
+        prescription_items_nos,
+        user_type,
+        loggedIn: true,
+        circle_member: pharmacyCircleAttributes?.['Circle Membership Added'],
+        circle_membership_value: pharmacyCircleAttributes?.['Circle Membership Value'] ? pharmacyCircleAttributes?.['Circle Membership Value'] : 0,
+        prescription_required,
+        user: currentPatient?.firstName,
+        mobile_number: currentPatient?.mobileNumber,
+        "Customer id": currentPatient?.id
+      }
+      if(eventType === 'noPrescription')
+        postCleverTapEvent(CleverTapEventName.PHARMACY_DONT_HAVE_PRESCRIPTION, eventAttributes)
+      if(eventType === 'pageViewed')
+        postCleverTapEvent(CleverTapEventName.PHARMACY_PRESCRIPTION_PAGE_VIEWED, eventAttributes)
+    }
+    catch(e) {
+
+    }
+  }
+
   const onPressContinue = async () => {
     try {
-      setLoading?.(true);
-      if (prescriptionType === PrescriptionType.UPLOADED) {
-        const updatedPrescriptions = await Helpers.updatePrescriptionUrls(
-          client,
-          currentPatient?.id,
-          physicalPrescriptions
-        );
-        setPhysicalPrescriptions!(updatedPrescriptions);
-      } else {
-        setEPrescriptions!([]);
-        setPhysicalPrescriptions!([]);
-      }
-      navigation.navigate(AppRoutes.CartSummary);
-      setLoading?.(false);
-      postEvent(prescriptionType);
+      if(cartPrescriptionType === PrescriptionType.CONSULT)
+        postPrescriptionEvent("noPrescription")
+      navigation.navigate(AppRoutes.ReviewCart);
+      postEvent(cartPrescriptionType);
     } catch (error) {
-      setLoading?.(false);
       showAphAlert?.({
         title: 'Uh oh.. :(',
         description: 'Error occurred while uploading prescriptions.',
@@ -129,13 +177,11 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
   };
 
   const renderContinueButton = () => {
-    const isDisabled = prescriptionType
-      ? (prescriptionType === PrescriptionType.UPLOADED &&
-          physicalPrescriptions.length === 0 &&
-          ePrescriptions.length === 0) ||
-        (prescriptionType === PrescriptionType.CONSULT && !consultProfile?.id)
+    const isDisabled = cartPrescriptionType
+      ? (cartPrescriptionType === PrescriptionType.UPLOADED && cartPrescriptions.length === 0) ||
+        (cartPrescriptionType === PrescriptionType.CONSULT && !consultProfile?.id)
       : true;
-    const title = [PrescriptionType.CONSULT, PrescriptionType.LATER].includes(prescriptionType!)
+    const title = [PrescriptionType.CONSULT, PrescriptionType.LATER].includes(cartPrescriptionType)
       ? 'CONTINUE WITHOUT PRESCRIPTION'
       : 'CONTINUE WITH PRESCRIPTION';
     return (

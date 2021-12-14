@@ -47,6 +47,8 @@ import MedicineBottomFilters from './MedicineBottomFilters';
 import { productsThumbnailUrl } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import LinearGradient from 'react-native-linear-gradient';
 import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 export type SortByOption = {
   id: string;
@@ -96,7 +98,12 @@ export const MedicineListing: React.FC<Props> = (props) => {
   const comingFromBrandPage = props?.comingFromBrandPage ? props?.comingFromBrandPage : false;
   const currentBrandPageTab = props?.currentBrandPageTab || '';
 
-  const { pinCode, axdcCode } = useShoppingCart();
+  const {
+    pinCode,
+    serverCartLoading,
+    serverCartErrorMessage,
+    setServerCartErrorMessage,
+  } = useShoppingCart();
 
   // states
   const [isLoading, setLoading] = useState(false);
@@ -146,7 +153,8 @@ export const MedicineListing: React.FC<Props> = (props) => {
 
   // global contexts
   const { currentPatient } = useAllCurrentPatients();
-  const { showAphAlert } = useUIElements();
+  const { showAphAlert, hideAphAlert } = useUIElements();
+  const { axdcCode } = useAppCommonData();
 
   useEffect(() => {
     if (currentBrandPageTab) {
@@ -191,6 +199,29 @@ export const MedicineListing: React.FC<Props> = (props) => {
       BackHandler.removeEventListener('hardwareBackPress', onPressHardwareBack);
     };
   }, []);
+
+  useEffect(() => {
+    if (serverCartErrorMessage) {
+      hideAphAlert?.();
+      showAphAlert!({
+        unDismissable: true,
+        title: 'Hey',
+        description: serverCartErrorMessage,
+        titleStyle: theme.viewStyles.text('SB', 18, '#890000'),
+        ctaContainerStyle: { justifyContent: 'flex-end' },
+        CTAs: [
+          {
+            text: 'OKAY',
+            type: 'orange-link',
+            onPress: () => {
+              setServerCartErrorMessage?.('');
+              hideAphAlert?.();
+            },
+          },
+        ],
+      });
+    }
+  }, [serverCartErrorMessage]);
 
   const onBottomCategoryChange = (categoryId: string) => {
     if (categoryId?.length > 0) {
@@ -681,6 +712,7 @@ export const MedicineListing: React.FC<Props> = (props) => {
             />
             {renderSections()}
             {renderProducts()}
+            {serverCartLoading && <Spinner />}
           </View>
         </Animated.ScrollView>
         {renderLoadingMore()}

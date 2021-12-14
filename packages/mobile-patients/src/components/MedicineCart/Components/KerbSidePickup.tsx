@@ -12,7 +12,7 @@ export interface KerbSidePickupProps {
 
 export const KerbSidePickup: React.FC<KerbSidePickupProps> = (props) => {
   const { onPressProceed, style } = props;
-  const { cartItems } = useShoppingCart();
+  const { serverCartItems } = useShoppingCart();
   const renderText = () => {
     return (
       <View style={{ flex: 0.6, marginLeft: 15 }}>
@@ -37,7 +37,7 @@ export const KerbSidePickup: React.FC<KerbSidePickupProps> = (props) => {
   };
 
   function isdisabled() {
-    if (cartItems && cartItems.length) {
+    if (serverCartItems && serverCartItems.length) {
       return false;
     } else {
       return true;
