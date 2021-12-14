@@ -268,7 +268,7 @@ export const OrderProgressCard: React.FC<OrderProgressCardProps> = (props) => {
             ) : null}
           </View>
         )}
-        {!props.cancellationAllowed && (
+        {props.index + 1 == props.length && !props.cancellationAllowed && (
           <Text style={styles.descriptionSubtextText}>
             {props.message ? `Note: ${props.message}` : ''}
           </Text>
