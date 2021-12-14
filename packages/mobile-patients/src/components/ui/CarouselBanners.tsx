@@ -64,7 +64,7 @@ interface CarouselProps extends NavigationScreenProps {
   circlePlanValidity?: string;
   from: string;
   source?: 'Pharma' | 'Product Detail' | 'Pharma Cart' | 'Diagnostic' | 'Consult';
-  successCallback: () => void;
+  successCallback?: () => void;
   circleEventSource?: CircleEventSource;
   postHomeBannerEvent?: (index: number, proHealth: boolean, id: string, title: string) => void;
 }
@@ -637,7 +637,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
           <HdfcConnectPopup
             onClose={() => setShowHdfcConnectPopup(false)}
             benefitId={benefitId || ''}
-            successCallback={() => successCallback()}
+            successCallback={() => successCallback?.()}
             userSubscriptionId={circleSubscriptionId}
           />
         </Overlay>

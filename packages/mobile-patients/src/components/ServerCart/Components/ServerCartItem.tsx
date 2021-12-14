@@ -383,8 +383,8 @@ const styles = StyleSheet.create({
   },
   rxSymbolContainer: {
     position: 'absolute',
-    top: 50,
-    left: 25,
+    right: 0,
+    top: 0,
     zIndex: 9,
   },
   rxSymbol: {
