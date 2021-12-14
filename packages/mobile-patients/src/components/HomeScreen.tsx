@@ -979,7 +979,7 @@ const styles = StyleSheet.create({
   topCardContentContainer: {
     flexDirection: 'row',
     marginBottom: 2,
-    marginTop: 16,
+    marginTop: 20,
     paddingVertical: 4,
     marginLeft: 10,
     justifyContent: 'flex-start',
@@ -995,7 +995,7 @@ const styles = StyleSheet.create({
     width: width / 1.3,
     justifyContent: 'center',
     alignItems: 'flex-start',
-    height: 165,
+    height: 135,
     borderColor: '#D4D4D4',
     borderWidth: 1,
   },
@@ -1035,7 +1035,7 @@ const styles = StyleSheet.create({
   deliveryRibbon: {
     marginLeft: -7,
     position: 'absolute',
-    top: 2,
+    top: 4,
     zIndex: 999,
   },
   mOffersTitle: {
@@ -3755,8 +3755,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                   ),
                 }}
               >
-                {textForNotch.length > 24
-                  ? textForNotch?.substring(textForNotch.length - 24, textForNotch.length)
+                {textForNotch.length > 22
+                  ? textForNotch?.substring(textForNotch.length - 22, textForNotch.length)
                   : textForNotch}
               </Text>
             </View>
@@ -3765,7 +3765,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           <Text
             style={[
               {
-                ...theme.viewStyles.text('B', 18, offerDesignTemplate?.title_text_color, 1, 28),
+                ...theme.viewStyles.text('B', 16, offerDesignTemplate?.title_text_color, 1, 23),
               },
               styles.mOffersTitle,
             ]}
@@ -3779,6 +3779,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             style={{
               ...theme.viewStyles.text('M', 14, offerDesignTemplate?.subtitle_text_color, 1, 18),
               marginHorizontal: 10,
+              marginTop: 4,
+              marginBottom: 'auto',
             }}
           >
             {item?.subtitle?.text?.length > 25
@@ -5093,63 +5095,81 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     return <ConsultedDoctorsCard navigation={props.navigation} />;
   };
   const renderSecondaryConsultationCta = () => (
-    <View style={styles.secondaryConsultationCtaContainer}>
-      <Text style={styles.secondaryConsultationCtaHeading}>{'Book Doctor Consult'}</Text>
-      <View style={styles.secondaryCtaButtonsContainer}>
-        <TouchableOpacity
-          style={styles.secondaryCtaButton}
-          onPress={() => {
-            postHomeFireBaseEvent(FirebaseEventName.FIND_A_DOCTOR, 'Home Screen');
-            postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT);
-            postHomeCleverTapEvent(
-              CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED,
-              'Home Screen',
-              {},
-              'Secondary'
-            );
-            postHospitalVisitClicked();
-            props.navigation.navigate(AppRoutes.DoctorSearch, {
-              isOnlineConsultMode: false,
-              consultTypeCta: 'Secondary',
-            });
-          }}
-        >
-          <HospitalVisit
-            style={{
-              height: 18,
-              width: 18,
-            }}
-          />
-          <Text style={{ ...theme.viewStyles.text('SB', 13, '#02475B') }}>Hospital Visit</Text>
-          <ArrowRight />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.secondaryCtaButton}
-          onPress={() => {
-            postHomeFireBaseEvent(FirebaseEventName.FIND_A_DOCTOR, 'Home Screen');
-            postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT);
-            postHomeCleverTapEvent(
-              CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED,
-              'Home Screen',
-              {},
-              'Secondary'
-            );
-            props.navigation.navigate(AppRoutes.DoctorSearch, {
-              isOnlineConsultMode: true,
-              consultTypeCta: 'Secondary',
-            });
-          }}
-        >
-          <VideoConsult
-            style={{
-              height: 18,
-              width: 18,
-            }}
-          />
-          <Text style={{ ...theme.viewStyles.text('SB', 13, '#02475B') }}>Video Consult</Text>
-          <ArrowRight />
-        </TouchableOpacity>
-      </View>
+    <View style={styles.menuOptionsContainer}>
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={() => {
+          postHomeFireBaseEvent(FirebaseEventName.FIND_A_DOCTOR, 'Home Screen');
+          postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT);
+          postHomeCleverTapEvent(
+            CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED,
+            'Home Screen',
+            {},
+            'Secondary'
+          );
+          postHospitalVisitClicked();
+          props.navigation.navigate(AppRoutes.DoctorSearch, {
+            isOnlineConsultMode: false,
+            consultTypeCta: 'Secondary',
+          });
+        }}
+      >
+        <View style={styles.bottomCardView}>
+          <View style={styles.bottomImageView}>
+            <HospitalVisit
+              style={{
+                height: 20,
+                width: 20,
+              }}
+            />
+          </View>
+          <View style={styles.bottomTextView}>
+            <Text style={[theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 20)]}>
+              Hospital Visit
+            </Text>
+          </View>
+          <View style={styles.bottomRightArrowView}>
+            <ArrowRight />
+          </View>
+        </View>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={() => {
+          postHomeFireBaseEvent(FirebaseEventName.FIND_A_DOCTOR, 'Home Screen');
+          postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT);
+          postHomeCleverTapEvent(
+            CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED,
+            'Home Screen',
+            {},
+            'Secondary'
+          );
+          props.navigation.navigate(AppRoutes.DoctorSearch, {
+            isOnlineConsultMode: true,
+            consultTypeCta: 'Secondary',
+          });
+        }}
+      >
+        <View style={styles.bottomCardView}>
+          <View style={styles.bottomImageView}>
+            <VideoConsult
+              style={{
+                height: 20,
+                width: 20,
+              }}
+            />
+          </View>
+          <View style={styles.bottomTextView}>
+            <Text style={[theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 20)]}>
+              Video Consult
+            </Text>
+          </View>
+
+          <View style={styles.bottomRightArrowView}>
+            <ArrowRight />
+          </View>
+        </View>
+      </TouchableOpacity>
     </View>
   );
 
@@ -6013,7 +6033,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                   : renderHeadings('Offers For You')}
                 {offersListCache.length === 0 && offersListLoading && renderOffersForYouShimmer()}
                 {(offersListCache.length > 0 || !offersListLoading) && renderOffersForYou()}
+
                 {isReferrerAvailable && renderReferralBanner()}
+
                 {!appointmentLoading && currentAppointments === '0' && myDoctorsCount === 0
                   ? null
                   : renderHeadings('My Doctors')}
@@ -6021,6 +6043,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                   ? null
                   : renderListView('Active Appointments', 'normal')}
                 <View>{renderAllConsultedDoctors()}</View>
+
                 {renderHeadings('Circle Membership and More')}
                 {isCircleMember === '' && circleDataLoading && renderCircleShimmer()}
                 <View>{isCircleMember === 'yes' && !circleDataLoading && renderCircle()}</View>
@@ -6029,15 +6052,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                 {showCircleActivationcr && renderCircleActivation()}
 
                 {bannerLoading && renderBannerShimmer()}
-
                 <View>{renderBannersCarousel()}</View>
 
-                {/* {!covidVaccineCtaV2?.data && renderCovidVaccinationShimmer()}
-                <View style={{ backgroundColor: '#f0f1ec' }}>
-                  {covidVaccineCtaV2?.data?.length > 0 && renderCovidContainer()}
-                </View> */}
-
-                <View style={{ paddingHorizontal: 20 }}>{renderSecondaryConsultationCta()}</View>
+                {renderHeadings('Book Doctor Consult')}
+                <View>{renderSecondaryConsultationCta()}</View>
 
                 {renderHeadings('Services For You')}
                 {renderServicesForYouView()}
