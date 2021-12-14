@@ -138,24 +138,7 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
 
   useEffect(() => {
     if (serverCartErrorMessage) {
-      hideAphAlert?.();
-      showAphAlert!({
-        unDismissable: true,
-        title: 'Hey',
-        description: serverCartErrorMessage,
-        titleStyle: theme.viewStyles.text('SB', 18, '#890000'),
-        ctaContainerStyle: { justifyContent: 'flex-end' },
-        CTAs: [
-          {
-            text: 'OKAY',
-            type: 'orange-link',
-            onPress: () => {
-              setServerCartErrorMessage?.('');
-              hideAphAlert?.();
-            },
-          },
-        ],
-      });
+      props.navigation.goBack();
     }
   }, [serverCartErrorMessage]);
 

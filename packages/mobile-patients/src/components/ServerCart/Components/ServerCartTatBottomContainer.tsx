@@ -30,7 +30,6 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
     cartPrescriptionType,
     addresses,
     minimumCartValue,
-    isValidCartValue,
     circleMembershipCharges,
 
     serverCartItems,
@@ -46,6 +45,7 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
     ({ isShippable, sellOnline }) => isShippable || sellOnline
   );
   const isFromCart = screen === 'MedicineCart';
+  const isValidCartValue = minimumCartValue <= (serverCartAmount?.estimatedAmount || 0);
 
   const onPressAddDeliveryAddress = () => {
     props.navigation.navigate(AppRoutes.AddAddressNew, {
