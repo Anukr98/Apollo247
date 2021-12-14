@@ -441,11 +441,9 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
   let cancelAppointmentTitle = '';
   let cancelAppointmentTitleHeadingState = false;
   if (appointmentDiffMin >= 15) {
-    cancelAppointmentTitle =
-      string.common.cancelAppointmentBody +
-      data?.appointmentType +
-      ' Appointment ' +
-      data?.displayId;
+    cancelAppointmentTitle = `${string.common.cancelAppointmentBody} ${
+      data?.appointmentType === APPOINTMENT_TYPE.PHYSICAL ? 'Physical' : 'Online'
+    } Appointment ${data?.displayId}.`;
     cancelAppointmentTitleHeadingState = true;
   } else {
     cancelAppointmentTitle = string.common.cancelRefundBody;
@@ -510,11 +508,9 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
     const diffMin = Math.ceil(moment(data?.appointmentDateTime).diff(moment(), 'minutes', true));
     setAppointmentDiffMin(diffMin);
     if (diffMin >= 15) {
-      cancelAppointmentTitle =
-        string.common.cancelAppointmentBody +
-        data?.appointmentType +
-        ' Appointment ' +
-        data?.displayId;
+      cancelAppointmentTitle = `${string.common.cancelAppointmentBody} ${
+        data?.appointmentType === APPOINTMENT_TYPE.PHYSICAL ? 'Physical' : 'Online'
+      } Appointment ${data?.displayId}.`;
       cancelAppointmentTitleHeadingState = true;
     } else {
       cancelAppointmentTitle = string.common.cancelRefundBody;
@@ -530,11 +526,11 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
           BackgroundTimer.clearInterval(appointmentDiffMinTimerId);
         }
         if (updatedDiffMin >= 15) {
-          cancelAppointmentTitle =
-            string.common.cancelAppointmentBody +
-            data?.appointmentType +
-            ' Appointment ' +
-            data?.displayId;
+          cancelAppointmentTitle = `${
+            string.common.cancelAppointmentBody
+          } ${
+            data?.appointmentType === APPOINTMENT_TYPE.PHYSICAL ? 'Physical' : 'Online'
+          } Appointment ${data?.displayId}.`;
           cancelAppointmentTitleHeadingState = true;
         } else {
           cancelAppointmentTitle = string.common.cancelRefundBody;

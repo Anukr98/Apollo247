@@ -37,7 +37,6 @@ import {
 import {
   APPOINTMENT_STATE,
   APPOINTMENT_TYPE,
-  ConsultMode,
   REQUEST_ROLES,
   STATUS,
   TRANSFER_INITIATED_TYPE,
@@ -778,11 +777,9 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
         {showCancelPopup && (
           <BottomPopUp
             title={string.common.cancelAppointmentTitleHeading}
-            description={
-              string.common.cancelAppointmentBody + data?.appointmentType === ConsultMode.PHYSICAL
-                ? 'Physical'
-                : 'Online' + ' Appointment ' + data?.displayId + ' A full refund will be issued'
-            }
+            description={`${string.common.cancelAppointmentBody} ${
+              data?.appointmentType === APPOINTMENT_TYPE.PHYSICAL ? 'Physical' : 'Online'
+            } Appointment ${data?.displayId}.`}
           >
             <View
               style={{

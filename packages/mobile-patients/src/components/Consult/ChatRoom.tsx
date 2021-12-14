@@ -1433,10 +1433,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const typingClearTime = 1000; //1 seconds
   const clearTimerId = useRef<NodeJS.Timeout>();
 
-  let cancelAppointmentTitle =
-    string.common.cancelAppointmentBody + appointmentData?.appointmentType === ConsultMode.PHYSICAL
-      ? 'Physical'
-      : 'Online' + ' Appointment ' + appointmentData?.displayId + ' A full refund will be issued';
+  let cancelAppointmentTitle = `${string.common.cancelAppointmentBody} ${
+    appointmentData?.appointmentType === APPOINTMENT_TYPE.PHYSICAL ? 'Physical' : 'Online'
+  } Appointment ${appointmentData?.displayId}. A full refund will be issued.`;
   const isAppointmentStartsInFifteenMin = appointmentDiffMin <= 15 && appointmentDiffMin > 0;
   const isAppointmentExceedsTenMin = appointmentDiffMin <= 0 && appointmentDiffMin > -10;
   type messageType = 'PDF' | 'Text' | 'Image';
@@ -7960,7 +7959,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         <CancelAppointmentPopup
           data={appointmentData}
           navigation={props.navigation}
-          title={''}
+          title={cancelAppointmentTitle}
           customTitle={string.common.cancelAppointmentTitleHeading}
           onPressBack={() => setShowCancelPopup(false)}
           onPressReschedule={() => {

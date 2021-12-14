@@ -984,11 +984,9 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
         {showCancelPopup && (
           <BottomPopUp
             title={string.common.cancelAppointmentTitleHeading}
-            description={
-              string.common.cancelAppointmentBody + data?.appointmentType === ConsultMode.PHYSICAL
-                ? 'Physical'
-                : 'Online' + ' Appointment ' + data?.displayId + ' A full refund will be issued'
-            }
+            description={`${string.common.cancelAppointmentBody} ${
+              data?.appointmentType === APPOINTMENT_TYPE.PHYSICAL ? 'Physical' : 'Online'
+            } Appointment ${data?.displayId}. A full refund will be issued.`}
           >
             <View
               style={{
