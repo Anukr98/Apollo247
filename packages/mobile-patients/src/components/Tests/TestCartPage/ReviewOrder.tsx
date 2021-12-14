@@ -1163,12 +1163,68 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       </View>
     );
   };
+  const renderAddCircleView = () => {
+    const upperLeftText = isCircleAddedToCart
+      ? string.diagnosticsCircle.you
+      : string.diagnosticsCircle.youCan;
+
+    const upperMiddleText = isCircleAddedToCart
+      ? string.diagnosticsCircle.saved
+      : string.diagnosticsCircle.save;
+
+    const upperRightText = string.diagnosticsCircle.orderCircle;
+    const defaultPlanPurchasePrice = !!selectedCirclePlan
+      ? selectedCirclePlan?.currentSellingPrice
+      : !!defaultCirclePlan && defaultCirclePlan?.currentSellingPrice;
+    const defaultPlanDurationInMonths = !!selectedCirclePlan
+      ? selectedCirclePlan?.durationInMonth
+      : !!defaultCirclePlan && defaultCirclePlan?.durationInMonth;
+    return (
+      <View style={styles.circleItemCartView}>
+        <View style={styles.circleIconView}>
+          <CircleLogo style={styles.circleIcon} />
+        </View>
+        <View style={styles.circleText}>
+          <Text style={styles.circleTextStyle}>
+            Circle membership ({defaultPlanDurationInMonths} month)
+          </Text>
+          <Text style={styles.mediumText}>
+            {upperLeftText}{' '}
+            <Text style={styles.mediumGreenText}>
+              {upperMiddleText} {string.common.Rs}
+              {circleSaving}
+            </Text>{' '}
+            {upperRightText}{' '}
+          </Text>
+        </View>
+        <View style={styles.circleTextPrice}>
+          <Text style={styles.leftTextPrice}>
+            {string.common.Rs}
+            {defaultPlanPurchasePrice}
+          </Text>
+          <TouchableOpacity
+            onPress={() => {
+              _onTogglePlans();
+            }}
+          >
+            <Text style={styles.yellowText}>ADD PLAN</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
 
   const renderCartItems = () => {
     return (
       <View>
         {renderCartHeading()}
         {renderCartItemCard()}
+        {!isCircleAddedToCart &&
+        (!isDiagnosticCircleSubscription && hideCirclePurchaseInModify
+          ? null
+          : allMembershipPlans?.length > 0 && !!!coupon)
+          ? renderAddCircleView()
+          : null}
       </View>
     );
   };
@@ -3189,4 +3245,17 @@ const styles = StyleSheet.create({
   },
   savingsTitleText: { ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 1, 20) },
   disclaimerText: { ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 0.7, 14) },
+  mediumGreenText: { ...theme.viewStyles.text('M', 12, theme.colors.APP_GREEN, 1, 16) },
+  mediumText: { ...theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE, 1, 16), width: '90%' },
+  circleIcon: { height: 35, width: 35, resizeMode: 'contain' },
+  yellowText: { ...theme.viewStyles.text('B', 12, theme.colors.APP_YELLOW, 1, 14), paddingTop: 5 },
+  leftTextPrice: {
+    ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 14),
+    alignSelf: 'flex-end',
+  },
+  circleItemCartView: { backgroundColor: 'white', flexDirection: 'row', paddingVertical: 10 },
+  circleIconView: { paddingHorizontal: 10 },
+  circleText: { flexDirection: 'column' },
+  circleTextPrice: { padding: 10 },
+  circleTextStyle: { ...theme.viewStyles.text('M', 14, colors.SHERPA_BLUE, 1) },
 });
