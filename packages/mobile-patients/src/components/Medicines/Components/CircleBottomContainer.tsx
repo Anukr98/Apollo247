@@ -39,7 +39,7 @@ export const CircleBottomContainer: React.FC<CircleBottomContainerProps> = (prop
           <View style={{ flexDirection: 'row', marginLeft: 10 }}>
             <Text style={circleStyles.priceStrikeOff}>
               ({string.common.Rs}
-              {convertNumberToDecimal(cartTotal)})
+              {convertNumberToDecimal(cartSavings)})
             </Text>
             <Text style={circleStyles.discountPercentage}>{cartDiscountPercent}% off</Text>
           </View>
