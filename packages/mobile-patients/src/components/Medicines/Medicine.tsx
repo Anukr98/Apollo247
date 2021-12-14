@@ -1463,7 +1463,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 Source: 'Home',
                 User_Type: pharmacyUserType,
               };
-              const cleverTapEventAttributes : CleverTapEvents[CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED] = {
+              const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED] = {
                 'Nav src': 'Home',
                 'User type': pharmacyUserType,
                 patient_name: currentPatient?.firstName,
@@ -1472,7 +1472,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 gender: currentPatient?.gender,
                 mobile_number: currentPatient?.mobileNumber,
                 age: moment().year() - moment(currentPatient?.dateOfBirth).year(),
-                customerId: currentPatient?.id
+                customerId: currentPatient?.id,
               };
               postCleverTapEvent(
                 CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED,
@@ -2640,9 +2640,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             setCurrentProductQuantityInCart={setCurrentProductQuantityInCart}
           />
         )}
-      {AppConfig.Configuration.WHATSAPP_TO_ORDER.iconVisibility && showWhatsappRedirectionIcon && (
-        <WhatsappRedirectionStickyNote />
-      )}
+      {AppConfig.Configuration.WHATSAPP_TO_ORDER.iconVisibility &&
+        showWhatsappRedirectionIcon &&
+        medicineList?.length === 0 && <WhatsappRedirectionStickyNote />}
     </View>
   );
 };
