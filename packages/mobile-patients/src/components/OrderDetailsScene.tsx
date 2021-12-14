@@ -178,7 +178,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { addresses, onHoldOptionOrder } = useShoppingCart();
   const {
-    setUserActionPayload,
     uploadEPrescriptionsToServerCart,
     uploadPhysicalPrescriptionsToServerCart,
   } = useServerCart();
@@ -536,17 +535,14 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       };
       postCleverTapEvent(CleverTapEventName.PHARMACY_RE_ORDER_MEDICINE, cleverTapEventAttributes);
       postWebEngageEvent(WebEngageEventName.RE_ORDER_MEDICINE, eventAttributes);
+      let cartItemsToAdd: any[] = [];
       items?.forEach((item) => {
-        setUserActionPayload?.({
-          medicineOrderCartLineItems: [
-            {
-              medicineSKU: item.id,
-              quantity: item.quantity,
-            },
-          ],
+        cartItemsToAdd.push({
+          medicineSKU: item?.id,
+          quantity: 1,
         });
       });
-      uploadEPrescriptionsToServerCart(prescriptions);
+      uploadEPrescriptionsToServerCart(prescriptions, cartItemsToAdd);
       setLoading!(false);
       if (unavailableItems.length) {
         setReOrderDetails({ total: totalItemsCount, unavailable: unavailableItems });

@@ -66,7 +66,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
   const prismFile = props.navigation.state.params
     ? props.navigation.state.params.prismPrescriptionFileId
     : '';
-  const { setUserActionPayload, uploadEPrescriptionsToServerCart } = useServerCart();
+  const { uploadEPrescriptionsToServerCart } = useServerCart();
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const [pdfUri, setPDFUri] = useState<string>('');
@@ -119,14 +119,12 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           return;
         }
         const cartItem = formatToCartItem({ ...medicineDetails, image: '' });
-        setUserActionPayload?.({
-          medicineOrderCartLineItems: [
-            {
-              medicineSKU: cartItem.id,
-              quantity: Number(data.quantity) || 1,
-            },
-          ],
-        });
+        const cartItemToAdd = [
+          {
+            medicineSKU: cartItem.id,
+            quantity: Number(data.quantity) || 1,
+          },
+        ];
         if (medicineDetails.is_prescription_required == '1') {
           const presToAdd: EPrescription = {
             uploadedUrl: arr?.[0],
@@ -138,7 +136,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
             medicines: data?.medicineName,
             date: moment(me).format('DD MMMM YYYY'),
           };
-          uploadEPrescriptionsToServerCart([presToAdd]);
+          uploadEPrescriptionsToServerCart([presToAdd], cartItemToAdd);
         }
 
         const eventAttributes: WebEngageEvents[WebEngageEventName.RE_ORDER_MEDICINE] = {
