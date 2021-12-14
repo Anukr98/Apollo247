@@ -6,8 +6,7 @@ const styles = StyleSheet.create({
   planContainer: {
     flexDirection: 'row',
     flex: 1,
-    marginVertical: 4,
-    paddingVertical: 6,
+    paddingTop: 6,
     paddingRight: 6,
     alignItems: 'center',
   },
