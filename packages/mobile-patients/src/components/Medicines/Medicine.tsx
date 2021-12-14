@@ -882,18 +882,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         latitude: deliveryAddress?.latitude,
         longitude: deliveryAddress?.longitude,
       });
-      const formattedLocation = formatAddressToLocation(deliveryAddress! || null);
-
       globalLoading!(false);
     } catch (error) {
       checkLocation(addresses);
       CommonBugFender('set_default_Address_on_Medicine_Page', error);
-      showAphAlert!({
-        title: string.common.uhOh,
-        description:
-          "We're sorry! Unable to set delivery address. Please try again after some time",
-      });
-
       globalLoading!(false);
     }
   }
