@@ -315,26 +315,31 @@ export const useServerCart = () => {
     }
   };
 
-  const uploadEPrescriptionsToServerCart = (ePrescriptionsToBeUploaded: EPrescription[]) => {
+  const uploadEPrescriptionsToServerCart = (
+    ePrescriptionsToBeUploaded: EPrescription[],
+    cartItemsToAdd?: any[]
+  ) => {
     setUserActionPayload?.(null);
     if (ePrescriptionsToBeUploaded?.length) {
-      const prescriptionsToUpload = ePrescriptionsToBeUploaded.map((presToAdd: EPrescription) => {
-        return {
-          prescriptionImageUrl: presToAdd?.uploadedUrl,
-          prismPrescriptionFileId: presToAdd?.prismPrescriptionFileId,
-          uhid: currentPatient?.uhid,
-          appointmentId: presToAdd?.appointmentId,
-          meta: {
-            doctorName: presToAdd?.doctorName,
-            forPatient: presToAdd?.forPatient,
-            medicines: presToAdd?.medicines,
-            date: presToAdd?.date,
-          },
-        };
-      });
+      const prescriptionsToUpload =
+        ePrescriptionsToBeUploaded.map((presToAdd: EPrescription) => {
+          return {
+            prescriptionImageUrl: presToAdd?.uploadedUrl,
+            prismPrescriptionFileId: presToAdd?.prismPrescriptionFileId || presToAdd?.id,
+            uhid: currentPatient?.uhid,
+            appointmentId: presToAdd?.appointmentId,
+            meta: {
+              doctorName: presToAdd?.doctorName,
+              forPatient: presToAdd?.forPatient,
+              medicines: presToAdd?.medicines,
+              date: presToAdd?.date,
+            },
+          };
+        }) || [];
       setUserActionPayload?.({
         prescriptionType: PrescriptionType.UPLOADED,
         prescriptionDetails: prescriptionsToUpload,
+        medicineOrderCartLineItems: cartItemsToAdd?.length ? cartItemsToAdd : [],
       });
     } else {
       setUserActionPayload?.({
