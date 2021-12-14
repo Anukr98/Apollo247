@@ -66,7 +66,7 @@ interface CarouselProps extends NavigationScreenProps {
   source?: 'Pharma' | 'Product Detail' | 'Pharma Cart' | 'Diagnostic' | 'Consult';
   successCallback: () => void;
   circleEventSource?: CircleEventSource;
-  postHomeBannerEvent: (index: number, proHealth: boolean, id: string, title: string) => void;
+  postHomeBannerEvent?: (index: number, proHealth: boolean, id: string, title: string) => void;
 }
 export const CarouselBanners: React.FC<CarouselProps> = (props) => {
   const {
@@ -404,7 +404,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     bannerContent: any,
     id?: string
   ) => {
-    !!id && postHomeBannerEvent(slideIndex + 1, false, id, JSON.stringify(meta));
+    !!id && postHomeBannerEvent?.(slideIndex + 1, false, id, JSON.stringify(meta));
     //if any only hdfc
     // if (from === string.banner_context.HOME && action != hdfc_values.UPGRADE_CIRCLE) {
     if (
