@@ -57,7 +57,6 @@ import {
   trackTagalysEvent,
   getSubstitutes,
   getPlaceInfoByPincode,
-  pinCodeServiceabilityApi247,
   availabilityApi247,
   getDeliveryTAT247,
   TatApiInput247,
@@ -99,7 +98,10 @@ import {
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import AsyncStorage from '@react-native-community/async-storage';
 import { NudgeMessage } from '@aph/mobile-patients/src/components/Medicines/Components/NudgeMessage';
-import { GET_PRODUCT_SUBSTITUTES } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_PATIENT_ADDRESS_LIST,
+  GET_PRODUCT_SUBSTITUTES,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   pharmaSubstitution,
   pharmaSubstitutionVariables,
@@ -110,6 +112,10 @@ import { FrequentlyBoughtTogether } from '@aph/mobile-patients/src/components/Pr
 import { postPharmacyAddNewAddressCompleted } from '../../helpers/webEngageEventHelpers';
 import { CouponSectionPDP } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/CouponSectionPDP';
 import { CircleBannerPDP } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/CircleBannerPDP';
+import {
+  getPatientAddressList,
+  getPatientAddressListVariables,
+} from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 export type ProductPageViewedEventProps = Pick<
@@ -125,6 +131,7 @@ export interface ProductDetailPageProps
     deliveryError: string;
     sectionName?: string;
     urlKey?: string;
+    navSrcForSearchSuccess?: string;
   }> {}
 
 type PharmacyTatApiCalled =
@@ -151,6 +158,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     setProductSubstitutes,
     newAddressAdded,
     setNewAddressAdded,
+    axdcCode,
+    isPharmacyPincodeServiceable,
+    setAddresses,
 
     cartCircleSubscriptionId,
     serverCartItems,
@@ -164,12 +174,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const { showAphAlert, hideAphAlert } = useUIElements();
-  const {
-    setAxdcCode,
-    isPharmacyLocationServiceable,
-    axdcCode,
-    activeUserSubscriptions,
-  } = useAppCommonData();
+  const { locationDetails, activeUserSubscriptions } = useAppCommonData();
 
   const cartItemsCount = serverCartItems?.length + diagnosticCartItems.length;
   const scrollViewRef = React.useRef<KeyboardAwareScrollView>(null);
@@ -199,7 +204,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const [multiVariantSkuInformation, setMultiVariantSkuInformation] = useState<any[]>([]);
 
   const [pincode, setpincode] = useState<string>(pharmacyPincode || '');
-  const [notServiceable, setNotServiceable] = useState<boolean>(false);
   const [deliveryTime, setdeliveryTime] = useState<string>('');
   const [tatEventData, setTatEventData] = useState<PharmacyTatApiCalled>();
   const [isPharma, setIsPharma] = useState<boolean>(false);
@@ -245,7 +249,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
 
   useEffect(() => {
     setProductSubstitutes?.([]);
-    getMedicineDetails();
     BackHandler.addEventListener('hardwareBackPress', onPressHardwareBack);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', onPressHardwareBack);
@@ -264,7 +267,14 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   }, [sku]);
 
   useEffect(() => {
-    if (!!medicineDetails?.price && medicineDetails?.price && sku) {
+    if (movedFrom === ProductPageViewedSource.DEEP_LINK) {
+      getMedicineDetails();
+      fetchAddress();
+    }
+  }, [movedFrom]);
+
+  useEffect(() => {
+    if (medicineDetails?.price && sku) {
       fetchDeliveryTime(pharmacyPincode, false);
     }
   }, [medicineDetails?.price]);
@@ -324,6 +334,20 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       setNewAddressAdded && setNewAddressAdded('');
     }
   }, [newAddressAdded, selectedAddress, deliveryTime]);
+
+  useEffect(() => {
+    if (!isPharmacyPincodeServiceable) {
+      const unServiceableMsg =
+        'Sorry! Your Pincode is not serviceable yet. Please try with an alternative pincode.';
+      setIsInStock(false);
+      setdeliveryTime('');
+      setdeliveryError(unServiceableMsg);
+      setshowDeliverySpinner(false);
+    } else {
+      setdeliveryError('');
+      setshowDeliverySpinner(false);
+    }
+  }, [isPharmacyPincodeServiceable]);
 
   useEffect(() => {
     if (!addresses?.length) {
@@ -435,6 +459,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           code: data,
           sku: products[data].sku,
           available: products[data].is_in_stock,
+          unitOfMeasurement: products[data].unit_of_measurement || '',
         };
       });
       setMultiVariantSkuInformation(skusInformation);
@@ -661,7 +686,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         ...pharmacyCircleAttributes,
         User_Type: userType,
         Pincode: pincode,
-        serviceable: notServiceable ? 'No' : 'Yes',
+        serviceable: isPharmacyPincodeServiceable ? 'Yes' : 'No',
         TATDay: deliveryTime ? moment(deliveryTime).diff(moment(), 'days') : null,
         TatHour: deliveryTime ? moment(deliveryTime).diff(moment(), 'hours') : null,
         TatDateTime: deliveryTime,
@@ -691,7 +716,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
         'User type': userType || undefined,
         Pincode: pincode,
-        Serviceability: notServiceable ? 'No' : 'Yes',
+        Serviceability: isPharmacyPincodeServiceable ? 'Yes' : 'No',
         'TAT day': deliveryTime ? moment(deliveryTime).diff(moment(), 'days') : undefined,
         'TAT hour': deliveryTime ? moment(deliveryTime).diff(moment(), 'hours') : undefined,
         'TAT date time': deliveryTime || undefined,
@@ -713,7 +738,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         ...pharmacyCircleAttributes,
         User_Type: userType,
         Pincode: pincode,
-        serviceable: notServiceable ? 'No' : 'Yes',
+        serviceable: isPharmacyPincodeServiceable ? 'Yes' : 'No',
         TATDay: deliveryTime ? moment(deliveryTime).diff(moment(), 'days') : null,
         TatHour: deliveryTime ? moment(deliveryTime).diff(moment(), 'hours') : null,
         TatDateTime: deliveryTime,
@@ -758,159 +783,58 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   };
 
   const fetchDeliveryTime = async (currentPincode: string, checkButtonClicked?: boolean) => {
-    if (!currentPincode) return;
-    const unServiceableMsg =
-      'Sorry! Your Pincode is not serviceable yet. Please try with an alternative pincode.';
+    if (!currentPincode || !isPharmacyPincodeServiceable) return;
     const pincodeServiceableItemOutOfStockMsg = 'Sorry, this item is out of stock in your area.';
-    const genericServiceableDate = moment()
-      .add(2, 'days')
-      .set('hours', 20)
-      .set('minutes', 0)
-      .format('DD-MMM-YYYY hh:mm');
     Keyboard.dismiss();
     setshowDeliverySpinner(true);
 
     // To handle deeplink scenario and
     // If we performed pincode serviceability check already in Medicine Home Screen and the current pincode is same as Pharma pincode
     try {
-      const response = await pinCodeServiceabilityApi247(currentPincode);
-      const { data } = response;
-      setAxdcCode && setAxdcCode(data?.response?.axdcCode);
-      let pinCodeNotServiceable =
-        isPharmacyLocationServiceable == undefined || pharmacyPincode != currentPincode
-          ? !data?.response?.servicable
-          : pharmacyPincode == currentPincode && !isPharmacyLocationServiceable;
-      setNotServiceable(!data?.response?.servicable);
-      if (!data?.response?.servicable) {
-        setIsInStock(false);
-        setdeliveryTime('');
-        setdeliveryError(unServiceableMsg);
-        setshowDeliverySpinner(false);
-        return;
-      }
-
-      const checkAvailabilityRes = await availabilityApi247(currentPincode, sku?.toUpperCase());
-      const outOfStock = !!!checkAvailabilityRes?.data?.response[0]?.exist;
-      setIsInStock(!outOfStock);
-      try {
-        const { mrp, exist, qty } = checkAvailabilityRes.data.response[0];
-        const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED] = {
-          Source: 'PDP',
-          Input_SKU: sku,
-          Input_Pincode: currentPincode,
-          Input_MRP: medicineDetails?.price,
-          No_of_items_in_the_cart: 1,
-          Response_Exist: exist ? 'Yes' : 'No',
-          Response_MRP: mrp,
-          Response_Qty: qty,
-          'Cart Items': JSON.stringify(serverCartItems),
-        };
-        postWebEngageEvent(WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED, eventAttributes);
-        const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_AVAILABILITY_API_CALLED] = {
-          'Nav src': 'PDP',
-          'Input SKU': sku || undefined,
-          'Input pincode': currentPincode,
-          'Input MRP': medicineDetails?.price,
-          'No of items in the cart': serverCartItems?.length,
-          'Response exist': exist ? 'Yes' : 'No',
-          'Response MRP': mrp,
-          'Response qty': qty,
-          'Cart items': JSON.stringify(serverCartItems),
-        };
-        postCleverTapEvent(
-          CleverTapEventName.PHARMACY_AVAILABILITY_API_CALLED,
-          cleverTapEventAttributes
-        );
-      } catch (error) {}
-
-      if (outOfStock) {
-        setdeliveryTime('');
-        setdeliveryError(pincodeServiceableItemOutOfStockMsg);
-        setshowDeliverySpinner(false);
-        return;
-      }
-
-      let longitude, lattitude;
-      if (pharmacyPincode == currentPincode) {
-        lattitude = pharmacyLocation ? pharmacyLocation.latitude : null;
-        longitude = pharmacyLocation ? pharmacyLocation.longitude : null;
-      }
-      if (!lattitude || !longitude) {
-        const data = await getPlaceInfoByPincode(currentPincode);
-        const locationData = data.data.results[0].geometry.location;
-        lattitude = locationData.lat;
-        longitude = locationData.lng;
-      }
-
-      getDeliveryTAT247({
-        items: [{ sku: sku?.toUpperCase(), qty: getItemQuantity(sku?.toUpperCase()) || 1 }],
-        pincode: currentPincode,
-        lat: lattitude,
-        lng: longitude,
-      } as TatApiInput247)
-        .then((res) => {
-          const deliveryDate = res?.data?.response?.[0]?.tat;
-          const currentDate = moment();
-          if (deliveryDate) {
-            if (checkButtonClicked) {
-              const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK] = {
-                'product id': sku,
-                'product name': medicineDetails.name,
-                pincode: Number(currentPincode),
-                'customer id': currentPatient && currentPatient.id ? currentPatient.id : '',
-                'Delivery TAT': moment(
-                  deliveryDate,
-                  AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT
-                ).diff(currentDate, 'd'),
-                Serviceable: pinCodeNotServiceable ? 'No' : 'Yes',
-              };
-              postWebEngageEvent(WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK, eventAttributes);
-            }
-            setdeliveryTime(
-              moment(deliveryDate, AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT).format(
-                AppConfig.Configuration.MED_DELIVERY_DATE_TAT_API_FORMAT
-              )
-            );
-            setdeliveryError('');
-          } else {
-            setdeliveryError(pincodeServiceableItemOutOfStockMsg);
-            setdeliveryTime('');
+      let isInStock = true;
+      availabilityApi247(currentPincode, sku?.toUpperCase())
+        .then((availabilityResponse) => {
+          const response = availabilityResponse?.data?.response?.[0];
+          isInStock = response?.exist;
+          setIsInStock(isInStock);
+          firePharmacyAvailabilityApiCalledEvent(
+            response?.mrp,
+            response?.exist,
+            response?.qty,
+            currentPincode
+          );
+        })
+        .catch((error) => {
+          isInStock = true;
+          setIsInStock(true);
+        })
+        .finally(async () => {
+          let longitude, latitude;
+          if (pharmacyPincode == currentPincode) {
+            latitude = pharmacyLocation ? pharmacyLocation.latitude : null;
+            longitude = pharmacyLocation ? pharmacyLocation.longitude : null;
           }
-          try {
-            const response = res.data.response;
-            const item = response[0].items[0];
-            const eventAttributes: PharmacyTatApiCalled = {
-              'Nav src': 'PDP',
-              'Input SKU': sku,
-              'Input qty': getItemQuantity(sku) || 1,
-              'Input lat': lattitude,
-              'Input long': longitude,
-              'Input pincode': currentPincode,
-              'Input MRP': medicineDetails?.price, // overriding this value after PDP API call
-              'No of items in the cart': serverCartItems?.length,
-              'Response exist': item.exist ? 'Yes' : 'No',
-              Response_MRP: item.mrp, // overriding this value after PDP API call
-              'Response qty': item.qty,
-              'Response lat': response[0].lat,
-              'Response long': response[0].lng,
-              'Response order time': response[0].ordertime,
-              'Response pincode': `${response[0].pincode}`,
-              'Response store code': response[0].storeCode,
-              'Response store type': response[0].storeType,
-              'Response TAT': response[0].tat,
-              'Response TATU': response[0].tatU,
-            };
-            setTatEventData(eventAttributes);
-          } catch (error) {}
-        })
-        .catch(() => {
-          // Intentionally show T+2 days as Delivery Date
-          setdeliveryTime(genericServiceableDate);
-          setdeliveryError('');
-        })
-        .finally(() => {
-          setAvailabilityCalled('yes');
-          setshowDeliverySpinner(false);
+          if (!latitude || !longitude) {
+            const data = await getPlaceInfoByPincode(currentPincode);
+            const locationData = data.data.results[0].geometry.location;
+            latitude = locationData.lat;
+            longitude = locationData.lng;
+          }
+          if (isInStock) {
+            callDeliveryTatApi(
+              currentPincode,
+              latitude,
+              longitude,
+              checkButtonClicked,
+              isPharmacyPincodeServiceable,
+              pincodeServiceableItemOutOfStockMsg
+            );
+          } else {
+            setdeliveryTime('');
+            setdeliveryError(pincodeServiceableItemOutOfStockMsg);
+            setshowDeliverySpinner(false);
+            return;
+          }
         });
     } catch (error) {
       // in case user entered wrong pincode, not able to get lat lng. showing out of stock to user
@@ -919,6 +843,145 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       setshowDeliverySpinner(false);
       setIsInStock(false);
     }
+  };
+
+  const callDeliveryTatApi = (
+    currentPincode: string,
+    latitude: any,
+    longitude: any,
+    checkButtonClicked: boolean | undefined,
+    pinCodeNotServiceable: boolean,
+    pincodeServiceableItemOutOfStockMsg: string
+  ) => {
+    getDeliveryTAT247({
+      items: [{ sku: sku?.toUpperCase(), qty: getItemQuantity(sku?.toUpperCase()) || 1 }],
+      pincode: currentPincode,
+      lat: latitude,
+      lng: longitude,
+    } as TatApiInput247)
+      .then((res) => {
+        const deliveryDate = res?.data?.response?.[0]?.tat;
+        if (deliveryDate) {
+          if (checkButtonClicked) {
+            fireProductDetailPincodeCheckEvent(currentPincode, deliveryDate, pinCodeNotServiceable);
+          }
+          setdeliveryTime(
+            moment(deliveryDate, AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT).format(
+              AppConfig.Configuration.MED_DELIVERY_DATE_TAT_API_FORMAT
+            )
+          );
+          setdeliveryError('');
+        } else {
+          setdeliveryError(pincodeServiceableItemOutOfStockMsg);
+          setdeliveryTime('');
+        }
+        fireTatApiCalledEvent(res.data.response, latitude, longitude, currentPincode);
+      })
+      .catch(() => {
+        // Intentionally show T+2 days as Delivery Date
+        const genericServiceableDate = moment()
+          .add(2, 'days')
+          .set('hours', 20)
+          .set('minutes', 0)
+          .format('DD-MMM-YYYY hh:mm');
+        setdeliveryTime(genericServiceableDate);
+        setdeliveryError('');
+      })
+      .finally(() => {
+        setAvailabilityCalled('yes');
+        setshowDeliverySpinner(false);
+      });
+  };
+
+  const firePharmacyAvailabilityApiCalledEvent = (
+    mrp: number,
+    exist: boolean,
+    quantity: number,
+    currentPincode: string
+  ) => {
+    try {
+      const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED] = {
+        Source: 'PDP',
+        Input_SKU: sku,
+        Input_Pincode: currentPincode,
+        Input_MRP: medicineDetails?.price,
+        No_of_items_in_the_cart: 1,
+        Response_Exist: exist ? 'Yes' : 'No',
+        Response_MRP: mrp,
+        Response_Qty: quantity,
+        'Cart Items': JSON.stringify(cartItems),
+      };
+      postWebEngageEvent(WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED, eventAttributes);
+      const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_AVAILABILITY_API_CALLED] = {
+        Source: 'PDP',
+        Input_SKU: sku || undefined,
+        Input_Pincode: currentPincode,
+        Input_MRP: medicineDetails?.price,
+        No_of_items_in_the_cart: cartItems?.length,
+        Response_Exist: exist ? 'Yes' : 'No',
+        Response_MRP: mrp,
+        Response_Qty: quantity,
+      };
+      postCleverTapEvent(
+        CleverTapEventName.PHARMACY_AVAILABILITY_API_CALLED,
+        cleverTapEventAttributes
+      );
+    } catch (error) {}
+  };
+
+  const fireProductDetailPincodeCheckEvent = (
+    currentPincode: string,
+    deliveryDate: any,
+    pinCodeNotServiceable: boolean
+  ) => {
+    try {
+      const currentDate = moment();
+      const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK] = {
+        'product id': sku,
+        'product name': medicineDetails.name,
+        pincode: Number(currentPincode),
+        'customer id': currentPatient && currentPatient.id ? currentPatient.id : '',
+        'Delivery TAT': moment(
+          deliveryDate,
+          AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT
+        ).diff(currentDate, 'd'),
+        Serviceable: pinCodeNotServiceable ? 'No' : 'Yes',
+      };
+      postWebEngageEvent(WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK, eventAttributes);
+    } catch (error) {}
+  };
+
+  const fireTatApiCalledEvent = (
+    response: any,
+    latitude: string,
+    longitude: string,
+    currentPincode: string
+  ) => {
+    try {
+      const item = response.items[0];
+      const eventAttributes: PharmacyTatApiCalled = {
+        Source: 'PDP',
+        Input_SKU: sku,
+        Input_qty: getItemQuantity(sku) || 1,
+        Input_lat: latitude,
+        Input_long: longitude,
+        Input_pincode: currentPincode,
+        Input_MRP: medicineDetails?.price, // overriding this value after PDP API call
+        No_of_items_in_the_cart: cartItems?.length,
+        Response_Exist: item.exist ? 'Yes' : 'No',
+        Response_MRP: item.mrp, // overriding this value after PDP API call
+        Response_Qty: item.qty,
+        Response_lat: response.lat,
+        Response_lng: response.lng,
+        Response_ordertime: response.ordertime,
+        Response_pincode: `${response.pincode}`,
+        Response_storeCode: response.storeCode,
+        Response_storeType: response.storeType,
+        Response_tat: response.tat,
+        Response_tatU: response.tatU,
+      };
+      setTatEventData(eventAttributes);
+    } catch (error) {}
   };
 
   const renderEmptyData = () => {
@@ -1141,13 +1204,14 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   };
 
   const onNotifyMeClick = () => {
+    const serviceableYesNo = isPharmacyPincodeServiceable ? 'Yes' : 'No';
     const eventAttributes: WebEngageEvents[WebEngageEventName.NOTIFY_ME] = {
       'product name': medicineDetails?.name,
       'product id': medicineDetails?.sku,
       'category ID': medicineDetails?.category_id,
       price: medicineDetails?.price,
       pincode: pincode,
-      serviceable: notServiceable ? 'No' : 'Yes',
+      serviceable: serviceableYesNo,
     };
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_NOTIFY_ME] = {
       'Product name': medicineDetails?.name,
@@ -1155,7 +1219,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       'Category ID': medicineDetails?.category_id || '',
       Price: medicineDetails?.price,
       Pincode: pincode,
-      Serviceability: notServiceable ? 'No' : 'Yes',
+      Serviceability: serviceableYesNo,
     };
     postCleverTapEvent(CleverTapEventName.PHARMACY_NOTIFY_ME, cleverTapEventAttributes);
     postWebEngageEvent(WebEngageEventName.NOTIFY_ME, eventAttributes);
@@ -1190,7 +1254,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.mainContainer}>
-        <MedicineListingHeader navigation={props.navigation} movedFrom={'productdetail'} />
+        <MedicineListingHeader
+          navigation={props.navigation}
+          movedFrom={'productdetail'}
+          navSrcForSearchSuccess={'PDP'}
+        />
         <View>
           {loading || serverCartLoading ? (
             <ActivityIndicator
@@ -1276,6 +1344,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 />
               </View>
               <CircleBannerPDP navigation={props.navigation} />
+              {isInStock && !!boughtTogether && boughtTogether.length > 0 && (
+                <FrequentlyBoughtTogether
+                  boughtTogetherArray={boughtTogether}
+                  setShowAddedToCart={setShowAddedToCart}
+                />
+              )}
+              {!!couponData && couponData.length > 0 && (
+                <CouponSectionPDP offersData={couponData} />
+              )}
               <PharmaManufacturer
                 manufacturer={medicineDetails?.manufacturer}
                 composition={medicineDetails?.PharmaOverview?.[0]?.Composition || composition}
@@ -1290,15 +1367,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   navigation={props.navigation}
                   composition={medicineDetails?.PharmaOverview?.[0]?.Composition || composition}
                   setShowSubstituteInfo={setShowSubstituteInfo}
-                />
-              )}
-              {!!couponData && couponData.length > 0 && (
-                <CouponSectionPDP offersData={couponData} />
-              )}
-              {isInStock && !!boughtTogether && boughtTogether.length > 0 && (
-                <FrequentlyBoughtTogether
-                  boughtTogetherArray={boughtTogether}
-                  setShowAddedToCart={setShowAddedToCart}
                 />
               )}
               <ProductInfo

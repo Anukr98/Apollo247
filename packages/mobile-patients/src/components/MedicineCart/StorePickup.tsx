@@ -148,33 +148,28 @@ export const StorePickup: React.FC<StorePickupProps> = (props) => {
   };
 
   const SyncwithStorePrices = () => {
-    let Items: InputCartLineItems[] = [];
-    serverCartItems?.forEach((item) => {
-      // let object = item;
-      let inventoryData = storesInventory.filter((item) => item.shopId == storeId);
-      let cartItem = inventoryData?.[0]?.['itemDetails']?.filter(
-        (cartItem) => cartItem?.itemId == item?.sku
-      );
-      let cartItemToAdd: InputCartLineItems = {
-        medicineSKU: cartItem?.[0]?.itemId,
-        quantity: cartItem?.[0]?.qty,
-      };
-      // if (cartItem.length) {
-      //   if (object?.price != Number(object?.mou) * cartItem?.[0]?.mrp && cartItem?.[0]?.mrp != 0) {
-      //     object?.sellingPrice &&
-      //       (object?.sellingPrice =
-      //         Number(object?.mou) * cartItem?.[0]?.mrp * (object?.sellingPrice / object?.price));
-      //     object?.price = Number(object?.mou) * cartItem?.[0]?.mrp;
-      //   }
-      // }
-      Items.push(cartItemToAdd);
-    });
-    setUserActionPayload?.({
-      medicineOrderCartLineItems: {
-        Items,
-      },
-    });
-    postPharmacyStoreSelectedSuccess(pinCode, selectedStore!);
+    try {
+      let Items: InputCartLineItems[] = [];
+      serverCartItems?.forEach((item) => {
+        let inventoryData = storesInventory.filter((item) => item.shopId == storeId);
+        let cartItem = inventoryData?.[0]?.['itemDetails']?.filter(
+          (cartItem) => cartItem?.itemId == item?.sku
+        );
+        cartItem?.forEach((itemCart) => {
+          let cartItemToAdd: InputCartLineItems = {
+            medicineSKU: itemCart?.itemId,
+            quantity: itemCart?.qty,
+          };
+          Items.push(cartItemToAdd);
+        });
+      });
+      setUserActionPayload?.({
+        medicineOrderCartLineItems: {
+          Items,
+        },
+      });
+      postPharmacyStoreSelectedSuccess(pinCode, selectedStore!);
+    } catch (error) {}
   };
 
   const renderHeader = () => {

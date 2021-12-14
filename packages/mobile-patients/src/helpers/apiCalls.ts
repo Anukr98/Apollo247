@@ -2,6 +2,7 @@ import Axios, { AxiosResponse, Canceler } from 'axios';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { getTagalysConfig, Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { string } from '../strings/string';
+import { Buffer } from 'buffer';
 
 export interface MedicineProduct {
   category_id?: string;
@@ -398,9 +399,8 @@ export interface OfferBannerSection {
   end_time: string;
   category_id?: number;
   sku?: string;
-  ip_id?:string;
-  ip_section_name?:string;
-
+  ip_id?: string;
+  ip_section_name?: string;
 }
 
 export interface MedicinePageAPiMetadata {
@@ -596,7 +596,7 @@ export interface SpecialOfferWidgetsData {
 export interface SpecialOffersWidgetsApiResponse {
   success: string;
   msg: string;
-  data: SpecialOfferWidgetsData[]
+  data: SpecialOfferWidgetsData[];
 }
 
 export interface SpecialOffersCouponsData {
@@ -618,6 +618,11 @@ export interface SpecialOffersCouponsApiResponse {
   errorMsg?: null;
   errorType?: null;
   response?: SpecialOffersCouponsData[];
+}
+
+export interface InfoContentApiResponse {
+  title: string;
+  responseFaq?: [];
 }
 
 export interface SpecialOffersCategoryApiResponse {
@@ -650,6 +655,31 @@ export interface SpecialOffersBrandsProductsApiResponse {
 export interface BoughtTogetherResponse {
   bought_together: MedicineProduct[];
   product_count: number;
+}
+
+export interface BrandPageApiResponse {
+  success?: boolean;
+  msg?: string;
+  data?: BrandData[] | null;
+}
+
+export interface BrandData {
+  brandName: string;
+  brandMainBannerImg: string;
+  brandMobileBannerImg?: string;
+  brandBannersList: BrandBannerData[];
+  brandMenuList: BrandMenuData[];
+}
+
+export interface BrandBannerData {
+  brandBannerImgUrl: string;
+  brandRedirectionUrl: string;
+}
+
+export interface BrandMenuData {
+  MenuName: string;
+  MenuRedirectionUrl: string | null;
+  MenuContent?: string | null;
 }
 
 const config = AppConfig.Configuration;
@@ -694,7 +724,6 @@ export const getMedicineDetailsApiV2 = (
   );
 };
 
-let cancelSearchMedicineApi247: Canceler | undefined;
 export const searchMedicineApi = async (
   searchText: string,
   pageId: number = 1,
@@ -703,8 +732,6 @@ export const searchMedicineApi = async (
   axdcCode?: string | null,
   pincode?: string | null
 ): Promise<AxiosResponse<PopcSrchPrdApiResponse>> => {
-  const CancelToken = Axios.CancelToken;
-  cancelSearchMedicineApi247 && cancelSearchMedicineApi247();
   return Axios({
     url: config.MED_SEARCH[0],
     method: 'POST',
@@ -719,9 +746,6 @@ export const searchMedicineApi = async (
     headers: {
       Authorization: config.MED_SEARCH[1],
     },
-    cancelToken: new CancelToken((c) => {
-      cancelSearchMedicineApi247 = c;
-    }),
   });
 };
 
@@ -751,7 +775,6 @@ export const searchPickupStoresApi = async (
     }
   );
 };
-
 
 export const getStoreInventoryApi = (
   shopId: string,
@@ -784,22 +807,15 @@ export const pinCodeServiceabilityApi247 = (
   });
 };
 
-let cancelAvailabilityApi247: Canceler | undefined;
-
 export const availabilityApi247 = (
   pincode: string,
   sku: string
 ): Promise<AxiosResponse<GetAvailabilityResponse247>> => {
-  const CancelToken = Axios.CancelToken;
-  cancelAvailabilityApi247 && cancelAvailabilityApi247();
   const url = `${config.UATTAT_CONFIG[0]}/availability?sku=${sku}&pincode=${pincode}`;
   return Axios.get(url, {
     headers: {
       Authorization: config.UATTAT_CONFIG[1],
     },
-    cancelToken: new CancelToken((c) => {
-      cancelAvailabilityApi247 = c;
-    }),
   });
 };
 
@@ -929,23 +945,30 @@ export const getMedicinePageProducts = (
   });
 };
 
-export const getSpecialOffersPageWidgets = (): Promise<AxiosResponse<SpecialOffersWidgetsApiResponse>> => {
+export const getSpecialOffersPageWidgets = (): Promise<AxiosResponse<
+  SpecialOffersWidgetsApiResponse
+>> => {
   const url = `${config.SPECIAL_OFFERS_PAGE_WIDGETS[0]}`;
+  const token = Buffer.from(`${config.SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME}:${config.SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD}`, 'utf8').toString('base64');
   return Axios.get(url, {
     headers: {
-      Authorization: config.SPECIAL_OFFERS_PAGE_WIDGETS[1],
-    },
+      'Authorization': `Basic ${token}`
+    }
   });
 };
 
-export const getSpecialOffersPageCoupons = (): Promise<AxiosResponse<SpecialOffersCouponsApiResponse>> => {
+export const getSpecialOffersPageCoupons = (): Promise<AxiosResponse<
+  SpecialOffersCouponsApiResponse
+>> => {
   const url = `${config.SPECIAL_OFFERS_PAGE_COUPONS[0]}`;
   return Axios.get(url, {
     headers: {},
   });
 };
 
-export const getSpecialOffersPageCategory = (): Promise<AxiosResponse<SpecialOffersCategoryApiResponse>> => {
+export const getSpecialOffersPageCategory = (): Promise<AxiosResponse<
+  SpecialOffersCategoryApiResponse
+>> => {
   const url = `${config.SPECIAL_OFFERS_CATEGORY[0]}`;
   return Axios.get(url, {
     headers: {
@@ -954,7 +977,20 @@ export const getSpecialOffersPageCategory = (): Promise<AxiosResponse<SpecialOff
   });
 };
 
-export const getSpecialOffersPageBrands = (): Promise<AxiosResponse<SpecialOffersBrandsApiResponse>> => {
+export const getIonicCode = (content: any): Promise<AxiosResponse<any>> => {
+  return Axios({
+    url: `${config.DRUPAL_CONFIG[0] + '/post-phr-content'}`,
+    method: 'POST',
+    data: { code: content },
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
+  });
+};
+
+export const getSpecialOffersPageBrands = (): Promise<AxiosResponse<
+  SpecialOffersBrandsApiResponse
+>> => {
   const url = `${config.SPECIAL_OFFERS_BRANDS[0]}`;
   return Axios.get(url, {
     headers: {
@@ -963,38 +999,44 @@ export const getSpecialOffersPageBrands = (): Promise<AxiosResponse<SpecialOffer
   });
 };
 
-export const getSpecialOffersPageBrandsProducts = (activeBrand: string, discount_percentage: object) 
+export const getSpecialOffersPageBrandsProducts = (activeBrand: string, discountPercentage: object)
 :Promise<AxiosResponse<SpecialOffersBrandsProductsApiResponse>> => {
   const url = `${config.SPECIAL_OFFERS_BRANDS_PRODUCTS[0]}`;
-  return Axios.post(url,
+  return Axios.post(
+    url,
     {
       params: activeBrand,
-      filter: { discount_percentage}
+      filters: {discount_percentage : discountPercentage}
     },
-    {headers: {
-      Authorization: config.SPECIAL_OFFERS_BRANDS_PRODUCTS[1],
-    }},
+    {
+      headers: {
+        Authorization: config.SPECIAL_OFFERS_BRANDS_PRODUCTS[1],
+      },
+    }
   );
 };
 
-export const fetchCouponsPDP = async (data: any): Promise<AxiosResponse<SpecialOffersCouponsApiResponse>> => {
+export const fetchCouponsPDP = async (
+  data: any
+): Promise<AxiosResponse<SpecialOffersCouponsApiResponse>> => {
   const { mobile, packageId, sku, type } = data;
   const baseUrl = AppConfig.Configuration.SPECIAL_OFFERS_PAGE_COUPONS[0];
   let url = `${baseUrl}?mobile=${mobile}&type=${type}&sku=${sku}`;
   if (!!packageId) {
     url += `&packageId=${packageId}`;
   }
-  const response =  await Axios.get(url, {
+  const response = await Axios.get(url, {
     headers: {},
   });
   return response;
 };
 
 export const getBoughtTogether = (
-  productSku: string,
+  productSku: string
 ): Promise<AxiosResponse<BoughtTogetherResponse>> => {
   const url = `${config.BOUGHT_TOGETHER[0]}`;
-  return Axios.post(url,
+  return Axios.post(
+    url,
     {
       params: productSku,
     },
@@ -1206,7 +1248,7 @@ export const fetchAutoApplyCoupon = (data: any): Promise<AxiosResponse<any>> => 
   let url = `${baseUrl}/autoapply?mobile=${mobile}&email=${email}&type=${type}`;
   if (!!packageId) {
     url += `&packageId=${packageId}`;
-  }  
+  }
   return Axios.get(url);
 };
 
@@ -1325,7 +1367,10 @@ export const getDiagnosticsPopularResults = (
   });
 };
 
-export const getDiagnosticHomePageWidgets = (pageName: string, cityId: number): Promise<AxiosResponse<any>> => {
+export const getDiagnosticHomePageWidgets = (
+  pageName: string,
+  cityId: number
+): Promise<AxiosResponse<any>> => {
   const baseurl = config.DRUPAL_CONFIG[0];
   const getWidgets = `${baseurl}/${pageName}/getwidgets?city=${cityId}`;
   return Axios.get(getWidgets, {
@@ -1365,6 +1410,7 @@ export const getDiagnosticListingWidget = (
 ): Promise<AxiosResponse<any>> => {
   const baseurl = config.DRUPAL_CONFIG[0];
   const getWidgets = `${baseurl}/${pageName}/${widgetName}`;
+  console.log({getWidgets})
   return Axios.get(getWidgets, {
     headers: {
       Authorization: config.DRUPAL_CONFIG[1],
@@ -1419,9 +1465,79 @@ export const getDiagnosticDoctorPrescriptionResults = (
   );
 };
 
-export const getTatStaticContent = (
-): Promise<AxiosResponse<any>> => {
+export const getTatStaticContent = (): Promise<AxiosResponse<any>> => {
   const baseUrl = config.assetsBaseurl;
   const url = `${baseUrl}/tatCtaStaticContent.json`;
   return Axios.get(url);
+};
+
+export const getBrandPagesData = async (
+  brandName: string
+): Promise<AxiosResponse<BrandPageApiResponse>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const brandPagesCmsUrl = `${baseurl}/brand-page/${brandName}`;
+  const response = await Axios.get(brandPagesCmsUrl, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
+  });
+  return response;
+};
+
+export const fetchDiagnosticCoupons = (
+  type: string,
+  packageId?: any,
+): Promise<AxiosResponse<any>> => {
+  const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
+  let url = `${baseUrl}/frontend?type=${type}`;
+  if (!!packageId) {
+    url += `&packageId=${packageId}`;
+  }
+  return Axios.get(url);
+};
+
+export const getConsultPackages = (): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const url = `${baseurl}/getpackages`;
+  return Axios.get(url, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
+  });
+};
+
+export const getConsultPackageDetailPrePurchase = (planId: string): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const url = `${baseurl}/getplandetail/${planId}`;
+  return Axios.get(url, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
+  });
+};
+
+export const getConsultWidgetPackages = (): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const url = `${baseurl}/getpackagestobuy`;
+  return Axios.get(url, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
+  });
+};
+
+export const sendSubscriptionInvoiceEmail = (
+  mobileNumber: string,
+  email: string,
+  invoiceUrl: string
+): Promise<AxiosResponse<any>> => {
+  return Axios({
+    url: config.SUBSCRIPTION_SERVICE_EMAIL,
+    method: 'POST',
+    data: {
+      mobileNumber,
+      email,
+      invoiceUrl,
+    },
+  });
 };

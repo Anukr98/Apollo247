@@ -14,9 +14,12 @@ import {
   getDiscountPercentage,
   productsThumbnailUrl,
   getIsMedicine,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 export interface FrequentlyBoughtTogetherProps {
   boughtTogetherArray: MedicineProduct[];
@@ -25,13 +28,27 @@ export interface FrequentlyBoughtTogetherProps {
 
 export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> = (props) => {
   const { boughtTogetherArray, setShowAddedToCart } = props;
+  const defaultSelectedId: number[] = [];
 
-  const [selectedItemsCount, setSelectedItemsCount] = useState<number>(0);
-  const [selectedProductsId, setSelectedProductsId] = useState([]);
-  const [selectedProductsArray, setSelectedProductsArray] = useState<MedicineProduct[]>([]);
-  const [totalPrice, setTotalPrice] = useState<number>(0);
+  let defaultTotalPrice = 0;
+
+  boughtTogetherArray.map((item) => {
+    defaultSelectedId.push(item?.id);
+    const itemPrice = item?.special_price ? item?.special_price : item?.price;
+    defaultTotalPrice = defaultTotalPrice + parseInt(itemPrice);
+  });
+
+  const [selectedItemsCount, setSelectedItemsCount] = useState<number>(
+    defaultSelectedId?.length || 0
+  );
+  const [selectedProductsId, setSelectedProductsId] = useState(defaultSelectedId || []);
+  const [selectedProductsArray, setSelectedProductsArray] = useState<MedicineProduct[]>(
+    boughtTogetherArray || []
+  );
+  const [totalPrice, setTotalPrice] = useState<number>(defaultTotalPrice || 0);
 
   const { setUserActionPayload } = useServerCart();
+  const { allCurrentPatients, currentPatient } = useAllCurrentPatients()
 
   const onPressIcon = (id: number, itemPrice: number, item) => {
     const newArr = [...selectedProductsId];
@@ -53,9 +70,21 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
     setSelectedProductsId(newArr);
   };
 
+  const postFrequentlyBoughtTogetherEvent = async (item: object) => {
+    const eventAttributes = {
+      item,
+      source: "Frequently Bought Together",
+      user: currentPatient?.firstName,
+      mobile_number: currentPatient?.mobileNumber,
+      customer_id: currentPatient?.id
+    }
+    postCleverTapEvent(CleverTapEventName.FRQUENTLY_BOUGHT_TOGETHER, eventAttributes)
+  }
+
   const onPressAdd = (selectedProductsArray) => {
     if (selectedProductsArray.length > 0) {
       selectedProductsArray.map((item) => {
+        postFrequentlyBoughtTogetherEvent(item)
         setUserActionPayload?.({
           medicineOrderCartLineItems: [
             {
@@ -84,7 +113,7 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
         </View>
         <View style={styles.plusRightStyle}>
           <Text numberOfLines={1} ellipsizeMode={'clip'} style={styles.dashStyle}>
-            --------------------------------------------------------
+            ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
           </Text>
         </View>
       </View>
@@ -199,7 +228,8 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: 20,
+    marginTop: 10,
+    marginHorizontal: 15,
   },
   headingStyle: {
     ...theme.fonts.IBMPlexSansRegular(20),
@@ -218,7 +248,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
   },
   ItemContainer: {
-    height: 67,
+    height: 69,
     flexDirection: 'row',
   },
   imageContainer: {
@@ -240,8 +270,8 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   imageStyle: {
-    height: 53,
-    width: 53,
+    height: 51,
+    width: 51,
     alignSelf: 'center',
   },
   detailsContainer: {
@@ -321,7 +351,7 @@ const styles = StyleSheet.create({
   },
   plusContainer: {
     flexDirection: 'row',
-    marginVertical: -15,
+    marginVertical: -17,
   },
   plusLeftStyle: {
     width: '15%',

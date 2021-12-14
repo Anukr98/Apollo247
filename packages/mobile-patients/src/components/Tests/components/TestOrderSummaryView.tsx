@@ -6,6 +6,7 @@ import moment from 'moment';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import {
   formatAddressForApi,
+  isEmptyObject,
   nameFormater,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -25,12 +26,22 @@ import {
   DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
   DIAGNOSTIC_STATUS_BEFORE_SUBMITTED,
   DIAGNOSTIC_PAYMENT_MODE_STATUS_ARRAY,
+  AppConfig,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { DiagnosticOrderSummaryViewed } from '@aph/mobile-patients/src/components/Tests/Events';
-import { Down, Up, DownloadOrange } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Down, Up, DownloadOrange, CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
+import { PassportPaitentOverlay } from '@aph/mobile-patients/src/components/Tests/components/PassportPaitentOverlay';
+import { useApolloClient } from 'react-apollo-hooks';
+import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
+import { UPDATE_PASSPORT_DETAILS } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  updatePassportDetails,
+  updatePassportDetailsVariables,
+} from '@aph/mobile-patients/src/graphql/types/updatePassportDetails';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 
 export interface LineItemPricing {
   packageMrp: number;
@@ -47,13 +58,23 @@ export interface TestOrderSummaryViewProps {
   refundDetails?: any;
   refundTransactionId?: string;
   slotDuration?: any;
+  subscriptionDetails?: any;
+  onPressViewAll?: () => void;
 }
 
 export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props) => {
-  const { orderDetails, refundDetails, refundTransactionId, slotDuration } = props;
+  const {
+    orderDetails,
+    refundDetails,
+    refundTransactionId,
+    slotDuration,
+    subscriptionDetails,
+  } = props;
   const filterOrderLineItem =
     !!orderDetails &&
     orderDetails?.diagnosticOrderLineItems?.filter((item: any) => !item?.isRemoved);
+  const client = useApolloClient();
+  const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
 
   const isPrepaid = orderDetails?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
   const salutation = !!orderDetails?.patientObj?.gender
@@ -64,7 +85,11 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
   const [showPreviousCard, setShowPreviousCard] = useState<boolean>(true);
+  const [showPassportModal, setShowPassportModal] = useState<boolean>(false);
   const [showCurrCard, setShowCurrCard] = useState<boolean>(true);
+  const [passportNo, setPassportNo] = useState<string>('');
+  const [newPassValue, setNewPassValue] = useState<string>(passportNo);
+  const [passportData, setPassportData] = useState<any>([])
 
   useEffect(() => {
     DiagnosticOrderSummaryViewed(
@@ -271,18 +296,20 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
             {!!bookedForDate ? <Text style={styles.slotText}>{bookedForDate}</Text> : null}
           </View>
         )}
-        <View>
-          <Text style={styles.headingText}>Payment</Text>
-          <Text style={[styles.slotText, { textAlign: 'right' }]}>
-            {isPrepaid ? 'ONLINE' : 'COD'}
-          </Text>
-          {!!orderDetails?.totalPrice ? (
+        {orderDetails?.orderStatus !== DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING ? (
+          <View>
+            <Text style={styles.headingText}>Payment</Text>
             <Text style={[styles.slotText, { textAlign: 'right' }]}>
-              {string.common.Rs}
-              {Number(orderDetails?.totalPrice).toFixed(2)}
+              {isPrepaid ? 'ONLINE' : 'COD'}
             </Text>
-          ) : null}
-        </View>
+            {!!orderDetails?.totalPrice ? (
+              <Text style={[styles.slotText, { textAlign: 'right' }]}>
+                {string.common.Rs}
+                {Number(orderDetails?.totalPrice).toFixed(2)}
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -309,6 +336,52 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
         <Text style={styles.headingText}>{title}</Text>
       </View>
     );
+  };
+  useEffect(() => {
+    setPassportNo(!!orderDetails?.passportNo ? orderDetails?.passportNo : '');
+    setNewPassValue(!!orderDetails?.passportNo ? orderDetails?.passportNo : '');
+    if (!!orderDetails?.passportNo) {
+      const passData = [
+        {
+          displayId: orderDetails?.displayId,
+          passportNo: orderDetails?.passportNo,
+        },
+      ];
+      setPassportData(passData);
+    }
+  }, []);
+  const updatePassportDetails = async (data: any) => {
+    try {
+      setLoadingContext?.(true);
+      const res = await client.mutate<updatePassportDetails, updatePassportDetailsVariables>({
+        mutation: UPDATE_PASSPORT_DETAILS,
+        context: {
+          sourceHeaders,
+        },
+        variables: { passportDetailsInput: data },
+      });
+      setLoadingContext?.(false);
+      if (
+        !res?.data?.updatePassportDetails?.[0]?.status &&
+        res?.data?.updatePassportDetails?.[0]?.message
+      ) {
+        showAphAlert?.({
+          title: string.common.uhOh,
+          description: res?.data?.updatePassportDetails?.[0]?.message || 'Something went wrong',
+        });
+      }
+      if (res?.data?.updatePassportDetails?.[0]?.status) {
+        setPassportNo(data?.[0]?.passportNo);
+        setShowPassportModal(false);
+      }
+    } catch (error) {
+      setLoadingContext?.(false);
+      showAphAlert?.({
+        title: string.common.uhOh,
+        description: 'Something went wrong',
+      });
+      CommonBugFender('updatePassportDetails_TestOrderSummaryView', error);
+    }
   };
 
   const renderItemsCard = () => {
@@ -494,7 +567,8 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
     title: string,
     price: string | number,
     isDiscount: boolean,
-    customStyle?: boolean
+    customStyle?: boolean,
+    fontSize?: number
   ) => {
     return (
       <View style={styles.pricesContainer}>
@@ -504,9 +578,9 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
               styles.commonText,
               {
                 ...theme.viewStyles.text(
-                  customStyle ? 'B' : 'M',
-                  customStyle ? 14 : 12,
-                  colors.SHERPA_BLUE,
+                  customStyle ? (fontSize == 2 ? 'B' : 'SB') : fontSize == 2 ? 'B' : 'SB',
+                  customStyle ? 16 : 14,
+                  isDiscount ? colors.APP_GREEN : colors.SHERPA_BLUE,
                   1,
                   customStyle ? 20 : 15
                 ),
@@ -522,9 +596,9 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
               styles.commonText,
               {
                 ...theme.viewStyles.text(
-                  customStyle ? 'B' : 'M',
-                  customStyle ? 14 : 12,
-                  colors.SHERPA_BLUE,
+                  customStyle ? (fontSize == 2 ? 'B' : 'SB') : fontSize == 2 ? 'B' : 'SB',
+                  customStyle ? 16 : 14,
+                  isDiscount ? colors.APP_GREEN : colors.SHERPA_BLUE,
                   1,
                   customStyle ? 20 : 15
                 ),
@@ -540,24 +614,83 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
     );
   };
 
+  function _navigateToCircleBenefits() {
+    props.onPressViewAll?.();
+  }
+
+  const renderSubscriptionCard = () => {
+    const duration = !!subscriptionDetails && subscriptionDetails?.group_plan?.valid_duration;
+    const circlePurchasePrice =
+      !!subscriptionDetails && subscriptionDetails?.payment_reference?.amount_paid;
+    const validity = moment(new Date(), 'DD/MM/YYYY').add('days', subscriptionDetails?.expires_in);
+    return (
+      <>
+        {renderHeading(string.diagnosticsCircle.circleMembership)}
+        <View style={styles.circlePurchaseDetailsCard}>
+          <View style={{ flexDirection: 'row' }}>
+            <CircleLogo style={styles.circleLogoIcon} />
+            <View style={styles.circlePurchaseDetailsView}>
+              <Text style={styles.circlePurchaseText}>
+                Congrats! You have successfully purchased the {duration} months (Trial) Circle Plan
+                for {string.common.Rs}
+                {circlePurchasePrice}
+              </Text>
+              {!!totalCircleSaving && totalCircleSaving > 0 && (
+                <Text style={{ ...styles.savedTxt, marginTop: 8, fontWeight: '600' }}>
+                  You {''}
+                  <Text style={styles.savedAmt}>
+                    saved {string.common.Rs}
+                    {totalCircleSaving}
+                  </Text>
+                  {''} on your purchase.
+                </Text>
+              )}
+              <Text style={styles.circlePlanValidText}>
+                {`Valid till: ${moment(validity)?.format('D MMM YYYY')}`}
+              </Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            onPress={() => _navigateToCircleBenefits()}
+            style={styles.viewAllBenefitsTouch}
+          >
+            <Text style={styles.yellowText}>VIEW ALL BENEFITS</Text>
+          </TouchableOpacity>
+        </View>
+      </>
+    );
+  };
+
   const renderPricesCard = () => {
+    const totalSaving = totalCartSaving + totalDiscountSaving;
+    const couponDiscount = orderDetails?.couponDiscAmount;
     return (
       <View>
         {renderHeading('Total Charges')}
         <View style={styles.orderSummaryView}>
-          {renderPrices('Total MRP', grossCharges, false)}
-          {renderPrices('Circle Discount', totalCircleSaving, true)}
-          {renderPrices('Cart Savings', totalCartSaving, true)}
-          {renderPrices('Coupon Discount', totalDiscountSaving, true)}
+          {renderPrices('Total MRP', grossCharges, false, false, 1)}
+          {renderPrices('Discount on MRP', totalSaving, true, false, 1)} {/**totalCartSavings */}
+          {renderPrices('Circle Discount', totalCircleSaving, true, false, 1)}
+          {renderPrices('Coupon Discount', !!couponDiscount ? couponDiscount : 0, true, false, 1)}
+          {/**totalDiscountSaving */}
           {renderPrices(
             string.diagnosticsCartPage.homeCollectionText,
             HomeCollectionCharges,
-            false
+            false,
+            false,
+            1
           )}
           {!!paidSlotCharges &&
-            renderPrices(string.diagnosticsCartPage.paidSlotText, paidSlotCharges, false)}
+            renderPrices(string.diagnosticsCartPage.paidSlotText, paidSlotCharges, false, false, 1)}
+          {/** when added circle membership */}
+          {/* {renderPrices(
+            string.diagnosticsCircle.circleMembership,
+            HomeCollectionCharges,
+            false,
+            false
+          )} */}
           <Spearator style={{ marginTop: 6, marginBottom: 6 }} />
-          {renderPrices('Total', orderDetails?.totalPrice, false, true)}
+          {renderPrices('Total', orderDetails?.totalPrice, false, true, 2)}
         </View>
       </View>
     );
@@ -592,6 +725,55 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       </View>
     );
   };
+  const renderAddPassportView = () => {
+    const itemIdArray = orderDetails?.diagnosticOrderLineItems?.filter((item: any) => {
+      if (AppConfig.Configuration.DIAGNOSTICS_COVID_ITEM_IDS.includes(item?.itemId)) {
+        return item?.itemId;
+      }
+    });
+    return itemIdArray?.length ? (
+      <View style={styles.passportContainer}>
+        <View style={styles.passportView}>
+          <Text style={styles.textupper}>
+            {passportNo
+              ? string.diagnostics.editpassportText
+              : string.diagnostics.addOrEditPassportText}
+          </Text>
+          <TouchableOpacity
+            onPress={() => {
+              setShowPassportModal(true);
+            }}
+          >
+            <Text style={styles.textlower}>{passportNo ? 'EDIT' : 'ADD'}</Text>
+          </TouchableOpacity>
+        </View>
+        {passportNo ? <View>
+          <Text style={styles.textmedium}>{string.diagnostics.passportNo}{passportNo}</Text>
+        </View> : null}
+      </View>
+    ) : null;
+  };
+
+  const renderPassportPaitentView = () => {
+    return (
+      <PassportPaitentOverlay
+        patientArray={[orderDetails]}
+        onPressClose={() => {
+          setShowPassportModal(false);
+        }}
+        onPressDone={(response: any) => {
+          updatePassportDetails(response);
+          setShowPassportModal(false);
+        }}
+        onChange={(res)=>{
+          setNewPassValue(res?.passportNo)
+          setPassportData(res)
+        }}
+        value={newPassValue}
+        disableButton={!passportData?.[0]?.passportNo}
+      />
+    );
+  };
 
   const renderNewTag = () => {
     return (
@@ -622,6 +804,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           : null}
         {renderOrderId()}
         {renderSlotView()}
+        {renderAddPassportView()}
         {renderAddress()}
         {renderHeading(
           `Tests for ${salutation != '' && salutation}${orderDetails?.patientObj?.firstName! ||
@@ -637,11 +820,13 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
         {!!getModifiedLineItems && getModifiedLineItems?.length > 0
           ? renderOrderBreakdownCard(getModifiedLineItems, string.diagnostics.currentCharges)
           : null}
+        {isPrepaid && !!subscriptionDetails ? renderSubscriptionCard() : null}
         {renderPricesCard()}
         {(orderDetails?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED && !isPrepaid) ||
         DIAGNOSTIC_PAYMENT_MODE_STATUS_ARRAY.includes(orderDetails?.orderStatus)
           ? null
           : renderPaymentCard()}
+        {showPassportModal && renderPassportPaitentView()}
       </View>
     </ScrollView>
   );
@@ -679,6 +864,21 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     alignItems: 'center',
   },
+  passportView: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  passportContainer: {
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#D4D4D4',
+    backgroundColor: 'white',
+    padding: 10,
+    marginVertical: 10,
+  },
+  textupper: { ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1) },
+  textlower: { ...theme.viewStyles.text('SB', 14, theme.colors.APP_YELLOW_COLOR) },
+  textmedium: { ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1) },
   commonText: {
     ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 11 : 12),
     color: colors.SHERPA_BLUE,
@@ -839,4 +1039,35 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   addressTextStyle: { ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 1, 18) },
+  circlePurchaseDetailsCard: {
+    ...theme.viewStyles.cardContainer,
+    marginBottom: 30,
+    padding: 16,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: 'transparent',
+    borderLeftColor: '#007C9D',
+    borderLeftWidth: 4,
+  },
+  circleLogoIcon: { height: 45, width: 45, resizeMode: 'contain' },
+  circlePurchaseDetailsView: { width: '85%', marginHorizontal: 8 },
+  circlePurchaseText: { ...theme.viewStyles.text('R', 11, colors.SHERPA_BLUE, 1, 16) },
+  circlePlanValidText: {
+    ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 0.6, 16),
+    marginTop: 6,
+  },
+  savedTxt: {
+    color: '#02475B',
+    ...theme.fonts.IBMPlexSansRegular(12),
+    lineHeight: 16,
+  },
+  savedAmt: {
+    color: theme.colors.APP_GREEN,
+    ...theme.fonts.IBMPlexSansSemiBold(12),
+  },
+  viewAllBenefitsTouch: {
+    alignSelf: 'flex-end',
+    height: 25,
+    justifyContent: 'center',
+  },
 });

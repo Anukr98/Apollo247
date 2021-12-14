@@ -31,6 +31,7 @@ import {
   isEmptyObject,
   isSmallDevice,
   isValidSearch,
+  nameFormater,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -72,6 +73,7 @@ import {
   DiagnosticItemSearched,
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import DeviceInfo from 'react-native-device-info';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { getDiagnosticSearchResults } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { searchDiagnosticItem_searchDiagnosticItem_data } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticItem';
@@ -87,6 +89,7 @@ const isIphoneX = DeviceInfo.hasNotch();
 export interface SearchTestSceneProps
   extends NavigationScreenProps<{
     searchText: string;
+    duplicateOrderId?: any;
   }> {}
 
 export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
@@ -125,12 +128,14 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     setModifiedPatientCart,
     setDistanceCharges,
     setDeliveryAddressId,
+    setCartItems,
   } = useDiagnosticsCart();
   const { serverCartItems: shopCartItems } = useShoppingCart();
   const { showAphAlert, setLoading: setGlobalLoading, hideAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
+  const duplicateOrderId = props.navigation.getParam('duplicateOrderId');
   const showGoToCart = !!cartItems && cartItems?.length > 0;
 
   //add the cityId in case of modifyFlow
@@ -150,6 +155,12 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
 
   useEffect(() => {
     if (isModify) {
+      if (duplicateOrderId?.length > 0) {
+        const filteredArray = cartItems?.filter(
+          (cItem) => !duplicateOrderId?.includes(Number(cItem?.id))
+        );
+        setCartItems?.(filteredArray);
+      }
       const unSelectRemainingPatients = patientCartItems?.filter(
         (item) => item?.patientId !== modifiedOrder?.patientId
       );
@@ -310,14 +321,16 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     name: string,
     id: string,
     price: number,
-    discountedPrice: number
+    discountedPrice: number,
+    source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE
   ) => {
     DiagnosticAddToCartEvent(
       name,
       id,
       price,
       discountedPrice,
-      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.POPULAR_SEARCH,
+      source,
+      undefined,
       currentPatient,
       isDiagnosticCircleSubscription
     );
@@ -330,6 +343,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const onAddCartItem = (
     itemId: string | number,
     itemName: string,
+    source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
     rate?: number,
     collectionType?: TEST_COLLECTION_TYPE,
     pricesObject?: any,
@@ -339,7 +353,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     inclusions?: any[]
   ) => {
     savePastSearch(`${itemId}`, itemName).catch((e) => {});
-    postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, 0, 0);
+    postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, 0, 0, source);
     const addedItem = {
       id: `${itemId}`,
       name: stripHtml(itemName),
@@ -477,8 +491,10 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
             conatinerstyles={{ paddingBottom: 0 }}
             inputStyle={[
               styles.searchValueStyle,
-              isNoTestsFound ? { borderBottomColor: '#e50000' } : {},
-              isFocus ? { borderColor: colors.APP_GREEN, borderWidth: 2 } : {},
+              isNoTestsFound ? { borderColor: '#e50000' } : {},
+              isFocus
+                ? { borderColor: isNoTestsFound ? '#e50000' : colors.APP_GREEN, borderWidth: 2 }
+                : {},
             ]}
             textInputprops={{
               ...(isNoTestsFound ? { selectionColor: '#e50000' } : {}),
@@ -611,12 +627,16 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           CommonLogEvent(AppRoutes.SearchTestScene, 'Search suggestion Item');
           props.navigation.navigate(AppRoutes.TestDetails, {
             itemId: product?.diagnostic_item_id,
-            source: 'Full search',
+            source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PARTIAL_SEARCH,
             comingFrom: AppRoutes.SearchTestScene,
           });
         }}
         onPressAddToCart={() => {
-          onAddCartItem(product?.diagnostic_item_id, product?.diagnostic_item_name);
+          onAddCartItem(
+            product?.diagnostic_item_id,
+            product?.diagnostic_item_name,
+            DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PARTIAL_SEARCH
+          );
         }}
         data={product}
         loading={true}
@@ -706,6 +726,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
                     keyExtractor={(_, index) => `${index}`}
                     scrollEnabled={false}
                     data={popularPackages}
+                    bounces={false}
                     renderItem={renderPopularDiagnostic}
                   />
                 </View>
@@ -719,6 +740,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
                     keyExtractor={(_, index) => `${index}`}
                     scrollEnabled={false}
                     data={popularTests}
+                    bounces={false}
                     renderItem={renderPopularDiagnostic}
                   />
                 </View>
@@ -738,12 +760,16 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           props.navigation.navigate(AppRoutes.TestDetails, {
             itemId: item?.diagnostic_item_id,
             itemName: item?.diagnostic_item_name,
-            source: 'Popular search',
+            source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.POPULAR_SEARCH,
             comingFrom: AppRoutes.SearchTestScene,
           });
         }}
         onPressAddToCart={() => {
-          onAddCartItem(item?.diagnostic_item_id, item?.diagnostic_item_name);
+          onAddCartItem(
+            item?.diagnostic_item_id,
+            item?.diagnostic_item_name,
+            DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.POPULAR_SEARCH
+          );
         }}
         data={item}
         loading={true}
@@ -757,9 +783,15 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   };
 
   function _navigateToCartPage() {
-    props.navigation.navigate(AppRoutes.TestsCart, {
-      orderDetails: modifiedOrder,
-    });
+    if (isModify) {
+      props.navigation.navigate(AppRoutes.CartPage, {
+        orderDetails: modifiedOrder,
+      });
+    } else {
+      props.navigation.navigate(AppRoutes.AddPatients, {
+        orderDetails: modifiedOrder,
+      });
+    }
   }
 
   const renderStickyBottom = () => {
@@ -770,7 +802,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           {cartCount} {cartItems?.length == 1 ? 'item' : 'items'} added
         </Text>
         <Button
-          title={'GO TO CART'}
+          title={nameFormater(string.diagnostics.goToCart, 'upper')}
           onPress={() => _navigateToCartPage()}
           style={{ width: '60%' }}
         />
@@ -892,6 +924,31 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     paddingVertical: 0,
     backgroundColor: 'white',
+    marginBottom: GO_TO_CART_HEIGHT,
+  },
+  cartDetailView: {
+    position: 'absolute',
+    backgroundColor: theme.colors.APP_YELLOW_COLOR,
+    bottom: isIphoneX ? 10 : 0,
+    height: GO_TO_CART_HEIGHT,
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  itemAddedText: {
+    marginLeft: 20,
+    ...theme.viewStyles.text('SB', isSmallDevice ? 13 : 14, theme.colors.WHITE),
+    lineHeight: 16,
+    textAlign: 'left',
+    alignSelf: 'center',
+  },
+  goToCartText: {
+    marginRight: 20,
+    ...theme.viewStyles.text('SB', isSmallDevice ? 15 : 16, theme.colors.WHITE),
+    lineHeight: 20,
+    textAlign: 'right',
+    alignSelf: 'center',
   },
   cartDetailView: {
     position: 'absolute',

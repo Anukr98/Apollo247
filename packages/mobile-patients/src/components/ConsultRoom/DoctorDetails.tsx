@@ -68,6 +68,7 @@ import {
   TouchableOpacity,
   View,
   Platform,
+  Linking,
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
@@ -85,6 +86,7 @@ import {
   CircleLogo,
   ShareYellowDocIcon,
   Tick,
+  CallIcon,
 } from '../ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -355,6 +357,38 @@ const styles = StyleSheet.create({
     marginTop: -5,
     width: 140,
   },
+  askApolloView: {
+    position: 'absolute',
+    end: 10,
+    zIndex: 3,
+  },
+  askApolloNumber: {
+    ...theme.viewStyles.text('M', 14, theme.colors.APP_YELLOW, undefined, 17),
+  },
+  callLogo: {
+    height: 15,
+    width: 15,
+    marginEnd: 6,
+  },
+  horizontalView: {
+    flexDirection: 'row',
+  },
+  animatedView: {
+    position: 'absolute',
+    height: 160,
+    width: '100%',
+    justifyContent: 'flex-end',
+    flexDirection: 'column',
+  },
+  headerView: {
+    zIndex: 3,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    height: 56,
+    backgroundColor: 'transparent',
+    borderBottomWidth: 0,
+  },
 });
 type Appointments = {
   date: string;
@@ -410,7 +444,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [availableInMinPhysical, setavailableInMinPhysical] = useState<Number>();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const { getPatientApiCall } = useAuth();
-  const { VirtualConsultationFee } = useAppCommonData();
+  const { VirtualConsultationFee, displayAskApolloNumber } = useAppCommonData();
   const [consultType, setConsultType] = useState<ConsultMode>(ConsultMode.BOTH);
   const [showVideo, setShowVideo] = useState<boolean>(false);
   const [isFocused, setisFocused] = useState<boolean>(false);
@@ -427,6 +461,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [showDoctorSharePopup, setShowDoctorSharePopup] = useState<boolean>(false);
   const callCleverTapEvent = useRef<boolean>(true);
   const consultModeSelected = props.navigation.getParam('consultModeSelected');
+  const isPayrollDoctor = doctorDetails?.doctorType === DoctorType.PAYROLL;
   const {
     isCircleDoctor,
     physicalConsultMRPPrice,
@@ -446,7 +481,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     circleSubPlanId,
   } = useShoppingCart();
   const chatDays = doctorDetails?.chatDays;
-  const isPayrollDoctor = doctorDetails?.doctorType === DoctorType.PAYROLL;
   const isPhysical =
     doctorDetails &&
     doctorDetails?.availableModes?.filter(
@@ -734,7 +768,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Patient Gender': g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Doctor ID': g(doctorDetails, 'id')!,
-      'Doctor Name': g(doctorDetails, 'fullName')!,
+      'Doctor Name': g(doctorDetails, 'displayName')!,
       'Speciality Name': g(doctorDetails, 'specialty', 'name')!,
       'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
       'Media Source': mediaSource,
@@ -743,7 +777,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     const {
       onlineConsultDiscountedPrice,
       cashbackEnabled,
-      cashbackAmount
+      cashbackAmount,
     } = calculateCircleDoctorPricing(doctorDetails);
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED] = {
       'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
@@ -754,7 +788,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Patient gender': g(currentPatient, 'gender'),
       'Mobile number': g(currentPatient, 'mobileNumber'),
       'Doctor ID': g(doctorDetails, 'id')!,
-      'Doctor name': g(doctorDetails, 'fullName')!,
+      'Doctor name': g(doctorDetails, 'displayName')!,
       'Speciality name': g(doctorDetails, 'specialty', 'name')!,
       'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
       Experience: String(doctorDetails?.experience) || '',
@@ -777,7 +811,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Appointment CTA': cleverTapAppointmentAttributes?.appointmentCTA || 'NA',
       'Customer ID': g(currentPatient, 'id'),
       'Available in mins': 'NA',
-      'Relation': g(currentPatient, 'relation'),
+      Relation: g(currentPatient, 'relation'),
       'Circle Membership added': String(!!circlePlanSelected),
       'Circle discount': onlineConsultDiscountedPrice ? onlineConsultDiscountedPrice : 0,
       'Circle Cashback': cashbackEnabled ? cashbackAmount! : 0,
@@ -801,7 +835,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         ),
         'Patient gender': g(currentPatient, 'gender'),
         doctorId: g(doctorDetails, 'id')!,
-        doctorName: g(doctorDetails, 'fullName')!,
+        doctorName: g(doctorDetails, 'displayName')!,
         specialtyName: g(doctorDetails, 'specialty', 'name')! || undefined,
         specialtyId: g(doctorDetails, 'specialty', 'id')! || undefined,
         User_Type: getUserType(allCurrentPatients),
@@ -868,7 +902,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         isOnlineSelected={onlineSelected}
         DoctorId={doctorId}
         chatDays={chatDays}
-        DoctorName={doctorDetails ? doctorDetails.fullName : ''}
+        DoctorName={doctorDetails ? doctorDetails?.displayName : ''}
         nextAppointemntOnlineTime={availableTime}
         nextAppointemntInPresonTime={physicalAvailableTime}
         circleDoctorDetails={circleDoctorDetails}
@@ -895,7 +929,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         CommonBugFender('DoctorDetails_getNetStatus', e);
       });
   };
-  
+
   const renderCareDoctorPricing = (consultType: ConsultMode) => {
     return (
       <View style={{ paddingBottom: showCircleSubscribed ? 16 : 3 }}>
@@ -1017,7 +1051,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Patient Gender': g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Doctor ID': g(doctorDetails, 'id')!,
-      'Doctor Name': g(doctorDetails, 'fullName')!,
+      'Doctor Name': g(doctorDetails, 'displayName')!,
       'Speciality Name': g(doctorDetails, 'specialty', 'name')!,
       'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
       Source: 'Doctor profile',
@@ -1060,7 +1094,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           {doctorDetails && (
             <View style={styles.detailsViewStyle}>
               <View style={styles.doctorNameViewStyle}>
-                <Text style={styles.doctorNameStyles}>{doctorDetails.fullName}</Text>
+                <Text style={styles.doctorNameStyles}>{doctorDetails?.displayName}</Text>
                 <TouchableOpacity
                   activeOpacity={1}
                   onPress={() => onClickDoctorShare()}
@@ -1374,7 +1408,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           <View style={styles.cardView}>
             <View style={styles.labelView}>
               <Text style={styles.labelStyle}>
-                {doctorDetails.fullName}’s location for physical visits
+                {doctorDetails?.displayName}’s location for physical visits
               </Text>
             </View>
             <FlatList
@@ -1541,7 +1575,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       return (
         <View style={styles.cardView}>
           <View style={styles.labelView}>
-            <Text style={styles.labelStyle}>{doctorDetails.fullName}’s Team</Text>
+            <Text style={styles.labelStyle}>{doctorDetails?.displayName}’s Team</Text>
             <Text style={styles.labelStyle}>
               {doctorDetails.starTeam.length}
               {doctorDetails.starTeam.length == 1 ? ' Doctor' : ' Doctors'}
@@ -1695,7 +1729,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       }
     );
     const eventAttributes: WebEngageEvents[WebEngageEventName.BOOK_APPOINTMENT] = {
-      'Doctor Name': g(doctorDetails, 'fullName')!,
+      'Doctor Name': g(doctorDetails, 'displayName')!,
       'Doctor City': g(doctorDetails, 'city')!,
       'Type of Doctor': g(doctorDetails, 'doctorType')!,
       'Doctor Specialty': g(doctorDetails, 'specialty', 'name')!,
@@ -1727,7 +1761,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     };
     postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED] = {
-      'Doctor name': g(doctorDetails, 'fullName')! || undefined,
+      'Doctor name': g(doctorDetails, 'displayName')! || undefined,
       Source: 'doctor profile',
       'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
@@ -1777,7 +1811,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_TYPE_SELECTION] = {
       'Consult Type': consultType,
       'Doctor ID': doctorId,
-      'Doctor Name': doctorDetails?.fullName || '',
+      'Doctor Name': doctorDetails?.displayName || '',
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
@@ -1820,6 +1854,31 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       : consultNowText || (time && moment(time).isValid())
       ? nextAvailability(time, 'Consult')
       : string.common.book_apointment;
+  };
+
+  const callAskApolloNumber = () => {
+    const doctorClinics = ((doctorDetails && doctorDetails?.doctorHospital) || [])?.filter(
+      (item) => {
+        if (item && item?.facility && item?.facility?.facilityType)
+          return item?.facility?.facilityType === 'HOSPITAL';
+      }
+    );
+    const { id, name } =
+      doctorClinics.length > 0 && doctorDetails!.doctorType !== DoctorType.PAYROLL
+        ? doctorClinics[0].facility
+        : {};
+
+    const eventAttributes: CleverTapEvents[CleverTapEventName.CLICKED_ON_APOLLO_NUMBER] = {
+      'Screen type': 'Doctor Detail Page',
+      'Patient Number': currentPatient?.mobileNumber,
+      'Doctor ID': doctorDetails?.id,
+      'Doctor Name': doctorDetails?.displayName || '',
+      'Doctor Type': doctorDetails?.doctorType,
+      'Doctor Hospital Id': id || '',
+      'Doctor Hospital Name': name || '',
+    };
+    postCleverTapEvent(CleverTapEventName.CLICKED_ON_APOLLO_NUMBER, eventAttributes);
+    Linking.openURL(`tel:${AppConfig.Configuration.Ask_Apollo_Number}`);
   };
 
   return (
@@ -1876,14 +1935,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       )}
       <Animated.View
         style={{
-          position: 'absolute',
-          height: 160,
-          width: '100%',
-          top: statusBarHeight(),
+          ...styles.animatedView,
           backgroundColor: headColor,
-          justifyContent: 'flex-end',
-          flexDirection: 'column',
           transform: [{ translateY: headMov }],
+          top: statusBarHeight() + 20,
         }}
       >
         <View
@@ -1934,18 +1989,25 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       </Animated.View>
       <Header
         container={{
-          zIndex: 3,
-          position: 'absolute',
-          top: statusBarHeight(),
-          left: 0,
-          right: 0,
-          height: 56,
-          backgroundColor: 'transparent',
-          borderBottomWidth: 0,
+          ...styles.headerView,
+          top: statusBarHeight() + 10,
         }}
         leftIcon="backArrow"
-        onPressLeftIcon={() => moveBack()}
+        onPressLeftIcon={moveBack}
       />
+      {displayAskApolloNumber && (
+        <View
+          style={{
+            ...styles.askApolloView,
+            top: statusBarHeight() + 30,
+          }}
+        >
+          <TouchableOpacity onPress={callAskApolloNumber} style={styles.horizontalView}>
+            <CallIcon style={styles.callLogo} />
+            <Text style={styles.askApolloNumber}>{AppConfig.Configuration.Ask_Apollo_Number}</Text>
+          </TouchableOpacity>
+        </View>
+      )}
       {showSpinner && <Spinner />}
       {showOfflinePopup && (
         <NoInterNetPopup

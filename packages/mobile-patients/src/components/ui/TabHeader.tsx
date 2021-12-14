@@ -51,7 +51,7 @@ export const TabHeader: React.FC<TabHeaderProps> = (props) => {
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const cartItemsCount = serverCartItems?.length + diagnosticCartItems.length;
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
-  const { pharmacyCircleAttributes } = useShoppingCart();
+  const { circleSubscriptionId } = useShoppingCart();
 
   const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
     return (
@@ -65,7 +65,6 @@ export const TabHeader: React.FC<TabHeaderProps> = (props) => {
     let eventAttributes = {
       'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
-      Relation: g(currentPatient, 'relation'),
       'Patient age': Math.round(
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
@@ -73,11 +72,8 @@ export const TabHeader: React.FC<TabHeaderProps> = (props) => {
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
       User_Type: getUserType(allCurrentPatients),
-      'Nav src': props.screenAsSource,
-      'Circle Member':
-        getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
-        undefined,
-      'Device Id': getUniqueId(),
+      'Page name': props.screenAsSource,
+      'Circle Member': !!circleSubscriptionId ? 'True' : 'False',
     };
     postCleverTapEvent(CleverTapEventName.HOME_ICON_CLICKED, eventAttributes);
   };

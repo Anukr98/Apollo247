@@ -50,7 +50,6 @@ import { buildVaccineApolloClient } from '@aph/mobile-patients/src/components/Va
 import { GetAllAppointments } from '@aph/mobile-patients/src/graphql/types/GetAllAppointments';
 import {
   GET_ALL_VACCINATION_APPOINTMENTS,
-  GET_VACCINE_BOOKING_LIMIT,
   GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetBenefitAvailabilityInfoByCMSIdentifier } from '@aph/mobile-patients/src/graphql/types/GetBenefitAvailabilityInfoByCMSIdentifier';
@@ -100,6 +99,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: 24,
   },
+
   noBookingTitle: {
     marginTop: 25,
     ...theme.viewStyles.text('M', 20, '#646464'),
@@ -336,7 +336,11 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
 
           if (groupPlans) {
             Object.keys(groupPlans).forEach((plan_name) => {
-              if (plan_name !== 'APOLLO' && plan_name !== 'HDFC') {
+              if (
+                plan_name !== 'APOLLO' &&
+                plan_name !== 'HDFC' &&
+                plan_name !== 'APOLLO_CONSULT'
+              ) {
                 groupPlans[plan_name]?.forEach((plan: any) => {
                   const benefits = plan.benefits;
                   if (benefits && benefits.length) {

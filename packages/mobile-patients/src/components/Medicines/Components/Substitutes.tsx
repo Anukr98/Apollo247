@@ -239,7 +239,7 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
   };
 
   const renderSubstitutes = () => {
-    return productSubstitutes?.map((substitute) => {
+    return productSubstitutes?.map((substitute, index) => {
       const {
         sku,
         manufacturer,
@@ -265,7 +265,7 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
               movedFrom: ProductPageViewedSource.PDP_FAST_SUSBTITUTES,
             });
           }}
-          style={styles.substituteCard}
+          style={index === 0 ? styles.substituteCard : [styles.substituteCard, styles.separator]}
         >
           {renderImage(image, is_prescription_required == '1')}
           <View style={styles.cardBody}>
@@ -314,7 +314,6 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
 
 const styles = StyleSheet.create({
   cardStyle: {
-    ...theme.viewStyles.cardViewStyle,
     marginVertical: 20,
     marginHorizontal: 1,
     paddingVertical: 10,
@@ -338,14 +337,6 @@ const styles = StyleSheet.create({
     width: 60,
     height: 40,
     marginRight: 5,
-  },
-  separator: {
-    height: 1,
-    opacity: 0.7,
-    borderColor: theme.colors.LIGHT_BLUE,
-    borderWidth: 0.6,
-    borderStyle: 'dashed',
-    borderRadius: 1,
   },
   imagePlaceHolder: { backgroundColor: 'transparent' },
   image: {
@@ -378,10 +369,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 15,
     flexDirection: 'row',
+    marginTop: 4,
+  },
+  separator: {
     borderColor: theme.colors.LIGHT_BLUE,
     borderTopWidth: 0.4,
     borderRadius: 1,
-    marginTop: 4,
   },
   cardBody: {
     flex: 1,

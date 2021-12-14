@@ -82,13 +82,18 @@ import { DiagnosticPatientSelected } from '@aph/mobile-patients/src/components/T
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { findDiagnosticSettings } from '@aph/mobile-patients/src/graphql/types/findDiagnosticSettings';
-import { Gender, TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  CALL_TO_ORDER_CTA_PAGE_ID,
+  Gender,
+  TEST_COLLECTION_TYPE,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { PatientDetailsOverlay } from '@aph/mobile-patients/src/components/Tests/components/PatientDetailsOverlay';
 import {
   editProfile,
   editProfileVariables,
 } from '@aph/mobile-patients/src/graphql/types/editProfile';
 import moment from 'moment';
+import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 
 const screenHeight = Dimensions.get('window').height;
 const { SHERPA_BLUE, WHITE, APP_GREEN } = theme.colors;
@@ -149,6 +154,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   const [showPatientDetailsOverlay, setShowPatientDetailsOverlay] = useState<boolean>(false);
   const [tempPatientSelected, setTempPatientSelected] = useState({} as any);
   const [tempIndex, setTempIndex] = useState<number>(0);
+  const [patientArray, setPatientArray] = useState([]) as any;
 
   const keyExtractor = useCallback((_, index: number) => `${index}`, []);
   const keyExtractor1 = useCallback((_, index: number) => `${index}`, []);
@@ -733,7 +739,6 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     const hasEmptyValues = checkEmptyPatientValues(patient, index);
     if (isInvalidUser) {
       renderBelowAgePopUp();
-      _setSelectedPatient?.(null, index);
     } else if (hasEmptyValues) {
       setShowPatientDetailsOverlay(true);
       setTempPatientSelected(patient);
@@ -744,24 +749,28 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   }
 
   function _setSelectedPatient(patientDetails: any, ind: number) {
-    let arr = patientListToShow?.map((newItem: any, index: number) => {
-      if (ind == index && patientDetails != null) {
-        newItem['isPatientSelected'] = !newItem?.isPatientSelected;
-      }
-      return { ...newItem };
-    });
+    const isPresent = patientArray?.find((item: string) => patientDetails?.id == item);
+    if (!!isPresent) {
+      const restOfArray = patientArray?.filter((item: string) => item != patientDetails?.id);
+      setPatientArray(restOfArray);
+      updatePatientItem(patientDetails, false);
+    } else {
+      const updatedArray = patientArray?.concat(patientDetails?.id);
+      setPatientArray(updatedArray);
+      updatePatientItem(patientDetails, true);
+    }
+  }
 
-    //find the selectedItem
-    const findSelectedItem = arr?.find((item: any) => item?.id == patientDetails?.id);
-    if (findSelectedItem?.isPatientSelected) {
-      const updatedItems = JSON.parse(JSON.stringify(cartItems));
+  function updatePatientItem(selectedPatient: any, selectedValue: boolean) {
+    const updatedItems = JSON.parse(JSON.stringify(cartItems));
+    if (selectedValue) {
       updatedItems?.map((item: any) => {
-        item['isSelected'] = true;
+        item['isSelected'] = selectedValue;
       });
       //check here, if item is already selected => unselect
-      addPatientCartItem?.(patientDetails?.id, updatedItems);
+      addPatientCartItem?.(selectedPatient?.id, updatedItems);
     } else {
-      removePatientCartItem?.(patientDetails?.id);
+      removePatientCartItem?.(selectedPatient?.id);
     }
   }
 
@@ -836,7 +845,8 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
         style={[
           styles.patientSelectTouch,
           {
-            backgroundColor: !!test?.isSelected && test?.isSelected ? '#F5FFFD' : colors.WHITE,
+            backgroundColor:
+              !!test?.isSelected && test?.isSelected ? colors.GREEN_BACKGROUND : colors.WHITE,
           },
         ]}
       >
@@ -1066,7 +1076,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
 
   const renderMainView = () => {
     return (
-      <View style={{ margin: 16 }}>
+      <View style={{ margin: 16, flex: 1 }}>
         {renderHeading()}
         {renderSubHeading()}
         {renderPatientsList()}
@@ -1117,9 +1127,9 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 1, 18),
   },
   patientListView: {
+    flex: 1,
     flexGrow: 1,
-    marginBottom: 16,
-    height: screenHeight - 300, //240
+    marginBottom: 20, //16
   },
 
   mainViewStyle: {

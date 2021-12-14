@@ -144,7 +144,7 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
       <>
         {aliasNames ? (
           <Text style={styles.greyedOutItalicsTextStyle} numberOfLines={1}>
-            {string.diagnostics.alsoKnownAs} {data?.diagnostic_item_alias_names}
+            {string.diagnostics.alsoKnownAs}: {data?.diagnostic_item_alias_names}
           </Text>
         ) : null}
       </>

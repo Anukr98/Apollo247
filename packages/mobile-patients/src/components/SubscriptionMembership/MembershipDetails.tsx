@@ -458,7 +458,11 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
 
             let corporatePlan: SubscriptionData[] = [];
             Object.keys(groupPlans).forEach((plan_name) => {
-              if (plan_name !== 'APOLLO' && plan_name !== 'HDFC') {
+              if (
+                plan_name !== 'APOLLO' &&
+                plan_name !== 'HDFC' &&
+                plan_name !== 'APOLLO_CONSULT'
+              ) {
                 groupPlans[plan_name]?.forEach((subscription: any) => {
                   const plan = setSubscriptionData(subscription, false, true);
                   corporatePlan.push(plan!);
@@ -512,11 +516,11 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     );
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_MEMBERSHIP_PAGE_VIEWED] = {
       navigation_source: circleEventSource,
-      circle_planid: circlePlanValidity?.plan_id,
+      plan_id: circlePlanValidity?.plan_id,
       circle_end_date: circlePlanValidity?.endDate,
       circle_start_date: circlePlanValidity?.startDate,
       customer_id: currentPatient?.id,
-      duration_in_month: circlePriceAndDuration?.durationInMonth,
+      duration_in_months: circlePriceAndDuration?.durationInMonth,
       user_type: getUserType(allCurrentPatients),
       price: circlePriceAndDuration?.price,
       source_identifier: circlePlanValidity?.source_identifier,
@@ -1016,7 +1020,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
       } else if (action == Hdfc_values.PRO_HEALTH) {
         onPressHealthPro();
       } else {
-        props.navigation.navigate(AppRoutes.ConsultRoom);
+        props.navigation.navigate(AppRoutes.HomeScreen);
       }
     } else if (type == Hdfc_values.CALL_API) {
       if (action == Hdfc_values.CALL_EXOTEL_API) {
@@ -1036,7 +1040,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     } else if (type == Hdfc_values.WHATSAPP_OPEN_CHAT) {
       Linking.openURL(`whatsapp://send?text=${message}&phone=91${action}`);
     } else {
-      props.navigation.navigate(AppRoutes.ConsultRoom);
+      props.navigation.navigate(AppRoutes.HomeScreen);
     }
   };
 
@@ -1046,11 +1050,11 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     );
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_BENIFIT_CLICKED] = {
       navigation_source: 'Circle Membership page',
-      circle_planid: circlePlanValidity?.plan_id,
+      plan_id: circlePlanValidity?.plan_id,
       circle_end_date: circlePlanValidity?.endDate,
       circle_start_date: circlePlanValidity?.startDate,
       customer_id: currentPatient?.id,
-      duration_in_month: circlePriceAndDuration?.durationInMonth,
+      duration_in_months: circlePriceAndDuration?.durationInMonth,
       user_type: getUserType(allCurrentPatients),
       price: circlePriceAndDuration?.price,
     };
@@ -1078,7 +1082,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           if (isCanUpgradeTo) {
             setShowAvailPopup(true);
           } else {
-            props.navigation.navigate(AppRoutes.ConsultRoom, {});
+            props.navigation.navigate(AppRoutes.HomeScreen, {});
           }
         }}
       >
@@ -1495,7 +1499,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
             key: null,
             actions: [
               NavigationActions.navigate({
-                routeName: AppRoutes.ConsultRoom,
+                routeName: AppRoutes.HomeScreen,
                 params: {
                   skipAutoQuestions: true,
                 },

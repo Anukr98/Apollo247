@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { CollapseView } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CollapseView';
 import { NewCard } from '@aph/mobile-patients/src/components/PaymentGateway/Components/NewCard';
 import { SavedCard } from '@aph/mobile-patients/src/components/PaymentGateway/Components/SavedCard';
+import { getBestOffer } from '@aph/mobile-patients/src/helpers/helperFunctions';
 export interface CardsProps {
-  onPressNewCardPayNow: (cardInfo: any, saveCard: boolean) => void;
-  onPressSavedCardPayNow: (cardInfo: any, cvv: string) => void;
+  onPressNewCardPayNow: (cardInfo: any, saveCard: boolean, bestOffer?: any) => void;
+  onPressSavedCardPayNow: (cardInfo: any, cvv: string, bestOffer?: any) => void;
   cardTypes: any;
   isCardValid: boolean;
   setisCardValid: (value: boolean) => void;
   savedCards: [];
+  offers: any;
+  fetchOffers: (paymentInfo?: any) => void;
 }
 
 export const Cards: React.FC<CardsProps> = (props) => {
@@ -21,12 +23,15 @@ export const Cards: React.FC<CardsProps> = (props) => {
     isCardValid,
     setisCardValid,
     savedCards,
+    offers,
+    fetchOffers,
   } = props;
   const [selectedCardToken, setSelectedCardToken] = useState<string>('');
   const [newCardSelected, setNewCardSelected] = useState<boolean>(false);
 
-  const renderSavedCards = () => {
-    return savedCards?.map((item: any) => (
+  const renderCard = (item: any) => {
+    const bestOffer = getBestOffer(offers, item?.card_fingerprint);
+    return (
       <SavedCard
         onPressSavedCardPayNow={onPressSavedCardPayNow}
         cardTypes={cardTypes}
@@ -35,8 +40,12 @@ export const Cards: React.FC<CardsProps> = (props) => {
           setNewCardSelected(false), setSelectedCardToken(cardInfo?.card_token)
         )}
         cardInfo={item}
+        bestOffer={bestOffer}
       />
-    ));
+    );
+  };
+  const renderSavedCards = () => {
+    return savedCards?.map((item: any) => renderCard(item));
   };
 
   const renderNewCard = () => {
@@ -48,6 +57,8 @@ export const Cards: React.FC<CardsProps> = (props) => {
         setisCardValid={setisCardValid}
         onPressNewCard={() => (setNewCardSelected(true), setSelectedCardToken(''))}
         newCardSelected={newCardSelected}
+        offers={offers}
+        fetchOffers={fetchOffers}
       />
     );
   };

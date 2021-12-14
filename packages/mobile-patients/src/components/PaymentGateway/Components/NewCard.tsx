@@ -15,13 +15,17 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { paymentModeVersionCheck } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { OutagePrompt } from '@aph/mobile-patients/src/components/PaymentGateway/Components/OutagePrompt';
+import { getBestOffer } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { OffersIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 export interface NewCardProps {
-  onPressNewCardPayNow: (cardInfo: any, saveCard: any) => void;
+  onPressNewCardPayNow: (cardInfo: any, saveCard: any, bestOffer?: any) => void;
   cardTypes: any;
   isCardValid: boolean;
   setisCardValid: (value: boolean) => void;
   onPressNewCard: () => void;
   newCardSelected: boolean;
+  offers: any;
+  fetchOffers: (paymentInfo?: any) => void;
 }
 
 export const NewCard: React.FC<NewCardProps> = (props) => {
@@ -32,6 +36,8 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
     setisCardValid,
     onPressNewCard,
     newCardSelected,
+    offers,
+    fetchOffers,
   } = props;
   const [cardNumber, setCardNumber] = useState<string>('');
   const [name, setName] = useState<string>('');
@@ -49,12 +55,30 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
   };
   const [isCardSupported, setIsCardSupported] = useState<boolean>(true);
   const [outageStatus, setOutageStatus] = useState<string>('UP');
+  const bestOffer = getBestOffer(offers, cardbin?.id);
 
   useEffect(() => {
     isCardValid && cardNumber?.replace(/\-/g, '')?.length >= 6
       ? checkIsCardSupported()
       : setIsCardSupported(true);
+    (cardNumber?.replace(/\-/g, '')?.length == 6 || cardNumber?.replace(/\-/g, '')?.length == 12) &&
+      getOffers();
   }, [cardbin]);
+
+  const getOffers = () => {
+    const paymentInfo = [
+      {
+        payment_method_type: 'CARD',
+        payment_method: cardbin?.brand,
+        payment_method_reference: cardbin?.id,
+        card_alias: cardbin?.id,
+        card_bin: cardbin?.id,
+        card_type: cardbin?.type,
+        bank_code: cardbin?.juspay_bank_code,
+      },
+    ];
+    fetchOffers(paymentInfo);
+  };
 
   const fetchCardInfo = async (text: any) => {
     const number = text.replace(/\-/g, '');
@@ -163,7 +187,7 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
           maxLength={getMaxLength()}
           icon={renderCardIcon()}
         />
-        {renderInvalidCardNumber()}
+        {renderSubContainer()}
       </View>
     );
   };
@@ -176,11 +200,13 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
     );
   };
 
-  const renderInvalidCardNumber = () => {
+  const renderSubContainer = () => {
     return !isCardValid ? (
       <Text style={styles.inValidText}>Invalid Card number</Text>
     ) : !isCardSupported ? (
       <Text style={styles.inValidText}>Card is not supported</Text>
+    ) : !!bestOffer ? (
+      renderOffer()
     ) : (
       <View style={{ height: 14 }}></View>
     );
@@ -198,6 +224,24 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
           keyboardType={'default'}
           maxLength={50}
         />
+      </View>
+    );
+  };
+
+  const getOfferDescription = () => {
+    const orderBreakup = bestOffer?.order_breakup;
+    return parseFloat(orderBreakup?.discount_amount) > 50
+      ? `Get ₹${orderBreakup?.discount_amount} off with this card`
+      : parseFloat(orderBreakup?.cashback_amount) > 50
+      ? `Get ₹${orderBreakup?.cashback_amount} cashback with this card`
+      : bestOffer?.offer_description?.description;
+  };
+
+  const renderOffer = () => {
+    return (
+      <View style={styles.offer}>
+        <OffersIcon style={styles.offerIcon} />
+        <Text style={styles.offerTitle}>{getOfferDescription()}</Text>
       </View>
     );
   };
@@ -288,9 +332,13 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
       <View style={{ alignItems: 'flex-end' }}>
         <Button
           disabled={isPayNowDisabled()}
-          title={'PAY NOW'}
+          title={
+            !!bestOffer?.order_breakup?.final_order_amount
+              ? `PAY  ₹${bestOffer?.order_breakup?.final_order_amount}`
+              : 'PAY NOW'
+          }
           titleTextStyle={styles.payNow}
-          onPress={() => onPressNewCardPayNow(cardInfo, saveCard)}
+          onPress={() => onPressNewCardPayNow(cardInfo, saveCard, bestOffer)}
           style={styles.buttonStyle}
         />
       </View>
@@ -319,12 +367,12 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(16),
   },
   payNow: {
-    ...theme.fonts.IBMPlexSansBold(14),
+    ...theme.fonts.IBMPlexSansBold(13),
     lineHeight: 24,
     color: '#fff',
   },
   buttonStyle: {
-    width: 100,
+    width: 150,
     paddingHorizontal: 18,
     marginTop: 16,
     borderRadius: 5,
@@ -364,5 +412,20 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     color: '#01475B',
     marginLeft: 8,
+  },
+  offer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  offerTitle: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    lineHeight: 18,
+    color: '#34AA55',
+    marginLeft: 4,
+  },
+  offerIcon: {
+    height: 16,
+    width: 16,
   },
 });

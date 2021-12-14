@@ -26,13 +26,16 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 
 export const CouponsSection = (props: { offersdata: SpecialOffersCouponsData[] }) => {
-  const { offersData } = props;
-  const newOffersData = offersData.map((ele: any) => ({ ...ele, knowMoreOption: false }));
+  const { offersdata } = props;
+  const newOffersData = offersdata.map((ele: any) => ({ ...ele, knowMoreOption: false }));
   const [couponOffersData, setCouponOffersData] = useState(newOffersData);
-  const [visibleOffers, setVisibleOffers] = useState<number>(2);
+  const [visibleOffers, setVisibleOffers] = useState<number>(
+    couponOffersData?.length === 1 ? couponOffersData?.length : 2
+  );
   const [showPopup, setShowPopup] = useState<Boolean>(false);
   const [popupText, setPopupText] = useState<string>('');
   const [copiedCode, setCopiedCode] = useState<string>();
+  const [showViewMoreButton, setShowViewMoreButton] = useState<boolean>(true);
 
   const getFormattedDaySubscript = (day: number) => {
     if (day > 3 && day < 21) return 'th';
@@ -173,18 +176,19 @@ export const CouponsSection = (props: { offersdata: SpecialOffersCouponsData[] }
       <View style={styles.buttonContainerStyle}>
         <TouchableOpacity
           onPress={() => {
-            visibleOffers < couponOffersData.length
-              ? setVisibleOffers(couponOffersData.length)
+            visibleOffers < couponOffersData?.length
+              ? setVisibleOffers(couponOffersData?.length)
               : setVisibleOffers(2);
+            setShowViewMoreButton(!showViewMoreButton);
           }}
           style={{ flexDirection: 'row', justifyContent: 'center' }}
         >
-          {visibleOffers < couponOffersData.length ? (
-            <Text style={styles.viewAllText}>VIEW ALL ({couponOffersData.length}) OFFERS </Text>
+          {showViewMoreButton ? (
+            <Text style={styles.viewAllText}>VIEW ALL ({couponOffersData?.length}) OFFERS </Text>
           ) : (
             <Text style={styles.viewAllText}>VIEW LESS </Text>
           )}
-          {visibleOffers < couponOffersData.length ? (
+          {showViewMoreButton ? (
             <DownOrange style={styles.upDownArrayStyles} />
           ) : (
             <UpOrange style={styles.upDownArrayStyles} />
@@ -235,7 +239,7 @@ export const CouponsSection = (props: { offersdata: SpecialOffersCouponsData[] }
           return renderItem(imgUrl, item, index);
         }}
       />
-      {renderViewAllOffersButton()}
+      {couponOffersData?.length > 2 && renderViewAllOffersButton()}
 
       {showPopup && renderTermsPopup()}
     </View>
@@ -324,6 +328,7 @@ const styles = StyleSheet.create({
     paddingTop: 15,
     paddingBottom: 15,
     borderRadius: 5,
+    marginBottom: 5,
   },
   viewAllText: {
     ...theme.fonts.IBMPlexSansMedium(13),

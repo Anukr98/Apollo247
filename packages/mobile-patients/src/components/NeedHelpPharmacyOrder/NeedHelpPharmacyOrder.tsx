@@ -31,6 +31,7 @@ import { NavigationScreenProps } from 'react-navigation';
 import { needHelpCleverTapEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { getFormattedDateTimeWithBefore } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 export interface Props
   extends NavigationScreenProps<{
@@ -43,12 +44,12 @@ export interface Props
 
 export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
   const sourcePage = navigation.getParam('sourcePage');
-  const pageTitle = navigation.getParam('pageTitle') || string.pharmacy.toUpperCase();
+  const pageTitle = navigation.getParam('pageTitle') || string.medicines.toUpperCase();
   const queryIdLevel1 = navigation.getParam('queryIdLevel1') || '';
   const email = navigation.getParam('email') || '';
   const queries = navigation.getParam('queries');
 
-  const breadCrumb = [{ title: string.needHelp }, { title: string.pharmacy }];
+  const breadCrumb = [{ title: string.needHelp }, { title: string.medicines }];
 
   const { currentPatient, allCurrentPatients, profileAllPatients } = useAllCurrentPatients();
   const { circlePlanValidity, circleSubscriptionId } = useShoppingCart();
@@ -119,6 +120,7 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
         queries,
         email,
         sourcePage,
+        etd: getFormattedDateTimeWithBefore(item?.orderTat),
       });
     };
     const onPress = (isCancelOrder?: boolean) => {

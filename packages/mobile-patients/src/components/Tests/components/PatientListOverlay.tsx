@@ -81,7 +81,7 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
       return null;
     }
 
-    const patientName = `${customStyle && patientSalutation} ${item?.firstName ||
+    const patientName = `${customStyle ? patientSalutation || '' : ''} ${item?.firstName ||
       ''} ${item?.lastName || ''}`;
     const genderAgeText = `${item?.gender || ''}, ${
       item?.dateOfBirth ? getAge(item?.dateOfBirth) || '' : ''
@@ -194,16 +194,18 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
         />
         <View style={styles.overlayViewStyle}>
           <SafeAreaView style={styles.overlaySafeAreaViewStyle}>
-            {props.showCloseIcon && (
-              <View style={{ alignSelf: 'flex-end' }}>
-                <TouchableOpacity
-                  style={{ width: 40, height: 40 }}
-                  onPress={props.onCloseIconPress}
-                >
-                  <CrossPopup style={{ width: 28, height: 28 }} />
-                </TouchableOpacity>
-              </View>
-            )}
+            {responseMessage == 'success'
+              ? null
+              : props.showCloseIcon && (
+                  <View style={{ alignSelf: 'flex-end' }}>
+                    <TouchableOpacity
+                      style={{ width: 40, height: 40 }}
+                      onPress={props.onCloseIconPress}
+                    >
+                      <CrossPopup style={{ width: 28, height: 28 }} />
+                    </TouchableOpacity>
+                  </View>
+                )}
 
             <>
               {customStyle && responseMessage == 'success' ? (

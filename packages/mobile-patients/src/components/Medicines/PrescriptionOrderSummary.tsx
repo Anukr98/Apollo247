@@ -22,11 +22,7 @@ import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelect
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { Prescriptions } from '@aph/mobile-patients/src/components/Medicines/Components/Prescriptions';
 import { UploadPrescription } from '@aph/mobile-patients/src/components/MedicineCart/Components/UploadPrescription';
-import {
-  pinCodeServiceabilityApi247,
-  getPlaceInfoByPincode,
-  nonCartTatApi247,
-} from '@aph/mobile-patients/src/helpers/apiCalls';
+import { getPlaceInfoByPincode, nonCartTatApi247 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   SET_DEFAULT_ADDRESS,
   UPLOAD_DOCUMENT,
@@ -93,6 +89,8 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
     storeId,
     stores,
     pinCode,
+    isPharmacyPincodeServiceable,
+    vdcType: cartVdcType,
   } = useShoppingCart();
   const { setLoading, loading, showAphAlert, hideAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
@@ -100,7 +98,7 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const client = useApolloClient();
-  const { setPharmacyLocation, setAxdcCode, pharmacyUserType } = useAppCommonData();
+  const { setPharmacyLocation, pharmacyUserType } = useAppCommonData();
   const physicalPrescription: PhysicalPrescription[] = props.navigation.getParam(
     'physicalPrescription'
   );
@@ -108,32 +106,25 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
   const selectedMedicineOption = props.navigation.getParam('selectedMedicineOption');
   const durationDays = props.navigation.getParam('durationDays');
   const prescriptionOption = props.navigation.getParam('prescriptionOption');
-  async function checkServicability(
-    address: savePatientAddress_savePatientAddress_patientAddress,
-    forceCheck?: boolean
-  ) {
-    if (deliveryAddressId && deliveryAddressId == address.id && !forceCheck) {
-      return;
-    }
-    try {
-      setLoading?.(true);
-      const response = await pinCodeServiceabilityApi247(address.zipcode!);
-      const { data } = response;
-      if (data?.response?.servicable) {
-        setDeliveryAddressId && setDeliveryAddressId(address.id);
-        setDefaultAddress(address);
-        setvdcType(data?.response?.vdcType);
-        setLoading?.(false);
+
+  const [
+    cartSelectedAddress,
+    setCartSelectedAddress,
+  ] = useState<savePatientAddress_savePatientAddress_patientAddress | null>(null);
+
+  useEffect(() => {
+    if (cartSelectedAddress?.zipcode) {
+      if (isPharmacyPincodeServiceable) {
+        setDeliveryAddressId && setDeliveryAddressId(cartSelectedAddress?.id);
+        setDefaultAddress(cartSelectedAddress);
+        if (cartVdcType) setvdcType(cartVdcType);
       } else {
         setDeliveryAddressId && setDeliveryAddressId('');
-        setLoading?.(false);
         props.navigation.goBack();
         renderAlert(string.medicine_cart.pharmaAddressUnServiceableAlert);
       }
-    } catch (error) {
-      setLoading?.(false);
     }
-  }
+  }, [isPharmacyPincodeServiceable, cartSelectedAddress]);
 
   useEffect(() => {
     nonCartAvailabilityTat(selectedAddress?.zipcode);
@@ -450,7 +441,7 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
             hideAphAlert!();
           }}
           onPressSelectAddress={(address) => {
-            checkServicability(address);
+            setCartSelectedAddress(address);
             hideAphAlert && hideAphAlert();
             setAsyncPharmaLocation(address);
             nonCartAvailabilityTat(address?.zipcode);

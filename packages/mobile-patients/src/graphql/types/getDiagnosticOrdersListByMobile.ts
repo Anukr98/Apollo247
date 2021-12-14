@@ -142,7 +142,7 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   checkinDateTime: any | null;
   phleboTrackLink: string | null;
   diagnosticPhlebotomists: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderPhlebotomists_diagnosticPhlebotomists;
-  isPhleboETAElapsed: string | null;
+  isPhleboETAElapsed: boolean | null;
   phleboETAElapsedMessage: string | null;
 }
 
@@ -183,6 +183,7 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   displayId: number;
   visitNo: string | null;
   labReportURL: string | null;
+  passportNo: string | null;
   slotTimings: string;
   slotId: string | null;
   slotDateTimeInUTC: any | null;

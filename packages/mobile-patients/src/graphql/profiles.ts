@@ -279,6 +279,20 @@ export const GET_AVAILABLE_SLOTS = gql`
   }
 `;
 
+export const GET_INFORMATIVE_CONTENT = gql`
+  query getInformativeContent($uhid: String!, $params: [TestNameInputs]) {
+    getInformativeContent(uhid: $uhid, params: $params) {
+      errorMsg
+      response {
+        testName
+        parameterName
+        loincCode
+        contentCode
+      }
+    }
+  }
+`;
+
 export const GET_PATIENT_FUTURE_APPOINTMENT_COUNT = gql`
   query getPatientFutureAppointmentCount($patientId: String) {
     getPatientFutureAppointmentCount(patientId: $patientId) {
@@ -1719,6 +1733,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           firstName
           lastName
           gender
+          dateOfBirth
         }
         patientAddressObj {
           addressLine1
@@ -1751,6 +1766,10 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         visitNo
         invoiceURL
         labReportURL
+        couponDiscAmount
+        couponCode
+        paymentOrderId
+        passportNo
         attributesObj{
           initialCollectionCharges
           distanceCharges
@@ -1769,6 +1788,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           groupPlan
           editOrderID
           isRemoved
+          couponDiscAmount
           itemObj {
             itemType
             testPreparationData
@@ -1936,6 +1956,13 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
       billNumber: $billNumber
     ) {
       tatBreached
+      orderCancellationAllowedDetails {
+        cancellationTime
+        cancellationAllowed
+        message
+        cancellationRequestRaised
+        cancellationRequestRejected
+      }
       medicineOrderDetails {
         id
         appointmentId
@@ -1999,6 +2026,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
           }
           paymentMode
           refundAmount
+          paymentMethod
         }
         medicineOrderRefunds {
           refundAmount
@@ -2105,6 +2133,7 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
         diagnosticDate
         visitNo
         labReportURL
+        passportNo
         slotTimings
         slotId
         slotDateTimeInUTC
@@ -3302,7 +3331,7 @@ export const GET_MEDICAL_PRISM_RECORD_V3 = gql`
             result
             range
             outOfRange
-            resultDate
+            # resultDate
           }
           fileUrl
           testResultFiles {
@@ -4197,6 +4226,35 @@ export const GET_MEDICINE_ORDER_CANCEL_REASONS = gql`
   }
 `;
 
+export const GET_MEDICINE_ORDER_CANCEL_REASONS_V2 = gql`
+query getMedicineOrderCancelReasonsV2($getMedicineOrderCancelReasonsV2Input: GetMedicineOrderCancelReasonsV2Input!) {
+  getMedicineOrderCancelReasonsV2(
+  getMedicineOrderCancelReasonsV2Input: $getMedicineOrderCancelReasonsV2Input) {
+      cancellationReasonBuckets {
+        id
+        reasons {
+          isUserReason
+          description
+          sortOrder
+          reasonCode
+          displayMessage
+          config {
+            userCommentRequired
+            commentMinLength
+            commentMaxLength
+          }
+          nudgeConfig {
+            enabled
+            message
+          }
+        }
+        sortOrder
+        bucketName
+      }
+    }
+  }
+`;
+
 export const GET_CALL_DETAILS = gql`
   query getCallDetails($appointmentCallId: String) {
     getCallDetails(appointmentCallId: $appointmentCallId) {
@@ -4591,6 +4649,7 @@ export const GET_PHARMA_TRANSACTION_STATUS_V2 = gql`
       paymentStatus
       paymentDateTime
       paymentMode
+      paymentMethod
       isSubstitution
       substitutionTime
       substitutionMessage
@@ -4975,6 +5034,21 @@ export const GET_DOCTOR_LIST = gql`
   }
 `;
 
+export const PATIENT_PAST_LOCATIONS = gql`
+  query getPatientPastLocations($patientId: String, $patientMobile: String) {
+    getPatientPastLocations(patientId: $patientId, patientMobile: $patientMobile) {
+      pastLocations {
+        city
+        pincode
+      }
+      popularCities {
+        city
+        pincode
+      }
+    }
+  }
+`;
+
 export const GET_DIAGNOSTIC_AREAS = gql`
   query getAreas($pincode: Int!, $itemIDs: [Int]!) {
     getAreas(pincode: $pincode, itemIDs: $itemIDs) {
@@ -5150,6 +5224,7 @@ export const GET_INTERNAL_ORDER = gql`
             firstName
             lastName
             gender
+            dateOfBirth
           }
           diagnosticOrderLineItems {
             itemId
@@ -5157,6 +5232,19 @@ export const GET_INTERNAL_ORDER = gql`
             price
             editOrderID
           }
+        }
+      }
+      SubscriptionOrderDetails{
+        end_date
+        expires_in
+        order_id
+        sub_plan_id
+        payment_reference
+        group_plan{
+          name
+          price
+          valid_duration
+          plan_summary
         }
       }
       refunds {
@@ -5200,6 +5288,11 @@ export const GET_ORDER_INFO = gql`
       PharmaOrderDetails {
         medicineOrderDetails {
           orderAutoId
+        }
+      }
+      DiagnosticsPaymentDetails {
+        ordersList {
+          allowPayment
         }
       }
     }
@@ -5354,20 +5447,20 @@ export const GET_ORDER_LEVEL_DIAGNOSTIC_STATUS = gql`
         statusDate
         orderStatus
         subStatus
-        attributes{
-          itemsModified{
+        attributes {
+          itemsModified {
             itemId
             itemName
             price
             isRemoved
           }
-          refund{
+          refund {
             txnID
             amount
             status
             reason
             amount
-            items{
+            items {
               itemId
               itemName
               price
@@ -5596,7 +5689,7 @@ export const MODIFY_DIAGNOSTIC_ORDERS = gql`
       errorMessageToDisplay
       attributes {
         itemids
-        conflictedItems{
+        conflictedItems {
           itemToKeep
           itemsWithConflicts
         }
@@ -6039,6 +6132,7 @@ export const FETCH_SAVED_CARDS = gql`
         name_on_card
         expired
         card_token
+        card_fingerprint
       }
     }
   }
@@ -6054,19 +6148,19 @@ export const DELETE_SAVED_CARD = gql`
 `;
 
 export const COWIN_REGISTRATION = gql`
-   mutation cowinRegistration($cowinRegistration: CowinRegistrationInput!) {
-     cowinRegistration(cowinRegistration: $cowinRegistration) {
-       code
-       response {
-         txnId
-         beneficiary_reference_id
-         errorCode
-         error
-       }
-       message
-     }
-   }
- `;
+  mutation cowinRegistration($cowinRegistration: CowinRegistrationInput!) {
+    cowinRegistration(cowinRegistration: $cowinRegistration) {
+      code
+      response {
+        txnId
+        beneficiary_reference_id
+        errorCode
+        error
+      }
+      message
+    }
+  }
+`;
 
 export const GET_RESCHEDULE_AND_CANCELLATION_REASONS = gql`
   query getRescheduleAndCancellationReasons($appointmentDateTimeInUTC: DateTime!) {
@@ -6087,11 +6181,11 @@ export const DIAGNOSITC_EXOTEL_CALLING = gql`
   }
 `;
 
-export const GET_DIAGNOSTIC_SERVICEABILITY = gql `
-  query getDiagnosticServiceability ($latitude: Float!, $longitude : Float!){
-    getDiagnosticServiceability(latitude : $latitude, longitude: $longitude){
+export const GET_DIAGNOSTIC_SERVICEABILITY = gql`
+  query getDiagnosticServiceability($latitude: Float!, $longitude: Float!) {
+    getDiagnosticServiceability(latitude: $latitude, longitude: $longitude) {
       status
-      serviceability{
+      serviceability {
         cityID
         stateID
         state
@@ -6101,33 +6195,51 @@ export const GET_DIAGNOSTIC_SERVICEABILITY = gql `
   }
 `;
 
-export const GET_CUSTOMIZED_DIAGNOSTIC_SLOTS_V2 = gql `
-query getCustomizedSlotsv2($patientAddressObj: patientAddressObj! , $patientsObjWithLineItems : [patientObjWithLineItems] , $billAmount: Float!, $selectedDate : Date!, $serviceability : DiagnosticsServiceability, $diagnosticOrdersId : String, $patientAddressID: String, $bookingSource: DiagnosticsBookingSource){
-  getCustomizedSlotsv2(patientAddressObj : $patientAddressObj, patientsObjWithLineItems :$patientsObjWithLineItems, billAmount: $billAmount, selectedDate : $selectedDate, serviceability : $serviceability, diagnosticOrdersId: $diagnosticOrdersId, patientAddressID: $patientAddressID, bookingSource: $bookingSource){
-    available_slots {
-      slotDetail {
-        slotDisplayTime
-        internalSlots
+export const GET_CUSTOMIZED_DIAGNOSTIC_SLOTS_V2 = gql`
+  query getCustomizedSlotsv2(
+    $patientAddressObj: patientAddressObj!
+    $patientsObjWithLineItems: [patientObjWithLineItems]
+    $billAmount: Float!
+    $selectedDate: Date!
+    $serviceability: DiagnosticsServiceability
+    $diagnosticOrdersId: String
+    $patientAddressID: String
+    $bookingSource: DiagnosticsBookingSource
+  ) {
+    getCustomizedSlotsv2(
+      patientAddressObj: $patientAddressObj
+      patientsObjWithLineItems: $patientsObjWithLineItems
+      billAmount: $billAmount
+      selectedDate: $selectedDate
+      serviceability: $serviceability
+      diagnosticOrdersId: $diagnosticOrdersId
+      patientAddressID: $patientAddressID
+      bookingSource: $bookingSource
+    ) {
+      available_slots {
+        slotDetail {
+          slotDisplayTime
+          internalSlots
+        }
+        isPaidSlot
       }
-      isPaidSlot
-    },
-    distanceCharges
+      distanceCharges
+    }
   }
-}
-`
+`;
 export const SAVE_DIAGNOSTIC_ORDER_V2 = gql`
   mutation saveDiagnosticBookHCOrderv2($diagnosticOrderInput: SaveBookHomeCollectionOrderInputv2) {
     saveDiagnosticBookHCOrderv2(diagnosticOrderInput: $diagnosticOrderInput) {
-      patientsObjWithOrderIDs{
+      patientsObjWithOrderIDs {
         status
         orderID
         patientID
         amount
         errorMessageToDisplay
         displayID
-        attributes{
+        attributes {
           itemids
-          conflictedItems{
+          conflictedItems {
             itemToKeep
             itemsWithConflicts
           }
@@ -6138,7 +6250,7 @@ export const SAVE_DIAGNOSTIC_ORDER_V2 = gql`
   }
 `;
 
-export const GET_DIAGNOSTIC_PHLEBO_CHARGES = gql `
+export const GET_DIAGNOSTIC_PHLEBO_CHARGES = gql`
   query getPhleboCharges($chargeDetailsInput: ChargeDetailsInput) {
     getPhleboCharges(chargeDetailsInput: $chargeDetailsInput) {
       charges
@@ -6147,17 +6259,31 @@ export const GET_DIAGNOSTIC_PHLEBO_CHARGES = gql `
   }
 `;
 
-export const DIAGNOSTIC_RESCHEDULE_V2 =  gql`
-  mutation rescheduleDiagnosticsOrderv2($parentOrderID: ID!, $slotInfo: slotInfo!, $selectedDate: Date!, $comment: String, $reason: String!, $source: DiagnosticsRescheduleSource) {
-    rescheduleDiagnosticsOrderv2(parentOrderID : $parentOrderID, slotInfo: $slotInfo, selectedDate: $selectedDate, comment: $comment, reason : $reason, source: $source) {
-    status
-    message
-    rescheduleCount
+export const DIAGNOSTIC_RESCHEDULE_V2 = gql`
+  mutation rescheduleDiagnosticsOrderv2(
+    $parentOrderID: ID!
+    $slotInfo: slotInfo!
+    $selectedDate: Date!
+    $comment: String
+    $reason: String!
+    $source: DiagnosticsRescheduleSource
+  ) {
+    rescheduleDiagnosticsOrderv2(
+      parentOrderID: $parentOrderID
+      slotInfo: $slotInfo
+      selectedDate: $selectedDate
+      comment: $comment
+      reason: $reason
+      source: $source
+    ) {
+      status
+      message
+      rescheduleCount
     }
   }
 `;
 
-export const DIAGNOSTIC_CANCEL_V2 = gql `
+export const DIAGNOSTIC_CANCEL_V2 = gql`
   mutation cancelDiagnosticOrdersv2($cancellationDiagnosticsInput: CancellationDiagnosticsInputv2) {
     cancelDiagnosticOrdersv2(cancellationDiagnosticsInput: $cancellationDiagnosticsInput) {
       status
@@ -6166,9 +6292,13 @@ export const DIAGNOSTIC_CANCEL_V2 = gql `
   }
 `;
 
-export const DIAGNOSTIC_WRAPPER_PROCESS_HC = gql `
-  mutation wrapperProcessDiagnosticHCOrderCOD($processDiagnosticHCOrdersInput: [ProcessDiagnosticHCOrderInputCOD]) {
-    wrapperProcessDiagnosticHCOrderCOD(processDiagnosticHCOrdersInput: $processDiagnosticHCOrdersInput) {
+export const DIAGNOSTIC_WRAPPER_PROCESS_HC = gql`
+  mutation wrapperProcessDiagnosticHCOrderCOD(
+    $processDiagnosticHCOrdersInput: [ProcessDiagnosticHCOrderInputCOD]
+  ) {
+    wrapperProcessDiagnosticHCOrderCOD(
+      processDiagnosticHCOrdersInput: $processDiagnosticHCOrdersInput
+    ) {
       result {
         status
         preBookingID
@@ -6216,7 +6346,7 @@ export const GET_DIAGNOSTIC_ORDERSLIST_BY_PARENT_ORDER_ID = gql`
   }
 `;
 
-export const GET_DIAGNOSTIC_PAYMENT_SETTINGS  = gql`
+export const GET_DIAGNOSTIC_PAYMENT_SETTINGS = gql`
   query getDiagnosticPaymentSettings($paymentOrderId: String!) {
     getDiagnosticPaymentSettings(paymentOrderId: $paymentOrderId) {
       cod
@@ -6303,19 +6433,23 @@ export const GET_DIAGNOSTIC_REPORT_TAT = gql`
     $cityId: Int!
     $pincode: Int!
     $itemIds: [Int]!
+    $source: REPORT_TAT_SOURCE
   ) {
     getConfigurableReportTAT(
       slotDateTimeInUTC: $slotDateTimeInUTC
       cityId: $cityId
       pincode: $pincode
       itemIds: $itemIds
+      source: $source
     ) {
       maxReportTAT
       reportTATMessage
+      preOrderReportTATMessage
       itemLevelReportTATs {
         itemId
         reportTATMessage
         reportTATInUTC
+        preOrderReportTATMessage
       }
     }
   }
@@ -6407,15 +6541,15 @@ export const GET_JUSPAY_CLIENTAUTH_TOKEN = gql`
   }
 `;
 
-export const GET_DIAGNOSTIC_SEARCH_RESULTS = gql `
-  query searchDiagnosticItem($keyword:String!, $cityId: Int!, $size: Int){
-    searchDiagnosticItem(keyword: $keyword, cityId: $cityId, size: $size){
-      data{
+export const GET_DIAGNOSTIC_SEARCH_RESULTS = gql`
+  query searchDiagnosticItem($keyword: String!, $cityId: Int!, $size: Int) {
+    searchDiagnosticItem(keyword: $keyword, cityId: $cityId, size: $size) {
+      data {
         diagnostic_item_id
         diagnostic_item_name
         diagnostic_inclusions
         diagnostic_item_alias
-        diagnostic_item_price{
+        diagnostic_item_price {
           status
           startDate
           endDate
@@ -6427,14 +6561,15 @@ export const GET_DIAGNOSTIC_SEARCH_RESULTS = gql `
         diagnostic_item_packageCalculatedMrp
         diagnostic_item_itemType
         diagnostic_item_alias_names
-        diagnostic_inclusions_test_parameter_data{
+        diagnostic_inclusions_test_parameter_data {
           mandatoryValue
           observationName
         }
       }
     }
-  }`;
-  
+  }
+`;
+
 export const GET_PHARMACY_PRESCRIPTION_OPTION = gql`
   query pharmaPrescriptionOption($pharmaPrescriptionOptionInput: PharmaPrescriptionOptionInput) {
     pharmaPrescriptionOption(pharmaPrescriptionOptionInput: $pharmaPrescriptionOptionInput) {
@@ -6448,12 +6583,57 @@ export const GET_PHARMACY_PRESCRIPTION_OPTION = gql`
 `;
 
 export const CHANGE_DIAGNOSTIC_ORDER_PATIENT_ID = gql`
-mutation switchDiagnosticOrderPatientID($diagnosticOrdersId: String!,$newPatientId: String!) {
-  switchDiagnosticOrderPatientID(diagnosticOrdersId: $diagnosticOrdersId,newPatientId: $newPatientId) {
-    status
-    message
+  mutation switchDiagnosticOrderPatientID($diagnosticOrdersId: String!, $newPatientId: String!) {
+    switchDiagnosticOrderPatientID(
+      diagnosticOrdersId: $diagnosticOrdersId
+      newPatientId: $newPatientId
+    ) {
+      status
+      message
+    }
   }
-}
+`;
+
+export const GET_OFFERS_LIST = gql`
+  query getOffersList($listOffersInput: OffersRequest!, $is_juspay_pharma: Boolean) {
+    getOffersList(listOffersInput: $listOffersInput, is_juspay_pharma: $is_juspay_pharma) {
+      offers {
+        offer_id
+        offer_description {
+          title
+          description
+          tnc
+          sponsored_by
+        }
+        status
+        order_breakup {
+          final_order_amount
+          discount_amount
+          cashback_amount
+        }
+        offer_rules {
+          amount {
+            min_quantity
+            max_quantity
+          }
+          platform
+          payment_instrument {
+            payment_method
+            payment_method_type
+            type
+            variant
+          }
+        }
+      }
+      best_offer_combinations {
+        payment_method_reference
+        offers {
+          offer_id
+          cashback_amount
+        }
+      }
+    }
+  }
 `;
 
 export const CREATE_VONAGE_SESSION_TOKEN = gql`
@@ -6461,6 +6641,182 @@ export const CREATE_VONAGE_SESSION_TOKEN = gql`
     createVonageSessionToken(appointmentId: $appointmentId) {
       token
       sessionId
+    }
+  }
+`;
+
+export const GET_PERSONALIZED_OFFERS = gql`
+  query getPersonalizedOffers {
+    getPersonalizedOffers {
+      response {
+        personalized_data {
+          offers_for_you {
+            offer_id
+            template_name
+            coupon_code
+            notch_text {
+              text
+              values {
+                time_till_expired_at {
+                  value
+                }
+              }
+            }
+            is_active
+            expired_at
+            title {
+              text
+            }
+            subtitle{
+               text  
+            }
+            cta{
+              text
+              path{
+                vertical
+                param
+              }
+            }
+          }
+          global_search_text{
+            search_text{
+              text,
+              created_at
+            }
+          }
+        }
+      }
+    }
+  }
+  `;
+
+export const GET_CONFIGURATION_FOR_ASK_APOLLO_LEAD = gql`
+  query getConfigurationForAskApolloLead {
+    getConfigurationForAskApolloLead {
+      show_phonenumber_website
+      show_phonenumber_mobileapp
+      show_quickbook_website
+      show_quickbook_mobileapp
+    }
+  }
+`;
+export const UPDATE_PASSPORT_DETAILS = gql`
+  mutation updatePassportDetails($passportDetailsInput: [PassportDetailsInput]) {
+    updatePassportDetails(passportDetailsInput: $passportDetailsInput) {
+      status
+      message
+      displayId
+      data
+    }
+  }
+`;
+
+export const GENEREATE_ASK_APOLLO_LEAD = gql`
+  mutation askApolloLead($askApolloLeadInput: AskApolloLeadInput!) {
+    askApolloLead(askApolloLeadInput: $askApolloLeadInput) {
+      message
+    }
+  }
+`;
+export const GET_HC_REFREE_RECORD = gql`
+  query rewardDetail($id: String!) {
+    getReferralRewardDetails(id: $id) {
+      totalRewardValue
+      rewardType
+      claimed {
+        expiryDate
+        rewardType
+        name
+        rewardValue
+        txnDate
+      }
+      pending {
+        name
+        registrationDate
+      }
+      referee {
+        registrationDate
+        name
+        rewardValue
+        rewardType
+      }
+    }
+  }
+`;
+
+export const GET_REWARD_ID = gql`
+  query rewardInfo($reward: REWARD_TYPES!) {
+    getRewardInfoByRewardType(rewardType: $reward) {
+      id
+    }
+  }
+`;
+
+export const GET_CAMPAIGN_ID_FOR_REFERRER = gql`
+  query campaignInfo($camp: CAMPAIGN_TYPES!) {
+    getCampaignInfoByCampaignType(campaignType: $camp) {
+      id
+    }
+  }
+`;
+
+export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS = gql `
+query getDiagnosticPackageRecommendations($itemId:Int!, $cityId: Int!){
+  getDiagnosticPackageRecommendations(itemId:$itemId, cityId:$cityId){
+    packageRecommendations{
+      itemId
+      itemName
+      inclusions
+      packageCalculatedMrp
+      diagnosticPricing{
+        mrp
+        price
+        groupPlan
+        status
+        startDate
+        endDate
+      }
+    }
+  }
+}
+`
+export const CANCELL_SUBSCRIPTION = gql`
+  mutation CancelSubscription($CancelSubscriptionInput: CancelSubscriptionInput!) {
+    CancelSubscription(CancelSubscriptionInput: $CancelSubscriptionInput) {
+      code
+      success
+      message
+      response {
+        mobile_number
+        status
+        _id
+        start_date
+        end_date
+      }
+    }
+  }
+`;
+export const GET_PACKAGE_PURCHASE_INFO = gql`
+  query getPackagePurchaseInfo($order_id: String!) {
+    getOrderInternal(order_id: $order_id) {
+      id
+      customer_id
+      payment_order_id
+      payment_status
+      total_amount
+      SubscriptionOrderDetails {
+        end_date
+        payment_reference
+        group_plan {
+          meta {
+            description
+          }
+        }
+        group_sub_plan {
+          plan_id
+          name
+        }
+      }
     }
   }
 `;
@@ -6549,6 +6905,36 @@ export const SERVER_CART_SAVE_CART = gql`
           shipmentNo
         }
       }
+    }
+  }
+`;
+
+export const SAVE_RECENT_SEARCH=gql`
+  mutation saveRecent($searchText: String!){
+    saveRecentSearchData(saveRecentSearchTextInput: {
+      searchText: $searchText
+    }){
+      success
+    }
+  }
+`; 
+
+export const BOOK_PACKAGE_CONSULT = gql`
+  mutation bookFreeAppointmentForPharmacy(
+    $patientId: String!
+    $subscriptionDetailsInput: SubscriptionDetailsInput
+  ) {
+    bookFreeAppointmentForPharmacy(
+      patientId: $patientId
+      subscriptionOrderDetails: $subscriptionDetailsInput
+    ) {
+      appointmentDateTime
+      appointmentId
+      displayId
+      doctorName
+      doctorId
+      isError
+      error
     }
   }
 `;

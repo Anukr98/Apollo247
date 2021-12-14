@@ -255,19 +255,20 @@ export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
   };
 
   return (
-    <View style={{ ...styles.card, backgroundColor: itemAvailable ? '#fff' : '#F0F1EC' }}>
-      {renderImage()}
-      {renderProduct()}
-    </View>
+    <TouchableOpacity style={styles.cardContainer}>
+      <View style={{ ...styles.card, backgroundColor: itemAvailable ? '#fff' : '#F0F1EC' }}>
+        {renderImage()}
+        {renderProduct()}
+      </View>
+    </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
+  cardContainer: { marginHorizontal: 13, marginBottom: 10 },
   card: {
     ...theme.viewStyles.cardViewStyle,
-    marginHorizontal: 13,
     borderRadius: 5,
-    marginBottom: 5,
     flexDirection: 'row',
     paddingHorizontal: 10,
     paddingVertical: 8,

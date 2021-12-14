@@ -42,6 +42,7 @@ import {
   CircleEventSource,
   g,
   getCircleNoSubscriptionText,
+  getCirclePlanDetails,
   getUserType,
   postCleverTapEvent,
   postWebEngageEvent,
@@ -154,6 +155,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     defaultCirclePlan,
     selectDefaultPlan,
     cartTotalCashback,
+    serverCartAmount,
     setIsCircleSubscription,
     setCircleMembershipCharges,
     setAutoCirlcePlanAdded,
@@ -162,7 +164,9 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     setCircleSubPlanId,
     circleSubscriptionId,
     cartItems,
+    circlePlanValidity,
   } = useShoppingCart();
+  const totalCashBack = serverCartAmount?.totalCashBack?.toFixed(2) || cartTotalCashback || 0;
   const { setUserActionPayload } = useServerCart();
   const {
     setIsDiagnosticCircleSubscription,
@@ -201,16 +205,33 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     }
   }, []);
 
-  const fireCleverTapCircleEvents = () => {
+  const fireCleverTapCircleEvents = async () => {
+    const mobile_number = currentPatient?.mobileNumber;
+    let circlePriceAndDuration;
+    if (mobile_number)
+      await getCirclePlanDetails(mobile_number, client).then((res) => {
+        circlePriceAndDuration = res?.find(
+          (item: any) => item?.subPlanId === circlePlanValidity?.plan_id
+        );
+      });
+
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_POP_UP_VIEWED_PLANS_ONLY] = {
       navigation_source: circleEventSource,
-      circle_planid: getCircleNoSubscriptionText(),
-      circle_end_date: getCircleNoSubscriptionText(),
-      circle_start_date: getCircleNoSubscriptionText(),
+      plan_id: circlePlanValidity?.plan_id
+        ? circlePlanValidity?.plan_id
+        : getCircleNoSubscriptionText(),
+      circle_end_date: circlePlanValidity?.endDate
+        ? circlePlanValidity?.endDate
+        : getCircleNoSubscriptionText(),
+      circle_start_date: circlePlanValidity?.startDate
+        ? circlePlanValidity?.startDate
+        : getCircleNoSubscriptionText(),
       customer_id: currentPatient?.id,
-      duration_in_month: getCircleNoSubscriptionText(),
+      duration_in_months: circleSubscription
+        ? circlePriceAndDuration?.durationInMonth
+        : getCircleNoSubscriptionText(),
       user_type: getUserType(allCurrentPatients),
-      price: getCircleNoSubscriptionText(),
+      price: circleSubscription ? circlePriceAndDuration?.price : getCircleNoSubscriptionText(),
     };
     postCleverTapEvent(
       CleverTapEventName.CIRCLE_POP_UP_VIEWED_PLANS_ONLY,
@@ -277,7 +298,12 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     }
   };
   const onPressMembershipPlans = (index: number) => {
+    fireMembershipPlanSelected();
     const membershipPlan = membershipPlans?.[index];
+
+    setCirclePlanSelected && setCirclePlanSelected(membershipPlan);
+    AsyncStorage.setItem('circlePlanSelected', JSON.stringify(membershipPlan));
+
     if (source === 'Pharma Cart') {
       postAppsFlyerCircleAddRemoveCartEvent(
         membershipPlan,
@@ -285,7 +311,9 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         'add',
         currentPatient
       );
-    } else if (isConsultJourney) {
+    }
+
+    if (isConsultJourney) {
       !isModal &&
         circleWebEngageEventForAddToCart(
           WebEngageEventName.VC_NON_CIRCLE_ADDS_CART,
@@ -300,6 +328,10 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       setCircleMembershipCharges && setCircleMembershipCharges(membershipPlan?.currentSellingPrice);
       onSelectMembershipPlan && onSelectMembershipPlan(membershipPlan);
     }
+
+    setDefaultCirclePlan && setDefaultCirclePlan(null);
+    setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
+
     setUserActionPayload?.({
       subscription: {
         planId: PLAN_ID.CIRCLEPlan,
@@ -355,11 +387,15 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     const circleData = _circlePlan || circlePlanSelected;
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_PLAN_TO_CART] = {
       navigation_source: circleEventSource,
-      circle_end_date: getCircleNoSubscriptionText(),
-      circle_start_date: getCircleNoSubscriptionText(),
-      circle_planid: circleData?.subPlanId,
+      circle_end_date: circlePlanValidity?.endDate
+        ? circlePlanValidity?.endDate
+        : getCircleNoSubscriptionText(),
+      circle_start_date: circlePlanValidity?.startDate
+        ? circlePlanValidity?.startDate
+        : getCircleNoSubscriptionText(),
+      plan_id: circleData?.subPlanId,
       customer_id: currentPatient?.id,
-      duration_in_month: circleData?.durationInMonth,
+      duration_in_months: circleData?.durationInMonth,
       user_type: getUserType(allCurrentPatients),
       price: circleData?.currentSellingPrice,
     };
@@ -747,15 +783,15 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
             {string.circlePharmacy.instantCashback}
           </Text>
           <Text
-            style={theme.viewStyles.text('R', 13, '#02475B')}
-          >{` of ₹${cartTotalCashback} on this order`}</Text>
+            style={theme.viewStyles.text('R', 13, '#02475B', 1, 20)}
+          >{` of ₹${totalCashBack} on this order`}</Text>
         </View>
         <View style={{ flexDirection: 'row' }}>
           <BlueTick style={styles.blueTickIcon} />
           <Text style={theme.viewStyles.text('SB', 13, '#02475B')}>
             {string.circlePharmacy.freeDelivery}
           </Text>
-          <Text style={theme.viewStyles.text('R', 13, '#02475B')}>{` on every order`}</Text>
+          <Text style={theme.viewStyles.text('R', 13, '#02475B', 1, 20)}>{` on every order`}</Text>
         </View>
       </View>
     );
@@ -921,7 +957,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
               //don't have hc with diagnostics
               if (!diagnosticCartItems?.length) {
                 closeModal?.();
-                props.navigation.navigate(AppRoutes.SubscriptionCart);
+                props.navigation.navigate(AppRoutes.SubscriptionCart, { circleEventSource });
               } else {
                 setCircleMembershipCharges &&
                   setCircleMembershipCharges(circlePlanSelected?.currentSellingPrice);
@@ -942,13 +978,13 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
                 onPurchasePlanThroughHC();
               } else {
                 closeModal?.();
-                props.navigation.navigate(AppRoutes.SubscriptionCart);
+                props.navigation.navigate(AppRoutes.SubscriptionCart, { circleEventSource });
               }
             }
           } else if (from === string.banner_context.PHARMACY_HOME) {
             if (!cartItems?.length) {
               closeModal?.();
-              props.navigation.navigate(AppRoutes.SubscriptionCart);
+              props.navigation.navigate(AppRoutes.SubscriptionCart, { circleEventSource });
             } else {
               setCircleMembershipCharges &&
                 setCircleMembershipCharges(circlePlanSelected?.currentSellingPrice);
@@ -1070,6 +1106,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       </View>
     );
   };
+
   return (
     <View style={isModal ? {} : [styles.careBannerView, props.style]}>
       {circlePlanSelected && !isModal && !autoCirlcePlanAdded && !spinning && !defaultCirclePlan

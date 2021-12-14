@@ -12,7 +12,6 @@ import {
   SectionHeader,
   Spearator,
 } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-
 import {
   CartIcon,
   LocationOff,
@@ -32,6 +31,7 @@ import {
   GalleryIcon,
   CameraIcon,
   CrossPopup,
+  CircleLogo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
@@ -47,11 +47,9 @@ import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from 
 import {
   getLandingPageBanners,
   getDiagnosticHomePageWidgets,
-  DIAGNOSTIC_GROUP_PLAN,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   aphConsole,
-  g,
   nameFormater,
   isSmallDevice,
   navigateToHome,
@@ -59,18 +57,18 @@ import {
   handleGraphQlError,
   downloadDiagnosticReport,
   isAddressLatLngInValid,
-  removeWhiteSpaces,
   doRequestAndAccessLocationModified,
   storagePermissions,
   getUserType,
   getCleverTapCircleMemberValues,
+  getAge,
   postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Dimensions,
@@ -92,10 +90,10 @@ import {
   Platform,
 } from 'react-native';
 import { Image } from 'react-native-elements';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, NavigationEvents } from 'react-navigation';
 import {
+  CALL_TO_ORDER_CTA_PAGE_ID,
   DIAGNOSTIC_ORDER_STATUS,
-  TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   useShoppingCart,
@@ -135,6 +133,7 @@ import CertifiedCard from '@aph/mobile-patients/src/components/Tests/components/
 import {
   DiagnosticAddToCartEvent,
   DiagnosticBannerClick,
+  DiagnosticHomePageClicked,
   DiagnosticHomePageWidgetClicked,
   DiagnosticLandingPageViewedEvent,
   DiagnosticPinCodeClicked,
@@ -176,8 +175,9 @@ import { OrderCardCarousel } from '@aph/mobile-patients/src/components/Tests/com
 import { PrescriptionCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/PrescriptionCardCarousel';
 import { getUniqueId } from 'react-native-device-info';
 import {
-  CleverTapEventName,
   DiagnosticHomePageSource,
+  CleverTapEvents,
+  CleverTapEventName,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 import DocumentPicker, { DocumentPickerResponse } from 'react-native-document-picker';
@@ -197,6 +197,8 @@ import {
   getDiagnosticOrdersListByMobile,
   getDiagnosticOrdersListByMobileVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
+import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
+import { TestPdfRender } from '@aph/mobile-patients/src/components/Tests/components/TestPdfRender';
 const rankArr = ['1', '2', '3', '4', '5', '6'];
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
@@ -215,7 +217,8 @@ const whyBookUsArray = [
 const { width: winWidth, height: winHeight } = Dimensions.get('window');
 const AUTO_SCROLL_INTERVAL = 3000;
 const divisionFactor = winHeight > 750 ? 2.2 : winHeight > 650 ? 1.7 : 1.5;
-
+const GO_TO_CART_HEIGHT = 60;
+const NON_CIRCLE_NUDGE_HEIGHT = 35;
 export interface DiagnosticData {
   cityId: string;
   stateId: string;
@@ -264,10 +267,13 @@ export interface TestsProps
   }> {}
 
 export const Tests: React.FC<TestsProps> = (props) => {
-  const { setAddresses: setMedAddresses, pharmacyCircleAttributes } = useShoppingCart();
+  const {
+    setAddresses: setMedAddresses,
+    pharmacyCircleAttributes,
+    circleSubscriptionId,
+  } = useShoppingCart();
   const {
     cartItems,
-    addCartItem,
     isDiagnosticCircleSubscription,
     setIsDiagnosticCircleSubscription,
     setDeliveryAddressId,
@@ -311,7 +317,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const homeScreenAttributes = props.navigation.getParam('homeScreenAttributes');
   const phyPrescriptionUploaded = props.navigation.getParam('phyPrescriptionUploaded') || [];
   const ePresscriptionUploaded = props.navigation.getParam('ePresscriptionUploaded') || [];
-  const { ePrescriptions, physicalPrescriptions } = useShoppingCart();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
 
   const hdfc_values = string.Hdfc_values;
@@ -324,8 +329,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [banners, setBanners] = useState([]);
   const [cityId, setCityId] = useState('');
   const [currentOffset, setCurrentOffset] = useState<number>(1);
-
+  const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
   const [sectionLoading, setSectionLoading] = useState<boolean>(false);
+  const [showViewReportModal, setShowViewReportModal] = useState<boolean>(false);
   const [showItemCard, setShowItemCard] = useState<boolean>(false);
   const [bookUsSlideIndex, setBookUsSlideIndex] = useState(0);
   const [showbookingStepsModal, setShowBookingStepsModal] = useState(false);
@@ -351,13 +357,39 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [showUnserviceablePopup, setUnserviceablePopup] = useState<boolean>(false);
   const [serviceableObject, setServiceableObject] = useState({} as any);
   const [showNoLocationPopUp, setShowNoLocationPopUp] = useState<boolean>(false);
-  const [isFocused, setIsFocused] = useState<boolean>(false);
   const [clickedItem, setClickedItem] = useState<any>([]);
   const [expressSlotMsg, setExpressSlotMsg] = useState<string>('');
   const [isPriceAvailable, setIsPriceAvailable] = useState<boolean>(false);
   const [fetchAddressLoading, setFetchAddressLoading] = useState<boolean>(false);
+  const [searchText, setSearchText] = useState<string>('');
+  const [diagnosticResults, setDiagnosticResults] = useState<
+    searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
+  >([]);
 
   const hasLocation = locationDetails || diagnosticLocation || pharmacyLocation || defaultAddress;
+  const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
+  const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
+  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
+    CALL_TO_ORDER_CTA_PAGE_ID.HOME
+  );
+  const scrollCount = useRef<number>(0);
+  const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
+    if (item?.ctaCityId == cityId) {
+      if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.HOME)) {
+        return item;
+      } else {
+        return null;
+      }
+    } else if (isCtaDetailDefault) {
+      return callToOrderDetails?.ctaDetailsDefault;
+    } else {
+      return null;
+    }
+  });
+  const showNudgeMessage = AppConfig.Configuration.DIAGNOSTICS_NUDGE_MESSAGE_CONDITION?.find(
+    (item) => (isDiagnosticCircleSubscription ? item?.Circle : item?.NonCircle)
+  );
+  const isCartAvailable = !!cartItems && cartItems?.length > 0;
 
   const cache = new Cache({
     namespace: 'tests',
@@ -381,6 +413,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const banner_data = bannerData && bannerData?.length ? bannerData : [];
     await cache.set('banner_data', banner_data);
   };
+
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
     client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
       query: GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
@@ -393,40 +426,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       },
       fetchPolicy: 'no-cache',
     });
-
-  const setWebEnageEventForPinCodeClicked = (
-    mode: string,
-    pincode: string,
-    serviceable: boolean
-  ) => {
-    DiagnosticPinCodeClicked(
-      currentPatient,
-      mode,
-      pincode,
-      serviceable,
-      isDiagnosticCircleSubscription
-    );
-  };
-
-  const postDiagnosticAddToCartEvent = (
-    name: string,
-    id: string,
-    price: number,
-    discountedPrice: number,
-    source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
-    section?: 'Featured tests' | 'Browse packages'
-  ) => {
-    DiagnosticAddToCartEvent(
-      name,
-      id,
-      price,
-      discountedPrice,
-      source,
-      section,
-      currentPatient,
-      isDiagnosticCircleSubscription
-    );
-  };
 
   useEffect(() => {
     if (movedFrom === 'deeplink') {
@@ -622,36 +621,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     fetchUserType();
   }, []);
 
-  useEffect(() => {
-    // getting diagnosticUserType from asyncStorage
-    const fetchUserType = async () => {
-      try {
-        const diagnosticUserType = await AsyncStorage.getItem('diagnosticUserType');
-        if (diagnosticUserType == null) {
-          fetchOrders();
-        }
-      } catch (error) {
-        fetchOrders();
-      }
-    };
-    fetchUserType();
-  }, []);
-
-  useEffect(() => {
-    // getting diagnosticUserType from asyncStorage
-    const fetchUserType = async () => {
-      try {
-        const diagnosticUserType = await AsyncStorage.getItem('diagnosticUserType');
-        if (diagnosticUserType == null) {
-          fetchOrders();
-        }
-      } catch (error) {
-        fetchOrders();
-      }
-    };
-    fetchUserType();
-  }, []);
-
   const fetchOrders = async () => {
     //for checking whether user is new or repeat.
     try {
@@ -747,7 +716,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         setSectionLoading(false);
         setWidgetsData([]);
         setLoading?.(false);
-        setPageLoading?.(false);
+        setPageLoading?.(false); //here
         setBannerLoading(false);
         setReloadWidget(true);
       }
@@ -756,7 +725,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setWidgetsData([]);
       setLoading?.(false);
       setReloadWidget(true);
-      setPageLoading?.(false);
+      setPageLoading?.(false); //here
       setSectionLoading(false);
       setBannerLoading(false);
     }
@@ -1059,29 +1028,20 @@ export const Tests: React.FC<TestsProps> = (props) => {
           postMyOrdersClicked('Diagnostics', currentPatient);
           props.navigation.push(AppRoutes.YourOrdersTest, {
             isTest: true,
+            cityId: cityId,
           });
         }}
         container={{
           marginBottom: 24,
         }}
-        titleStyle={{
-          color: theme.colors.SHERPA_BLUE,
-          ...theme.fonts.IBMPlexSansSemiBold(16),
-          paddingHorizontal: 0,
-        }}
+        titleStyle={styles.ordersTitleStyle}
         title={'MY ORDERS'}
         leftIcon={null}
       />
     );
   };
 
-  const [searchText, setSearchText] = useState<string>('');
-  const [diagnosticResults, setDiagnosticResults] = useState<
-    searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
-  >([]);
-
   const getUserSubscriptionsByStatus = async () => {
-    setPageLoading?.(true);
     try {
       const query: GetSubscriptionsOfUserByStatusVariables = {
         mobile_number: currentPatient?.mobileNumber,
@@ -1093,7 +1053,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         variables: query,
       });
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
-      setPageLoading?.(false);
       if (data) {
         if (data?.APOLLO?.[0]._id && data?.APOLLO?.[0]?.status !== 'disabled') {
           AsyncStorage.setItem('circleSubscriptionId', data?.APOLLO?.[0]._id);
@@ -1129,31 +1088,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }
       }
     } catch (error) {
-      setPageLoading?.(false);
       CommonBugFender('Diagnositic_Landing_Page_Tests_GetSubscriptionsOfUserByStatus', error);
     }
   };
 
   const renderSearchBar = () => {
-    const styles = StyleSheet.create({
-      searchNewInput: {
-        borderColor: '#e7e7e7',
-        borderRadius: 5,
-        borderWidth: 1,
-        width: '92%',
-        alignSelf: 'center',
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignContent: 'center',
-        padding: 10,
-        marginVertical: 15,
-        backgroundColor: '#f7f8f5',
-      },
-      searchTextStyle: {
-        ...theme.viewStyles.text('SB', 18, 'rgba(1,48,91, 0.3)'),
-      },
-    });
-
     const shouldEnableSearchSend = searchText.length > 2;
     const rigthIconView = (
       <TouchableOpacity
@@ -1433,6 +1372,21 @@ export const Tests: React.FC<TestsProps> = (props) => {
           </View>
         </View>
       </>
+    );
+  };
+
+  const renderViewReportModal = () => {
+    return (
+      <View>
+        <TestPdfRender
+          uri={clickedItem?.labReportURL}
+          order={clickedItem}
+          isReport={true}
+          onPressClose={() => {
+            setShowViewReportModal(false);
+          }}
+        />
+      </View>
     );
   };
 
@@ -1898,11 +1852,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <CertifiedCard
         titleText={string.diagnostics.certificateText}
-        titleStyle={{
-          color: colors.SHERPA_BLUE,
-          ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 12 : 13),
-          lineHeight: 18,
-        }}
+        titleStyle={styles.certificateViewTitle}
         leftIcon={<ShieldIcon />}
         bottomView={renderCertificateImages()}
       />
@@ -1911,13 +1861,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderCertificateImages = () => {
     return (
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginVertical: '4%' }}>
-        {imagesArray.map((img) => (
-          <Image
-            source={img}
-            style={{ height: isSmallDevice ? 30 : 36, width: isSmallDevice ? 65 : 70 }}
-            resizeMode={'contain'}
-          />
+      <View style={styles.certificateViewImage}>
+        {imagesArray?.map((img) => (
+          <Image source={img} style={styles.certificateImageStyle} resizeMode={'contain'} />
         ))}
       </View>
     );
@@ -2023,7 +1969,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         const images = response as ImageCropPickerResponse[];
         const isGreaterThanSpecifiedSize = images.find(({ size }) => size > MAX_FILE_SIZE);
         if (isGreaterThanSpecifiedSize) {
-          Alert.alert(string.common.uhOh, `Invalid File Size. File size must be less than 25MB.`);
+          Alert.alert(string.common.uhOh, string.diagnostics.invalidFileSize);
           return;
         }
         const uploadedImages = formatResponse(images);
@@ -2065,9 +2011,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       if (!isValidPdf || !isValidSize) {
         Alert.alert(
           string.common.uhOh,
-          !isValidPdf
-            ? `Invalid File Type. File type must be PDF.`
-            : `Invalid File Size. File size must be less than 25MB.`
+          !isValidPdf ? string.diagnostics.invalidFileType : string.diagnostics.invalidFileSize
         );
         return;
       }
@@ -2105,7 +2049,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       <View style={styles.precriptionContainer}>
         <View style={styles.precriptionContainerUpload}>
           <PrescriptionColored style={{ height: 35 }} />
-          <Text style={styles.prescriptionText}>Place your order via prescription</Text>
+          <Text style={styles.prescriptionText}>{string.diagnostics.prescriptionHeading}</Text>
           <Button
             title={'UPLOAD'}
             style={styles.buttonStyle}
@@ -2154,7 +2098,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   function onPressBookNow(item: any) {
     const testPrescription = item?.caseSheet?.diagnosticPrescription;
-    addTestsToCart(testPrescription, client, '500030', setLoadingContext)
+    addTestsToCart(
+      testPrescription,
+      client,
+      AppConfig.Configuration.DIAGNOSTIC_DEFAULT_LOCATION.pincode,
+      setLoadingContext
+    )
       .then((tests: DiagnosticsCartItem[]) => {
         // Adding ePrescriptions to DiagnosticsCart
         const unAvailableItemsArray = testPrescription?.filter(
@@ -2221,10 +2170,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
       });
   }
 
+  function _navigateToPatientsPage() {
+    props.navigation.navigate(AppRoutes.AddPatients);
+  }
+
   function _navigateToTestCart() {
     hideAphAlert?.();
-    // props.navigation.navigate(AppRoutes.TestsCart);
-    props.navigation.navigate(AppRoutes.AddPatients);
+    _navigateToPatientsPage();
   }
 
   const getFileName = (item: any) => {
@@ -2315,8 +2267,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
         currentPatient
       );
       if (!!item?.labReportURL && item?.labReportURL != '') {
-        onPressViewReport();
         setClickedItem(item);
+        setShowViewReportModal(true);
       } else {
         showAphAlert?.({
           title: string.common.uhOh,
@@ -2335,29 +2287,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   }
 
-  async function onPressViewReport() {
-    const appointmentDate = moment(clickedItem?.slotDateTimeInUTC)?.format('DD MMM YYYY');
-    const patientName = `${clickedItem?.patientObj?.firstName} ${clickedItem?.patientObj?.lastName}`;
-    try {
-      await downloadDiagnosticReport(
-        setLoadingContext,
-        removeWhiteSpaces(clickedItem?.labReportURL),
-        appointmentDate,
-        !!patientName ? patientName : '_',
-        true,
-        undefined,
-        clickedItem?.orderStatus,
-        (clickedItem?.displayId).toString(),
-        true
-      );
-    } catch (error) {
-      setLoadingContext?.(false);
-      CommonBugFender('Tests_onPressOrderStatusOption_downloadLabTest', error);
-    } finally {
-      setLoadingContext?.(false);
-    }
-  }
-
   function navigateToTrackingScreen(item: any) {
     DiagnosticTrackOrderViewed(
       currentPatient,
@@ -2368,6 +2297,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
     props.navigation.push(AppRoutes.YourOrdersTest, {
       isTest: true,
+      cityId: cityId,
     });
   }
 
@@ -2534,25 +2464,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <View style={styles.cartDetailView}>
         <Text style={styles.itemAddedText}>
-          {cartItems?.length} {cartItems?.length == 1 ? 'Item' : 'Items'} Added to Cart
+          {cartItems?.length}{' '}
+          {cartItems?.length == 1 ? string.diagnostics.itemAdded : string.diagnostics.itemsAdded}
         </Text>
-        <TouchableOpacity
-          activeOpacity={1}
-          // onPress={() => props.navigation.navigate(AppRoutes.TestsCart)}
-          onPress={() => props.navigation.navigate(AppRoutes.AddPatients)}
-        >
-          <Text style={styles.goToCartText}>GO TO CART</Text>
-        </TouchableOpacity>
+        <View style={styles.goToCartView}>
+          <Button
+            title={nameFormater(string.diagnostics.goToCart, 'upper')}
+            onPress={() => _navigateToPatientsPage()}
+            style={{ width: '90%' }}
+          />
+        </View>
       </View>
     );
-  };
-
-  const renderNonServiceablePopUp = (city: string) => {
-    showAphAlert?.({
-      unDismissable: true,
-      title: string.medicine_cart.tatUnServiceableAlertTitle,
-      description: string.diagnostics.nonServiceableMsg.replace('{{city_name}}', city),
-    });
   };
 
   const renderDiagnosticHeader = () => {
@@ -2569,22 +2492,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
 
     const cleverTapEventForHomeIconClick = () => {
-      const eventAttributes = {
-        'Patient name': `${currentPatient?.firstName} ${currentPatient?.lastName}`,
-        'Patient UHID': currentPatient?.uhid,
-        Relation: currentPatient?.relation,
-        'Patient age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
-        'Patient gender': currentPatient?.gender,
-        'Mobile Number': currentPatient?.mobileNumber,
-        'Customer ID': currentPatient?.id,
-        User_Type: getUserType(allCurrentPatients),
-        'Nav src': 'Dignostic Page',
-        'Circle Member':
-          getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
-          undefined,
-        'Device Id': getUniqueId(),
-      };
-      postCleverTapEvent(CleverTapEventName.HOME_ICON_CLICKED, eventAttributes);
+      const circleMemberAtt =
+        getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+        undefined;
+      const deviceId = getUniqueId();
+      DiagnosticHomePageClicked(
+        currentPatient,
+        getUserType(allCurrentPatients),
+        'Dignostic Page',
+        !!circleSubscriptionId ? 'True' : 'False'
+      );
     };
 
     const renderCartIcon = () => (
@@ -2592,7 +2509,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         <TouchableOpacity
           style={styles.cartIconTouch}
           activeOpacity={1}
-          onPress={() => props.navigation.navigate(AppRoutes.AddPatients)}
+          onPress={() => _navigateToPatientsPage()}
         >
           <CartIcon />
           {cartItemsCount > 0 && <Badge label={cartItemsCount} />}
@@ -2772,15 +2689,15 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const prescriptionOptionArray = [
     {
-      icon: <GalleryIcon />,
+      icon: <GalleryIcon style={styles.uploadPresIcon} />,
       title: 'Choose from Gallery',
     },
     {
-      icon: <CameraIcon />,
+      icon: <CameraIcon style={styles.uploadPresIcon} />,
       title: 'Take a Picture',
     },
     {
-      icon: <PrescriptionIcon />,
+      icon: <PrescriptionIcon style={styles.uploadPresIcon} />,
       title: 'Select from my Prescriptions',
     },
   ];
@@ -2798,25 +2715,34 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <>
         <Text style={styles.textHeadingModal}>Upload Prescription</Text>
-        {prescriptionOptionArray.map((item) => {
+        {prescriptionOptionArray.map((item, index: number) => {
           return (
-            <TouchableOpacity
-              onPress={() => {
-                if (item.title == 'Choose from Gallery') {
-                  setIsPrescriptionGallery(true);
-                } else if (item.title == 'Take a Picture') {
-                  setIsPrescriptionUpload(false);
-                  onClickTakePhoto();
-                } else {
-                  setIsPrescriptionUpload(false);
-                  setSelectPrescriptionVisible(true);
-                }
-              }}
-              style={styles.areaStyles}
-            >
-              {item.icon}
-              <Text style={styles.textPrescription}>{item.title}</Text>
-            </TouchableOpacity>
+            <>
+              <TouchableOpacity
+                onPress={() => {
+                  if (item.title == 'Choose from Gallery') {
+                    setIsPrescriptionGallery(true);
+                  } else if (item.title == 'Take a Picture') {
+                    setIsPrescriptionUpload(false);
+                    onClickTakePhoto();
+                  } else {
+                    setIsPrescriptionUpload(false);
+                    setSelectPrescriptionVisible(true);
+                  }
+                }}
+                style={[
+                  styles.areaStyles,
+                  {
+                    marginTop: index === 0 ? 0 : 10,
+                    marginBottom: index === prescriptionOptionArray?.length - 1 ? 20 : 10,
+                  },
+                ]}
+              >
+                {item?.icon}
+                <Text style={styles.textPrescription}>{item?.title}</Text>
+              </TouchableOpacity>
+              {index === prescriptionOptionArray?.length - 1 ? null : <Spearator />}
+            </>
           );
         })}
       </>
@@ -2827,34 +2753,111 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <>
         <Text style={styles.textHeadingModal}>Choose from Gallery</Text>
-        {prescriptionGalleryOptionArray.map((item) => {
+        {prescriptionGalleryOptionArray?.map((item, index: number) => {
           return (
-            <TouchableOpacity
-              style={{ flexDirection: 'row', alignContent: 'center' }}
-              onPress={() => {
-                if (item?.title == 'Photo Library') {
-                  openGallery();
-                } else {
-                  if (Platform.OS === 'android') {
-                    storagePermissions(() => {
-                      onBrowseClicked();
-                    });
+            <>
+              <TouchableOpacity
+                style={[
+                  styles.areaStyles,
+                  {
+                    marginTop: index === 0 ? 0 : 10,
+                    marginBottom: index === prescriptionGalleryOptionArray?.length - 1 ? 20 : 10,
+                  },
+                ]}
+                onPress={() => {
+                  if (item?.title == 'Photo Library') {
+                    openGallery();
                   } else {
-                    onBrowseClicked();
+                    if (Platform.OS === 'android') {
+                      storagePermissions(() => {
+                        onBrowseClicked();
+                      });
+                    } else {
+                      onBrowseClicked();
+                    }
                   }
-                }
-              }}
-            >
-              <Text style={styles.textPrescription}>{item.title}</Text>
-            </TouchableOpacity>
+                }}
+              >
+                <Text style={styles.textPrescription}>{item.title}</Text>
+              </TouchableOpacity>
+              {index === prescriptionOptionArray?.length - 1 ? null : <Spearator />}
+            </>
           );
         })}
       </>
     );
   };
 
+  const renderBottomAbsoluteView = () => {
+    return (
+      <>
+        {showNudgeMessage && renderCircleNudgeMessage()}
+        {isCartAvailable ? renderCartDetails() : null}
+      </>
+    );
+  };
+
+  const renderCircleNudgeMessage = () => {
+    return (
+      <View style={[styles.nudgeMsgHeight, { bottom: isCartAvailable ? GO_TO_CART_HEIGHT : 0 }]}>
+        <CircleLogo style={styles.circleIcon} />
+        <View style={{ width: '80%' }}>
+          <Text style={styles.nudgeMsgText}>
+            {AppConfig.Configuration.DIAGNOSTICS_NUDGE_MESSAGE_TEXT}
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
+  const renderCallToOrder = () => {
+    const CART_AVAILABLE_HEIGHT = isCartAvailable ? GO_TO_CART_HEIGHT : 0;
+    return ctaDetailMatched?.length ? (
+      <CallToOrderView
+        cartItems={cartItems}
+        slideCallToOrder={slideCallToOrder}
+        customMargin={
+          showNudgeMessage
+            ? CART_AVAILABLE_HEIGHT + NON_CIRCLE_NUDGE_HEIGHT + 10
+            : CART_AVAILABLE_HEIGHT + 10
+        }
+        onPressSmallView={() => {
+          setSlideCallToOrder(false);
+        }}
+        cityId={cityId}
+        onPressCross={() => {
+          setSlideCallToOrder(true);
+        }}
+        pageId={CALL_TO_ORDER_CTA_PAGE_ID.HOME}
+      />
+    ) : null;
+  };
+
+  const postScrollScreenEvent = () => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.SCREEN_SCROLLED] = {
+      User_Type: getUserType(allCurrentPatients),
+      'Patient Name': currentPatient?.firstName,
+      'Patient UHID': currentPatient?.uhid,
+      'Patient age': getAge(currentPatient?.dateOfBirth),
+      'Circle Member': 'circleSubscriptionId' ? 'True' : 'False',
+      'Customer ID': currentPatient?.id,
+      'Patient gender': currentPatient?.gender,
+      'Mobile number': currentPatient?.mobileNumber,
+      'Page name': 'Diagnostic page',
+      'Nav src': homeScreenAttributes?.Source,
+      Scrolls: scrollCount.current,
+    };
+    postCleverTapEvent(CleverTapEventName.SCREEN_SCROLLED, eventAttributes);
+  };
+
   return (
     <View style={{ flex: 1 }}>
+      <NavigationEvents
+        onDidFocus={() => {
+          scrollCount.current = 0;
+        }}
+        onDidBlur={postScrollScreenEvent}
+      />
       <SafeAreaView style={{ ...viewStyles.container }}>
         {pageLoading ? (
           <View style={{ backgroundColor: colors.WHITE }}>
@@ -2904,17 +2907,35 @@ export const Tests: React.FC<TestsProps> = (props) => {
             </View>
             <View style={{ flex: 1 }}>
               <ScrollView
+                scrollEventThrottle={0}
                 removeClippedSubviews={true}
                 bounces={false}
-                style={{ flex: 1, marginBottom: !!cartItems && cartItems?.length > 0 ? 30 : 0 }}
+                style={{
+                  flex: 1,
+                  marginBottom: isCartAvailable
+                    ? showNudgeMessage
+                      ? 60
+                      : 30
+                    : showNudgeMessage
+                    ? 30
+                    : 0,
+                }}
                 keyboardShouldPersistTaps="always"
                 showsVerticalScrollIndicator={false}
                 nestedScrollEnabled={true}
+                onScroll={(event) => {
+                  setSlideCallToOrder(true);
+                  //increments only for down scroll
+                  const currentOffset = event.nativeEvent.contentOffset?.y;
+                  currentOffset > (this.offset || 0) && (scrollCount.current += 1);
+                  this.offset = currentOffset;
+                }}
               >
                 {renderSections()}
-                {!!cartItems && cartItems?.length > 0 ? <View style={{ height: 20 }} /> : null}
+                {isCartAvailable ? <View style={{ height: 20 }} /> : null}
               </ScrollView>
-              {!!cartItems && cartItems?.length > 0 ? renderCartDetails() : null}
+              {renderCallToOrder()}
+              {renderBottomAbsoluteView()}
             </View>
           </>
         )}
@@ -2922,6 +2943,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         {showUnserviceablePopup && renderNonServiceableToolTip(false)}
         {showNoLocationPopUp && renderNonServiceableToolTip(true)}
       </SafeAreaView>
+      {showViewReportModal ? renderViewReportModal() : null}
       {showbookingStepsModal ? renderBookingStepsModal() : null}
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
     </View>
@@ -2944,13 +2966,16 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(100,100,100, 0.5)',
     flex: 1,
     justifyContent: 'flex-end',
-    // alignItems: 'center',
     flexDirection: 'column',
+  },
+  callToOrderText: {
+    ...theme.viewStyles.text('SB', 14, 'white', 1),
+    paddingHorizontal: 10,
   },
   paitentModalView: {
     backgroundColor: 'white',
     width: '100%',
-    padding: 10,
+    padding: 16,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
   },
@@ -2979,11 +3004,17 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   textPrescription: {
-    ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE),
-    marginBottom: 20,
+    ...theme.viewStyles.text('SB', 14, colors.SHERPA_BLUE, 1, 20),
     paddingHorizontal: 10,
+    textAlign: 'center',
   },
-  areaStyles: { flexDirection: 'row', alignContent: 'center' },
+  areaStyles: { flexDirection: 'row', alignItems: 'center' },
+  uploadPresIcon: {
+    height: 18,
+    width: 18,
+    resizeMode: 'contain',
+    tintColor: colors.TEAL_BLUE,
+  },
   buttonStyle: { width: '30%', alignSelf: 'center' },
   prescriptionText: {
     ...theme.viewStyles.text('SB', 15, theme.colors.SHERPA_BLUE, 1, 20),
@@ -3093,7 +3124,7 @@ const styles = StyleSheet.create({
   },
   itemAddedText: {
     marginLeft: 20,
-    ...theme.viewStyles.text('SB', isSmallDevice ? 13 : 14, theme.colors.WHITE),
+    ...theme.viewStyles.text('SB', isSmallDevice ? 13 : 14, colors.SHERPA_BLUE),
     lineHeight: 16,
     textAlign: 'left',
     alignSelf: 'center',
@@ -3107,9 +3138,9 @@ const styles = StyleSheet.create({
   },
   cartDetailView: {
     position: 'absolute',
-    backgroundColor: colors.APP_YELLOW_COLOR,
+    backgroundColor: colors.WHITE,
     bottom: 0,
-    height: 50,
+    height: GO_TO_CART_HEIGHT, //50
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -3183,12 +3214,12 @@ const styles = StyleSheet.create({
     borderRadius: 50 / 2,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f9f9f9',
+    backgroundColor: theme.colors.BGK_GRAY,
   },
   image: {
     width: 30,
     height: 30,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: theme.colors.BGK_GRAY,
     resizeMode: 'contain',
   },
   gridPart: {
@@ -3256,12 +3287,14 @@ const styles = StyleSheet.create({
   outerExpressView: { backgroundColor: colors.APP_GREEN, marginBottom: 2 },
   innerExpressView: {
     flexDirection: 'row',
-    padding: 8,
+    padding: 4,
+    paddingLeft: 8,
+    paddingRight: 8,
     alignItems: 'center',
     width: '97%',
   },
-  expressSlotIcon: { width: 37, height: 37, resizeMode: 'contain' },
-  expressSlotText: { ...theme.viewStyles.text('SB', 14, colors.WHITE, 1, 18), marginLeft: 16 },
+  expressSlotIcon: { width: 35, height: 35, resizeMode: 'contain' },
+  expressSlotText: { ...theme.viewStyles.text('SB', 14, colors.WHITE, 1, 18), marginLeft: 10 },
   locateMeTouch: {
     zIndex: 1,
     height: 30,
@@ -3276,5 +3309,57 @@ const styles = StyleSheet.create({
     position: 'absolute',
     height: winHeight,
     width: winWidth,
+  },
+  nudgeMsgHeight: {
+    // height: NON_CIRCLE_NUDGE_HEIGHT,
+    flex: 1,
+    paddingTop: 5,
+    paddingBottom: 5,
+    backgroundColor: '#FFF6DE',
+    flexDirection: 'row',
+    width: '100%',
+    position: 'absolute',
+    alignItems: 'center',
+  },
+  circleIcon: {
+    height: isSmallDevice ? 16 : 19,
+    width: isSmallDevice ? 27 : 35,
+    resizeMode: 'contain',
+    marginRight: 8,
+    marginLeft: 20,
+  },
+  nudgeMsgText: { ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1, 18) },
+  goToCartView: { marginRight: 12, alignItems: 'flex-end' },
+  certificateViewTitle: {
+    color: colors.SHERPA_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 12 : 13),
+    lineHeight: 18,
+  },
+  certificateViewImage: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginVertical: '4%',
+  },
+  certificateImageStyle: { height: isSmallDevice ? 30 : 36, width: isSmallDevice ? 65 : 70 },
+  searchNewInput: {
+    borderColor: '#e7e7e7',
+    borderRadius: 5,
+    borderWidth: 1,
+    width: '92%',
+    alignSelf: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignContent: 'center',
+    padding: 10,
+    marginVertical: 15,
+    backgroundColor: colors.CARD_BG,
+  },
+  searchTextStyle: {
+    ...theme.viewStyles.text('SB', 18, 'rgba(1,48,91, 0.3)'),
+  },
+  ordersTitleStyle: {
+    color: theme.colors.SHERPA_BLUE,
+    ...theme.fonts.IBMPlexSansSemiBold(16),
+    paddingHorizontal: 0,
   },
 });

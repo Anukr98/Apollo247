@@ -74,9 +74,11 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
+  availabilityApi247,
   Brand,
   callToExotelApi,
   DealsOfTheDaySection,
+  getBrandPagesData,
   getMedicinePageProducts,
   getMedicineSearchSuggestionsApi,
   getNearByStoreDetailsApi,
@@ -86,7 +88,6 @@ import {
   MedicinePageSection,
   MedicineProduct,
   OfferBannerSection,
-  pinCodeServiceabilityApi247,
   SearchSuggestion,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
@@ -107,6 +108,13 @@ import {
   postCleverTapEvent,
   getUserType,
   getCleverTapCircleMemberValues,
+  getAvailabilityForSearchSuccess,
+  checkIfPincodeIsServiceable,
+  addPharmaItemToCart,
+  getDiscountPercentage,
+  getIsMedicine,
+  getAge,
+  formatToCartItem,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { USER_AGENT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
@@ -145,7 +153,7 @@ import {
 import ContentLoader from 'react-native-easy-content-loader';
 import { Divider, Image, ListItem } from 'react-native-elements';
 import Carousel from 'react-native-snap-carousel';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, NavigationEvents } from 'react-navigation';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 const { width: winWidth, height: winHeight } = Dimensions.get('window');
 import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -168,6 +176,9 @@ import { setItem, getItem } from '@aph/mobile-patients/src/helpers/TimedAsyncSto
 import { SuggestedQuantityNudge } from '@aph/mobile-patients/src/components/SuggestedQuantityNudge/SuggestedQuantityNudge';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 import { CircleBottomContainer } from '@aph/mobile-patients/src/components/Medicines/Components/CircleBottomContainer';
+import { WhatsappRedirectionStickyNote } from '@aph/mobile-patients/src/components/Medicines/Components/WhatsappRedirectionStickyNote';
+import { WhatsappRedirectionBanner } from '@aph/mobile-patients/src/components/Medicines/Components/WhatsappRedirectionBanner';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const styles = StyleSheet.create({
   scrollViewStyle: {
@@ -291,6 +302,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setIsCircleExpired,
     setMedicineHomeBannerData,
     setMedicineHotSellersData,
+    isPharmacyPincodeServiceable,
+    addCartItem,
     cartAddressId,
     serverCartLoading,
     serverCartErrorMessage,
@@ -300,6 +313,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     newAddressAdded,
     setNewAddressAdded,
     setAddToCartSource,
+    circleSubscriptionId,
   } = useShoppingCart();
   const {
     setUserActionPayload,
@@ -331,10 +345,15 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const IMG_HEIGHT_DEFAULT = 175;
   const [imgHeight, setImgHeight] = useState(IMG_HEIGHT_DEFAULT);
   const [bannerLoading, setBannerLoading] = useState(false);
-  const defaultAddress = addresses.find((item) => item.id == cartAddressId);
+  const defaultAddress = addresses.find((item) => item?.id == cartAddressId);
   const hasLocation = !!cartLocationDetails?.pincode || !!defaultAddress;
   const pharmacyPincode = cartLocationDetails?.pincode || defaultAddress?.zipcode;
   const [isFocused, setIsFocused] = useState<boolean>(false);
+  const [showWhatsappRedirectionIcon, setShowWhatsappRedirectionIcon] = useState<boolean>(true);
+  const scrollViewRef = React.useRef<KeyboardAwareScrollView>(null);
+  const windowHeight = Dimensions.get('window').height;
+  const scrollCount = useRef<number>(0);
+
   type addressListType = savePatientAddress_savePatientAddress_patientAddress[];
   const postwebEngageCategoryClickedEvent = (
     categoryId: string,
@@ -540,145 +559,144 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  useEffect(() => {
+    setServiceabilityMsg(
+      isPharmacyPincodeServiceable ? '' : 'Services unavailable. Change delivery location.'
+    );
+    setPharmacyLocationServiceable!(!!isPharmacyPincodeServiceable);
+    if (!isPharmacyPincodeServiceable && pharmacyPincode) callNearbyStoreApi();
+  }, [isPharmacyPincodeServiceable]);
+
+  const callNearbyStoreApi = () => {
+    const styles = StyleSheet.create({
+      callCta: {
+        backgroundColor: '#fc9916',
+        borderRadius: 5,
+        height: 38,
+        marginBottom: 5,
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        flexDirection: 'row',
+        shadowColor: 'rgba(0,0,0,0.2)',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0,
+        shadowRadius: 0,
+        elevation: 0,
+        paddingLeft: 12,
+      },
+      addressCta: {
+        backgroundColor: '#fc9916',
+        borderRadius: 5,
+        height: 38,
+        marginBottom: 5,
+        justifyContent: 'flex-start',
+        shadowColor: 'rgba(0,0,0,0.2)',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0,
+        shadowRadius: 0,
+        elevation: 0,
+        paddingLeft: 12,
+      },
+    });
+    getNearByStoreDetailsApi(pharmacyPincode)
+      .then((response: any) => {
+        showAphAlert!({
+          title: 'We’ve got you covered !!',
+          description: 'We are servicing your area through the nearest Pharmacy, Call to Order!',
+          titleStyle: theme.viewStyles.text('SB', 18, '#01475b'),
+          ctaContainerStyle: { flexDirection: 'column' },
+          unDismissable: true,
+          children: (
+            <View style={{ marginBottom: 15, marginTop: 12, marginHorizontal: 20 }}>
+              <TouchableOpacity
+                activeOpacity={1}
+                style={styles.callCta}
+                onPress={() =>
+                  onPressCallNearestPharmacy(
+                    response.data && response.data.phoneNumber ? response.data.phoneNumber : ''
+                  )
+                }
+              >
+                <OrangeCallIcon style={{ width: 24, height: 24, marginRight: 8 }} />
+                <Text style={{ ...theme.viewStyles.text('B', 13, '#ffffff', 1, 24, 0) }}>
+                  {'CALL THE NEAREST PHARMACY'}
+                </Text>
+              </TouchableOpacity>
+              <Button
+                title={'CHANGE THE ADDRESS'}
+                style={styles.addressCta}
+                titleTextStyle={{ ...theme.viewStyles.text('B', 13, '#ffffff', 1, 24, 0) }}
+                onPress={() => showAccessAccessLocationPopup(addresses, false)}
+              />
+            </View>
+          ),
+        });
+      })
+      .catch((error) => {
+        showAphAlert!({
+          unDismissable: isunDismissable(),
+          title: 'We’re sorry!',
+          description:
+            'We are not serviceable in your area. Please change your location or call 1860 500 0101 for Pharmacy stores nearby.',
+          titleStyle: theme.viewStyles.text('SB', 18, '#890000'),
+          ctaContainerStyle: { justifyContent: 'flex-end' },
+          CTAs: [
+            {
+              text: 'CHANGE THE ADDRESS',
+              type: 'orange-link',
+              onPress: () => showAccessAccessLocationPopup(addresses),
+            },
+          ],
+        });
+      });
+  };
+
+  const onPressCallNearestPharmacy = (pharmacyPhoneNumber: string) => {
+    let from = currentPatient.mobileNumber;
+    let to = pharmacyPhoneNumber;
+    let caller_id = AppConfig.Configuration.EXOTEL_CALLER_ID;
+    const param = {
+      fromPhone: from,
+      toPhone: to,
+      callerId: caller_id,
+    };
+    CalltheNearestPharmacyEvent();
+    globalLoading!(true);
+    setPageLoading!(true);
+
+    callToExotelApi(param)
+      .then((response) => {})
+      .catch((error) => {
+        showAphAlert!({
+          title: string.common.uhOh,
+          description: 'We could not connect to the pharmacy now. Please try later.',
+        });
+      })
+      .finally(() => {
+        hideAphAlert!();
+        globalLoading!(false);
+        setPageLoading!(false);
+      });
+  };
+
+  const CalltheNearestPharmacyEvent = () => {
+    let eventAttributes: WebEngageEvents[WebEngageEventName.CALL_THE_NEAREST_PHARMACY] = {
+      pincode: pharmacyPincode,
+      'Mobile Number': currentPatient.mobileNumber,
+    };
+    postWebEngageEvent(WebEngageEventName.CALL_THE_NEAREST_PHARMACY, eventAttributes);
+  };
+
   const updateServiceability = (
     pincode: string,
     type?: 'autoDetect' | 'pincode' | 'addressSelect'
   ) => {
-    const CalltheNearestPharmacyEvent = () => {
-      let eventAttributes: WebEngageEvents[WebEngageEventName.CALL_THE_NEAREST_PHARMACY] = {
-        pincode: pincode,
-        'Mobile Number': currentPatient.mobileNumber,
-      };
-      postWebEngageEvent(WebEngageEventName.CALL_THE_NEAREST_PHARMACY, eventAttributes);
-    };
-
-    const onPressCallNearestPharmacy = (pharmacyPhoneNumber: string) => {
-      let from = currentPatient.mobileNumber;
-      let to = pharmacyPhoneNumber;
-      let caller_id = AppConfig.Configuration.EXOTEL_CALLER_ID;
-      const param = {
-        fromPhone: from,
-        toPhone: to,
-        callerId: caller_id,
-      };
-      CalltheNearestPharmacyEvent();
-      globalLoading!(true);
-      setPageLoading!(true);
-
-      callToExotelApi(param)
-        .then((response) => {
-          hideAphAlert!();
-          globalLoading!(false);
-          setPageLoading!(false);
-        })
-        .catch((error) => {
-          hideAphAlert!();
-          globalLoading!(false);
-          setPageLoading!(false);
-          showAphAlert!({
-            title: string.common.uhOh,
-            description: 'We could not connect to the pharmacy now. Please try later.',
-          });
-        });
-    };
-
-    pinCodeServiceabilityApi247(pincode)
-      .then(({ data: { response } }) => {
-        const { servicable, axdcCode } = response;
-        setAxdcCode && setAxdcCode(axdcCode);
-        setServiceabilityMsg(servicable ? '' : 'Services unavailable. Change delivery location.');
-        setPharmacyLocationServiceable!(!!servicable);
-        type == 'autoDetect' && WebEngageEventAutoDetectLocation(pincode, !!servicable);
-        type == 'autoDetect' && CleverTapEventAutoDetectLocation(pincode, !!servicable);
-        type == 'pincode' && webEngageDeliveryPincodeEntered(pincode, !!servicable);
-        type == 'pincode' && CleverTapDeliveryPincodeEntered(pincode, !!servicable);
-        globalLoading!(false);
-        if (!servicable) {
-          getNearByStoreDetailsApi(pincode)
-            .then((response: any) => {
-              showAphAlert!({
-                title: 'We’ve got you covered !!',
-                description:
-                  'We are servicing your area through the nearest Pharmacy, Call to Order!',
-                titleStyle: theme.viewStyles.text('SB', 18, '#01475b'),
-                ctaContainerStyle: { flexDirection: 'column' },
-                children: (
-                  <View style={{ marginBottom: 15, marginTop: 12, marginHorizontal: 20 }}>
-                    <TouchableOpacity
-                      activeOpacity={1}
-                      style={{
-                        backgroundColor: '#fc9916',
-                        borderRadius: 5,
-                        height: 38,
-                        marginBottom: 5,
-                        justifyContent: 'flex-start',
-                        alignItems: 'center',
-                        flexDirection: 'row',
-                        shadowColor: 'rgba(0,0,0,0.2)',
-                        shadowOffset: { width: 0, height: 0 },
-                        shadowOpacity: 0,
-                        shadowRadius: 0,
-                        elevation: 0,
-                        paddingLeft: 12,
-                      }}
-                      onPress={() =>
-                        onPressCallNearestPharmacy(
-                          response.data && response.data.phoneNumber
-                            ? response.data.phoneNumber
-                            : ''
-                        )
-                      }
-                    >
-                      <OrangeCallIcon style={{ width: 24, height: 24, marginRight: 8 }} />
-                      <Text style={{ ...theme.viewStyles.text('B', 13, '#ffffff', 1, 24, 0) }}>
-                        {'CALL THE NEAREST PHARMACY'}
-                      </Text>
-                    </TouchableOpacity>
-                    <Button
-                      title={'CHANGE THE ADDRESS'}
-                      style={{
-                        backgroundColor: '#fc9916',
-                        borderRadius: 5,
-                        height: 38,
-                        marginBottom: 5,
-                        justifyContent: 'flex-start',
-                        shadowColor: 'rgba(0,0,0,0.2)',
-                        shadowOffset: { width: 0, height: 0 },
-                        shadowOpacity: 0,
-                        shadowRadius: 0,
-                        elevation: 0,
-                        paddingLeft: 12,
-                      }}
-                      titleTextStyle={{ ...theme.viewStyles.text('B', 13, '#ffffff', 1, 24, 0) }}
-                      onPress={() => showAccessAccessLocationPopup(addresses, false)}
-                    />
-                  </View>
-                ),
-              });
-            })
-            .catch((error) => {
-              showAphAlert!({
-                unDismissable: isunDismissable(),
-                title: 'We’re sorry!',
-                description:
-                  'We are not serviceable in your area. Please change your location or call 1860 500 0101 for Pharmacy stores nearby.',
-                titleStyle: theme.viewStyles.text('SB', 18, '#890000'),
-                ctaContainerStyle: { justifyContent: 'flex-end' },
-                CTAs: [
-                  {
-                    text: 'CHANGE THE ADDRESS',
-                    type: 'orange-link',
-                    onPress: () => showAccessAccessLocationPopup(addresses),
-                  },
-                ],
-              });
-            });
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('Medicine_pinCodeServiceabilityApi', e);
-        setServiceabilityMsg('Sorry, unable to check serviceability.');
-      });
+    type == 'autoDetect' &&
+      WebEngageEventAutoDetectLocation(pincode, !!isPharmacyPincodeServiceable);
+    type == 'autoDetect' &&
+      CleverTapEventAutoDetectLocation(pincode, !!isPharmacyPincodeServiceable);
+    type == 'pincode' && webEngageDeliveryPincodeEntered(pincode, !!isPharmacyPincodeServiceable);
+    type == 'pincode' && CleverTapDeliveryPincodeEntered(pincode, !!isPharmacyPincodeServiceable);
   };
 
   const handleUpdatePlaceInfoByPincodeError = (e: Error) => {
@@ -797,7 +815,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   async function fetchAddress() {
     try {
       if (addresses?.length) {
-        const deliveryAddress = addresses.find((item) => item.id == cartAddressId);
+        const deliveryAddress = addresses.find((item) => item?.id == cartAddressId);
         if (deliveryAddress) {
           updateServiceability(deliveryAddress?.zipcode!);
           const formattedLocation = formatAddressToLocation(deliveryAddress);
@@ -819,7 +837,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
       const addressList = (response.data.getPatientAddressList.addressList as Address[]) || [];
       setAddresses!(addressList);
-      const deliveryAddress = addressList.find((item) => item.id == cartAddressId);
+      const deliveryAddress = addressList.find((item) => item?.id == cartAddressId);
       if (deliveryAddress) {
         updateServiceability(deliveryAddress?.zipcode!);
         const formattedLocation = formatAddressToLocation(deliveryAddress);
@@ -854,7 +872,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       const patientAddress = data?.makeAdressAsDefault?.patientAddress;
       const updatedAddresses = addresses.map((item) => ({
         ...item,
-        defaultAddress: patientAddress?.id == item.id ? patientAddress?.defaultAddress : false,
+        defaultAddress: patientAddress?.id == item?.id ? patientAddress?.defaultAddress : false,
       }));
       setAddresses!(updatedAddresses);
       const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
@@ -1212,11 +1230,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         'Mobile Number': g(currentPatient, 'mobileNumber'),
         'Customer ID': g(currentPatient, 'id'),
         User_Type: getUserType(allCurrentPatients),
-        'Nav src': 'Medicine Page',
-        'Circle Member':
-          getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
-          undefined,
-        'Device Id': getUniqueId(),
+        'Page name': 'Medicine page',
+        'Circle Member': !!circleSubscriptionId ? 'True' : 'False',
       };
       postCleverTapEvent(CleverTapEventName.HOME_ICON_CLICKED, eventAttributes);
     };
@@ -1234,7 +1249,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       text.length > count ? `${text.slice(0, count)}...` : text;
 
     const renderDeliverToLocationCTA = () => {
-      const deliveryAddress = addresses.find((item) => item.id == cartAddressId);
+      const deliveryAddress = addresses.find((item) => item?.id == cartAddressId);
       const location = cartLocationDetails?.pincode
         ? `${formatText(cartLocationDetails?.city || cartLocationDetails?.state || '', 18)} ${
             cartLocationDetails?.pincode
@@ -1348,22 +1363,23 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         'IP ID': item?.ip_id,
         'IP section name': item?.ip_section_name,
       };
+
       postWebEngageEvent(WebEngageEventName.PHARMACY_BANNER_CLICK, eventAttributes);
       postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_BANNER, cleverTapEventAttributes);
-      if (item.category_id) {
+      if (item?.category_id) {
         props.navigation.navigate(AppRoutes.MedicineListing, {
-          category_id: item.category_id,
-          title: item.name || 'Products',
+          category_id: item?.category_id,
+          title: item?.name || 'Products',
         });
-      } else if (item.sku) {
+      } else if (item?.sku) {
         props.navigation.navigate(AppRoutes.ProductDetailPage, {
-          sku: item.sku,
+          sku: item?.sku,
           movedFrom: ProductPageViewedSource.BANNER,
         });
       }
     };
 
-    let imageUrl = productsThumbnailUrl(item.image) + '?imwidth=' + Math.floor(winWidth);
+    let imageUrl = productsThumbnailUrl(item?.image) + '?imwidth=' + Math.floor(winWidth);
 
     return (
       <TouchableOpacity activeOpacity={1} onPress={handleOnPress}>
@@ -1455,9 +1471,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 Source: 'Home',
                 User_Type: pharmacyUserType,
               };
-              const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED] = {
+              const cleverTapEventAttributes : CleverTapEvents[CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED] = {
                 'Nav src': 'Home',
                 'User type': pharmacyUserType,
+                patient_name: currentPatient?.firstName,
+                patient_uhid: currentPatient?.uhid,
+                relation: currentPatient?.relation,
+                gender: currentPatient?.gender,
+                mobile_number: currentPatient?.mobileNumber,
+                age: moment().year() - moment(currentPatient?.dateOfBirth).year(),
+                customerId: currentPatient?.id
               };
               postCleverTapEvent(
                 CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED,
@@ -1646,14 +1669,35 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           data={categories}
           renderItem={({ item, index }) => {
             return renderCatalogCard(
-              item.title,
-              productsThumbnailUrl(item.image_url),
+              item?.title,
+              productsThumbnailUrl(item?.image_url),
               () => {
-                postwebEngageCategoryClickedEvent(item.category_id, item.title, title, 'Home');
-                props.navigation.navigate(AppRoutes.MedicineListing, {
-                  category_id: item.category_id,
-                  title: item.title || 'Products',
-                });
+                postwebEngageCategoryClickedEvent(item?.category_id, item?.title, title, 'Home');
+
+                getBrandPagesData(item?.url_key)
+                  .then(({ data }) => {
+                    const response = data;
+                    if (response?.success === true && response?.data?.length) {
+                      props.navigation.navigate(AppRoutes.BrandPages, {
+                        movedFrom: 'home',
+                        brandData: response?.data,
+                        category_id: item?.category_id,
+                        title: item?.title || 'Products',
+                      });
+                    } else {
+                      props.navigation.navigate(AppRoutes.MedicineListing, {
+                        category_id: item?.category_id,
+                        title: item?.title || 'Products',
+                      });
+                    }
+                  })
+                  .catch(({ error }) => {
+                    CommonBugFender('MedicinePage_fetchBrandPageData', error);
+                    props.navigation.navigate(AppRoutes.MedicineListing, {
+                      category_id: item?.category_id,
+                      title: item?.title || 'Products',
+                    });
+                  });
               },
               {
                 marginHorizontal: 4,
@@ -1750,9 +1794,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => {
-                  postwebEngageCategoryClickedEvent(item.category_id, 'Banner', title, 'Home');
+                  postwebEngageCategoryClickedEvent(item?.category_id, 'Banner', title, 'Home');
                   props.navigation.navigate(AppRoutes.MedicineListing, {
-                    category_id: item.category_id,
+                    category_id: item?.category_id,
                     title: title,
                   });
                 }}
@@ -1769,7 +1813,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               >
                 <ImageNative
                   source={{
-                    uri: productsThumbnailUrl(item.image_url),
+                    uri: productsThumbnailUrl(item?.image_url),
                   }}
                   resizeMode="contain"
                   style={{
@@ -1858,15 +1902,36 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           horizontal
           data={shopByBrand}
           renderItem={({ item, index }) => {
-            const imgUrl = productsThumbnailUrl(item.image_url);
+            const imgUrl = productsThumbnailUrl(item?.image_url);
             return renderBrandCard(
               imgUrl,
               () => {
-                postwebEngageCategoryClickedEvent(item.category_id, item.title, title, 'Home');
-                props.navigation.navigate(AppRoutes.MedicineListing, {
-                  category_id: item.category_id,
-                  title: item.title || 'Products',
-                });
+                postwebEngageCategoryClickedEvent(item?.category_id, item?.title, title, 'Home');
+
+                getBrandPagesData(item?.url_key)
+                  .then(({ data }) => {
+                    const response = data;
+                    if (response?.success === true && response?.data?.length) {
+                      props.navigation.navigate(AppRoutes.BrandPages, {
+                        movedFrom: 'home',
+                        brandData: response?.data,
+                        category_id: item?.category_id,
+                        title: item?.title || 'Products',
+                      });
+                    } else {
+                      props.navigation.navigate(AppRoutes.MedicineListing, {
+                        category_id: item?.category_id,
+                        title: item?.title || 'Products',
+                      });
+                    }
+                  })
+                  .catch(({ error }) => {
+                    CommonBugFender('MedicinePage_fetchBrandPageData', error);
+                    props.navigation.navigate(AppRoutes.MedicineListing, {
+                      category_id: item?.category_id,
+                      title: item?.title || 'Products',
+                    });
+                  });
               },
               {
                 marginHorizontal: 4,
@@ -1986,7 +2051,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             Source: 'Pharmacy Home',
           };
           postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
-          props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
+          props.navigation.navigate(AppRoutes.MedicineListing, {
+            searchText,
+            comingFromSearch: true,
+            navSrcForSearchSuccess: 'Pharmacy Home',
+          });
           setSearchText('');
           setMedicineList([]);
         }}
@@ -2010,18 +2079,20 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 Source: 'Pharmacy Home',
               };
               postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
-              props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
+              props.navigation.navigate(AppRoutes.MedicineListing, {
+                searchText,
+                comingFromSearch: true,
+                navSrcForSearchSuccess: 'Pharmacy Home',
+              });
+              setSearchText('');
+              setMedicineList([]);
+              setSearchFocused(false);
             }
           }}
           value={searchText}
           onFocus={() => {
             setSearchFocused(true);
             setCategoryTreeVisible(false);
-          }}
-          onBlur={() => {
-            setSearchFocused(false);
-            setMedicineList([]);
-            setSearchText('');
           }}
           onChangeText={(value) => {
             if (isValidSearch(value) && value.length >= 3) {
@@ -2041,8 +2112,33 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const client = useApolloClient();
 
+  const onAddCartItem = (
+    item: MedicineProduct,
+    comingFromSearch: boolean,
+    cleverTapSearchSuccessEventAttributes: object
+  ) => {
+    const { sku, category_id } = item;
+    setItemsLoading({ ...itemsLoading, [sku]: true });
+    addPharmaItemToCart(
+      formatToCartItem(item),
+      pharmacyPincode,
+      () => {},
+      null,
+      props.navigation,
+      currentPatient,
+      !!isPharmacyPincodeServiceable,
+      { source: 'Pharmacy Partial Search', categoryId: category_id },
+      JSON.stringify(serverCartItems),
+      () => setItemsLoading({ ...itemsLoading, [sku]: false }),
+      pharmacyCircleAttributes!,
+      () => {},
+      comingFromSearch,
+      cleverTapSearchSuccessEventAttributes
+    );
+  };
+
   const getItemQuantity = (id: string) => {
-    const foundItem = serverCartItems?.find((item) => item.sku == id);
+    const foundItem = serverCartItems?.find((item) => item?.sku == id);
     return foundItem ? foundItem.quantity : 0;
   };
 
@@ -2064,64 +2160,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     });
   };
 
-  // const onAddCartItem = (
-  //   item: MedicineProduct,
-  //   isComingFromSearch: boolean,
-  //   cleverTapSearchSuccessEventAttributes: object
-  // ) => {
-  //   const {
-  //     sku,
-  //     mou,
-  //     name,
-  //     price,
-  //     special_price,
-  //     is_prescription_required,
-  //     type_id,
-  //     thumbnail,
-  //     MaxOrderQty,
-  //     category_id,
-  //     url_key,
-  //     subcategory,
-  //   } = item;
-  //   setItemsLoading({ ...itemsLoading, [sku]: true });
-  //   addPharmaItemToCart(
-  //     {
-  //       id: sku,
-  //       mou,
-  //       name,
-  //       price: price,
-  //       specialPrice: special_price
-  //         ? typeof special_price == 'string'
-  //           ? Number(special_price)
-  //           : special_price
-  //         : undefined,
-  //       prescriptionRequired: is_prescription_required == '1',
-  //       isMedicine: getIsMedicine(type_id?.toLowerCase()) || '0',
-  //       quantity: Number(1),
-  //       thumbnail: thumbnail,
-  //       isInStock: true,
-  //       maxOrderQty: MaxOrderQty,
-  //       productType: type_id,
-  //       circleCashbackAmt: 0,
-  //       url_key,
-  //       subcategory,
-  //     },
-  //     asyncPincode?.pincode || pharmacyPincode!,
-  //     addItemToServerCart,
-  //     null,
-  //     props.navigation,
-  //     currentPatient,
-  //     !!isPharmacyLocationServiceable,
-  //     { source: 'Pharmacy Partial Search', categoryId: category_id },
-  //     JSON.stringify(cartItems),
-  //     () => setItemsLoading({ ...itemsLoading, [sku]: false }),
-  //     pharmacyCircleAttributes!,
-  //     () => {},
-  //     isComingFromSearch,
-  //     cleverTapSearchSuccessEventAttributes
-  //   );
-  // };
-
   const renderSearchSuggestionItemView = (
     data: ListRenderItemInfo<MedicineProduct | SearchSuggestion>
   ) => {
@@ -2141,17 +2179,81 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             props.navigation.navigate(AppRoutes.MedicineListing, {
               category_id: item?.categoryId,
               title: item?.queryName || 'Products',
+              comingFromSearch: true,
+              navSrcForSearchSuccess: 'Pharmacy Home',
             });
+            const cleverTapSearchSuccessEventAttributes = {
+              'Nav src': 'Pharmacy Home',
+              Status: 'Carry',
+              Keyword: searchText,
+              'Suggested keyword': item?.queryName,
+              Position: index + 1,
+              'Suggested keyword position': index + 1,
+            };
+            postCleverTapEvent(
+              CleverTapEventName.PHARMACY_SEARCH_SUCCESS,
+              cleverTapSearchSuccessEventAttributes
+            );
           }
           if (item?.url_key || item?.sku) {
             props.navigation.navigate(AppRoutes.ProductDetailPage, {
               urlKey: item?.url_key,
-              sku: item.sku,
+              sku: item?.sku,
               movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
             });
+            const availability = getAvailabilityForSearchSuccess(pharmacyPincode, item?.sku);
+            const discount = getDiscountPercentage(item?.price, item?.special_price);
+            const discountPercentage = discount ? discount + '%' : '0%';
+            const cleverTapEventAttributes = {
+              'Nav src': 'Pharmacy Home',
+              Status: 'Success',
+              Keyword: searchText,
+              Position: index + 1,
+              Source: 'Partial search',
+              Action: 'Product detail page viewed',
+              'Product availability': availability ? 'Is in stock' : 'Out of stock',
+              'Product position': index + 1 - keywordArr?.length,
+              'Results shown': medicineList?.length,
+              'SKU ID': item?.sku,
+              'Product name': item?.name,
+              Discount: discountPercentage,
+            };
+            postCleverTapEvent(
+              CleverTapEventName.PHARMACY_SEARCH_SUCCESS,
+              cleverTapEventAttributes
+            );
           }
         }}
         onPressAddToCart={() => {
+          const comingFromSearch = true;
+          const discount = getDiscountPercentage(item?.price, item?.special_price);
+          const discountPercentage = discount ? discount + '%' : '0%';
+          const cleverTapSearchSuccessEventAttributes = {
+            'Nav src': 'Pharmacy Home',
+            Status: 'Success',
+            Keyword: searchText,
+            Position: index + 1,
+            Source: 'Partial search',
+            Action: 'Add to cart',
+            'Product availability': 'Available',
+            'Product position': index + 1 - keywordArr?.length,
+            'Results shown': medicineList?.length,
+            'SKU ID': item?.sku,
+            'Product name': item?.name,
+            Discount: discountPercentage,
+          };
+          onAddCartItem(item, comingFromSearch, cleverTapSearchSuccessEventAttributes);
+          setCurrentProductIdInCart(item?.sku);
+          item?.pack_form ? setItemPackForm(item?.pack_form) : setItemPackForm('');
+          item?.suggested_qty
+            ? setSuggestedQuantity(item?.suggested_qty)
+            : setSuggestedQuantity(null);
+          item?.MaxOrderQty
+            ? setMaxOrderQty(item?.MaxOrderQty)
+            : item?.suggested_qty
+            ? setMaxOrderQty(+item?.suggested_qty)
+            : setMaxOrderQty(0);
+          setCurrentProductQuantityInCart(1);
           setAddToCartSource?.({
             source: 'Pharmacy Partial Search',
             categoryId: item?.category_id,
@@ -2159,11 +2261,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           addItemToServerCart(item);
         }}
         onPressNotify={() => {
-          onNotifyMeClick(item.name);
+          onNotifyMeClick(item?.name);
         }}
         onPressAdd={() => {
-          const q = getItemQuantity(item.sku);
-          if (q == getMaxQtyForMedicineItem(item.MaxOrderQty)) return;
+          const q = getItemQuantity(item?.sku);
+          if (q == getMaxQtyForMedicineItem(item?.MaxOrderQty)) return;
           setCurrentProductQuantityInCart(q + 1);
           setUserActionPayload?.({
             medicineOrderCartLineItems: [
@@ -2175,7 +2277,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           });
         }}
         onPressSubstract={() => {
-          const q = getItemQuantity(item.sku);
+          const q = getItemQuantity(item?.sku);
           setCurrentProductQuantityInCart(q - 1);
           setUserActionPayload?.({
             medicineOrderCartLineItems: [
@@ -2186,9 +2288,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             ],
           });
         }}
-        quantity={getItemQuantity(item.sku)}
+        quantity={getItemQuantity(item?.sku)}
         data={item}
-        loading={itemsLoading[item.sku]}
+        loading={itemsLoading[item?.sku]}
         showSeparator={index !== medicineList?.length - 1}
         style={{
           marginHorizontal: 20,
@@ -2222,7 +2324,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 Source: 'Pharmacy Home',
               };
               postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
-              props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
+              props.navigation.navigate(AppRoutes.MedicineListing, {
+                searchText,
+                comingFromSearch: true,
+                navSrcForSearchSuccess: 'Pharmacy Home',
+              });
               setSearchText('');
               setMedicineList([]);
             }}
@@ -2235,6 +2341,42 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const bannerScrollRef = React.useRef<View>(null);
+
+  const renderWhatsappBanner = () => {
+    return (
+      AppConfig.Configuration.WHATSAPP_TO_ORDER.bannerVisibility && (
+        <View
+          ref={bannerScrollRef}
+          onLayout={(event) => {
+            const layout = event.nativeEvent.layout;
+            setShowWhatsappRedirectionIcon(layout.y > 0);
+          }}
+        >
+          <WhatsappRedirectionBanner />
+        </View>
+      )
+    );
+  };
+
+  const postScrollScreenEvent = () => {
+    const navSrc = props.navigation.getParam('comingFrom');
+    const eventAttributes: CleverTapEvents[CleverTapEventName.SCREEN_SCROLLED] = {
+      User_Type: getUserType(allCurrentPatients),
+      'Patient Name': currentPatient?.firstName,
+      'Patient UHID': currentPatient?.uhid,
+      'Patient age': getAge(currentPatient?.dateOfBirth),
+      'Circle Member': circleSubscriptionId ? 'True' : 'False',
+      'Customer ID': currentPatient?.id,
+      'Patient gender': currentPatient?.gender,
+      'Mobile number': currentPatient?.mobileNumber,
+      'Page name': 'medicine page',
+      'Nav src': navSrc || '',
+      Scrolls: scrollCount.current,
+    };
+    postCleverTapEvent(CleverTapEventName.SCREEN_SCROLLED, eventAttributes);
+  };
+
   const renderSections = () => {
     if (!data) {
       return null;
@@ -2243,6 +2385,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const metaData = [
       ...(data?.metadata || []),
       { section_key: 'circleBanners', section_name: '', section_position: 4, visible: true },
+      {
+        section_key: 'whatsappRedirectionBanner',
+        section_name: '',
+        section_position: 9,
+        visible: true,
+      },
     ];
 
     const staticSectionKeys = [
@@ -2252,9 +2400,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       'circleBanners',
       'recommended_products',
       'shop_by_brand',
+      'whatsappRedirectionBanner',
     ];
     const sectionsView = metaData
-      .filter((item) => item.visible)
+      .filter((item) => item?.visible)
       .sort((a, b) => Number(a.section_position) - Number(b.section_position))
       .map(({ section_key, section_name }) => {
         const isStaticSection = staticSectionKeys.includes(section_key);
@@ -2269,6 +2418,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             ? renderCarouselBanners()
             : section_key === 'recommended_products'
             ? renderHotSellers(section_name, recommendedProducts, -1)
+            : section_key === 'whatsappRedirectionBanner'
+            ? renderWhatsappBanner()
             : section_key === 'shop_by_brand'
             ? renderShopByBrand(section_name, data[section_key] || [])
             : null;
@@ -2386,11 +2537,33 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         tree?.[0]?.title,
         'Category Tree'
       );
-      props.navigation.navigate(AppRoutes.MedicineListing, {
-        category_id: category.category_id,
-        title: category.title,
-        breadCrumb: tree,
-      });
+
+      getBrandPagesData(category?.url_key)
+        .then(({ data }) => {
+          const response = data;
+          if (response?.success === true && response?.data?.length) {
+            props.navigation.navigate(AppRoutes.BrandPages, {
+              movedFrom: 'home',
+              brandData: response?.data,
+              category_id: category.category_id,
+              title: category.title,
+            });
+          } else {
+            props.navigation.navigate(AppRoutes.MedicineListing, {
+              category_id: category.category_id,
+              title: category.title || 'Products',
+              breadCrumb: tree,
+            });
+          }
+        })
+        .catch(({ error }) => {
+          CommonBugFender('MedicinePage_fetchBrandPageData', error);
+          props.navigation.navigate(AppRoutes.MedicineListing, {
+            category_id: category.category_id,
+            title: category.title,
+            breadCrumb: tree,
+          });
+        });
     };
     const onPressDismissView = () => {
       setCategoryTreeVisible(false);
@@ -2413,23 +2586,50 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   return (
     <View style={{ flex: 1 }}>
+      <NavigationEvents
+        onDidFocus={() => {
+          scrollCount.current = 0;
+        }}
+        onDidBlur={postScrollScreenEvent}
+      />
       <SafeAreaView style={{ ...viewStyles.container }}>
-        <View style={{ backgroundColor: 'white' }}>
-          {renderTopView()}
-          {renderSearchInput()}
-          {renderSearchResults()}
-        </View>
+        <KeyboardAwareScrollView
+          ref={scrollViewRef}
+          bounces={false}
+          scrollEventThrottle={0}
+          keyboardShouldPersistTaps="always"
+          onScroll={(event) => {
+            //increments only for down scroll
+            const currentOffset = event.nativeEvent.contentOffset?.y;
+            currentOffset > (this.offset || 0) && (scrollCount.current += 1);
+            this.offset = currentOffset;
 
-        {pageLoading ? renderMedicinesShimmer() : null}
+            bannerScrollRef.current &&
+              bannerScrollRef.current.measure(
+                (x: any, y: any, width: any, height: any, pagex: any, pagey: any) => {
+                  if (Platform.OS === 'android') {
+                    setShowWhatsappRedirectionIcon(pagey < 0 || pagey > windowHeight);
+                  } else if (Platform.OS === 'ios') setShowWhatsappRedirectionIcon(pagey === 0);
+                }
+              );
+          }}
+        >
+          <View style={{ backgroundColor: 'white' }}>
+            {renderTopView()}
+            {renderSearchInput()}
+            {renderSearchResults()}
+          </View>
 
-        <View style={{ flex: 1, paddingBottom: !!serverCartItems?.length ? 80 : 0 }}>
-          {renderSections()}
-          {renderOverlay()}
-          {!!serverCartItems?.length && renderCircleCartDetails()}
-          {renderCategoryTree()}
-        </View>
-        {serverCartLoading && <Spinner />}
+          {pageLoading ? renderMedicinesShimmer() : null}
+
+          <View style={{ flex: 1, paddingBottom: !!serverCartItems?.length ? 80 : 0 }}>
+            {renderSections()}
+            {renderOverlay()}
+            {renderCategoryTree()}
+          </View>
+        </KeyboardAwareScrollView>
       </SafeAreaView>
+      {!!serverCartItems?.length && renderCircleCartDetails()}
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
       {showCirclePopup && renderCircleMembershipPopup()}
       {showSuggestedQuantityNudge &&
@@ -2448,6 +2648,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             setCurrentProductQuantityInCart={setCurrentProductQuantityInCart}
           />
         )}
+      {AppConfig.Configuration.WHATSAPP_TO_ORDER.iconVisibility && showWhatsappRedirectionIcon && (
+        <WhatsappRedirectionStickyNote />
+      )}
     </View>
   );
 };

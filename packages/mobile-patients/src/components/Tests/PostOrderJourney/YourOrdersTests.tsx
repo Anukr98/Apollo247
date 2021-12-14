@@ -50,6 +50,7 @@ import {
   DiagnosticsRescheduleSource,
   DiagnosticLineItem,
   CancellationDiagnosticsInputv2,
+  CALL_TO_ORDER_CTA_PAGE_ID,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -98,6 +99,7 @@ import {
   getPatientPrismMedicalRecordsApi,
   switchDiagnosticOrderPatientId,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { TestPdfRender } from '@aph/mobile-patients/src/components/Tests/components/TestPdfRender';
 import { Overlay } from 'react-native-elements';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
@@ -116,6 +118,7 @@ import { PatientListOverlay } from '@aph/mobile-patients/src/components/Tests/co
 
 const { width, height } = Dimensions.get('window');
 import { getDiagnosticOrdersListByParentOrderID_getDiagnosticOrdersListByParentOrderID_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByParentOrderID';
+import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 
 type orderList = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList;
 
@@ -136,6 +139,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     string.diagnostics.reasonForCancel_TestOrder.latePhelbo,
     string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
   ];
+  const CANCEL_REASON_OPTIONS = [
+    string.diagnostics.reasonForCancel_TestOrder.needModifyOrder,
+    string.diagnostics.reasonForCancel_TestOrder.needModifyPatient,
+  ];
   const ALL = 'All';
 
   const {
@@ -151,6 +158,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     patientCartItems,
     setDistanceCharges,
     setModifiedPatientCart,
+    setCartItems,
   } = useDiagnosticsCart();
   const { width, height } = Dimensions.get('window');
 
@@ -178,6 +186,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [selectRescheduleReason, setSelectRescheduleReason] = useState<string>('');
   const [showMultiUhidOption, setShowMultiUhidOption] = useState<boolean>(false);
   const [isMultiUhid, setIsMultiUhid] = useState<boolean>(false);
+  const [showViewReportModal, setShowViewReportModal] = useState<boolean>(false);
+  const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
   const [multipleOrdersList, setMultipleOrdersList] = useState<
     | (getDiagnosticOrdersListByParentOrderID_getDiagnosticOrdersListByParentOrderID_ordersList | null)[]
     | null
@@ -189,6 +199,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const client = useApolloClient();
   const [orders, setOrders] = useState<any>(props.navigation.getParam('orders'));
+  const cityId = props.navigation.getParam('cityId');
   const [showPatientsOverlay, setShowPatientsOverlay] = useState<boolean>(false);
   const [activeOrder, setActiveOrder] = useState<orderList>();
   const [selectedPatient, setSelectedPatient] = useState<string>(ALL);
@@ -204,7 +215,24 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [showPatientListOverlay, setShowPatientListOverlay] = useState<boolean>(false);
   const [patientListSelectedPatient, setPatientListSelectedPatient] = useState([]);
   const source = props.navigation.getParam('source');
-
+  const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
+  const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
+  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
+    CALL_TO_ORDER_CTA_PAGE_ID.MYORDERS
+  );
+  const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
+    if (item?.ctaCityId == cityId) {
+      if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.MYORDERS)) {
+        return item;
+      } else {
+        return null;
+      }
+    } else if (isCtaDetailDefault) {
+      return callToOrderDetails?.ctaDetailsDefault;
+    } else {
+      return null;
+    }
+  });
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
 
   var rescheduleDate: Date,
@@ -480,7 +508,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       .catch((error) => {
         aphConsole.log({ error });
         // DIAGNOSTIC_CANCELLATION_ALLOWED_BEFORE_IN_HOURS
-        CommonBugFender('TestOrderDetails_callApiAndRefetchOrderDetails', error);
+        CommonBugFender('YourOrdersTests_callApiAndRefetchOrderDetails', error);
         handleGraphQlError(error);
         setLoading!(false);
         setSelectCancelReason('');
@@ -835,7 +863,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         setSelectCancelReason('');
         setCancelReasonComment('');
         setSelectRescheduleReason('');
-        CommonBugFender('TestOrderDetails_callApiAndRefetchOrderDetails', error);
+        CommonBugFender('YourOrdersTests_callApiAndRefetchOrderDetails', error);
         setLoading?.(false);
         if (
           error?.message?.indexOf('RESCHEDULE_COUNT_EXCEEDED') > 0 ||
@@ -1121,6 +1149,22 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     );
   };
 
+  const renderCallToOrder = () => {
+    return ctaDetailMatched?.length ? (
+      <CallToOrderView
+        cityId={cityId}
+        slideCallToOrder={slideCallToOrder}
+        onPressSmallView={() => {
+          setSlideCallToOrder(false);
+        }}
+        onPressCross={() => {
+          setSlideCallToOrder(true);
+        }}
+        pageId={CALL_TO_ORDER_CTA_PAGE_ID.MYORDERS}
+      />
+    ) : null;
+  };
+
   const renderCancelReasons = () => {
     const selectedOrderRescheduleCount = selectedOrder?.rescheduleCount;
     let selectedOrderTime = selectedOrder?.slotDateTimeInUTC;
@@ -1144,7 +1188,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                       height:
                         selectCancelReason === item &&
                         selectedOrderRescheduleCount! < 3 &&
-                        CANCEL_RESCHEDULE_OPTION.includes(selectCancelReason)
+                        (CANCEL_RESCHEDULE_OPTION.includes(selectCancelReason) ||
+                          CANCEL_REASON_OPTIONS.includes(selectCancelReason))
                           ? 100
                           : 40,
                       paddingTop: 10,
@@ -1171,6 +1216,44 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                       </Text>
                       <TouchableOpacity activeOpacity={1} onPress={() => _onPressRescheduleNow()}>
                         <Text style={styles.yellowText}>RESCHEDULE NOW</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : null}
+                  {selectCancelReason === item &&
+                  selectedOrderRescheduleCount! < 3 &&
+                  selectCancelReason ==
+                    string.diagnostics.reasonForCancel_TestOrder.needModifyPatient ? (
+                    <View style={{ marginTop: 10, marginBottom: 5 }}>
+                      <Text style={styles.wantToReschedule}>
+                        {string.diagnostics.needToAddPaitent}
+                      </Text>
+                      <TouchableOpacity
+                        activeOpacity={1}
+                        onPress={() => {
+                          _onPressEditPatient(selectedOrder!);
+                        }}
+                      >
+                        <Text style={styles.yellowText}>EDIT PATIENT</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : null}
+
+                  {selectCancelReason === item &&
+                  selectedOrderRescheduleCount! < 3 &&
+                  selectCancelReason ==
+                    string.diagnostics.reasonForCancel_TestOrder.needModifyOrder ? (
+                    <View style={{ marginTop: 10, marginBottom: 5 }}>
+                      <Text style={styles.wantToReschedule}>
+                        {string.diagnostics.needToAddOrder}
+                      </Text>
+                      <TouchableOpacity
+                        activeOpacity={1}
+                        onPress={() => {
+                          setShowCancelReasons(false);
+                          _onPressAddTest(selectedOrder!);
+                        }}
+                      >
+                        <Text style={styles.yellowText}>ADD TESTS</Text>
                       </TouchableOpacity>
                     </View>
                   ) : null}
@@ -1219,6 +1302,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         </View>
         <View style={styles.promoButtonContainer}>
           <TouchableOpacity
+            style={styles.proceedToCancelTouch}
             onPress={() => {
               _onPressProceedToCancel();
             }}
@@ -1666,7 +1750,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       getOrderItems?.filter((val) => getCartItemsWithId?.includes(val));
 
     updateModifyData(order, getOrderItems);
-
     if (!!isAlreadyPartOfOrder && isAlreadyPartOfOrder?.length > 0) {
       isAlreadyPartOfOrder?.map((id: number) => {
         removeCartItem?.(String(id));
@@ -1675,7 +1758,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       showAphAlert?.({
         onPressOk: () => {
           hideAphAlert && hideAphAlert();
-          _navigateToSearchPage(order?.patientId);
+          _navigateToSearchPage(order?.patientId, isAlreadyPartOfOrder);
         },
         title: string.common.uhOh,
         description: string.diagnostics.modifyItemAlreadyExist,
@@ -1685,10 +1768,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   }
 
-  function _navigateToSearchPage(patientId: string) {
+  function _navigateToSearchPage(patientId: string, duplicateId?: any) {
     props.navigation.push(AppRoutes.SearchTestScene, {
       searchText: '',
       isModify: true,
+      duplicateOrderId: duplicateId?.map((item: string | number) => Number(item)),
     });
   }
 
@@ -1700,11 +1784,26 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setDistanceCharges?.(0);
     setModifiedPatientCart?.([]);
   }
+  const renderViewReportModal = () => {
+    return (
+      <View>
+        <TestPdfRender
+          uri={activeOrder?.labReportURL || ''}
+          order={activeOrder}
+          isReport={true}
+          onPressClose={() => {
+            setActiveOrder(activeOrder);
+            setShowViewReportModal(false);
+          }}
+        />
+      </View>
+    );
+  };
 
   function _onPressViewReportAction(order: orderList) {
     if (!!order?.labReportURL && order?.labReportURL != '') {
       setActiveOrder(order);
-      _onPressViewReport(order);
+      setShowViewReportModal(true);
     } else if (!!order?.visitNo && order?.visitNo != '') {
       //directly open the phr section
       fetchTestReportResult(order);
@@ -1775,6 +1874,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         bounces={false}
         data={orders}
         extraData={orderListData}
+        scrollEventThrottle={16}
+        onScroll={() => {
+          setSlideCallToOrder(true);
+        }}
         renderItem={({ item, index }) => renderOrder(item, index)}
         initialNumToRender={10}
         ListEmptyComponent={renderNoOrders()}
@@ -2033,9 +2136,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         {renderFilterArea()}
         {renderError()}
         {renderOrders()}
+        {renderCallToOrder()}
         {showBottomOverlay && renderBottomPopUp()}
         {showPatientsOverlay && renderPatientsOverlay()}
         {showPatientListOverlay && renderPatientsListOverlay()}
+        {showViewReportModal ? renderViewReportModal() : null}
       </SafeAreaView>
       {loading && !props?.showHeader ? null : loading && <Spinner />}
     </View>
@@ -2298,4 +2403,10 @@ const styles = StyleSheet.create({
   alertIconStyle: { height: 27, width: 27, resizeMode: 'contain' },
   muhidSubheading: { ...theme.viewStyles.text('R', 12, colors.SHERPA_BLUE, 1, 18) },
   patientNameText: { ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1, 18) },
+  proceedToCancelTouch: {
+    height: 40,
+    width: '37%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });

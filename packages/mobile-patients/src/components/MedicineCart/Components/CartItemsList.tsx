@@ -14,12 +14,13 @@ import { NudgeMessage } from '@aph/mobile-patients/src/components/Medicines/Comp
 export interface CartItemsListProps {
   screen: 'cart' | 'summary';
   onPressProduct?: (item: ShoppingCartItem) => void;
+  loading?: boolean | undefined;
   setloading?: (value: boolean) => void;
 }
 
 export const CartItemsList: React.FC<CartItemsListProps> = (props) => {
   const { cartItems, updateCartItem, removeCartItem, pharmaCartNudgeMessage } = useShoppingCart();
-  const { screen, onPressProduct, setloading } = props;
+  const { screen, onPressProduct, loading, setloading } = props;
   const { currentPatient } = useAllCurrentPatients();
   const { cartBankOffer } = useAppCommonData();
   const { isCircleExpired, circleSubscriptionId } = useShoppingCart();
@@ -39,6 +40,7 @@ export const CartItemsList: React.FC<CartItemsListProps> = (props) => {
     isFromCart &&
     pharmaCartNudgeMessage?.show === 'yes' &&
     (isNudgeMessageForCircle || isNudgeMessageForNonCircle);
+  const loadingValue = loading ? loading : false;
 
   const renderCartItemsHeader = () => {
     const itemsCount =
@@ -71,7 +73,7 @@ export const CartItemsList: React.FC<CartItemsListProps> = (props) => {
               <CartItemCard
                 item={item}
                 onUpdateQuantity={(quantity) => onUpdateQuantity(item, quantity)}
-                onPressDelete={() => onPressDelete(item)}
+                onPressDelete={() => (!loadingValue ? onPressDelete(item) : {})}
                 onPressProduct={() => onPressProduct!(item)}
               />
             ) : (

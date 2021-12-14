@@ -59,15 +59,13 @@ import { CartPrescriptions } from '@aph/mobile-patients/src/components/ServerCar
 import { postwebEngageProceedToPayEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import { USER_AGENT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
 import AsyncStorage from '@react-native-community/async-storage';
+import { reviewCartPageViewClevertapEvent } from '@aph/mobile-patients/src/components/ServerCart/ServerCartHelperFunctions';
 
 export interface ReviewCartProps extends NavigationScreenProps {}
 
 export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
   const {
-    uploadPrescriptionRequired,
-    prescriptionType,
     deliveryTime,
-
     serverCartItems,
     noOfShipments,
     serverCartAmount,
@@ -76,9 +74,14 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
     serverCartLoading,
     serverCartErrorMessage,
     setServerCartErrorMessage,
+    isCircleCart,
+    cartPrescriptionType,
+    cartSubscriptionDetails,
+    cartCoupon,
+    cartLocationDetails,
   } = useShoppingCart();
   const client = useApolloClient();
-  const { setauthToken, pharmacyUserTypeAttribute } = useAppCommonData();
+  const { setauthToken, pharmacyUserTypeAttribute, pharmacyUserType } = useAppCommonData();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
@@ -90,6 +93,28 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
   const [userAgent, setUserAgent] = useState<string>('');
 
   const { fetchReviewCart } = useServerCart();
+
+  useEffect(() => {
+    if (shipmentArray?.length) {
+      const isPrescriptionCartItem = serverCartItems?.findIndex(
+        (item) => item?.isPrescriptionRequired == '1'
+      );
+      reviewCartPageViewClevertapEvent(
+        cartLocationDetails?.pincode,
+        shipmentArray?.[0]?.tat,
+        serverCartAmount?.isDeliveryFree ? 0 : serverCartAmount?.deliveryCharges,
+        serverCartAmount?.cartTotal,
+        isPrescriptionCartItem >= 0,
+        cartCoupon?.coupon && cartCoupon?.valid ? cartCoupon?.coupon : '',
+        isCircleCart,
+        isPrescriptionCartItem >= 0 ? cartPrescriptionType : '',
+        pharmacyUserType,
+        currentPatient?.mobileNumber,
+        cartSubscriptionDetails?.currentSellingPrice,
+        shipmentArray?.[1]?.tat
+      );
+    }
+  }, [shipmentArray]);
 
   useEffect(() => {
     hasUnserviceableproduct();
@@ -299,7 +324,7 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
   };
 
   const renderCartItems = () => {
-    return <ReviewShipments setloading={setloading} />;
+    return <ReviewShipments />;
   };
 
   const renderPrescriptions = () => {

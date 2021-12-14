@@ -370,7 +370,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
 
   const { pharmacyUserTypeAttribute } = useAppCommonData();
   const { pharmacyCircleAttributes, circleSubscriptionId } = useShoppingCart();
-  const { setUserActionPayload, uploadEPrescriptionsToServerCart } = useServerCart();
+  const { uploadEPrescriptionsToServerCart } = useServerCart();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -635,7 +635,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       | CleverTapEvents[CleverTapEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS]
       | CleverTapEvents[CleverTapEventName.DOWNLOAD_PRESCRIPTION] = {
       ...requireCasesheetDetails,
-      'Doctor Name': g(data, 'fullName')!,
+      'Doctor Name': g(data, 'displayName') || '',
       'Speciality ID': g(data, 'specialty', 'id')!,
       'Speciality Name': g(data, 'specialty', 'name')!,
       'Doctor Category': g(data, 'doctorType')!,
@@ -1008,17 +1008,14 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     if (isCartOrder) {
       try {
         setLoading?.(true);
+        let cartItemsToAdd: any[] = [];
         medPrescription?.forEach((value) => {
-          setUserActionPayload?.({
-            medicineOrderCartLineItems: [
-              {
-                medicineSKU: value?.id,
-                quantity: 1,
-              },
-            ],
+          cartItemsToAdd.push({
+            medicineSKU: value?.id,
+            quantity: 1,
           });
         });
-        uploadEPrescriptionsToServerCart([presToAdd]);
+        uploadEPrescriptionsToServerCart([presToAdd], cartItemsToAdd);
         setLoading?.(false);
         postCleverTapUploadPrescriptionEvents('Health Records', 'Cart');
         props.navigation.push(AppRoutes.ServerCart);

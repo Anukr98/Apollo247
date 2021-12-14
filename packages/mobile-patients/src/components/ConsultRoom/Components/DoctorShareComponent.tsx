@@ -276,7 +276,7 @@ export const DoctorShareComponent: React.FC<DoctorShareComponentProps> = (props)
               <View style={styles.doctorSpecialityMainViewStyle}>
                 <View style={styles.doctorSpecialityViewStyle}>
                   <Text style={styles.doctorNameStyles}>
-                    {fromDoctorDetails ? doctorData?.fullName : doctorData?.displayName}
+                    {doctorData?.displayName}
                   </Text>
                   {renderSpecialities()}
                   <Text style={[styles.educationTextStyles]}>{doctorData?.qualification}</Text>

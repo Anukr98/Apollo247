@@ -5,9 +5,7 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { TatCardwithoutAddress } from '@aph/mobile-patients/src/components/MedicineCart/Components/TatCardwithoutAddress';
 import { ShipmentItem } from '@aph/mobile-patients/src/components/ServerCart/Components/ShipmentItem';
 
-export interface ReviewShipmentsProps {
-  setloading?: (value: boolean) => void;
-}
+export interface ReviewShipmentsProps {}
 
 export const ReviewShipments: React.FC<ReviewShipmentsProps> = (props) => {
   const { serverCartItems, noOfShipments, setShipmentArray, shipmentArray } = useShoppingCart();

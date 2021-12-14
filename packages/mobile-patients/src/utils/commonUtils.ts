@@ -1,10 +1,11 @@
 import { Platform } from 'react-native';
-import { AddressObj, ConsultMode, DiagnosticLineItem, patientAddressObj, PLAN } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { AddressObj, ConsultMode, diagnosticLineItem, DiagnosticLineItem, patientAddressObj, PLAN } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { DIAGNOSTIC_GROUP_PLAN, GooglePlacesType } from '@aph/mobile-patients/src/helpers/apiCalls';
 import moment from 'moment';
 import { getDiscountPercentage, isDiagnosticSelectedCartEmpty } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import DeviceInfo from 'react-native-device-info';
 import { DiagnosticPatientCartItem, DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import Decimal from 'decimal.js';
 
 export const getValuesArray = (arr: any) => {
   const finalArr = arr.map((item: any) => item.name);
@@ -236,9 +237,12 @@ export const getPricesForItem = (
 
   //if change here then change in the testCart
   const discount = calculatePackageDiscounts(itemPackageMrp, price, specialPrice);
-  const circleDiscount = calculatePackageDiscounts(itemPackageMrp, circlePrice, circleSpecialPrice);
+  const circleDiscount = calculatePackageDiscounts(
+    0, //itemPackageMrp is removed
+    circlePrice, 
+    circleSpecialPrice);
   const specialDiscount = calculatePackageDiscounts(
-    itemPackageMrp,
+   itemPackageMrp,
     discountPrice,
     discountSpecialPrice
   );
@@ -378,11 +382,11 @@ export const createPatientAddressObject = (addressObject : any, serviceabilityOb
 
 export enum DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE {
   HOME = 'Home page',
-  FULL_SEARCH = 'Full search',
+  FULL_SEARCH = 'Full Search',
   DETAILS = 'Details page',
-  PARTIAL_SEARCH = 'Partial search',
+  PARTIAL_SEARCH = 'Partial Search',
   LISTING = 'Listing page',
-  POPULAR_SEARCH = 'Popular search',
+  POPULAR_SEARCH = 'Popular Search',
   CATEGORY = 'Category page',
   PRESCRIPTION = 'Prescription',
   CART_PAGE = 'Cart page',
@@ -446,9 +450,13 @@ export const diagnosticsDisplayPrice = (item: DiagnosticsCartItem , isCircleMemb
     }
   }
 
-  const slashedPrice = !!itemPackageMrp
-  ? itemPackageMrp > priceToShow
-    ? itemPackageMrp
+  const calSlashedPrice = !!itemPackageMrp && itemPackageMrp > price
+  ? itemPackageMrp
+  : price;
+
+  const slashedPrice = calSlashedPrice //replaced calSlashedPrice with itemPackageMrp 
+  ? calSlashedPrice > priceToShow
+    ? calSlashedPrice
     : null
   : price > priceToShow
   ? price
@@ -468,7 +476,7 @@ export enum DIAGNOSTIC_PINCODE_SOURCE_TYPE  {
   ADDRESS = 'Saved Address'
 }
 
-export const createLineItemPrices = (selectedItem: any, isDiagnosticCircleSubscription: boolean, reportGenDetails: any) =>{
+export const createLineItemPrices = (selectedItem: any, isDiagnosticCircleSubscription: boolean, reportGenDetails: any, couponResponse?: any) =>{
   var pricesForItemArray = selectedItem?.cartItems?.map(
     (item: any, index: number) =>
       ({
@@ -494,7 +502,7 @@ export const createLineItemPrices = (selectedItem: any, isDiagnosticCircleSubscr
           !!reportGenDetails && reportGenDetails?.[index]?.itemPrepration
             ? reportGenDetails?.[index]?.itemPrepration
             : null,
-      } as DiagnosticLineItem)
+      } as diagnosticLineItem)
   );
 
   return {
@@ -502,12 +510,12 @@ export const createLineItemPrices = (selectedItem: any, isDiagnosticCircleSubscr
   };
 }
 
-export const createPatientObjLineItems = (patientCartItems: DiagnosticPatientCartItem[], isDiagnosticCircleSubscription: boolean, reportGenDetails: any) =>{
+export const createPatientObjLineItems = (patientCartItems: DiagnosticPatientCartItem[], isDiagnosticCircleSubscription: boolean, reportGenDetails: any, couponResponse?: any) =>{
   const filterPatientItems = isDiagnosticSelectedCartEmpty(patientCartItems);
   var array = [] as any; //define type
 
   filterPatientItems?.map((item) => {
-    const getPricesForItem = createLineItemPrices(item, isDiagnosticCircleSubscription, reportGenDetails)?.pricesForItemArray;
+    const getPricesForItem = createLineItemPrices(item, isDiagnosticCircleSubscription, reportGenDetails, couponResponse)?.pricesForItemArray;
     const totalPrice = getPricesForItem
       ?.map((item: any) => Number(item?.price))
       ?.reduce((prev: number, curr: number) => prev + curr, 0);
@@ -518,4 +526,29 @@ export const createPatientObjLineItems = (patientCartItems: DiagnosticPatientCar
     });
   });
   return array;
+}
+
+//take care for the modified order & cicle added to cart case
+export const createDiagnosticValidateCouponLineItems = (selectedItem: any, isCircle: boolean, discountedItems: any) =>{
+  let pricesForItemArray = [] as any;
+  selectedItem?.map((item: any, index: number) => {
+    const getIsMrpValue = discountedItems?.find((val: any)=> Number(val?.testId) == Number(item?.id));
+    const getItemValue = !!getIsMrpValue && getIsMrpValue?.onMrp;
+    pricesForItemArray.push({
+    testId: Number(item?.id),
+    categoryId: '',
+    mrp: Number(item?.price), //will always be price, irrespective of any plan
+    specialPrice:
+      isCircle && item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
+        ? Number(item?.circleSpecialPrice)
+        : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+        ? !!getItemValue && getItemValue  ? Number(item?.specialPrice) || Number(item?.price) : Number(item?.discountSpecialPrice)
+        : Number(item?.specialPrice) || Number(item?.price), // discounted price for any plan
+    quantity: item?.mou,
+    type: item?.inclusions?.length > 1 ? 'package' : 'test',
+  })
+})
+  return {
+    pricesForItemArray,
+  };
 }

@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Dimensions,
   Platform,
+  Modal,
 } from 'react-native';
 import { NavigationScreenProps, SafeAreaView } from 'react-navigation';
 import {
@@ -17,6 +18,7 @@ import {
   InfoIconRed,
   TimeIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
@@ -61,6 +63,7 @@ import {
 import {
   GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
   GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+  UPDATE_PASSPORT_DETAILS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 
 const width = Dimensions.get('window').width;
@@ -70,6 +73,11 @@ import {
   GetSubscriptionsOfUserByStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 import AsyncStorage from '@react-native-community/async-storage';
+import { PassportPaitentOverlay } from '@aph/mobile-patients/src/components/Tests/components/PassportPaitentOverlay';
+import {
+  updatePassportDetails,
+  updatePassportDetailsVariables,
+} from '@aph/mobile-patients/src/graphql/types/updatePassportDetails';
 
 export interface OrderStatusProps extends NavigationScreenProps {}
 
@@ -80,10 +88,11 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     clearDiagnoticCartInfo,
     cartItems,
     setIsDiagnosticCircleSubscription,
+    modifyHcCharges,
   } = useDiagnosticsCart();
   const { circleSubscriptionId, circlePlanSelected, setCircleSubscriptionId } = useShoppingCart();
   const client = useApolloClient();
-  const { setLoading } = useUIElements();
+  const { setLoading, showAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
 
   const modifiedOrderDetails = props.navigation.getParam('isModify');
@@ -105,6 +114,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       : orderCartSaving;
   const couldBeSaved =
     !isDiagnosticCircleSubscription && orderCircleSaving > 0 && orderCircleSaving > orderCartSaving;
+  const isModifyCod = modifiedOrderDetails && isCOD;
 
   const fetchOrderDetails = (orderId: string) =>
     client.query<getDiagnosticOrderDetails, getDiagnosticOrderDetailsVariables>({
@@ -129,6 +139,9 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const [apiOrderDetails, setApiOrderDetails] = useState([] as any);
   const [timeDate, setTimeDate] = useState<string>('');
   const [isSingleUhid, setIsSingleUhid] = useState<boolean>(false);
+  const [showPassportModal, setShowPassportModal] = useState<boolean>(false);
+  const [passportNo, setPassportNo] = useState<any>([]);
+  const [passportData, setPassportData] = useState<any>([]);
   const [showMoreArray, setShowMoreArray] = useState([] as any);
   const [apiPrimaryOrderDetails, setApiPrimaryOrderDetails] = useState([] as any);
   const [primaryOrderId, setPrimaryOrderId] = useState<string>('');
@@ -171,7 +184,6 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     try {
       let response: any = await getDiagnosticRefundOrders(client, paymentId);
       if (response?.data?.data?.getOrderInternal) {
-        console.log({ response });
         const getResponse = response?.data?.data?.getOrderInternal?.DiagnosticsPaymentDetails;
         const getSlotDateTime = getResponse?.ordersList?.[0]?.slotDateTimeInUTC;
         const primaryOrderID = getResponse?.ordersList?.[0]?.primaryOrderID;
@@ -198,12 +210,19 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
 
   useEffect(() => {
     isCircleAddedToCart && setIsDiagnosticCircleSubscription?.(true);
-    fetchOrderDetailsFromPayments();
+    /**if modify + cod - then don't call fetch getOrderInternal */
+    isModifyCod ? getOrderDetails(modifiedOrderDetails?.id) : fetchOrderDetailsFromPayments();
     isCircleAddedToCart && getUserSubscriptionsByStatus();
     if (modifiedOrderDetails == null) {
       postwebEngageCheckoutCompletedEvent();
     }
-    firePurchaseEvent(orderDetails?.orderId, orderDetails?.amount, cartItems, currentPatient);
+    firePurchaseEvent(
+      orderDetails?.orderId,
+      orderDetails?.amount,
+      cartItems,
+      currentPatient,
+      modifyHcCharges
+    );
     submitReviewOnLabBook();
     firePaymentOrderStatusEvent();
     clearDiagnoticCartInfo?.();
@@ -342,7 +361,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       refundStatusArr: [],
       goToHomeOnBack: true,
       comingFrom: AppRoutes.TestsCart,
-      showOrderSummaryTab: true,
+      showOrderSummaryTab: false,
       disableTrackOrder: false,
       amount: orderDetails?.amount,
     });
@@ -439,6 +458,40 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
         </Text>
       </Text>
     );
+  };
+
+  const updatePassportDetails = async (data: any) => {
+    try {
+      setLoading?.(true);
+      const res = await client.mutate<updatePassportDetails, updatePassportDetailsVariables>({
+        mutation: UPDATE_PASSPORT_DETAILS,
+        context: {
+          sourceHeaders,
+        },
+        variables: { passportDetailsInput: data },
+      });
+      setLoading?.(false);
+      if (
+        !res?.data?.updatePassportDetails?.[0]?.status &&
+        res?.data?.updatePassportDetails?.[0]?.message
+      ) {
+        showAphAlert?.({
+          title: string.common.uhOh,
+          description: res?.data?.updatePassportDetails?.[0]?.message || 'Something went wrong',
+        });
+      }
+      if (res?.data?.updatePassportDetails?.[0]?.status) {
+        setPassportNo(data);
+        setShowPassportModal(false);
+      }
+    } catch (error) {
+      setLoading?.(false);
+      showAphAlert?.({
+        title: string.common.uhOh,
+        description: 'Something went wrong',
+      });
+      CommonBugFender('updatePassportDetails_OrderStatus', error);
+    }
   };
 
   const renderCartSavings = () => {
@@ -545,6 +598,40 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     );
   };
 
+  const renderAddPassportView = () => {
+    const itemArray = apiOrderDetails?.[0]?.ordersList?.map((obj: any) => {
+      const itemObjArr = obj?.diagnosticOrderLineItems?.filter((_item: any) => {
+        if (AppConfig.Configuration.DIAGNOSTICS_COVID_ITEM_IDS.includes(_item?.itemId)) {
+          return _item;
+        }
+      });
+      return itemObjArr;
+    });
+    const itemIdArray = itemArray?.filter((item: any) => {
+      return item?.length != 0;
+    });
+    const paitentArrLen = apiOrderDetails?.[0]?.ordersList?.length;
+    return itemIdArray?.length && paitentArrLen && itemIdArray?.length == paitentArrLen ? (
+      <View style={styles.passportContainer}>
+        <View style={styles.passportView}>
+          <Text style={styles.textupper}>
+            {passportNo?.length
+              ? string.diagnostics.editpassportText
+              : string.diagnostics.addOrEditPassportText}
+          </Text>
+          <TouchableOpacity
+            onPress={() => {
+              setShowPassportModal(true);
+            }}
+          >
+            <Text style={styles.textlower}>{passportNo?.length ? 'EDIT' : 'ADD'}</Text>
+          </TouchableOpacity>
+        </View>
+        <View></View>
+      </View>
+    ) : null;
+  };
+
   const renderTests = () => {
     const arrayToUse = apiOrderDetails;
     return (
@@ -560,8 +647,11 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       </View>
     );
   };
+
+  /**
+   * this is called when modifying a non-primary order (prepaid) or modify + cod
+   */
   const renderTestsModify = () => {
-    //define type
     const arrayToUse = apiPrimaryOrderDetails;
     return (
       <View>
@@ -576,11 +666,14 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   };
 
   const renderPatientTestView = (order: any, item: any) => {
+    const getModifiedOrderId = orderDetails?.orderId;
     const displayId = order?.displayId;
     const lineItemsLength = order?.diagnosticOrderLineItems?.length;
     const lineItems = order?.diagnosticOrderLineItems;
     const remainingItems = !!lineItemsLength && lineItemsLength - 1;
     const { patientName, patientSalutation } = extractPatientDetails(order?.patientObj);
+    const isNewlyModified =
+      lineItemsLength?.length > 0 && lineItems?.[0]?.editOrderID === getModifiedOrderId;
     return (
       <>
         <View style={styles.outerView}>
@@ -599,11 +692,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
                   style={[
                     {
                       flexDirection: 'row',
-                      maxWidth: !!lineItems?.[0]?.editOrderID
-                        ? width > 350
-                          ? '68%'
-                          : '57%'
-                        : '75%',
+                      maxWidth: !!isNewlyModified ? (width > 350 ? '68%' : '57%') : '75%',
                       flex: 1,
                     },
                   ]}
@@ -612,7 +701,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
                   <Text style={[styles.testName]}>
                     {nameFormater(lineItems?.[0]?.itemName, 'title')}
                   </Text>
-                  {!!lineItems?.[0]?.editOrderID ? renderNewTag() : null}
+                  {!!isNewlyModified ? renderNewTag() : null}
                   {remainingItems > 0 && (
                     <TouchableOpacity onPress={() => _onPressMore(order)} style={{ marginLeft: 2 }}>
                       <Text style={styles.moreText}>+ {remainingItems} MORE</Text>
@@ -649,20 +738,22 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   }
 
   const renderMore = (item: any, lineItems: any) => {
+    const getModifiedOrderId = orderDetails?.orderId;
     return (
       <View style={styles.itemsView}>
         {lineItems?.map((items: any, index: number) => {
+          const isNewlyModified = items?.editOrderID === getModifiedOrderId;
           return (
             <View
               style={{
                 flexDirection: 'row',
-                maxWidth: !!items.editOrderID ? '72%' : '75%',
+                maxWidth: !!isNewlyModified ? '72%' : '75%',
                 flex: 1,
               }}
             >
               <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
               <Text style={[styles.testName]}>{nameFormater(items?.itemName, 'default')}</Text>
-              {!!items.editOrderID ? renderNewTag() : null}
+              {!!isNewlyModified ? renderNewTag() : null}
               {lineItems?.length - 1 == index && (
                 <TouchableOpacity onPress={() => _onPressLess(item)} style={{ marginLeft: 2 }}>
                   <Text style={styles.moreText}> LESS</Text>
@@ -691,7 +782,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     props.navigation.navigate(AppRoutes.MembershipDetails, {
       membershipType: 'CIRCLE PLAN',
       isActive: true,
-      circleEventSource:'Cart(Diagnostic)'
+      circleEventSource: 'Cart(Diagnostic)',
     });
   }
 
@@ -735,6 +826,30 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       </View>
     );
   };
+  const renderPassportPaitentView = () => {
+    return (
+      <PassportPaitentOverlay
+        patientArray={apiOrderDetails?.[0]?.ordersList}
+        onPressClose={() => {
+          setShowPassportModal(false);
+        }}
+        onPressDone={(response: any) => {
+          updatePassportDetails(response);
+          setShowPassportModal(false);
+        }}
+        onChange={(res) => {
+          const newData: any[] = [];
+          res.map((item: any) => {
+            if (item?.passportNo?.length) {
+              newData.push(item?.passportNo);
+            }
+          });
+          setPassportData(newData);
+        }}
+        disableButton={!passportData?.length}
+      />
+    );
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.DEFAULT_BACKGROUND_COLOR }}>
@@ -745,15 +860,20 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
             {renderOrderPlacedMsg()}
             {renderCartSavings()}
             {isCircleAddedToCart && !isEmptyObject(circlePlanDetails) && renderCirclePurchaseCard()}
+            {renderAddPassportView()}
             {renderPickUpTime()}
             {renderNoticeText()}
             {/* {enable_cancelellation_policy ? renderCancelationPolicy() : null} */}
-            {!!primaryOrderId && primaryOrderId != '' ? renderTestsModify() : renderTests()}
+            {(!!primaryOrderId && primaryOrderId != '') || (modifiedOrderDetails && isCOD)
+              ? renderTestsModify()
+              : renderTests()}
             {isSingleUhid && renderOrderSummary()}
             {renderInvoiceTimeline()}
           </View>
         </ScrollView>
+        {showPassportModal && renderPassportPaitentView()}
       </SafeAreaView>
+
       {backToHome()}
     </View>
   );
@@ -765,6 +885,31 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     // marginHorizontal: 20,
     marginTop: 40,
+  },
+  passportView: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  passportContainer: {
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#D4D4D4',
+    backgroundColor: 'white',
+    padding: 10,
+    marginVertical: 10,
+  },
+  textupper: { ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1) },
+  textlower: { ...theme.viewStyles.text('SB', 14, theme.colors.APP_YELLOW_COLOR) },
+  overlayStyle: {
+    padding: 0,
+    margin: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: colors.CLEAR,
+    overflow: 'hidden',
+    elevation: 0,
+    bottom: 0,
+    position: 'absolute',
   },
   header: {
     flexDirection: 'row',
@@ -974,19 +1119,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   itemsView: {
-    backgroundColor: '#F9F9F9',
+    backgroundColor: theme.colors.BGK_GRAY,
     margin: 8,
     padding: 8,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#F9F9F9',
+    borderColor: theme.colors.BGK_GRAY,
   },
   moreText: {
     ...theme.viewStyles.text('SB', 13, theme.colors.APP_YELLOW, 1, 18),
   },
   pickupView: {
     flexDirection: 'row',
-    backgroundColor: '#F3FFFF',
+    backgroundColor: colors.GREEN_BG,
     marginHorizontal: -20,
     padding: 16,
     paddingLeft: 20,

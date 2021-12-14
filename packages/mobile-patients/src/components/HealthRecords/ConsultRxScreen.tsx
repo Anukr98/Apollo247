@@ -688,14 +688,11 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
           uploadedUrl: docUrl,
         } as EPrescription;
 
-        medPrescription?.forEach((value, index) => {
-          setUserActionPayload?.({
-            medicineOrderCartLineItems: [
-              {
-                medicineSKU: value?.id,
-                quantity: 1,
-              },
-            ],
+        let cartItemsToAdd: any[] = [];
+        medPrescription?.forEach((item) => {
+          cartItemsToAdd.push({
+            medicineSKU: item?.id,
+            quantity: 1,
           });
         });
 
@@ -742,7 +739,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
                 : medicines.filter((item: any) => item?.prescriptionRequired).length;
 
             if (rxMedicinesCount) {
-              uploadEPrescriptionsToServerCart([presToAdd]);
+              uploadEPrescriptionsToServerCart([presToAdd], cartItemsToAdd);
             }
             // Adding tests to DiagnosticsCart
             if (!locationDetails) {

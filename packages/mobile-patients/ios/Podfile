@@ -48,7 +48,7 @@ target 'ApolloPatient' do
   pod 'ReverseExtension'
   pod 'SDWebImage', '~> 5.0'
   pod 'FMDB'
-  pod 'AFNetworking', '~> 3.2.1'
+  pod 'AFNetworking', '~> 4.0.0'
   pod 'Charts', '~> 3.3.0'
   pod 'TGFoursquareLocationDetail'
   pod 'IQKeyboardManager'
@@ -128,7 +128,7 @@ target 'ApolloPatient' do
 
   target 'NotificationService' do
       platform :ios, '10.0'
-      pod 'WebEngageBannerPush'
+      pod "CTNotificationService"
   end
 
   # ContentExtension Target

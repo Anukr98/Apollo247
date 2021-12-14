@@ -4,11 +4,11 @@ import android.app.Application;
 
 import com.BV.LinearGradient.LinearGradientPackage;
 import com.apollopatient.appsignature.RNAppSignatureHelperPackage;
-import com.apollopatient.opentoknetworktest.OpentokNetworkTestPackage;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
 import com.ajithab.RNReceiveSharingIntent.ReceiveSharingIntentPackage;
 import com.bebnev.RNUserAgentPackage;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.ibits.react_native_in_app_review.AppReviewPackage;
 import com.christopherdro.htmltopdf.RNHTMLtoPDFPackage;
 import com.horcrux.svg.SvgPackage;
@@ -16,9 +16,6 @@ import com.appsflyer.reactnative.RNAppsFlyerPackage;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.soloader.SoLoader;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.InstanceIdResult;
 import com.microsoft.codepush.react.CodePush;
 import com.webengage.sdk.android.WebEngage;
 import com.webengage.sdk.android.WebEngageActivityLifeCycleCallbacks;
@@ -59,7 +56,6 @@ public class MainApplication extends Application implements ReactApplication {
                     packages.add(new RNAppSignatureHelperPackage());
                     packages.add(new LinearGradientPackage());
                     packages.add(new GetReferrerPackage());
-                    packages.add(new OpentokNetworkTestPackage());
 
                     return packages;
                 }
@@ -88,14 +84,13 @@ public class MainApplication extends Application implements ReactApplication {
     private void initAppComponents() {
         Observable.fromCallable(() -> {
             try {
-                FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(new OnSuccessListener<InstanceIdResult>() {
-                    @Override
-                    public void onSuccess(InstanceIdResult instanceIdResult) {
-                        String token = instanceIdResult.getToken();
-                        WebEngage.get().setRegistrationID(token);
+                FirebaseMessaging.getInstance().getToken().addOnSuccessListener(token -> {
+                    if(token != null){
+                        String fbToken = token;
+                        // DO your thing with your firebase token
+                        WebEngage.get().setRegistrationID(fbToken);
                     }
                 });
-
 
                 //Staging -- in~~c2ab3529
                 //Production -- in~~c2ab3533

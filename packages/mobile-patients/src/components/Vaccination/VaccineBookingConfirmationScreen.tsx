@@ -1010,7 +1010,7 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
                 StackActions.reset({
                   index: 0,
                   key: null,
-                  actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+                  actions: [NavigationActions.navigate({ routeName: AppRoutes.HomeScreen })],
                 })
               );
             }}

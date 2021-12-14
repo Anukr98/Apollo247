@@ -209,7 +209,6 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
       email: g(currentPatient, 'emailAddress'),
       type: isFromConsult ? 'Consult' : isFromSubscription ? 'Subs' : 'Pharmacy',
     };
-
     fetchConsultCoupons(data)
       .then((res: any) => {
         const coupons: pharma_coupon[] = res?.data?.response || [];

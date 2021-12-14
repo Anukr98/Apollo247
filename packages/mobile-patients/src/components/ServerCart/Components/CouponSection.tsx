@@ -3,11 +3,12 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { ArrowRight, CouponIcon, Cross } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CouponOfferMessage } from '@aph/mobile-patients/src/components/ServerCart/Components/CouponOfferMessage';
 
 export interface CouponSectionProps {
   onPressApplyCoupon: () => void;
   onPressRemove: () => void;
-  movedFrom?: string;
+  movedFrom?: 'subscription' | 'pharmacy';
 }
 
 export const CouponSection: React.FC<CouponSectionProps> = (props) => {
@@ -20,10 +21,13 @@ export const CouponSection: React.FC<CouponSectionProps> = (props) => {
       <View>
         <TouchableOpacity style={styles.applyCoupon} onPress={onPressApplyCoupon}>
           <View style={styles.rowStyle}>
-            <CouponIcon />
-            <Text style={styles.applyCouponText}>Apply Coupon</Text>
+            <CouponIcon style={{ alignSelf: 'flex-start' }} />
+            <View>
+              <Text style={styles.applyCouponText}>Apply Coupon</Text>
+              <CouponOfferMessage movedFrom={movedFrom} />
+            </View>
           </View>
-          <ArrowRight />
+          <ArrowRight style={{ alignSelf: 'flex-start' }} />
         </TouchableOpacity>
       </View>
     );

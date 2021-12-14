@@ -1,6 +1,5 @@
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
@@ -19,27 +18,17 @@ import {
 import { NavigationScreenProps } from 'react-navigation';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { ExpectCall } from '@aph/mobile-patients/src/components/Medicines/Components/ExpectCall';
-import _ from 'lodash';
+import _, { isArray } from 'lodash';
 import {
   PhysicalPrescription,
   EPrescription,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import {
   nameFormater,
-  formatAddressBookAddress,
-  handleGraphQlError,
-  g,
   removeObjectProperty,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
-  RxPrescriptionCallIc,
   PrescriptionCallIcon,
-  BlueTick,
-  GreenCircleTick,
-  FileBig,
-  Close,
-  PhrCloseIcon,
   RemoveIcon,
   WhiteCross,
   PrescriptionColored,
@@ -50,10 +39,7 @@ import {
   ADD_PRESCRIPTION_RECORD,
   GET_PATIENT_PRESCRIPTIONS,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  CommonBugFender,
-  setBugFenderLog,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { addPatientPrescriptionRecord } from '@aph/mobile-patients/src/graphql/types/addPatientPrescriptionRecord';
 import {
   AddPrescriptionRecordInput,
@@ -69,8 +55,10 @@ import {
   getPatientPrescriptionsVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPatientPrescriptions';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
-const { width, height } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 import LottieView from 'lottie-react-native';
+import AsyncStorage from '@react-native-community/async-storage';
+import { getPatientPrismMedicalRecordsApi } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { DocumentPickerResponse } from 'react-native-document-picker';
 import ImageResizer from 'react-native-image-resizer';
 import RNFetchBlob from 'rn-fetch-blob';
@@ -79,22 +67,13 @@ const GreenTickAnimation = '@aph/mobile-patients/src/components/Tests/greenTickA
 export interface SubmittedPrescriptionProps extends NavigationScreenProps {
   showHeader?: boolean;
 }
-type PickerImage = any;
-interface Base64Response {
-  uploadedUrl: string;
-  fileCopyUri: string;
-  copyError?: string;
-  type: string;
-  fileName: string;
-  size: number;
-}
+
 export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (props) => {
-  const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
+  const { loading, setLoading } = useUIElements();
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const phyPrescriptionsProp = props.navigation.getParam('phyPrescriptionsProp') || [];
   const ePrescriptionsProp = props.navigation.getParam('ePrescriptionsProp') || [];
-  const [docName, setDocName] = useState<string>('');
   const [PhysicalPrescriptionsProps, setPhysicalPrescriptionsProps] = useState<
     PhysicalPrescription[]
   >(phyPrescriptionsProp);
@@ -102,19 +81,10 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
     ePrescriptionsProp
   );
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
-  const [testName, settestName] = useState<string>('');
   const [locationName, setLocationName] = useState<string>('');
   const [additionalNotes, setadditionalNotes] = useState<string>('');
-  const [dateOfTest, setdateOfTest] = useState<string>('');
   const [onSumbitSuccess, setOnSumbitSuccess] = useState<boolean>(false);
-  const [Images, setImages] = useState<PickerImage>(props.navigation.state.params ? [] : []);
   const [isErrorOccured, setIsErrorOccured] = useState<boolean>(false);
-  const recordType = props.navigation.state.params
-    ? props.navigation.state.params.recordType
-    : false;
-  const selectedRecordID = props.navigation.state.params
-    ? props.navigation.state.params.selectedRecordID
-    : null;
   useEffect(() => {
     setLoading?.(false);
     fetchPatientPrescriptions();
@@ -125,6 +95,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
       setIsErrorOccured(false);
     }, 3000);
   }, [isErrorOccured]);
+
   useEffect(() => {
     if (onSumbitSuccess) {
       BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -162,16 +133,14 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
         }
       })
       .catch((error) => {
-        CommonBugFender('AddressBook__getAddressList', error);
+        CommonBugFender('fetchPatientPrescriptions_SubmiitedPrescriptions', error);
       });
   };
   const renderExpectCall = () => {
     return (
       <View style={styles.expectCallView}>
         <PrescriptionCallIcon style={{ margin: 10 }} />
-        <Text style={styles.expectText}>
-          Expect a call in the next 2 hours from an Apollo agent to assist you in placing an order
-        </Text>
+        <Text style={styles.expectText}>{string.diagnostics.prescriptionCallBack}</Text>
       </View>
     );
   };
@@ -219,6 +188,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
   };
 
   const onSubmitPrescription = () => {
+    setLoading?.(true);
     const inputData: AddPrescriptionRecordInput = {
       id: PhysicalPrescriptionsProps?.length
         ? ''
@@ -259,28 +229,142 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
           },
         })
         .then(({ data }) => {
-          const status = g(data, 'addPatientPrescriptionRecord', 'status');
+          const status = data?.addPatientPrescriptionRecord?.status;
           const eventInputData = removeObjectProperty(inputData, 'prescriptionFiles');
-          DiagnosticPrescriptionSubmitted(
-            currentPatient,
-            inputData?.prescriptionFiles,
-            inputData?.prescriptionName,
-            isDiagnosticCircleSubscription
-          );
-          setOnSumbitSuccess(true);
+          getUploadedRecords(inputData, 'physicalPrescription');
         })
         .catch((error) => {
+          setLoading?.(false);
           setIsErrorOccured(true);
           CommonBugFender('SubmittedPrescription_ADD_PRESCRIPTION_RECORD', error);
         });
     } else {
-      setOnSumbitSuccess(true);
+      getUploadedRecords(inputData, 'uploaded');
     }
   };
+
+  async function getUploadedRecords(inputData: AddPrescriptionRecordInput, source: string) {
+    const getUserType = await AsyncStorage.getItem('diagnosticUserType');
+    const diagnosticUserType = !!getUserType && JSON.parse(getUserType);
+    const getUploadedItemName = inputData?.prescriptionName;
+    const getUploadedItemData = inputData?.dateOfPrescription;
+
+    try {
+      const getUploadedResponse: any = await getPatientPrismMedicalRecordsApi(
+        client,
+        currentPatient?.id,
+        [MedicalRecordType.PRESCRIPTION],
+        'Diagnostics'
+      );
+      const getPrescriptionResponse =
+        !!getUploadedResponse &&
+        getUploadedResponse?.getPatientPrismMedicalRecords_V3?.prescriptions;
+      if (!!getPrescriptionResponse && getPrescriptionResponse?.errorCode == 0) {
+        const getAllPrescriptions = getPrescriptionResponse?.response;
+        if (getAllPrescriptions?.length > 0) {
+          const getSortedPrescriptions = getAllPrescriptions?.sort((a: any, b: any) => {
+            return new Date(b?.date).getTime() - new Date(a?.date).getTime();
+          });
+          const findSelectedPrescription = getSortedPrescriptions?.find(
+            (item: any) =>
+              item?.date == getUploadedItemData && item?.prescriptionName == getUploadedItemName
+          );
+          //send that one to webengage.
+          !!findSelectedPrescription
+            ? triggerPrescriptionSubmittedEvent(
+                inputData,
+                diagnosticUserType,
+                findSelectedPrescription
+              )
+            : triggerPrescriptionSubmittedEvent_1(inputData, diagnosticUserType, source);
+        } else {
+          triggerPrescriptionSubmittedEvent_1(inputData, diagnosticUserType, source);
+        }
+      } else {
+        triggerPrescriptionSubmittedEvent_1(inputData, diagnosticUserType, source);
+      }
+    } catch (error) {
+      triggerPrescriptionSubmittedEvent_1(inputData, diagnosticUserType, source);
+      CommonBugFender('getPatientPrismMedicalRecordsApi_getPatientPrismMedicalRecordsApi', error);
+    } finally {
+      setLoading?.(false);
+    }
+  }
+
+  function triggerPrescriptionSubmittedEvent_1(inputData: any, userType: string, source: string) {
+    if (source == 'physicalPrescription') {
+      const prescriptionUrl = {
+        content: inputData?.prescriptionFiles?.[0]?.content,
+        fileName: inputData?.prescriptionFiles?.[0]?.fileName,
+        mimeType: inputData?.prescriptionFiles?.[0]?.mimeType,
+      };
+
+      DiagnosticPrescriptionSubmitted(
+        currentPatient,
+        prescriptionUrl ? prescriptionUrl : '',
+        inputData?.prescriptionName ? inputData?.prescriptionName : '',
+        userType,
+        isDiagnosticCircleSubscription
+      );
+    } else {
+      let uploadUrl;
+      if (EPrescriptionsProps?.length == 1) {
+        uploadUrl = EPrescriptionsProps?.[0]?.uploadedUrl;
+      } else {
+        uploadUrl = EPrescriptionsProps?.map(
+          (attributes, index: number) => `${index + 1} - ${attributes?.uploadedUrl}`
+        )?.join(' ');
+      }
+      DiagnosticPrescriptionSubmitted(
+        currentPatient,
+        !!uploadUrl ? uploadUrl : '',
+        inputData?.prescriptionName ? inputData?.prescriptionName : '',
+        userType,
+        isDiagnosticCircleSubscription
+      );
+    }
+    setOnSumbitSuccess(true);
+  }
+
+  async function triggerPrescriptionSubmittedEvent(
+    inputData: AddPrescriptionRecordInput,
+    userType: string,
+    responseResult: any
+  ) {
+    let url, allUrls, uploadUrl;
+    if (responseResult?.prescriptionFiles?.length == 1) {
+      url = responseResult?.prescriptionFiles?.[0]?.file_Url;
+    } else {
+      url = responseResult?.prescriptionFiles?.map(
+        (attributes: any, index: number) => `${index + 1} - ${attributes?.file_Url}`
+      );
+    }
+
+    if (EPrescriptionsProps?.length > 0) {
+      url = responseResult?.prescriptionFiles?.map((attributes: any) => `${attributes?.file_Url}`);
+      uploadUrl = EPrescriptionsProps?.map((attributes) => `${attributes?.uploadedUrl}`);
+      allUrls = url?.concat(uploadUrl);
+    }
+
+    const concatendatedUrl = allUrls?.map((item: any, index: number) => `${index + 1} - ${item}`);
+    const urlToUse = EPrescriptionsProps?.length > 0 ? concatendatedUrl : url;
+
+    const newUrl = isArray(urlToUse) ? urlToUse?.map((item: any) => item)?.join(' ') : urlToUse;
+
+    DiagnosticPrescriptionSubmitted(
+      currentPatient,
+      !!newUrl ? newUrl : '',
+      inputData?.prescriptionName ? inputData?.prescriptionName : '',
+      userType,
+      isDiagnosticCircleSubscription
+    );
+    setOnSumbitSuccess(true);
+  }
+
   const renderErrorMessage = () => {
     return (
       <View style={styles.errorMessageView}>
-        <Text style={styles.errorMsgText}>Sorry cannot submit precription, an error occured</Text>
+        <Text style={styles.errorMsgText}>{string.diagnostics.prescriptionError}</Text>
         <TouchableOpacity
           onPress={() => {
             setIsErrorOccured(false);
@@ -300,10 +384,33 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
           loop={false}
           style={{ marginBottom: 80 }}
         />
-        {/* This icon is used optional. Commented for future use */}
-        {/* <GreenCircleTick width={55} height={55} /> */}
-        <Text style={styles.successText}>Prescription Successfully Uploaded</Text>
+        <Text style={styles.successText}>{string.diagnostics.prescriptionSuccess}</Text>
       </View>
+    );
+  };
+
+  const renderButtonCTA = () => {
+    return (
+      <Button
+        title={onSumbitSuccess ? 'GO TO HOME' : 'SUBMIT'}
+        style={styles.buttonStyle}
+        disabled={EPrescriptionsProps?.length || PhysicalPrescriptionsProps?.length ? false : true}
+        onPress={() => {
+          if (onSumbitSuccess) {
+            setEPrescriptions?.([]);
+            setPhysicalPrescriptions?.([]);
+            props.navigation.navigate('TESTS', {
+              phyPrescriptionUploaded: [],
+              ePresscriptionUploaded: [],
+              phyPrescriptionsProp: [],
+              ePrescriptionsProp: [],
+              movedFrom: '',
+            });
+          } else {
+            onSubmitPrescription();
+          }
+        }}
+      />
     );
   };
 
@@ -361,7 +468,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                                 );
                                 setPhysicalPrescriptionsProps([...filteredPres]);
                               }}
-                              style={{ justifyContent: 'center', alignItems: 'center' }}
+                              style={styles.centerStyle}
                             >
                               <RemoveIcon />
                             </TouchableOpacity>
@@ -374,7 +481,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                 <>
                   {EPrescriptionsProps && EPrescriptionsProps?.length ? (
                     <View>
-                      <Text style={styles.textStyle}>PRESCRIPTION FROM HEALTH RECORDS</Text>
+                      <Text style={styles.textStyle}>{string.diagnostics.fromHealthRecord}</Text>
                       <View style={styles.presText}>
                         {EPrescriptionsProps.map((item: any) => {
                           return (
@@ -396,11 +503,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                                     EPrescriptionsProps?.filter((_item) => _item?.id != item?.id)
                                   );
                                 }}
-                                style={{
-                                  justifyContent: 'center',
-                                  width: '10%',
-                                  alignItems: 'center',
-                                }}
+                                style={styles.centerStyleWidth}
                               >
                                 <RemoveIcon />
                               </TouchableOpacity>
@@ -421,37 +524,18 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                     });
                   }}
                 >
-                  <Text style={styles.addPresText}>+ ADD MORE PRESCRIPTIONS</Text>
+                  <Text style={styles.addPresText}>{string.diagnostics.addMorePrescription}</Text>
                 </TouchableOpacity>
               </>
             ) : (
               renderSuccessUploadView()
             )}
           </View>
-          <View>
-            {renderExpectCall()}
-            <Button
-              title={onSumbitSuccess ? 'GO TO HOME' : 'SUBMIT'}
-              style={styles.buttonStyle}
-              disabled={
-                EPrescriptionsProps?.length || PhysicalPrescriptionsProps?.length ? false : true
-              }
-              onPress={() => {
-                if (onSumbitSuccess) {
-                  props.navigation.navigate('TESTS', {
-                    phyPrescriptionUploaded: [],
-                    ePresscriptionUploaded: [],
-                    phyPrescriptionsProp: [],
-                    ePrescriptionsProp: [],
-                    movedFrom: '',
-                  });
-                } else {
-                  onSubmitPrescription();
-                }
-              }}
-            />
-          </View>
         </ScrollView>
+        <View>
+          {renderExpectCall()}
+          {renderButtonCTA()}
+        </View>
       </SafeAreaView>
       {loading && !props?.showHeader ? null : loading && <Spinner />}
     </View>
@@ -611,4 +695,10 @@ const styles = StyleSheet.create({
   },
   presStyle: { flex: 1, padding: 10, height: height - 180 },
   containerStyle: { flex: 1, height: height },
+  centerStyle: { justifyContent: 'center', alignItems: 'center' },
+  centerStyleWidth: {
+    justifyContent: 'center',
+    width: '10%',
+    alignItems: 'center',
+  },
 });

@@ -149,6 +149,7 @@ const Appointments: Appointments[] = [
 
 export interface MyAccountProps extends NavigationScreenProps {}
 export const MyAccount: React.FC<MyAccountProps> = (props) => {
+  const { APP_ENV } = AppConfig;
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [codePushVersion, setCodePushVersion] = useState<string>('');
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
@@ -347,6 +348,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       AsyncStorage.removeItem('hasAgreedVaccineTnC');
       AsyncStorage.removeItem('circleSubscriptionId');
       AsyncStorage.removeItem('diagnosticUserType');
+      AsyncStorage.removeItem('mobileNumber_CM_Result'); //removing sdk cached api result
       clearCartInfo && clearCartInfo();
       clearDiagnoticCartInfo && clearDiagnoticCartInfo();
       setShowMultiPatientMsg?.(true);
@@ -493,9 +495,11 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   };
 
   const renderAboutApollo = () => {
+    const aboutApolloListing =
+      APP_ENV === 'PROD' ? string.aboutApolloList : string.aboutApolloListForQA;
     return (
       <View>
-        {string.aboutApolloList.map((item, index) => {
+        {aboutApolloListing.map((item, index) => {
           return (
             <TouchableOpacity
               style={[

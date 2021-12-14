@@ -1,6 +1,10 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { permissionHandler } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  formatUrl,
+  getAsyncStorageValues,
+  permissionHandler,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
@@ -27,8 +31,18 @@ export const ProHealthWebView: React.FC<ProHealthWebViewProps> = (props) => {
   const microPhonePermission = props.navigation.getParam('requestMicroPhonePermission');
   const [loading, setLoading] = useState<boolean>(true);
   const [canGoBack, setCanGoBack] = useState<boolean>(false);
+  const [token, setToken] = useState<string | null>('');
+  const [userMobileNumber, setUserMobileNumber] = useState<string | null>('');
 
   useEffect(() => {
+    const saveSessionValues = async () => {
+      const [loginToken, phoneNumber] = await getAsyncStorageValues();
+      setToken(JSON.parse(loginToken));
+      setUserMobileNumber(
+        JSON.parse(phoneNumber)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber
+      );
+    };
+    saveSessionValues();
     requestMicrophonePermission();
   }, []);
 
@@ -68,11 +82,15 @@ export const ProHealthWebView: React.FC<ProHealthWebViewProps> = (props) => {
   };
 
   const renderWebView = () => {
+    let uri = formatUrl(`${props.navigation.getParam('covidUrl')}`, token, userMobileNumber);
+
     return (
       <WebView
         ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}
         onLoadEnd={() => setLoading?.(false)}
-        source={{ uri: props.navigation.getParam('covidUrl') }}
+        source={{
+          uri,
+        }}
         onNavigationStateChange={(data) => handleResponse(data, WebViewRef)}
         renderError={() => renderError(WebViewRef)}
         onMessage={(event) => {

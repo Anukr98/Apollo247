@@ -4,7 +4,15 @@ import { Props as ProductCardProps } from '@aph/mobile-patients/src/components/M
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { availabilityApi247, MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  addPharmaItemToCart,
+  formatToCartItem,
+  g,
+  getAvailabilityForSearchSuccess,
+  getDiscountPercentage,
+  postCleverTapEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
   WebEngageEvents,
@@ -27,6 +35,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { SuggestedQuantityNudge } from '@aph/mobile-patients/src/components/SuggestedQuantityNudge/SuggestedQuantityNudge';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 type ListProps = FlatListProps<MedicineProduct>;
 
@@ -42,6 +51,7 @@ export interface Props extends Omit<ListProps, 'renderItem'> {
   productPageViewedEventProps?: ProductPageViewedEventProps;
   sectionName?: string;
   onAddedSuccessfully?: () => void;
+  totalProducts?: number | undefined;
 }
 
 export const ProductList: React.FC<Props> = ({
@@ -54,6 +64,7 @@ export const ProductList: React.FC<Props> = ({
   renderComponent,
   data,
   contentContainerStyle,
+  totalProducts,
   ...restOfProps
 }) => {
   const isPdp: boolean =
@@ -62,11 +73,24 @@ export const ProductList: React.FC<Props> = ({
     addToCartSource == 'PDP All Substitutes';
   const step: number = 3;
   const initData = data?.length > 4 ? data?.slice(0, step) : data;
+  const comingFromSearch = navigation.getParam('comingFromSearch')
+    ? navigation.getParam('comingFromSearch')
+    : false;
+  const searchText = navigation.getParam('searchText') ? navigation.getParam('searchText') : '';
+  const navSrcForSearchSuccess = navigation.getParam('navSrcForSearchSuccess')
+    ? navigation.getParam('navSrcForSearchSuccess')
+    : '';
   const [dataToShow, setDataToShow] = useState(initData);
   const [lastIndex, setLastIndex] = useState<number>(data?.length > 4 ? step : 0);
-  const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
+  const { isPharmacyLocationServiceable } = useAppCommonData();
   const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();
-  const { getCartItemQty, serverCartItems, setAddToCartSource } = useShoppingCart();
+  const {
+    getCartItemQty,
+    serverCartItems,
+    setAddToCartSource,
+    cartLocationDetails,
+    pharmacyCircleAttributes,
+  } = useShoppingCart();
   const { setUserActionPayload } = useServerCart();
   const [showSuggestedQuantityNudge, setShowSuggestedQuantityNudge] = useState<boolean>(false);
   const [shownNudgeOnce, setShownNudgeOnce] = useState<boolean>(false);
@@ -75,6 +99,7 @@ export const ProductList: React.FC<Props> = ({
   const [itemPackForm, setItemPackForm] = useState<string>('');
   const [maxOrderQty, setMaxOrderQty] = useState<number>(0);
   const [suggestedQuantity, setSuggestedQuantity] = useState<string>(null);
+  const { currentPatient } = useAllCurrentPatients();
 
   useEffect(() => {
     if (serverCartItems?.find(({ sku }) => sku?.toUpperCase() === currentProductIdInCart)) {
@@ -92,7 +117,7 @@ export const ProductList: React.FC<Props> = ({
 
   useEffect(() => {}, [showSuggestedQuantityNudge]);
 
-  const onPress = (sku: string, urlKey: string) => {
+  const onPress = (sku: string, urlKey: string, index: number, item) => {
     if (
       movedFrom === ProductPageViewedSource.SIMILAR_PRODUCTS ||
       movedFrom === ProductPageViewedSource.PDP_ALL_SUSBTITUTES
@@ -103,6 +128,7 @@ export const ProductList: React.FC<Props> = ({
         sectionName,
         productPageViewedEventProps,
         urlKey,
+        navSrcForSearchSuccess,
       });
     } else {
       navigation.push(AppRoutes.ProductDetailPage, {
@@ -111,7 +137,29 @@ export const ProductList: React.FC<Props> = ({
         sectionName,
         productPageViewedEventProps,
         urlKey,
+        navSrcForSearchSuccess,
       });
+    }
+    if (comingFromSearch !== false) {
+      const pincode = cartLocationDetails?.pincode;
+      const availability = getAvailabilityForSearchSuccess(pincode, item?.sku);
+      const discount = getDiscountPercentage(item?.price, item?.special_price);
+      const discountPercentage = discount ? discount + '%' : '0%';
+      const cleverTapEventAttributes = {
+        'Nav src': navSrcForSearchSuccess,
+        Status: 'Success',
+        Keyword: searchText,
+        Position: index + 1,
+        Source: 'Full search',
+        Action: 'Product detail page viewed',
+        'Product availability': availability ? 'Is in stock' : 'Out of stock',
+        'Product position': index + 1,
+        'Results shown': data?.length,
+        'SKU ID': item?.sku,
+        'Product name': item?.name,
+        Discount: discountPercentage,
+      };
+      postCleverTapEvent(CleverTapEventName.PHARMACY_SEARCH_SUCCESS, cleverTapEventAttributes);
     }
   };
 
@@ -122,7 +170,24 @@ export const ProductList: React.FC<Props> = ({
     });
   };
 
-  const onPressAddToCart = (item: MedicineProduct) => {
+  const onPressAddToCart = (item: MedicineProduct, index: number) => {
+    const { onAddedSuccessfully } = restOfProps;
+    const discount = getDiscountPercentage(item?.price, item?.special_price);
+    const discountPercentage = discount ? discount + '%' : '0%';
+    const cleverTapSearchSuccessEventAttributes = {
+      'Nav src': navSrcForSearchSuccess,
+      Status: 'Success',
+      Keyword: searchText,
+      Position: index + 1,
+      Source: 'Full search',
+      Action: 'Add to cart',
+      'Product availability': 'Available',
+      'Product position': index + 1,
+      'Results shown': totalProducts,
+      'SKU ID': item?.sku,
+      'Product name': item?.name,
+      Discount: discountPercentage,
+    };
     setAddToCartSource?.({ source: addToCartSource, categoryId: item.category_id });
     setUserActionPayload?.({
       medicineOrderCartLineItems: [
@@ -132,6 +197,27 @@ export const ProductList: React.FC<Props> = ({
         },
       ],
     });
+    addPharmaItemToCart(
+      formatToCartItem(item),
+      cartLocationDetails?.pincode,
+      () => {},
+      setGlobalLoading,
+      navigation,
+      currentPatient,
+      !!isPharmacyLocationServiceable,
+      {
+        source: addToCartSource,
+        categoryId: productPageViewedEventProps?.CategoryID,
+        categoryName: productPageViewedEventProps?.CategoryName,
+        section: productPageViewedEventProps?.SectionName,
+      },
+      JSON.stringify(serverCartItems),
+      () => {},
+      pharmacyCircleAttributes!,
+      () => {},
+      comingFromSearch,
+      cleverTapSearchSuccessEventAttributes
+    );
     setCurrentProductIdInCart(item.sku);
     item.pack_form ? setItemPackForm(item.pack_form) : setItemPackForm('');
     item.suggested_qty ? setSuggestedQuantity(item.suggested_qty) : setSuggestedQuantity(null);
@@ -183,8 +269,8 @@ export const ProductList: React.FC<Props> = ({
       const props: ProductCardProps = {
         ...item,
         quantity: qty,
-        onPress: () => onPress(item.sku, item.url_key),
-        onPressAddToCart: () => onPressAddToCart(item),
+        onPress: () => onPress(item.sku, item.url_key, index, item),
+        onPressAddToCart: () => onPressAddToCart(item, index),
         onPressAddQty: onPressAddQty,
         onPressSubtractQty: onPressSubtractQty,
         onPressNotify: () => onPressNotify(item.name),

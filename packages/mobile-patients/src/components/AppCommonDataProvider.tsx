@@ -6,6 +6,7 @@ import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_a
 import { MedicinePageAPiResponse } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 import { getPatientAllAppointments_getPatientAllAppointments_appointments as Appointment } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import { Cache } from 'react-native-cache';
 export interface LocationData {
   displayName: string;
   latitude?: number;
@@ -18,7 +19,6 @@ export interface LocationData {
   pincode: string;
   lastUpdated?: number; //timestamp
 }
-
 export interface SubscriptionData {
   _id: string | '';
   name: string | '';
@@ -39,6 +39,13 @@ export interface SubscriptionData {
   corporateIcon?: string;
 }
 
+export const appGlobalCache = new Cache({
+  namespace: 'appGlobalCache',
+  policy: {
+    maxEntries: 200,
+  },
+  backend: AsyncStorage,
+});
 export interface CorporateSubscriptionData extends SubscriptionData {
   corporateName?: string;
   corporateLogo?: string;
@@ -239,6 +246,16 @@ export interface AppCommonDataContextProps {
   setCovidVaccineCtaV2: ((value: any) => void) | null;
   loginSection: any;
   setLoginSection: ((value: any) => void) | null;
+  myDoctorsCount: number;
+  setMyDoctorsCount: ((value: number) => void) | null;
+  homeBannerOfferSection: any;
+  setHomeBannerOfferSection: ((value: any) => void) | null;
+  recentGlobalSearchList: any;
+  setRecentGlobalSearchList: ((value: any) => void) | null;
+  offersList: any;
+  setOffersList: ((value: any) => void) | null;
+  offersListLoading: boolean;
+  setOffersListLoading: ((value: boolean) => void) | null;
   phrSession: string;
   setPhrSession: ((value: string) => void) | null;
   isCurrentLocationFetched: boolean;
@@ -290,6 +307,12 @@ export interface AppCommonDataContextProps {
   setNonCartDeliveryText: ((str: string) => void) | null;
   activeUserSubscriptions: any;
   setActiveUserSubscriptions: ((item: any) => void) | null;
+  displayAskApolloNumber: boolean;
+  setDisplayAskApolloNumber: ((value: boolean) => void) | null;
+  displayQuickBookAskApollo: boolean;
+  setDisplayQuickBookAskApollo: ((value: boolean) => void) | null;
+  selectedPrescriptionType: string;
+  setSelectedPrescriptionType: ((str: string) => void) | null;
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
@@ -350,6 +373,16 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setCovidVaccineCtaV2: null,
   loginSection: null,
   setLoginSection: null,
+  homeBannerOfferSection: null,
+  setHomeBannerOfferSection: null,
+  myDoctorsCount: 0,
+  setMyDoctorsCount: null,
+  recentGlobalSearchList: [],
+  setRecentGlobalSearchList: null,
+  offersList: [],
+  setOffersList: null,
+  offersListLoading: false,
+  setOffersListLoading: null,
   phrSession: '',
   setPhrSession: null,
   isCurrentLocationFetched: false, // this variable is defined only to avoid asking location multiple times in Home Screen until the app is killed and re-opened again
@@ -401,30 +434,31 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setNonCartDeliveryText: null,
   activeUserSubscriptions: null,
   setActiveUserSubscriptions: null,
+  displayAskApolloNumber: false,
+  setDisplayAskApolloNumber: null,
+  displayQuickBookAskApollo: false,
+  setDisplayQuickBookAskApollo: null,
+  selectedPrescriptionType: '',
+  setSelectedPrescriptionType: null,
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
-  const [isCurrentLocationFetched, setCurrentLocationFetched] = useState<
-    AppCommonDataContextProps['isCurrentLocationFetched']
-  >(false);
+  const [isCurrentLocationFetched, setCurrentLocationFetched] =
+    useState<AppCommonDataContextProps['isCurrentLocationFetched']>(false);
 
   const apisToCall = useRef<AppCommonDataContextProps['apisToCall']>([]);
   const homeScreenParamsOnPop = useRef<AppCommonDataContextProps['homeScreenParamsOnPop']>([]);
 
-  const [locationDetails, _setLocationDetails] = useState<
-    AppCommonDataContextProps['locationDetails']
-  >(null);
+  const [locationDetails, _setLocationDetails] =
+    useState<AppCommonDataContextProps['locationDetails']>(null);
 
-  const [hdfcUserSubscriptions, _setHdfcUserSubscriptions] = useState<
-    AppCommonDataContextProps['hdfcUserSubscriptions']
-  >(null);
+  const [hdfcUserSubscriptions, _setHdfcUserSubscriptions] =
+    useState<AppCommonDataContextProps['hdfcUserSubscriptions']>(null);
 
-  const [phrNotificationData, setPhrNotificationData] = useState<
-    AppCommonDataContextProps['phrNotificationData']
-  >(null);
-  const [totalCircleSavings, _setTotalCircleSavings] = useState<
-    AppCommonDataContextProps['totalCircleSavings']
-  >(null);
+  const [phrNotificationData, setPhrNotificationData] =
+    useState<AppCommonDataContextProps['phrNotificationData']>(null);
+  const [totalCircleSavings, _setTotalCircleSavings] =
+    useState<AppCommonDataContextProps['totalCircleSavings']>(null);
 
   const [hdfcUpgradeUserSubscriptions, _setHdfcUpgradeUserSubscriptions] = useState<
     AppCommonDataContextProps['hdfcUpgradeUserSubscriptions']
@@ -434,46 +468,37 @@ export const AppCommonDataProvider: React.FC = (props) => {
     AppCommonDataContextProps['corporateSubscriptions']
   >([]);
 
-  const [circleSubscription, _setCircleSubscription] = useState<
-    AppCommonDataContextProps['circleSubscription']
-  >(null);
+  const [circleSubscription, _setCircleSubscription] =
+    useState<AppCommonDataContextProps['circleSubscription']>(null);
 
   const [bannerData, _setBannerData] = useState<AppCommonDataContextProps['bannerData']>(null);
-  const [bannerDataHome, _setBannerDataHome] = useState<
-    AppCommonDataContextProps['bannerDataHome']
-  >(null);
+  const [bannerDataHome, _setBannerDataHome] =
+    useState<AppCommonDataContextProps['bannerDataHome']>(null);
 
-  const [pharmacyLocation, _setPharmacyLocation] = useState<
-    AppCommonDataContextProps['pharmacyLocation']
-  >(null);
+  const [pharmacyLocation, _setPharmacyLocation] =
+    useState<AppCommonDataContextProps['pharmacyLocation']>(null);
 
-  const [diagnosticLocation, _setDiagnosticLocation] = useState<
-    AppCommonDataContextProps['diagnosticLocation']
-  >(null);
+  const [diagnosticLocation, _setDiagnosticLocation] =
+    useState<AppCommonDataContextProps['diagnosticLocation']>(null);
 
-  const [isPharmacyLocationServiceable, setPharmacyLocationServiceable] = useState<
-    AppCommonDataContextProps['isPharmacyLocationServiceable']
-  >();
+  const [isPharmacyLocationServiceable, setPharmacyLocationServiceable] =
+    useState<AppCommonDataContextProps['isPharmacyLocationServiceable']>();
 
-  const [medicinePageAPiResponse, setMedicinePageAPiResponse] = useState<
-    AppCommonDataContextProps['medicinePageAPiResponse']
-  >(null);
+  const [medicinePageAPiResponse, setMedicinePageAPiResponse] =
+    useState<AppCommonDataContextProps['medicinePageAPiResponse']>(null);
 
-  const [allAppointmentApiResponse, setAllAppointmentApiResponse] = useState<
-    AppCommonDataContextProps['allAppointmentApiResponse']
-  >(null);
+  const [allAppointmentApiResponse, setAllAppointmentApiResponse] =
+    useState<AppCommonDataContextProps['allAppointmentApiResponse']>(null);
 
   const [diagnosticsCities, setDiagnosticsCities] = useState<
     AppCommonDataContextProps['diagnosticsCities']
   >([]);
 
-  const [diagnosticServiceabilityData, setDiagnosticServiceabilityData] = useState<
-    AppCommonDataContextProps['diagnosticServiceabilityData']
-  >(null);
+  const [diagnosticServiceabilityData, setDiagnosticServiceabilityData] =
+    useState<AppCommonDataContextProps['diagnosticServiceabilityData']>(null);
 
-  const [isDiagnosticLocationServiceable, setDiagnosticLocationServiceable] = useState<
-    AppCommonDataContextProps['isDiagnosticLocationServiceable']
-  >();
+  const [isDiagnosticLocationServiceable, setDiagnosticLocationServiceable] =
+    useState<AppCommonDataContextProps['isDiagnosticLocationServiceable']>();
 
   const [savePatientDetails, setSavePatientDetails] = useState<
     AppCommonDataContextProps['savePatientDetails']
@@ -481,9 +506,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const [savePatientDetailsWithHistory, setSavePatientDetailsWithHistory] = useState<
     AppCommonDataContextProps['savePatientDetailsWithHistory']
   >([]);
-  const [cartBankOffer, setCartBankOffer] = useState<AppCommonDataContextProps['cartBankOffer']>(
-    ''
-  );
+  const [cartBankOffer, setCartBankOffer] =
+    useState<AppCommonDataContextProps['cartBankOffer']>('');
 
   const [VirtualConsultationFee, setVirtualConsultationFee] = useState<string>('');
   const [generalPhysicians, setGeneralPhysicians] = useState<{
@@ -503,28 +527,33 @@ export const AppCommonDataProvider: React.FC = (props) => {
     data: getDoctorsBySpecialtyAndFilters;
   }>();
 
-  const [needHelpToContactInMessage, setNeedHelpToContactInMessage] = useState<
-    AppCommonDataContextProps['needHelpToContactInMessage']
-  >('');
+  const [needHelpToContactInMessage, setNeedHelpToContactInMessage] =
+    useState<AppCommonDataContextProps['needHelpToContactInMessage']>('');
 
-  const [needHelpTicketReferenceText, setNeedHelpTicketReferenceText] = useState<
-    AppCommonDataContextProps['needHelpTicketReferenceText']
-  >('');
+  const [needHelpTicketReferenceText, setNeedHelpTicketReferenceText] =
+    useState<AppCommonDataContextProps['needHelpTicketReferenceText']>('');
 
-  const [
-    needHelpReturnPharmaOrderSuccessMessage,
-    setNeedHelpReturnPharmaOrderSuccessMessage,
-  ] = useState<AppCommonDataContextProps['needHelpReturnPharmaOrderSuccessMessage']>('');
+  const [needHelpReturnPharmaOrderSuccessMessage, setNeedHelpReturnPharmaOrderSuccessMessage] =
+    useState<AppCommonDataContextProps['needHelpReturnPharmaOrderSuccessMessage']>('');
 
-  const [covidVaccineCta, setCovidVaccineCta] = useState<
-    AppCommonDataContextProps['covidVaccineCta']
-  >(null);
+  const [covidVaccineCta, setCovidVaccineCta] =
+    useState<AppCommonDataContextProps['covidVaccineCta']>(null);
 
-  const [covidVaccineCtaV2, setCovidVaccineCtaV2] = useState<
-    AppCommonDataContextProps['covidVaccineCtaV2']
-  >(null);
+  const [covidVaccineCtaV2, setCovidVaccineCtaV2] =
+    useState<AppCommonDataContextProps['covidVaccineCtaV2']>(null);
 
   const [loginSection, setLoginSection] = useState<AppCommonDataContextProps['loginSection']>(null);
+  const [myDoctorsCount, setMyDoctorsCount] = useState<AppCommonDataContextProps['myDoctorsCount']>(
+    0
+  );
+  const [homeBannerOfferSection, setHomeBannerOfferSection] = useState<
+    AppCommonDataContextProps['homeBannerOfferSection']
+  >(null);
+  const [recentGlobalSearchList, setRecentGlobalSearchList] = useState<
+    AppCommonDataContextProps['recentGlobalSearchList']
+  >([]);
+  const [offersList, setOffersList] = useState<any[]>([]);
+  const [offersListLoading, setOffersListLoading] = useState<boolean>(false);
 
   const [phrSession, setPhrSession] = useState<AppCommonDataContextProps['phrSession']>('');
 
@@ -549,11 +578,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
     _setTotalCircleSavings(totalCircleSavings);
   };
 
-  const setHdfcUpgradeUserSubscriptions: AppCommonDataContextProps['setHdfcUpgradeUserSubscriptions'] = (
-    hdfcUpgradeUserSubscriptions
-  ) => {
-    _setHdfcUpgradeUserSubscriptions(hdfcUpgradeUserSubscriptions);
-  };
+  const setHdfcUpgradeUserSubscriptions: AppCommonDataContextProps['setHdfcUpgradeUserSubscriptions'] =
+    (hdfcUpgradeUserSubscriptions) => {
+      _setHdfcUpgradeUserSubscriptions(hdfcUpgradeUserSubscriptions);
+    };
 
   const setCorporateSubscriptions: AppCommonDataContextProps['setCorporateSubscriptions'] = (
     corporateSubscriptions
@@ -592,34 +620,36 @@ export const AppCommonDataProvider: React.FC = (props) => {
     AppCommonDataContextProps['uploadPrescriptionOptions']
   >([]);
 
-  const [expectCallText, setExpectCallText] = useState<AppCommonDataContextProps['expectCallText']>(
-    ''
-  );
+  const [expectCallText, setExpectCallText] =
+    useState<AppCommonDataContextProps['expectCallText']>('');
 
-  const [nonCartTatText, setNonCartTatText] = useState<AppCommonDataContextProps['nonCartTatText']>(
-    ''
-  );
+  const [nonCartTatText, setNonCartTatText] =
+    useState<AppCommonDataContextProps['nonCartTatText']>('');
 
-  const [nonCartDeliveryText, setNonCartDeliveryText] = useState<
-    AppCommonDataContextProps['nonCartDeliveryText']
-  >('');
+  const [nonCartDeliveryText, setNonCartDeliveryText] =
+    useState<AppCommonDataContextProps['nonCartDeliveryText']>('');
 
-  const [activeUserSubscriptions, setActiveUserSubscriptions] = useState<
-    AppCommonDataContextProps['activeUserSubscriptions']
-  >(null);
+  const [activeUserSubscriptions, setActiveUserSubscriptions] =
+    useState<AppCommonDataContextProps['activeUserSubscriptions']>(null);
+
+  const [displayAskApolloNumber, setDisplayAskApolloNumber] =
+    useState<AppCommonDataContextProps['displayAskApolloNumber']>(false);
+
+  const [displayQuickBookAskApollo, setDisplayQuickBookAskApollo] =
+    useState<AppCommonDataContextProps['displayQuickBookAskApollo']>(false);
+  const [selectedPrescriptionType, setSelectedPrescriptionType] =
+    useState<AppCommonDataContextProps['selectedPrescriptionType']>('');
 
   const [axdcCode, setAxdcCode] = useState<AppCommonDataContextProps['axdcCode']>('');
   const [circlePlanId, setCirclePlanId] = useState<AppCommonDataContextProps['circlePlanId']>('');
-  const [healthCredits, setHealthCredits] = useState<AppCommonDataContextProps['healthCredits']>(
-    ''
-  );
+  const [healthCredits, setHealthCredits] =
+    useState<AppCommonDataContextProps['healthCredits']>('');
   const [isRenew, setIsRenew] = useState<AppCommonDataContextProps['isRenew']>('');
   const [hdfcPlanId, setHdfcPlanId] = useState<AppCommonDataContextProps['hdfcPlanId']>('');
   const [circleStatus, setCircleStatus] = useState<AppCommonDataContextProps['hdfcPlanId']>('');
   const [hdfcStatus, setHdfcStatus] = useState<AppCommonDataContextProps['hdfcPlanId']>('');
-  const [pharmacyUserType, setPharmacyUserType] = useState<
-    AppCommonDataContextProps['pharmacyUserType']
-  >('');
+  const [pharmacyUserType, setPharmacyUserType] =
+    useState<AppCommonDataContextProps['pharmacyUserType']>('');
 
   const locationForDiagnostics: AppCommonDataContextProps['locationForDiagnostics'] = {
     cityId: (diagnosticServiceabilityData?.cityId || '') as string,
@@ -722,6 +752,16 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setCovidVaccineCtaV2,
         loginSection,
         setLoginSection,
+        myDoctorsCount,
+        setMyDoctorsCount,
+        homeBannerOfferSection,
+        setHomeBannerOfferSection,
+        recentGlobalSearchList,
+        setRecentGlobalSearchList,
+        offersList,
+        setOffersList,
+        offersListLoading,
+        setOffersListLoading,
         phrSession,
         setPhrSession,
         notificationCount,
@@ -771,6 +811,12 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setNonCartDeliveryText,
         activeUserSubscriptions,
         setActiveUserSubscriptions,
+        displayAskApolloNumber,
+        setDisplayAskApolloNumber,
+        displayQuickBookAskApollo,
+        setDisplayQuickBookAskApollo,
+        selectedPrescriptionType,
+        setSelectedPrescriptionType,
       }}
     >
       {props.children}

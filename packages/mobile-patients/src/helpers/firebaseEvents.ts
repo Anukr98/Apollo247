@@ -82,6 +82,7 @@ export enum FirebaseEventName {
   BROWSE_PACKAGE = 'Browse Package',
   DIAGNOSTIC_ITEM_VIEWED = 'DiagnosticItemViewed',
   DIAGNOSTIC_CART_ADDRESS_SELECTED_SUCCESS = 'AddressSelected',
+  DIAGNOSTIC_ORDER_PLACE = "diagnostics_order_placed",
 
   // Health Records
   CONSULT_RX = 'Consult & RX',
@@ -345,23 +346,16 @@ export interface FirebaseEvents {
     Pincode: string | number;
   };
   [FirebaseEventName.PHARMACY_CHECKOUT_COMPLETED]: {
-    Order_ID: string | number;
-    Order_Type: 'Cart' | 'Non_Cart';
-    Prescription_Required: boolean;
-    Prescription_Added: boolean;
-    Shipping_information: string; // (Home/Store address)
-    Total_items_in_cart?: number; // Optional
-    Grand_Total?: number; // Optional
-    Total_Discount_percentage?: number; // Optional
-    Discount_Amount?: number; // Optional
-    Delivery_charge?: number; // Optional
-    Net_after_discount?: number; // Optional
-    Payment_status?: number; // Optional
-    Payment_Type?: 'COD' | 'Prepaid'; // Optional
-    Cart_ID?: string | number; // Optional
-    Service_Area: 'Pharmacy' | 'Diagnostic';
-    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
-    'Circle Membership Value': number | null;
+    order_id: string | number; // Order_ID
+    transaction_id?: string; // payment id 
+    currency?: string;
+    coupon?: string;
+    shipping?: number; // delivery charges
+    items?: string; // cart items
+    value?: number; // grand total
+    circle_membership_added?: 'Yes' | 'No' | 'Existing';
+    payment_type?: 'COD' | 'Prepaid';
+    user_type?: string;
   };
   [FirebaseEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     Order_ID: string | number;
@@ -669,6 +663,16 @@ export interface FirebaseEvents {
     transaction_id: string;
     value: number;
     LOB: string;
+  };
+
+  [FirebaseEventName.DIAGNOSTIC_ORDER_PLACE]: {
+    transaction_id: string;
+    currency: string;
+    coupon?: string;
+    shipping_tier?: string;
+    shipping?: number;
+    items: any;
+    value: number;
   };
 
   [FirebaseEventName.ADDADDRESS_LAT_LNG]: {

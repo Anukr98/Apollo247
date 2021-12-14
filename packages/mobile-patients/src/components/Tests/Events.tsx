@@ -1,6 +1,7 @@
 import moment from 'moment';
 import {
   g,
+  PAGE_ID_TYPE,
   postAppsFlyerEvent,
   postCleverTapEvent,
   postFirebaseEvent,
@@ -35,8 +36,7 @@ import {
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientObj } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 
-async function createPatientAttributes(currentPatient: any) {
-  const diagnosticUserType = await AsyncStorage.getItem('diagnosticUserType');
+function createPatientAttributes(currentPatient: any) {
   const patientAttributes = {
     'Patient UHID': g(currentPatient, 'uhid'),
     'Patient Gender': g(currentPatient, 'gender'),
@@ -161,7 +161,7 @@ export function DiagnosticAddToCartEvent(
     'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
   };
   if (section) {
-    eventAttributes['Section'] = section;
+    eventAttributes['Section name'] = section;
   }
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
@@ -200,7 +200,8 @@ export const firePurchaseEvent = (
   orderId: string,
   grandTotal: number,
   cartItems: any,
-  currentPatient: any
+  currentPatient: any,
+  homeCollectionCharges: number
 ) => {
   let items: any = [],
     itemIds: any = [],
@@ -209,28 +210,31 @@ export const firePurchaseEvent = (
     itemCategories: any = [],
     itemCollectionMethods: any = [],
     itemIndexs: any = [],
-    itemQuantity: any = [];
+    itemQuantity: any = [],
+    itemCurrency: any = [];
 
   !!cartItems &&
     cartItems?.length > 0 &&
     cartItems?.forEach((item: any, index: number) => {
       let itemObj: any = {};
-      itemObj.af_content = item?.name;
-      itemObj.af_content_id = item?.id;
-      itemObj.af_price = !!item?.specialPrice ? item.specialPrice : item.price;
-      itemObj.af_category = 'Diagnostics';
+      itemObj.item_name = item?.name;
+      itemObj.item_id = item?.id;
+      itemObj.price = !!item?.specialPrice ? item.specialPrice : item.price;
+      itemObj.item_category = 'Diagnostics';
       itemObj.item_variant = item.collectionMethod; // "Default" (for Pharmacy) or Virtual / Physcial (for Consultations)
       itemObj.index = index + 1; // Item sequence number in the list
-      itemObj.af_quantity = 1;
+      itemObj.quantity = 1;
+      itemObj.currency = 'INR';
       items.push(itemObj);
 
       itemIds.push(item?.id);
       itemNames.push(item?.name);
       itemPrices.push(!!item?.specialPrice ? String(item.specialPrice) : String(item.price));
-      itemCategories.push('Diagnositcs');
+      itemCategories.push('Diagnostics');
       itemCollectionMethods.push(item?.collectionMethod);
       itemIndexs.push(String(index));
       itemQuantity.push(String(1));
+      itemCurrency.push('INR');
     });
 
   let appsFlyerObject = {} as any;
@@ -241,6 +245,7 @@ export const firePurchaseEvent = (
   appsFlyerObject.item_variant = itemCollectionMethods;
   appsFlyerObject.index = itemIndexs;
   appsFlyerObject.af_quantity = itemQuantity;
+  appsFlyerObject.af_currency = itemCurrency;
 
   const stringifiedAppsFlyerObject = JSON.stringify(appsFlyerObject);
 
@@ -258,6 +263,16 @@ export const firePurchaseEvent = (
     af_order_id: orderId,
     af_customer_user_id: currentPatient?.id,
   };
+
+  const fireBaseSuccessEvent = {
+    transaction_id: orderId,
+    currency: 'INR',
+    value: Number(grandTotal), //total revenue
+    items: items,
+    shipping: homeCollectionCharges,
+  };
+
+  postFirebaseEvent(FirebaseEventName.DIAGNOSTIC_ORDER_PLACE, fireBaseSuccessEvent);
   postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   postAppsFlyerEvent(AppsFlyerEventName.PURCHASE, appsFlyerAttributes);
 };
@@ -341,30 +356,28 @@ export function DiagnosticBannerClick(
   postCleverTapEvent(CleverTapEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED, eventAttributes);
 }
 
-export function DiagnosticCartViewed(
+export async function DiagnosticCartViewed(
+  source: string,
   currentPatient: any,
   cartItems: DiagnosticsCartItem[],
-  couponDiscount: number | string,
-  gTotal: number,
-  prescReqd: boolean,
-  diagnosticSlot: any,
-  coupon: any,
-  collectionCharges: number,
-  validity: circleValidity | null,
-  circleSubId: string,
   isCircle: boolean,
-  pincode: string | number
+  pincode: string | number,
+  city: string,
+  prescReqd?: boolean,
+  gTotal?: number,
+  collectionCharges?: number,
+  circleSubId?: string,
+  couponCode?: string,
+  couponDiscount?: number,
+  validity?: circleValidity | null
 ) {
-  const getPatientAttributes = createPatientAttributes(currentPatient);
+  const getPatientAttributes = await createPatientAttributes(currentPatient);
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CART_VIEWED]
     | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_CART_VIEWED] = {
     ...getPatientAttributes,
+    'Page source': source,
     'Total items in cart': cartItems?.length,
-    // 'Delivery charge': deliveryCharges,
-    'Total Discount': Number(couponDiscount),
-    'Net after discount': gTotal,
-    'Prescription Required?': prescReqd ? 'Yes' : 'No',
     'Cart Items': cartItems?.map(
       (item) =>
         (({
@@ -374,17 +387,24 @@ export function DiagnosticCartViewed(
           specialPrice: item?.specialPrice || item.price,
         } as unknown) as DiagnosticsCartItem)
     ),
+    'Circle user': isCircle ? 'Yes' : 'No',
     Pincode: pincode,
     UHID: currentPatient?.uhid,
-    'Circle user': isCircle ? 'Yes' : 'No',
+    city: city,
+    'Prescription Needed': prescReqd ? 'Yes' : 'No',
   };
-  if (diagnosticSlot) {
+
+  if (!!gTotal) {
+    eventAttributes['Net after discount'] = gTotal;
+  }
+  if (!!collectionCharges) {
     eventAttributes['Delivery charge'] = collectionCharges;
   }
-  if (coupon) {
-    eventAttributes['Coupon code used'] = coupon?.code;
+  if (!!couponCode && !!couponDiscount) {
+    eventAttributes['Coupon code used'] = couponCode;
+    eventAttributes['Coupon Discount'] = couponDiscount;
   }
-  fireCircleBenifitAppliedEvent(currentPatient, validity, circleSubId, isCircle);
+  // fireCircleBenifitAppliedEvent(currentPatient, validity, circleSubId, isCircle);
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_CART_VIEWED, eventAttributes);
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_CART_VIEWED, eventAttributes);
 }
@@ -510,7 +530,7 @@ export function PaymentInitiated(grandTotal: number, LOB: string, type: string) 
     postCleverTapEvent(CleverTapEventName.CONSULT_PAYMENT_INITIATED, consultEventAttributes);
 }
 
-export function DiagnosticAddresssSelected(
+export async function DiagnosticAddresssSelected(
   type: 'New' | 'Existing',
   serviceable: 'Yes' | 'No',
   pincode: string | number,
@@ -518,7 +538,7 @@ export function DiagnosticAddresssSelected(
   currentPatient?: any,
   isDiagnosticCircleSubscription?: boolean | undefined
 ) {
-  const getPatientAttributes = createPatientAttributes(currentPatient);
+  const getPatientAttributes = await createPatientAttributes(currentPatient);
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE]
     | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE] = {
@@ -819,6 +839,29 @@ export function DiagnosticViewReportClicked(
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_VIEW_REPORT_CLICKED, eventAttributes);
 }
 
+export function DiagnosticCallToOrderClicked(
+  page: PAGE_ID_TYPE,
+  currentPatient?: any,
+  sectionName?: string,
+  itemId?: string,
+  itemName?: string,
+  city?: string,
+  isDiagnosticCircleSubscription?: boolean | undefined
+) {
+  const getPatientAttributes = createPatientAttributes(currentPatient);
+  const eventAttributes: CleverTapEvents[CleverTapEventName.DIAGNOSTIC_CALL_TO_ORDER_CLICKED] = {
+    ...getPatientAttributes,
+    'Mobile Number': currentPatient?.mobileNumber,
+    Page: page,
+    'Section Name': sectionName,
+    ItemId: itemId,
+    ItemName: itemName,
+    'Patient City': city,
+    'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+  };
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_CALL_TO_ORDER_CLICKED, eventAttributes);
+}
+
 export function DiagnosticTrackPhleboClicked(
   orderId: string | number,
   source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary',
@@ -863,10 +906,11 @@ export function DiagnosticPatientSelected(
     'Patient name': patientNames,
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PATIENT_SELECTED, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_PATIENT_SELECTED, eventAttributes);
 }
 
 export function DiagnosticProductListingPageViewed(
-  type: any,
+  type: 'Category' | 'Widget',
   source: any,
   categoryName: string,
   sectionName: string
@@ -874,7 +918,7 @@ export function DiagnosticProductListingPageViewed(
   const eventAttributes: CleverTapEvents[CleverTapEventName.DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED] = {
     Type: type,
     Source: source,
-    'Category name': categoryName,
+    'Category Name': categoryName,
     'Section name': sectionName,
   };
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED, eventAttributes);
@@ -884,15 +928,38 @@ export function DiagnosticPrescriptionSubmitted(
   currentPatient: any,
   prescriptionUrl: any,
   itemName: any,
+  userType: string | null,
   isDiagnosticCircleSubscription?: boolean | undefined
 ) {
   const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes: CleverTapEvents[CleverTapEventName.DIAGNOSTIC_PRESCRIPTION_SUBMITTED] = {
     ...getPatientAttributes,
+    'Patient MobileNumber': currentPatient?.mobileNumber,
+    'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+    'User Type': userType,
     Source: 'Apollo247App',
     PrescriptionUrl: prescriptionUrl,
-    'Item name': itemName,
-    'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+    'Item Name': itemName,
   };
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_PRESCRIPTION_SUBMITTED, eventAttributes);
+}
+
+export function DiagnosticHomePageClicked(
+  currentPatient: any,
+  userType: any,
+  navSrc: string,
+  circleMember: any
+) {
+  const eventAttributes = {
+    'Patient name': `${currentPatient?.firstName} ${currentPatient?.lastName}`,
+    'Patient UHID': currentPatient?.uhid,
+    'Patient age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
+    'Patient gender': currentPatient?.gender,
+    'Mobile Number': currentPatient?.mobileNumber,
+    'Customer ID': currentPatient?.id,
+    User_Type: userType,
+    'Circle Member': circleMember,
+    'Page name': navSrc,
+  };
+  postCleverTapEvent(CleverTapEventName.HOME_ICON_CLICKED, eventAttributes);
 }
