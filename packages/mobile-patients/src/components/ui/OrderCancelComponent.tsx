@@ -71,7 +71,6 @@ export const OrderCancelComponent: React.FC<OrderCancelComponentProps> = (props)
           onPress={() => {
             setShowReasons(!showReasons);
           }}
-          style={styles.paddingStyle}
         >
           <View style={styles.flexRow}>
             <View style={{ flex: 0.9, flexDirection: 'row' }}>
@@ -104,7 +103,6 @@ export const OrderCancelComponent: React.FC<OrderCancelComponentProps> = (props)
                     setShowSubReasons(true);
                     setSelectedSubReason('');
                   }}
-                  style={styles.paddingStyle}
                 >
                   <View style={[styles.flexRow, styles.itemContainerStyle]}>
                     <Text style={styles.textStyle}>{item?.bucketName}</Text>
@@ -125,7 +123,7 @@ export const OrderCancelComponent: React.FC<OrderCancelComponentProps> = (props)
         )}
         {isReasonSelected && !showReasons && (
           <View>
-            <View style={[styles.flexRow, styles.paddingStyle, { paddingVertical: 12 }]}>
+            <View style={[styles.flexRow, { paddingVertical: 12 }]}>
               <Text
                 style={styles.textStyle}
                 onPress={() => {
@@ -142,7 +140,6 @@ export const OrderCancelComponent: React.FC<OrderCancelComponentProps> = (props)
               onPress={() => {
                 setShowSubReasons(!showSubReasons);
               }}
-              style={styles.paddingStyle}
             >
               <View style={styles.flexRow}>
                 <View style={{ flex: 0.9, flexDirection: 'row' }}>
@@ -174,7 +171,6 @@ export const OrderCancelComponent: React.FC<OrderCancelComponentProps> = (props)
                           ? setUserCommentRequired(true)
                           : setUserCommentRequired(false);
                       }}
-                      style={styles.paddingStyle}
                     >
                       <View style={[styles.flexRow, styles.itemContainerStyle]}>
                         <Text style={styles.textStyle}>{item?.description}</Text>
@@ -195,7 +191,7 @@ export const OrderCancelComponent: React.FC<OrderCancelComponentProps> = (props)
             )}
             {isSubReasonSelected && !showSubReasons && (
               <View style={{ paddingVertical: 12 }}>
-                <View style={[styles.flexRow, styles.paddingStyle]}>
+                <View style={styles.flexRow}>
                   <Text
                     style={styles.textStyle}
                     onPress={() => {
@@ -237,7 +233,7 @@ export const OrderCancelComponent: React.FC<OrderCancelComponentProps> = (props)
         selectedReasonBucket &&
         selectedReasonBucket?.[0]?.reasons?.find((item) => selectedSubReason === item?.description)
           ?.nudgeConfig?.enabled === true ? (
-          <View style={styles.paddingStyle}>
+          <View>
             <View style={styles.nudgeTopBorderStyle}></View>
             <Text style={styles.nudgeText}>
               {selectedReasonBucket &&
@@ -286,8 +282,10 @@ export const OrderCancelComponent: React.FC<OrderCancelComponentProps> = (props)
         <View style={styles.container}>
           <View style={{ justifyContent: 'flex-end', flex: 1 }}>
             <View style={styles.bottomSheetStyle}>
-              {content()}
-              {bottomButton()}
+              <TouchableOpacity onPress={() => {}}>
+                {content()}
+                {bottomButton()}
+              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -321,8 +319,6 @@ const styles = StyleSheet.create({
   },
   contentContainerStyle: {
     paddingVertical: 15,
-  },
-  paddingStyle: {
     paddingLeft: 15,
     paddingRight: 25,
   },
