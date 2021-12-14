@@ -451,6 +451,8 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         newCancellationReasonsBucket={newCancellationReasonsBucket}
         selectedReasonBucket={selectedReasonBucket}
         setSelectedReasonBucket={setSelectedReasonBucket}
+        setClick={setClick}
+        setSubheading={setSubheading}
       />
     );
   };
