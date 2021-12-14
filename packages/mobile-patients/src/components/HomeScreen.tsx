@@ -3696,8 +3696,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       <TouchableOpacity
         activeOpacity={1}
         onPress={() => {
-          textForNotch !== 'Offer Expired' && onOfferCtaPressed(item, index + 1);
           postOfferCardClickEvent(item, String(index + 1), textForNotch == 'Offer Expired');
+          textForNotch !== 'Offer Expired' && onOfferCtaPressed(item, index + 1);
         }}
       >
         <LinearGradientVerticalComponent
@@ -3738,11 +3738,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             style={{
               ...theme.viewStyles.text('B', 18, offerDesignTemplate?.title_text_color, 1, 30),
               marginHorizontal: 10,
-              marginTop: 'auto',
+              marginBottom: 'auto',
             }}
           >
-            {item?.title?.text?.length > 30
-              ? item?.title?.text?.substring(0, 30)
+            {item?.title?.text?.length > 36
+              ? item?.title?.text?.substring(0, 36)
               : item?.title?.text}
           </Text>
 
@@ -3752,8 +3752,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               marginHorizontal: 10,
             }}
           >
-            {item?.subtitle?.text?.length > 24
-              ? item?.subtitle?.text?.substring(0, 24)
+            {item?.subtitle?.text?.length > 25
+              ? item?.subtitle?.text?.substring(0, 25)
               : item?.subtitle?.text}
           </Text>
           {item?.is_active ? (
