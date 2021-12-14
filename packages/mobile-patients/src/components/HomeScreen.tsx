@@ -1038,6 +1038,11 @@ const styles = StyleSheet.create({
     top: 2,
     zIndex: 999,
   },
+  mOffersTitle: {
+    marginHorizontal: 10,
+    marginTop: 28,
+    marginBottom: 'auto',
+  },
 });
 
 type menuOptions = {
@@ -3758,12 +3763,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           ) : null}
 
           <Text
-            style={{
-              ...theme.viewStyles.text('B', 18, offerDesignTemplate?.title_text_color, 1, 28),
-              marginHorizontal: 10,
-              marginTop: 28,
-              marginBottom: 'auto',
-            }}
+            style={[
+              {
+                ...theme.viewStyles.text('B', 18, offerDesignTemplate?.title_text_color, 1, 28),
+              },
+              styles.mOffersTitle,
+            ]}
           >
             {item?.title?.text?.length > 36
               ? item?.title?.text?.substring(0, 36)
@@ -6009,7 +6014,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                 {offersListCache.length === 0 && offersListLoading && renderOffersForYouShimmer()}
                 {(offersListCache.length > 0 || !offersListLoading) && renderOffersForYou()}
                 {isReferrerAvailable && renderReferralBanner()}
-                {!appointmentLoading && currentAppointments === '0'
+                {!appointmentLoading && currentAppointments === '0' && myDoctorsCount === 0
                   ? null
                   : renderHeadings('My Doctors')}
                 {!appointmentLoading && currentAppointments === '0'

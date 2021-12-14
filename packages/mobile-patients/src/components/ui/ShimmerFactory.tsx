@@ -524,7 +524,7 @@ export const renderOffersForYouShimmer = () => {
       }}
     >
       <ShimmerPlaceHolder
-        shimmerColors={['#FFE7AA', '#FCDCFF']}
+        shimmerColors={shimmerColors}
         shimmerStyle={{
           height: 150,
           marginRight: 12,
