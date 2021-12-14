@@ -8,11 +8,7 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import {
-  ArrowRight,
-  CrossPopup,
-  DropdownGreen,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { ArrowRight, DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   GET_MEDICINE_ORDER_OMS_DETAILS_SHIPMENT,
   SEND_HELP_EMAIL,
@@ -176,8 +172,6 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const [cancellationAllowed, setCancellationAllowed] = useState<boolean>(false);
   const [message, setMessage] = useState<string>('');
   const [subheading, setSubheading] = useState<string>('');
-  const [cancellationRequestRaised, setCancellationRequestRaised] = useState<boolean>(false);
-  const [cancellationRequestRejected, setCancellationrequestRejected] = useState<boolean>(false);
   const [flatlistData, setFlatlistData] = useState<any[]>([]);
 
   useEffect(() => {
@@ -218,7 +212,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   }, [click, medicineOrderStatus]);
 
   useEffect(() => {
-    if (cancellationAllowed && !cancellationRequestRaised && click === orderCancelId) {
+    if (cancellationAllowed && click === orderCancelId) {
       getCancellationReasonsBuckets();
     }
   }, [click]);
@@ -276,14 +270,6 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     setCancellationAllowed(
       data?.getMedicineOrderOMSDetailsWithAddress?.orderCancellationAllowedDetails
         ?.cancellationAllowed
-    );
-    setCancellationRequestRaised(
-      data?.getMedicineOrderOMSDetailsWithAddress?.orderCancellationAllowedDetails
-        ?.cancellationRequestRaised!
-    );
-    setCancellationrequestRejected(
-      data?.getMedicineOrderOMSDetailsWithAddress?.orderCancellationAllowedDetails
-        ?.cancellationRequestRejected!
     );
     setMessage(
       data?.getMedicineOrderOMSDetailsWithAddress?.orderCancellationAllowedDetails?.message || ''
@@ -378,9 +364,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         variables,
       })
       .then(({ data }) => {
-        aphConsole.log({
-          s: data,
-        });
+        aphConsole.log({ s: data });
         const setInitialSate = () => {
           setShowSpinner(false);
           setCancelVisible(false);
@@ -739,7 +723,11 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       const isReturnQuery = item?.id === helpSectionQueryId.returnOrder;
       setClick(item?.id!);
       setSubheading(item?.title!);
-      if (item?.id === orderCancelId && !raiseOrderDelayQuery && cancellationAllowed) {
+      if (
+        item?.id === orderCancelId &&
+        !raiseOrderDelayQuery &&
+        (cancellationAllowed || !cancellationAllowed)
+      ) {
         setClick(orderCancelId);
         setSelectedQueryId('');
         setComments('');
@@ -835,11 +823,9 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       MEDICINE_ORDER_STATUS.DELIVERED &&
       !!medicineOrderStatusDate &&
       moment(new Date()).diff(moment(medicineOrderStatusDate), 'hours') <= 48;
-
     if (!showReturnOrder) {
       data = data.filter((item) => item?.id !== helpSectionQueryId.returnOrder);
     }
-
     const showMessage = (tat: boolean) => {
       if (tat) {
         const str = string.needHelpQueryDetails.tatBreachedTrue;
@@ -923,11 +909,13 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
 
     return (
       <>
-        <>{renderReturnOrderOverlay()}</>
+        <>{renderCancelOrderOverlay()}</>
         {(loading || showSpinner) && <Spinner style={{ zIndex: 200 }} />}
         <SafeAreaView>
           {orderDelayed && click === orderDelayId ? (
             <>{renderOrderStatus()}</>
+          ) : click === orderCancelId ? (
+            <>{renderCancelOrder()}</>
           ) : (
             !isCancelVisible && (
               <View style={styles.flatListContainer}>
@@ -966,9 +954,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     if (subheading) {
       return (
         <Text style={[styles.subHeading, styles.txtBold, styles.subHeadingText]}>
-          {cancellationAllowed && click === orderCancelId && !cancellationRequestRaised
-            ? null
-            : subheading}
+          {cancellationAllowed && click === orderCancelId ? null : subheading}
         </Text>
       );
     }

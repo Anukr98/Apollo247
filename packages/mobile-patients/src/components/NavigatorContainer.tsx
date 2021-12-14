@@ -41,13 +41,13 @@ import { UploadPrescriptionView } from '@aph/mobile-patients/src/components/Uplo
 import { SamplePrescription } from '@aph/mobile-patients/src/components/UploadPrescription/SamplePrescription';
 import { PharmacyPaymentStatus } from '@aph/mobile-patients/src/components/Medicines/PharmacyPaymentStatus';
 import { MultiSignup } from '@aph/mobile-patients/src/components/MultiSignup';
-import { OrderDetailsScene } from '@aph/mobile-patients/src/components/OrderDetailsScene';
+import { OrderDetailsScene } from '@aph/mobile-patients/src/components/MyOrders/OrderDetailsScene';
 import { OrderModifiedScreen } from '@aph/mobile-patients/src/components/OrderModifiedScreen';
 import { OTPVerification } from '@aph/mobile-patients/src/components/OTPVerification';
 import SignUp from '@aph/mobile-patients/src/components/SignUp';
 import { SplashScreen } from '@aph/mobile-patients/src/components/SplashScreen';
 import { TabBar } from '@aph/mobile-patients/src/components/TabBar';
-import { YourOrdersScene } from '@aph/mobile-patients/src/components/YourOrdersScene';
+import { YourOrdersScene } from '@aph/mobile-patients/src/components/MyOrders/YourOrdersScene';
 import { ReturnMedicineOrder } from '@aph/mobile-patients/src/components/ReturnMedicineOrder';
 import { AppointmentOnlineDetails } from '@aph/mobile-patients/src/components/Consult/AppointmentOnlineDetails';
 import { ChooseDoctor } from '@aph/mobile-patients/src/components/Consult/ChooseDoctor';

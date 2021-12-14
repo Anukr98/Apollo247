@@ -6,7 +6,7 @@ import {
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { OrderSummary } from '@aph/mobile-patients/src/components/OrderSummaryView';
+import { OrderSummary } from '@aph/mobile-patients/src/components/MyOrders/OrderSummaryView';
 import { RefundDetails } from '@aph/mobile-patients/src/components/RefundDetails';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { OrderDelayNoticeView } from '@aph/mobile-patients/src/components/MedicineOrderDetails';
@@ -16,6 +16,7 @@ import { OrderCancelComponent } from '@aph/mobile-patients/src/components/ui/Ord
 import { ChatWithUs } from '@aph/mobile-patients/src/components/ui/ChatWithUs';
 import { DropDown, Option } from '@aph/mobile-patients/src/components/ui/DropDown';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import { AphOverlay } from '@aph/mobile-patients/src/components/ui/AphOverlay';
 import {
   CrossPopup,
   Down,
@@ -33,7 +34,7 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { MedOrder } from '@aph/mobile-patients/src/components/YourOrdersScene';
+import { MedOrder } from '@aph/mobile-patients/src/components/MyOrders/YourOrdersScene';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   ALERT_MEDICINE_ORDER_PICKUP,
@@ -94,6 +95,7 @@ import {
   postWebEngageEvent,
   reOrderMedicines,
   getFormattedDateTimeWithBefore,
+  navigateToHome,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postPharmacyMyOrderTrackingClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
@@ -123,7 +125,6 @@ import {
 } from 'react-native';
 import { Overlay } from 'react-native-elements';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   CleverTapEventName,
   CleverTapEvents,
@@ -191,6 +192,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const [cancellationRequestRejected, setCancellationrequestRejected] = React.useState<Boolean>(
     false
   );
+  const [message, setMessage] = useState<string>('');
 
   const [selectedReason, setSelectedReason] = useState('');
   const [selectedSubReason, setSelectedSubReason] = useState('');
@@ -237,6 +239,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     setCancellationrequestRejected(
       data?.getMedicineOrderOMSDetailsWithAddress?.orderCancellationAllowedDetails
         ?.cancellationRequestRejected!
+    );
+    setMessage(
+      data?.getMedicineOrderOMSDetailsWithAddress?.orderCancellationAllowedDetails?.message || ''
     );
   }, [data, refetch]);
   const order = g(data, 'getMedicineOrderOMSDetailsWithAddress', 'medicineOrderDetails');
@@ -1536,6 +1541,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 index={index}
                 cancellationRequestRaised={cancellationRequestRaised}
                 cancellationRequestRejected={cancellationRequestRejected}
+                cancellationAllowed={cancellationAllowed}
+                message={message}
                 length={statusList.length}
                 status={getOrderStatusText(order!.orderStatus!)}
                 date={getFormattedDate(order!.statusDate)}
@@ -1828,7 +1835,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       </View>
     );
   };
-
   const alertTheStore = () => {
     setShowSpinner(true);
     const variables: alertMedicineOrderPickupVariables = {
@@ -1846,9 +1852,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       })
       .then(({ data }) => {
         setShowSpinner(false);
-        aphConsole.log({
-          s: data,
-        });
+        aphConsole.log({ s: data });
         navigateToHome(props.navigation);
         renderSuccessPopup();
       })
@@ -1953,9 +1957,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         variables,
       })
       .then(({ data }) => {
-        aphConsole.log({
-          s: data,
-        });
+        aphConsole.log({ s: data });
         const setInitialSate = () => {
           setShowSpinner(false);
           setCancelVisible(false);
@@ -2174,7 +2176,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     );
   };
 
-  const renderReturnOrderOverlay = () => {
+  const renderCancelOrderOverlay = () => {
     return (
       <OrderCancelComponent
         showReasons={showReasons}
@@ -2198,7 +2200,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
 
   return (
     <View style={{ flex: 1 }}>
-      {renderReturnOrderOverlay()}
+      {renderCancelOrderOverlay()}
       <SafeAreaView style={theme.viewStyles.container}>
         <View style={styles.headerShadowContainer}>
           <Header
