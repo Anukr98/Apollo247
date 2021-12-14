@@ -75,7 +75,13 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
 
   useEffect(() => {
     fetchOrders();
+    BackHandler.addEventListener('hardwareBackPress', onPressHardwareBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', onPressHardwareBack);
+    };
   }, []);
+
+  const onPressHardwareBack = () => props.navigation.goBack();
 
   const fetchOrders = async () => {
     try {
