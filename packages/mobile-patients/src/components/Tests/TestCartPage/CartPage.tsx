@@ -113,7 +113,7 @@ import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/compo
 type Address = savePatientAddress_savePatientAddress_patientAddress;
 type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
 
-export enum SOURCE {
+enum SOURCE {
   ADD = 'add',
   REMOVE = 'remove',
 }
@@ -343,7 +343,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   }, [addresses, isFocused]);
 
   function getUpdatedCartItems() {
-    const getExistingItems = patientCartItems
+    const arrayToChoose = isModifyFlow ? modifiedPatientCart : patientCartItems;
+    const getExistingItems = arrayToChoose
       ?.map((item) => item?.cartItems?.filter((idd) => idd?.id))
       ?.flat();
     const selectedUniqueItems = getExistingItems?.filter((i) => i?.isSelected);

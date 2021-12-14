@@ -20,6 +20,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import _, { isArray } from 'lodash';
 import {
+  useShoppingCart,
   PhysicalPrescription,
   EPrescription,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
@@ -81,6 +82,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
     ePrescriptionsProp
   );
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
+  const { setEPrescriptions, setPhysicalPrescriptions } = useShoppingCart();
   const [locationName, setLocationName] = useState<string>('');
   const [additionalNotes, setadditionalNotes] = useState<string>('');
   const [onSumbitSuccess, setOnSumbitSuccess] = useState<boolean>(false);

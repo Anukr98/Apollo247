@@ -62,7 +62,7 @@ export const useServerCart = () => {
   useEffect(() => {
     if (!userAgent) {
       AsyncStorage.getItem(USER_AGENT).then((userAgent) => {
-        setUserAgent(userAgent || '');
+        if (userAgent) setUserAgent(userAgent);
       });
     }
   }, [userAgent]);
@@ -336,11 +336,15 @@ export const useServerCart = () => {
             },
           };
         }) || [];
-      setUserActionPayload?.({
-        prescriptionType: PrescriptionType.UPLOADED,
-        prescriptionDetails: prescriptionsToUpload,
-        medicineOrderCartLineItems: cartItemsToAdd?.length ? cartItemsToAdd : [],
-      });
+      const cartInputData: CartInputData = {
+        ...{
+          prescriptionType: PrescriptionType.UPLOADED,
+          prescriptionDetails: prescriptionsToUpload,
+          medicineOrderCartLineItems: cartItemsToAdd?.length ? cartItemsToAdd : [],
+        },
+        patientId: currentPatient?.id,
+      };
+      saveServerCart(cartInputData);
     } else {
       setUserActionPayload?.({
         prescriptionType: PrescriptionType.UPLOADED,

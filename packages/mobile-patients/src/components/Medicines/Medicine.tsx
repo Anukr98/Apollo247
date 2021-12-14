@@ -313,7 +313,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     newAddressAdded,
     setNewAddressAdded,
     setAddToCartSource,
-    circleSubscriptionId,
+    cartCircleSubscriptionId,
   } = useShoppingCart();
   const {
     setUserActionPayload,
@@ -882,18 +882,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         latitude: deliveryAddress?.latitude,
         longitude: deliveryAddress?.longitude,
       });
-      const formattedLocation = formatAddressToLocation(deliveryAddress! || null);
-
       globalLoading!(false);
     } catch (error) {
       checkLocation(addresses);
       CommonBugFender('set_default_Address_on_Medicine_Page', error);
-      showAphAlert!({
-        title: string.common.uhOh,
-        description:
-          "We're sorry! Unable to set delivery address. Please try again after some time",
-      });
-
       globalLoading!(false);
     }
   }
@@ -1231,7 +1223,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         'Customer ID': g(currentPatient, 'id'),
         User_Type: getUserType(allCurrentPatients),
         'Page name': 'Medicine page',
-        'Circle Member': !!circleSubscriptionId ? 'True' : 'False',
+        'Circle Member': cartCircleSubscriptionId ? 'True' : 'False',
       };
       postCleverTapEvent(CleverTapEventName.HOME_ICON_CLICKED, eventAttributes);
     };
@@ -1471,7 +1463,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 Source: 'Home',
                 User_Type: pharmacyUserType,
               };
-              const cleverTapEventAttributes : CleverTapEvents[CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED] = {
+              const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED] = {
                 'Nav src': 'Home',
                 'User type': pharmacyUserType,
                 patient_name: currentPatient?.firstName,
@@ -1480,7 +1472,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 gender: currentPatient?.gender,
                 mobile_number: currentPatient?.mobileNumber,
                 age: moment().year() - moment(currentPatient?.dateOfBirth).year(),
-                customerId: currentPatient?.id
+                customerId: currentPatient?.id,
               };
               postCleverTapEvent(
                 CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED,
@@ -2366,7 +2358,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       'Patient Name': currentPatient?.firstName,
       'Patient UHID': currentPatient?.uhid,
       'Patient age': getAge(currentPatient?.dateOfBirth),
-      'Circle Member': circleSubscriptionId ? 'True' : 'False',
+      'Circle Member': cartCircleSubscriptionId ? 'True' : 'False',
       'Customer ID': currentPatient?.id,
       'Patient gender': currentPatient?.gender,
       'Mobile number': currentPatient?.mobileNumber,
@@ -2648,9 +2640,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             setCurrentProductQuantityInCart={setCurrentProductQuantityInCart}
           />
         )}
-      {AppConfig.Configuration.WHATSAPP_TO_ORDER.iconVisibility && showWhatsappRedirectionIcon && (
-        <WhatsappRedirectionStickyNote />
-      )}
+      {AppConfig.Configuration.WHATSAPP_TO_ORDER.iconVisibility &&
+        showWhatsappRedirectionIcon &&
+        medicineList?.length === 0 && <WhatsappRedirectionStickyNote />}
     </View>
   );
 };
