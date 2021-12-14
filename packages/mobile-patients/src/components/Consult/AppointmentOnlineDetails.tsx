@@ -43,6 +43,7 @@ import {
 import {
   APPOINTMENT_STATE,
   APPOINTMENT_TYPE,
+  ConsultMode,
   REQUEST_ROLES,
   STATUS,
   TRANSFER_INITIATED_TYPE,
@@ -982,9 +983,11 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
         )}
         {showCancelPopup && (
           <BottomPopUp
-            title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
+            title={string.common.cancelAppointmentTitleHeading}
             description={
-              "Since you're cancelling 15 minutes before your appointment, we'll issue you a full refund!"
+              string.common.cancelAppointmentBody + data?.appointmentType === ConsultMode.PHYSICAL
+                ? 'Physical'
+                : 'Online' + ' Appointment ' + data?.displayId + ' A full refund will be issued'
             }
           >
             <View

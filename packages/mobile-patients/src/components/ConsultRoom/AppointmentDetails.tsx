@@ -37,6 +37,7 @@ import {
 import {
   APPOINTMENT_STATE,
   APPOINTMENT_TYPE,
+  ConsultMode,
   REQUEST_ROLES,
   STATUS,
   TRANSFER_INITIATED_TYPE,
@@ -77,6 +78,7 @@ import { NavigationScreenProps } from 'react-navigation';
 import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments } from '../../graphql/types/getPatientAllAppointments';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const { width, height } = Dimensions.get('window');
 
@@ -775,9 +777,11 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
         )}
         {showCancelPopup && (
           <BottomPopUp
-            title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
+            title={string.common.cancelAppointmentTitleHeading}
             description={
-              "Since you're cancelling 15 minutes before your appointment, we'll issue you a full refund!"
+              string.common.cancelAppointmentBody + data?.appointmentType === ConsultMode.PHYSICAL
+                ? 'Physical'
+                : 'Online' + ' Appointment ' + data?.displayId + ' A full refund will be issued'
             }
           >
             <View

@@ -1433,19 +1433,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const typingClearTime = 1000; //1 seconds
   const clearTimerId = useRef<NodeJS.Timeout>();
 
-  let cancelAppointmentTitle = '';
-  let cancelAppointmentTitleHeadingState = false;
-  if (appointmentDiffMin >= 15) {
-    cancelAppointmentTitle =
-      string.common.cancelAppointmentBody +
-      appointmentData?.appointmentType +
-      ' Appointment ' +
-      appointmentData?.displayId;
-    cancelAppointmentTitleHeadingState = true;
-  } else {
-    cancelAppointmentTitle = string.common.cancelRefundBody;
-    if (cancelAppointmentTitleHeadingState) cancelAppointmentTitleHeadingState = false;
-  }
+  let cancelAppointmentTitle =
+    string.common.cancelAppointmentBody + appointmentData?.appointmentType === ConsultMode.PHYSICAL
+      ? 'Physical'
+      : 'Online' + ' Appointment ' + appointmentData?.displayId + ' A full refund will be issued';
   const isAppointmentStartsInFifteenMin = appointmentDiffMin <= 15 && appointmentDiffMin > 0;
   const isAppointmentExceedsTenMin = appointmentDiffMin <= 0 && appointmentDiffMin > -10;
   type messageType = 'PDF' | 'Text' | 'Image';
@@ -7969,10 +7960,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         <CancelAppointmentPopup
           data={appointmentData}
           navigation={props.navigation}
-          title={cancelAppointmentTitle}
-          customTitle={
-            cancelAppointmentTitleHeadingState ? string.common.cancelAppointmentTitleHeading : ''
-          }
+          title={''}
+          customTitle={string.common.cancelAppointmentTitleHeading}
           onPressBack={() => setShowCancelPopup(false)}
           onPressReschedule={() => {
             postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
