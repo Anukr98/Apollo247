@@ -19,7 +19,10 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Divider } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
-import { CleverTapEvents, CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import {
+  CleverTapEvents,
+  CleverTapEventName,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { postCleverTapEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
@@ -36,7 +39,7 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
     cartPrescriptions,
     serverCartLoading,
     pharmacyCircleAttributes,
-    serverCartAmount
+    serverCartAmount,
   } = useShoppingCart();
   const {
     setUserActionPayload,
@@ -44,7 +47,7 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
     uploadEPrescriptionsToServerCart,
   } = useServerCart();
   const { showAphAlert, setLoading } = useUIElements();
-  const { currentPatient } = useAllCurrentPatients()
+  const { currentPatient } = useAllCurrentPatients();
 
   useEffect(() => {
     setLoading?.(serverCartLoading);
@@ -52,8 +55,8 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
 
   useEffect(() => {
     navigation.addListener('didFocus', () => {
-      postPrescriptionEvent("pageViewed")
-    })
+      postPrescriptionEvent('pageViewed');
+    });
     setConsultProfile(null);
   }, []);
 
@@ -126,17 +129,19 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
     );
   };
 
-  const postPrescriptionEvent = async (eventType: "pageViewed" | "noPrescription") => {
+  const postPrescriptionEvent = async (eventType: 'pageViewed' | 'noPrescription') => {
     try {
-      const user_type = await AsyncStorage.getItem("PharmacyUserType");
-      let prescription_items: string[] = [], prescription_items_nos = 0, prescription_required = false;
-      serverCartItems?.forEach(item => {
-        if(item?.isPrescriptionRequired) {
-          prescription_items.push(item?.name)
-          prescription_items_nos++
-          prescription_required = true
+      const user_type = await AsyncStorage.getItem('PharmacyUserType');
+      let prescription_items: string[] = [],
+        prescription_items_nos = 0,
+        prescription_required = false;
+      serverCartItems?.forEach((item) => {
+        if (item?.isPrescriptionRequired) {
+          prescription_items.push(item?.name);
+          prescription_items_nos++;
+          prescription_required = true;
         }
-      })
+      });
       const eventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_PRESCRIPTION_PAGE_VIEWED] = {
         cartItems: serverCartItems,
         order_value: serverCartAmount?.estimatedAmount,
@@ -146,26 +151,25 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
         user_type,
         loggedIn: true,
         circle_member: pharmacyCircleAttributes?.['Circle Membership Added'],
-        circle_membership_value: pharmacyCircleAttributes?.['Circle Membership Value'] ? pharmacyCircleAttributes?.['Circle Membership Value'] : 0,
+        circle_membership_value: pharmacyCircleAttributes?.['Circle Membership Value']
+          ? pharmacyCircleAttributes?.['Circle Membership Value']
+          : 0,
         prescription_required,
         user: currentPatient?.firstName,
         mobile_number: currentPatient?.mobileNumber,
-        "Customer id": currentPatient?.id
-      }
-      if(eventType === 'noPrescription')
-        postCleverTapEvent(CleverTapEventName.PHARMACY_DONT_HAVE_PRESCRIPTION, eventAttributes)
-      if(eventType === 'pageViewed')
-        postCleverTapEvent(CleverTapEventName.PHARMACY_PRESCRIPTION_PAGE_VIEWED, eventAttributes)
-    }
-    catch(e) {
-
-    }
-  }
+        'Customer id': currentPatient?.id,
+      };
+      if (eventType === 'noPrescription')
+        postCleverTapEvent(CleverTapEventName.PHARMACY_DONT_HAVE_PRESCRIPTION, eventAttributes);
+      if (eventType === 'pageViewed')
+        postCleverTapEvent(CleverTapEventName.PHARMACY_PRESCRIPTION_PAGE_VIEWED, eventAttributes);
+    } catch (e) {}
+  };
 
   const onPressContinue = async () => {
     try {
-      if(cartPrescriptionType === PrescriptionType.CONSULT)
-        postPrescriptionEvent("noPrescription")
+      if (cartPrescriptionType === PrescriptionType.CONSULT)
+        postPrescriptionEvent('noPrescription');
       navigation.navigate(AppRoutes.ReviewCart);
       postEvent(cartPrescriptionType);
     } catch (error) {
@@ -177,10 +181,11 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
   };
 
   const renderContinueButton = () => {
-    const isDisabled = cartPrescriptionType
-      ? (cartPrescriptionType === PrescriptionType.UPLOADED && cartPrescriptions.length === 0) ||
-        (cartPrescriptionType === PrescriptionType.CONSULT && !consultProfile?.id)
-      : true;
+    const isDisabled =
+      cartPrescriptionType !== PrescriptionType.NA
+        ? (cartPrescriptionType === PrescriptionType.UPLOADED && cartPrescriptions.length === 0) ||
+          (cartPrescriptionType === PrescriptionType.CONSULT && !consultProfile?.id)
+        : true;
     const title = [PrescriptionType.CONSULT, PrescriptionType.LATER].includes(cartPrescriptionType)
       ? 'CONTINUE WITHOUT PRESCRIPTION'
       : 'CONTINUE WITH PRESCRIPTION';
