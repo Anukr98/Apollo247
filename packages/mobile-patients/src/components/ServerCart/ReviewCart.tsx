@@ -95,26 +95,26 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
   const { fetchReviewCart } = useServerCart();
 
   useEffect(() => {
-    if (shipmentArray?.length) {
-      const isPrescriptionCartItem = serverCartItems?.findIndex(
-        (item) => item?.isPrescriptionRequired == '1'
-      );
-      reviewCartPageViewClevertapEvent(
-        cartLocationDetails?.pincode,
-        shipmentArray?.[0]?.tat,
-        serverCartAmount?.isDeliveryFree ? 0 : serverCartAmount?.deliveryCharges,
-        serverCartAmount?.cartTotal,
-        isPrescriptionCartItem >= 0,
-        cartCoupon?.coupon && cartCoupon?.valid ? cartCoupon?.coupon : '',
-        isCircleCart,
-        isPrescriptionCartItem >= 0 ? cartPrescriptionType : '',
-        pharmacyUserType,
-        currentPatient?.mobileNumber,
-        cartSubscriptionDetails?.currentSellingPrice,
-        shipmentArray?.[1]?.tat
-      );
-    }
-  }, [shipmentArray]);
+    props.navigation.addListener('didFocus', () => {
+        const isPrescriptionCartItem = serverCartItems?.findIndex(
+          (item) => item?.isPrescriptionRequired == '1'
+        );
+        reviewCartPageViewClevertapEvent(
+          cartLocationDetails?.pincode,
+          shipmentArray?.[0]?.tat,
+          serverCartAmount?.isDeliveryFree ? 0 : serverCartAmount?.deliveryCharges,
+          serverCartAmount?.cartTotal,
+          isPrescriptionCartItem >= 0,
+          cartCoupon?.coupon && cartCoupon?.valid ? cartCoupon?.coupon : '',
+          isCircleCart,
+          isPrescriptionCartItem >= 0 ? cartPrescriptionType : '',
+          pharmacyUserType,
+          currentPatient?.mobileNumber,
+          cartSubscriptionDetails?.currentSellingPrice,
+          shipmentArray?.[1]?.tat
+        );
+    })
+  },[])
 
   useEffect(() => {
     hasUnserviceableproduct();

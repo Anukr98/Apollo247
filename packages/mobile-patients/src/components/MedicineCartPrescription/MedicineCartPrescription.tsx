@@ -118,6 +118,7 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
                 prescriptionDetails: prescriptionsToDelete,
               });
               if (option === PrescriptionType.CONSULT) {
+                postPrescriptionEvent('noPrescription');
                 setTimeout(() => {
                   scrollViewRef.current?.scrollToEnd?.();
                 }, 100);
@@ -168,16 +169,9 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
 
   const onPressContinue = async () => {
     try {
-      if (cartPrescriptionType === PrescriptionType.CONSULT)
-        postPrescriptionEvent('noPrescription');
       navigation.navigate(AppRoutes.ReviewCart);
       postEvent(cartPrescriptionType);
-    } catch (error) {
-      showAphAlert?.({
-        title: 'Uh oh.. :(',
-        description: 'Error occurred while uploading prescriptions.',
-      });
-    }
+    } catch (error) {}
   };
 
   const renderContinueButton = () => {
