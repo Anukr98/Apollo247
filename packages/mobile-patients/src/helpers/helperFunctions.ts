@@ -2262,6 +2262,7 @@ export const InitiateAppsFlyer = (
             campaign: responseData.campaign,
             rewardId: responseData.rewardId,
             shortlink: responseData.shortlink,
+            installTime: responseData.install_time
           });
         }
 
@@ -2375,6 +2376,7 @@ const setAppReferralData = (data: {
   campaign: number | string;
   rewardId: string;
   shortlink: string;
+  installTime: string;
 }) => {
   AsyncStorage.setItem('app_referral_data', JSON.stringify(data));
 };

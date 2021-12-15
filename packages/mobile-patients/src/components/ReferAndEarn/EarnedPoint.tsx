@@ -10,11 +10,42 @@ import {
   LabTestAtHomeIcon,
   TrophyIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import {
+  g,
+  getCleverTapCircleMemberValues,
+  getUserType,
+  postCleverTapEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import moment from 'moment';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 export interface EarnedPointsProps extends NavigationScreenProps {}
 
 export const EarnedPoints: React.FC<EarnedPointsProps> = (props) => {
   const { navigation } = props;
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+  const { pharmacyCircleAttributes } = useShoppingCart();
+
+  const getReferEarnCommonAttributes = () => {
+    return {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      User_Type: getUserType(allCurrentPatients),
+      'Circle Member':
+        getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+        undefined,
+      'Page name': 'Congratulations Page',
+    };
+  };
 
   const renderYourGifterReward = () => {
     return (
@@ -33,6 +64,27 @@ export const EarnedPoints: React.FC<EarnedPointsProps> = (props) => {
           <Text style={styles.earnPointtotalWillGetInSomeMinute}>
             {string.referAndEarn.willBeCreditSoon}
           </Text>
+          <TouchableOpacity
+            onPress={() => {
+              const eventArributes = {
+                ...getReferEarnCommonAttributes(),
+                'Nav src': 'Congratulations Page',
+              };
+              postCleverTapEvent(CleverTapEventName.REFERRAL_TNC_FAQ_CLICKED, {
+                ...eventArributes,
+              });
+              navigation.navigate('RefererTermsAndCondition');
+            }}
+          >
+            <Text
+              style={[
+                styles.earnPointtotalWillGetInSomeMinute,
+                styles.earnPointtotalSubjectedToTnc,
+              ]}
+            >
+              {string.referAndEarn.subjectedToTnC}
+            </Text>
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.earnPointreedemBtn}
             onPress={() => {
@@ -168,6 +220,12 @@ const styles = StyleSheet.create({
   earnPointtotalWillGetInSomeMinute: {
     marginTop: 5,
     fontSize: 13,
+    textAlign: 'center',
+    color: theme.colors.GRAY,
+  },
+  earnPointtotalSubjectedToTnc: {
+    marginTop: 0,
+    textDecorationLine: 'underline',
   },
   earnPointgiftedHeading: {
     marginTop: 20,

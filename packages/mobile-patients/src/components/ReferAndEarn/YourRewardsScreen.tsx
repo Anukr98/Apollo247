@@ -38,6 +38,7 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 type PendingUserList = {
   name: string;
   registrationDate: string;
+  rewardEligibility: boolean;
 };
 
 type ClaimedUserList = {
@@ -54,6 +55,7 @@ type RefreeInitialData = {
   rewardValue: string | null;
   rewardType: string | null;
   expirationDate: string | null;
+  rewardEligibility: boolean;
 };
 
 export interface YourRewardsScreenProps extends NavigationScreenProps {}
@@ -71,6 +73,7 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
     rewardValue: null,
     rewardType: null,
     expirationDate: null,
+    rewardEligibility: false,
   });
   const client = useApolloClient();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
@@ -168,6 +171,7 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
           expirationDate: getExpirationDate(
             data?.getReferralRewardDetails?.referee?.registrationDate
           ),
+          rewardEligibility: data?.getReferralRewardDetails?.referee?.rewardEligibility,
         });
         setshowSpinner(false);
       }
@@ -178,35 +182,48 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
   const ClaimedCard = () => {
     return initialRefreeData.name != null ? (
       <View style={styles.healthCreditcontainer}>
-        <View style={styles.healthCreditLeftcontainer}>
-          <ReferCheckIcon />
-        </View>
-        <View>
-          <View style={styles.healthCreditRightInnercontainer}>
-            <Text style={styles.healthCreditrefreeName}>{initialRefreeData.name}</Text>
-            <Text style={styles.healthCreditexporationText}>
-              {initialRefreeData.expirationDate}
+        {!initialRefreeData.rewardEligibility ? (
+          <View style={styles.notAvailableClaimTextContainer}>
+            <Text>
+              <Text style={styles.notAvailableClaimBoldText}>
+                {string.referAndEarn.useYourFirstTnc}
+              </Text>
+              {string.referAndEarn.firstThreeMedecineTransition}
             </Text>
           </View>
+        ) : (
+          <>
+            <View style={styles.healthCreditLeftcontainer}>
+              <ReferCheckIcon />
+            </View>
+            <View>
+              <View style={styles.healthCreditRightInnercontainer}>
+                <Text style={styles.healthCreditrefreeName}>{initialRefreeData.name}</Text>
+                <Text style={styles.healthCreditexporationText}>
+                  {initialRefreeData.expirationDate}
+                </Text>
+              </View>
 
-          <View style={styles.healthCreditflexRow}>
-            <View style={styles.healthCreditclaimedRightContaier}>
-              <Text style={styles.healthCreditsmallHeadingOne}>
-                {string.referAndEarn.youEarnedRefreePoints}
-              </Text>
-              <Text style={styles.healthCreditsmallHeadingTwo}>
-                {getRequiredDateFormat(initialRefreeData.registrationDate)}
-                {string.referAndEarn.firstTimeLogin}
-              </Text>
+              <View style={styles.healthCreditflexRow}>
+                <View style={styles.healthCreditclaimedRightContaier}>
+                  <Text style={styles.healthCreditsmallHeadingOne}>
+                    {string.referAndEarn.youEarnedRefreePoints}
+                  </Text>
+                  <Text style={styles.healthCreditsmallHeadingTwo}>
+                    {getRequiredDateFormat(initialRefreeData.registrationDate)}
+                    {string.referAndEarn.firstTimeLogin}
+                  </Text>
+                </View>
+                <View style={styles.healthCredittotalHC}>
+                  <Text style={styles.healthCreditHC}>
+                    {initialRefreeData.rewardValue}
+                    {initialRefreeData.rewardType}
+                  </Text>
+                </View>
+              </View>
             </View>
-            <View style={styles.healthCredittotalHC}>
-              <Text style={styles.healthCreditHC}>
-                {initialRefreeData.rewardValue}
-                {initialRefreeData.rewardType}
-              </Text>
-            </View>
-          </View>
-        </View>
+          </>
+        )}
       </View>
     ) : (
       <View />
@@ -257,9 +274,11 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
           <View style={styles.healthCreditflexRow}>
             <View style={{}}>
               <Text style={styles.healthCreditsmallHeadingOne}>
-                {replaceVariableInString(string.referAndEarn.signedUp, {
-                  signedUpDate: getRequiredDateFormat(item.registrationDate),
-                })}
+                {item.rewardEligibility
+                  ? replaceVariableInString(string.referAndEarn.signedUp, {
+                      signedUpDate: getRequiredDateFormat(item.registrationDate),
+                    })
+                  : string.referAndEarn.notEligibleForRewardMaxLimitReadched}
               </Text>
             </View>
           </View>
@@ -452,6 +471,12 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.LIGHT_GRAY_2,
     borderRadius: 5,
     flexDirection: 'row',
+  },
+  notAvailableClaimTextContainer: {
+    padding: 5,
+  },
+  notAvailableClaimBoldText: {
+    fontWeight: 'bold',
   },
   healthCreditLeftcontainer: {
     marginRight: 10,

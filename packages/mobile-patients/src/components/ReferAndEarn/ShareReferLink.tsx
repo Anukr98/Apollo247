@@ -99,7 +99,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
           rewardValue: data?.getReferralRewardDetails?.referee?.rewardValue,
           rewardRegisteration: data?.getReferralRewardDetails?.referee?.registrationDate,
           expirationData: getRequiredDateFormat(refreeRegisterationDate),
-          showHCSection: checkReferralExpirationDate(
+          showHCSection:  data?.getReferralRewardDetails?.referee?.rewardEligibility && checkReferralExpirationDate(
             data?.getReferralRewardDetails?.referee?.registrationDate
           ),
         });
