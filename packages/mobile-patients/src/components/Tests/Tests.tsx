@@ -2555,13 +2555,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
     const restWidgets =
       isWidget && widgetsData?.slice(getAllRankedItems?.length, widgetsData?.length);
+      console.log('isDiagnosticCircleSubscription :>> ', isDiagnosticCircleSubscription);
     return (
       <>
         {renderWidgetItems(isWidget2)} {/**2 */}
         {renderWidgetItems(isWidget3)} {/** 3 */}
         {renderStepsToBook()}
         {renderWidgetItems(isWidget4)} {/** 4 */}
-        {renderCarouselBanners()}
+        {isDiagnosticCircleSubscription ? renderCarouselBanners() : null}
         {renderWidgetItems(isWidget5)} {/** 5 */}
         {renderWhyBookUs()}
         {renderWidgetItems(isWidget6)} {/** 6 */}
