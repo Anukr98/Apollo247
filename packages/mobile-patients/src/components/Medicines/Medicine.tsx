@@ -335,6 +335,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [buyAgainLoading, setBuyAgainLoading] = useState<boolean>(true);
   const [showCirclePopup, setShowCirclePopup] = useState<boolean>(false);
   const [pageLoading, setPageLoading] = useState<boolean>(false);
+  const [searchItemLoading, setSearchItemLoading] = useState<{ [key: string]: boolean }>({});
+  const [searchItemAdded, setSearchItemAdded] = useState<string>('');
 
   const [recommendedProducts, setRecommendedProducts] = useState<MedicineProduct[]>([]);
   const [data, setData] = useState<MedicinePageAPiResponse | null>(medicinePageAPiResponse);
@@ -1941,7 +1943,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [searchText, setSearchText] = useState<string>('');
   const [medicineList, setMedicineList] = useState<(MedicineProduct | SearchSuggestion)[]>([]);
   const [isSearchFocused, setSearchFocused] = useState(false);
-  const [itemsLoading, setItemsLoading] = useState<{ [key: string]: boolean }>({});
   const [medicineSearchLoading, setMedicineSearchLoading] = useState<boolean>(false);
 
   const onSearchMedicine = (_searchText: string) => {
@@ -2104,13 +2105,21 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const client = useApolloClient();
 
+  useEffect(() => {
+    if (!serverCartLoading && searchItemAdded) {
+      setSearchItemLoading({ ...searchItemLoading, [searchItemAdded]: true });
+      setSearchItemAdded('');
+    }
+  }, [serverCartLoading]);
+
   const onAddCartItem = (
     item: MedicineProduct,
     comingFromSearch: boolean,
     cleverTapSearchSuccessEventAttributes: object
   ) => {
     const { sku, category_id } = item;
-    setItemsLoading({ ...itemsLoading, [sku]: true });
+    setSearchItemAdded(sku);
+    setSearchItemLoading({ ...searchItemLoading, [sku]: true });
     addPharmaItemToCart(
       formatToCartItem(item),
       pharmacyPincode,
@@ -2121,7 +2130,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       !!isPharmacyPincodeServiceable,
       { source: 'Pharmacy Partial Search', categoryId: category_id },
       JSON.stringify(serverCartItems),
-      () => setItemsLoading({ ...itemsLoading, [sku]: false }),
+      () => {},
       pharmacyCircleAttributes!,
       () => {},
       comingFromSearch,
@@ -2282,7 +2291,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         }}
         quantity={getItemQuantity(item?.sku)}
         data={item}
-        loading={itemsLoading[item?.sku]}
+        loading={searchItemLoading[item?.sku]}
         showSeparator={index !== medicineList?.length - 1}
         style={{
           marginHorizontal: 20,
@@ -2305,7 +2314,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           showsVerticalScrollIndicator={true}
           style={styles.searchResults}
           data={medicineList}
-          extraData={itemsLoading}
+          extraData={searchItemLoading}
           renderItem={renderSearchSuggestionItemView}
         />
         <View style={styles.searchContainer}>

@@ -24,6 +24,7 @@ import { getProductsByCategoryApi } from '@aph/mobile-patients/src/helpers/apiCa
 import { Helpers } from '@aph/mobile-patients/src/components/MedicineCartPrescription';
 import { USER_AGENT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
 import AsyncStorage from '@react-native-community/async-storage';
+import moment from 'moment';
 
 export const useServerCart = () => {
   const client = useApolloClient();
@@ -52,8 +53,9 @@ export const useServerCart = () => {
     addToCartSource,
     setAddToCartSource,
     pharmacyCircleAttributes,
+    setTatDetailsForPrescriptionOptions,
   } = useShoppingCart();
-  const { axdcCode, isPharmacyLocationServiceable } = useAppCommonData();
+  const { axdcCode, pharmacyUserTypeAttribute } = useAppCommonData();
   const { setPharmacyLocation } = useAppCommonData();
   const [userActionPayload, setUserActionPayload] = useState<any>(null);
   const [userAgent, setUserAgent] = useState<string>('');
@@ -198,6 +200,13 @@ export const useServerCart = () => {
       });
       setCartSubscriptionDetails?.(cartResponse?.subscriptionDetails);
       setNoOfShipments?.(cartResponse?.noOfShipments);
+      setTatDetailsForPrescriptionOptions?.({
+        patientid: currentPatient?.id,
+        userType: pharmacyUserTypeAttribute?.User_Type,
+        tatCity: cartResponse?.city,
+        tatHours: moment(cartResponse?.medicineOrderCartLineItems?.[0]?.tat).diff(moment(), 'h'),
+        items: cartResponse?.medicineOrderCartLineItems?.map((item) => item?.sku),
+      });
     } catch (error) {}
   };
 
