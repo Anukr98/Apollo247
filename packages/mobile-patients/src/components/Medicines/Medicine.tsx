@@ -2107,7 +2107,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   useEffect(() => {
     if (!serverCartLoading && searchItemAdded) {
-      setSearchItemLoading({ ...searchItemLoading, [searchItemAdded]: true });
+      setSearchItemLoading({ ...searchItemLoading, [searchItemAdded]: false });
       setSearchItemAdded('');
     }
   }, [serverCartLoading]);
@@ -2265,6 +2265,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           onNotifyMeClick(item?.name);
         }}
         onPressAdd={() => {
+          setSearchItemLoading({ ...searchItemLoading, [item?.sku]: true });
           const q = getItemQuantity(item?.sku);
           if (q == getMaxQtyForMedicineItem(item?.MaxOrderQty)) return;
           setCurrentProductQuantityInCart(q + 1);
@@ -2278,6 +2279,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           });
         }}
         onPressSubstract={() => {
+          setSearchItemLoading({ ...searchItemLoading, [item?.sku]: true });
           const q = getItemQuantity(item?.sku);
           setCurrentProductQuantityInCart(q - 1);
           setUserActionPayload?.({
