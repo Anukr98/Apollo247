@@ -2585,6 +2585,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         onDidBlur={postScrollScreenEvent}
       />
       <SafeAreaView style={{ ...viewStyles.container }}>
+        <View style={{ backgroundColor: 'white' }}>
+          {renderTopView()}
+          {renderSearchInput()}
+          {renderSearchResults()}
+        </View>
         <KeyboardAwareScrollView
           ref={scrollViewRef}
           bounces={false}
@@ -2606,14 +2611,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               );
           }}
         >
-          <View style={{ backgroundColor: 'white' }}>
-            {renderTopView()}
-            {renderSearchInput()}
-            {renderSearchResults()}
-          </View>
-
           {pageLoading ? renderMedicinesShimmer() : null}
-
           <View style={{ flex: 1, paddingBottom: !!serverCartItems?.length ? 80 : 0 }}>
             {renderSections()}
             {renderOverlay()}
