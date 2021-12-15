@@ -39,7 +39,7 @@ export const CircleBottomContainer: React.FC<CircleBottomContainerProps> = (prop
           <View style={{ flexDirection: 'row', marginLeft: 10 }}>
             <Text style={circleStyles.priceStrikeOff}>
               ({string.common.Rs}
-              {convertNumberToDecimal(cartSavings)})
+              {convertNumberToDecimal(cartTotal)})
             </Text>
             <Text style={circleStyles.discountPercentage}>{cartDiscountPercent}% off</Text>
           </View>
@@ -79,7 +79,7 @@ export const CircleBottomContainer: React.FC<CircleBottomContainerProps> = (prop
         <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0)}>
           MRP{'  '}
           {string.common.Rs}
-          {cartTotal?.toFixed(2)}
+          {cartSavings ? (cartTotal - cartSavings)?.toFixed(2) : cartTotal?.toFixed(2)}
         </Text>
         {renderCartDiscount()}
       </View>
@@ -96,7 +96,7 @@ export const CircleBottomContainer: React.FC<CircleBottomContainerProps> = (prop
         </Text>
         <Text style={theme.viewStyles.text('SB', 12, '#02475B', 1, 25, 0)}>
           {string.common.Rs}
-          {convertNumberToDecimal(estimatedAmount)}
+          {convertNumberToDecimal(estimatedAmount - totalCashback)}
         </Text>
       </View>
     </View>
