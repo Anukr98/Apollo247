@@ -92,7 +92,7 @@ import moment from 'moment';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 
 const screenHeight = Dimensions.get('window').height;
-const { SHERPA_BLUE, WHITE, APP_GREEN } = theme.colors;
+const { SHERPA_BLUE, WHITE, APP_GREEN, NEWGRAY } = theme.colors;
 
 type Address = savePatientAddress_savePatientAddress_patientAddress;
 
@@ -685,7 +685,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
 
   const renderSubHeading = () => {
     return (
-      <View style={{ marginTop: 6 }}>
+      <View style={{ marginTop: 5 }}>
         <Text style={styles.subHeadingText}>
           {string.diagnosticsCartPage.subHeadingMultipleUHID?.replace(
             '{{patientCount}}',
@@ -883,6 +883,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
               renderItem={({ item, index }) =>
                 renderCartItemList(item, index, findPatientCartMapping)
               }
+              contentContainerStyle={styles.cartItemsFlatList}
               ItemSeparatorComponent={renderSeparator}
             />
           </View>
@@ -907,7 +908,11 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     ];
 
     return (
-      <View style={{ flex: 1, marginBottom: index === patientListToShow?.length - 1 ? 16 : 0 }}>
+      <View
+        style={[styles.itemStyleView, {
+          marginBottom: index === patientListToShow?.length - 1 ? 16 : 0,
+        }]}
+      >
         <TouchableOpacity
           activeOpacity={1}
           style={itemViewStyle}
@@ -923,7 +928,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
             {!showGreenBg ? (
               <MinusPatientCircleIcon style={[styles.arrowStyle]} />
             ) : (
-              <AddPatientCircleIcon style={[styles.arrowStyle, { marginLeft: -6 }]} />
+              <AddPatientCircleIcon style={[styles.arrowStyle]} />
             )}
           </View>
         </TouchableOpacity>
@@ -1072,7 +1077,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
 
   const renderMainView = () => {
     return (
-      <View style={{ margin: 16, flex: 1 }}>
+      <View style={styles.mainContainerView}>
         {renderHeading()}
         {renderSubHeading()}
         {renderPatientsList()}
@@ -1118,7 +1123,7 @@ const styles = StyleSheet.create({
     width: 10,
     resizeMode: 'contain',
   },
-  headingContainer: { height: 35, alignItems: 'center' },
+  headingContainer: { alignItems: 'center' },
   subHeadingText: {
     ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 1, 18),
   },
@@ -1132,6 +1137,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     marginVertical: 16,
     flex: 1,
+    padding: 5,
   },
   patientItemViewStyle: {
     flexDirection: 'row',
@@ -1142,13 +1148,17 @@ const styles = StyleSheet.create({
     padding: 12,
     marginTop: 16,
     minHeight: 45,
+    borderColor: NEWGRAY,
+    borderWidth: 1,
   },
   patientNameTextStyle: {
     ...text('SB', 14, SHERPA_BLUE, 1, 19, 0),
-    width: '70%',
+    width: '75%',
   },
   genderAgeTextStyle: {
     ...text('M', 12, SHERPA_BLUE, 1, 15.6, -0.36),
+    width: '18%',
+    textAlign: 'right',
   },
   arrowStyle: {
     height: 18,
@@ -1161,12 +1171,13 @@ const styles = StyleSheet.create({
   cartItemsFlatList: {
     borderColor: 'rgba(2,71,91,0.2)',
     borderWidth: 1.5,
-    marginLeft: 4,
-    marginRight: 4,
-    borderBottomLeftRadius: 8,
-    borderBottomRightRadius: 8,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
     backgroundColor: colors.WHITE,
     borderStyle: 'solid',
+    overflow: 'hidden',
+    marginTop: -10,
+    paddingTop: 10,
   },
   patientSelectTouch: {
     flexDirection: 'row',
@@ -1179,10 +1190,11 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   arrowIconView: {
-    width: 20,
+    width: '7%',
     height: 20,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingLeft: 5,
   },
   buttonView: {
     marginLeft: -16,
@@ -1197,16 +1209,21 @@ const styles = StyleSheet.create({
   patientSelectionCountView: {
     justifyContent: 'flex-start',
     alignItems: 'flex-start',
-    padding: 8,
   },
   selectedPatientCount: { ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 20) },
   selectedPatientCountText: {
     ...theme.viewStyles.text('R', 14, theme.colors.SHERPA_BLUE, 1, 24),
-    marginTop: -5,
   },
   stickyBottomStyle: {
     shadowColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: -10,
   },
+  itemStyleView: {
+    flex: 1,
+    padding: 5,
+  },
+  mainContainerView: { marginVertical: 16, flex: 1, padding: 10, backgroundColor: 'red' },
 });

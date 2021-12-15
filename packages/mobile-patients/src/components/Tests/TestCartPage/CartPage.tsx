@@ -1110,26 +1110,28 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           style={[
             styles.addressOutermostView,
             {
-              minHeight: screenHeight > 800 ? 150 : screenHeight < 600 ? 165 : 175,
+              minHeight: screenHeight > 800 ? 150 : screenHeight < 600 ? 145 : 155,
             },
           ]}
         >
-          <Text style={styles.addressHeadingText}>
-            {nameFormater(string.diagnostics.homeVisitText, 'title')}
-          </Text>
-          <View>
-            <View style={styles.addressTextView}>
-              {!!addressText && (
-                <Text numberOfLines={2} style={styles.addressTextStyle}>
-                  {addressText}
-                </Text>
-              )}
-              {isModifyFlow ? null : (
-                <Text style={styles.changeTextStyle} onPress={() => showAddressPopup()}>
-                  {string.diagnostics.changeText}
-                </Text>
-              )}
-            </View>
+          <View
+            style={styles.addressView}
+          >
+            <Text style={styles.addressHeadingText}>
+              {nameFormater(string.diagnostics.homeVisitText, 'title')}
+            </Text>
+            {isModifyFlow ? null : (
+              <Text style={styles.changeTextStyle} onPress={() => showAddressPopup()}>
+                {string.diagnostics.changeText}
+              </Text>
+            )}
+          </View>
+          <View style={styles.addressTextView}>
+            {!!addressText && (
+              <Text numberOfLines={2} style={styles.addressTextStyle}>
+                {addressText}
+              </Text>
+            )}
           </View>
         </View>
       </>
@@ -1805,8 +1807,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 
 const styles = StyleSheet.create({
   addressHeadingText: {
-    marginLeft: 16,
-    marginTop: 16,
     ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 1, 20),
   },
   changeTextStyle: {
@@ -1955,4 +1955,11 @@ const styles = StyleSheet.create({
   },
   cartCountText: { ...theme.viewStyles.text('SB', 12, theme.colors.SHERPA_BLUE, 1, 18) },
   patientNameCartItemView: { marginBottom: -50, zIndex: 3000 },
+  addressView: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignContent: 'center',
+    marginHorizontal: 16,
+    marginTop: 12,
+  }
 });
