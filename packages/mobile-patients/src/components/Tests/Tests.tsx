@@ -2555,7 +2555,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
     const restWidgets =
       isWidget && widgetsData?.slice(getAllRankedItems?.length, widgetsData?.length);
-      console.log('isDiagnosticCircleSubscription :>> ', isDiagnosticCircleSubscription);
     return (
       <>
         {renderWidgetItems(isWidget2)} {/**2 */}
