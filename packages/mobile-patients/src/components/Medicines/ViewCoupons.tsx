@@ -181,6 +181,10 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
     serverCartAmount,
     isCircleCart,
     cartCircleSubscriptionId,
+    cartLocationDetails,
+    addresses,
+    cartAddressId,
+    setSubscriptionCoupon,
   } = useShoppingCart();
   const { showAphAlert, setLoading } = useUIElements();
   const [shimmerLoading, setShimmerLoading] = useState<boolean>(true);
@@ -193,6 +197,8 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
     activeUserSubscriptions,
   } = useAppCommonData();
   const { setUserActionPayload } = useServerCart();
+  const defaultAddress = addresses.find((item) => item?.id == cartAddressId);
+  const pharmacyPincode = cartLocationDetails?.pincode || defaultAddress?.zipcode;
 
   let packageId: string[] = [];
   if (hdfcSubscriptionId && hdfcStatus === 'active') {
@@ -315,6 +321,57 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
       .finally(() => setLoading?.(false));
   };
 
+  const applySubscriptionCoupon = (coupon: string, applyingFromList?: boolean) => {
+    CommonLogEvent(AppRoutes.ViewCoupons, 'Select coupon');
+    setLoading?.(true);
+    let data = {
+      mobile: g(currentPatient, 'mobileNumber'),
+      billAmount: circlePlanSelected?.currentSellingPrice,
+      subscriptionType: `APOLLO:${circlePlanSelected?.subPlanId}`,
+      coupon: coupon,
+      pinCode: pharmacyPincode,
+      products: serverCartItems?.map((item) => ({
+        sku: item?.sku,
+        categoryId: item?.typeId,
+        mrp: item?.price,
+        quantity: item?.quantity,
+        specialPrice: item?.sellingPrice || item?.price,
+      })),
+      packageIds: packageId,
+      email: currentPatient?.emailAddress,
+    };
+    validateConsultCoupon(data)
+      .then((resp: any) => {
+        if (resp?.data?.errorCode == 0) {
+          if (resp?.data?.response?.valid) {
+            const successMessage = resp?.data?.response?.successMessage || '';
+            setSubscriptionCoupon?.({
+              ...g(resp?.data, 'response')!,
+              successMessage: successMessage,
+            });
+            props.navigation.goBack();
+          } else {
+            !applyingFromList && setCouponError(g(resp.data, 'response', 'reason'));
+            applyingFromList && setCouponListError(g(resp.data, 'response', 'reason'));
+            setDisableCouponsList([...disableCouponsList, coupon]);
+            saveDisableCoupons(coupon);
+          }
+        } else {
+          CommonBugFender('validatingPharmaCoupon', g(resp?.data, 'errorMsg'));
+          !applyingFromList && setCouponError(g(resp?.data, 'errorMsg'));
+          applyingFromList && setCouponListError(g(resp?.data, 'errorMsg'));
+          saveDisableCoupons(coupon);
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('validatingPharmaCoupon', error);
+        !applyingFromList && setCouponError('Sorry, unable to validate coupon right now.');
+        applyingFromList && setCouponListError('Sorry, unable to validate coupon right now.');
+        saveDisableCoupons(coupon);
+      })
+      .finally(() => setLoading?.(false));
+  };
+
   const renderInputWithValidation = () => {
     const rightIconView = () => {
       return (
@@ -326,6 +383,8 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
               onPress={() => {
                 if (isFromConsult) {
                   applyConsultCoupon(couponText, false);
+                } else if (isFromSubscription) {
+                  applySubscriptionCoupon(couponText, false);
                 } else {
                   setCouponTextApplied(true);
                   setUserActionPayload?.({
@@ -454,6 +513,8 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
     CommonLogEvent(AppRoutes.ViewCoupons, 'Apply Coupon');
     if (isFromConsult) {
       applyConsultCoupon(couponText, true);
+    } else if (isFromSubscription) {
+      applySubscriptionCoupon(couponText, true);
     } else {
       setCouponTextApplied(false);
       setUserActionPayload?.({
