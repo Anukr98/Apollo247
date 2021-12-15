@@ -1224,6 +1224,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const [showHdfcConnectPopup, setShowHdfcConnectPopup] = useState<boolean>(false);
   const [bannerLoading, setBannerLoading] = useState<boolean>(false);
   let circleActivated = props.navigation.getParam('circleActivated');
+  let circlePurchaseStatus = props.navigation.getParam('paymentStatus');
   const circleActivatedRef = useRef<boolean>(circleActivated);
   const [referAndEarnPrice, setReferAndEarnPrice] = useState('100');
   const scrollCount = useRef<number>(0);
@@ -4071,7 +4072,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             getUserBanners();
             circleActivatedRef.current = false;
           }}
-          circleActivated={circleActivatedRef.current}
+          circleActivated={circleActivatedRef.current && circlePurchaseStatus === 'success'}
           circlePlanValidity={circlePlanValidity}
           from={string.banner_context.HOME}
           source={string.banner_context.HOME}
