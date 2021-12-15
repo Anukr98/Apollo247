@@ -6032,7 +6032,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                 {!offersListLoading && offersList.length === 0
                   ? null
                   : renderHeadings('Offers For You')}
-                {offersListCache.length === 0 && offersListLoading && renderOffersForYouShimmer()}
+                {/* Don't delete this*/}
+                {/* {offersListCache.length === 0 && offersListLoading && renderOffersForYouShimmer()} */}
                 {(offersListCache.length > 0 || !offersListLoading) && renderOffersForYou()}
 
                 {isReferrerAvailable && renderReferralBanner()}
