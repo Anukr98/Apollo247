@@ -178,6 +178,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { addresses, onHoldOptionOrder } = useShoppingCart();
   const {
+    setUserActionPayload,
     uploadEPrescriptionsToServerCart,
     uploadPhysicalPrescriptionsToServerCart,
   } = useServerCart();
@@ -542,7 +543,13 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           quantity: 1,
         });
       });
-      uploadEPrescriptionsToServerCart(prescriptions, cartItemsToAdd);
+      if (prescriptions?.length) {
+        uploadEPrescriptionsToServerCart(prescriptions, cartItemsToAdd);
+      } else {
+        setUserActionPayload?.({
+          medicineOrderCartLineItems: cartItemsToAdd,
+        });
+      }
       setLoading!(false);
       if (unavailableItems.length) {
         setReOrderDetails({ total: totalItemsCount, unavailable: unavailableItems });
