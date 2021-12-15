@@ -1225,5 +1225,5 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 5,
   },
-  mainContainerView: { marginVertical: 16, flex: 1, padding: 10, backgroundColor: 'red' },
+  mainContainerView: { marginVertical: 16, flex: 1, padding: 10 },
 });
