@@ -171,7 +171,7 @@ export enum CleverTapEventName {
   PHARMACY_CHRONIC_UPSELL_NUDGE = 'Chronic Upsell Nudge',
   PHARMACY_SEARCH_SUCCESS = 'Pharmacy Search Success',
   PHARMACY_CART_REVIEW_ORDER_PAGE_VIEWED = 'Pharmacy Cart Review Order Page Viewed',
-  PHARMACY_DONT_HAVE_PRESCRIPTION = "Pharmacy don't have prescription",
+  PHARMACY_DONT_HAVE_PRESCRIPTION = "Pharmacy does not have prescription",
   PHARMACY_CART_ITEM_QUANTITY_CHANGED = 'Pharmacy cart item quantity changed',
   PHARMACY_CART_ADD_ITEMS_CLICKED = 'Pharmacy cart add items clicked',
   PHARMACY_CART_CHANGE_ADDRESS_CLICKED = 'Pharmacy cart change address clicked',

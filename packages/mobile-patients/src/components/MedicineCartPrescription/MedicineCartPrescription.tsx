@@ -115,6 +115,7 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
                 prescriptionDetails: prescriptionsToDelete,
               });
               if (option === PrescriptionType.CONSULT) {
+                postPrescriptionEvent("noPrescription")
                 setTimeout(() => {
                   scrollViewRef.current?.scrollToEnd?.();
                 }, 100);
@@ -150,22 +151,18 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
         prescription_required,
         user: currentPatient?.firstName,
         mobile_number: currentPatient?.mobileNumber,
-        "Customer id": currentPatient?.id
+        "Customer id": currentPatient?.id,
       }
       if(eventType === 'noPrescription')
         postCleverTapEvent(CleverTapEventName.PHARMACY_DONT_HAVE_PRESCRIPTION, eventAttributes)
       if(eventType === 'pageViewed')
         postCleverTapEvent(CleverTapEventName.PHARMACY_PRESCRIPTION_PAGE_VIEWED, eventAttributes)
     }
-    catch(e) {
-
-    }
+    catch(e) {}
   }
 
   const onPressContinue = async () => {
     try {
-      if(cartPrescriptionType === PrescriptionType.CONSULT)
-        postPrescriptionEvent("noPrescription")
       navigation.navigate(AppRoutes.ReviewCart);
       postEvent(cartPrescriptionType);
     } catch (error) {

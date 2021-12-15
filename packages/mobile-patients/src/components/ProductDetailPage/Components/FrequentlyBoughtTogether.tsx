@@ -29,6 +29,7 @@ export interface FrequentlyBoughtTogetherProps {
 export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> = (props) => {
   const { boughtTogetherArray, setShowAddedToCart } = props;
   const defaultSelectedId: number[] = [];
+  const { pharmacyCircleAttributes } = useShoppingCart();
 
   let defaultTotalPrice = 0;
 
@@ -72,13 +73,16 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
 
   const postFrequentlyBoughtTogetherEvent = async (item: object) => {
     const eventAttributes = {
-      item,
       source: "Frequently Bought Together",
-      user: currentPatient?.firstName,
-      mobile_number: currentPatient?.mobileNumber,
-      customer_id: currentPatient?.id
+      sku: item?.sku,
+      name: item?.name,
+      price: item?.price,
+      special_price: item?.special_price,
+      quantity: 1,
+      'Circle Member': pharmacyCircleAttributes?.['Circle Membership Added'],
+      'Circle Membership Value': pharmacyCircleAttributes?.['Circle Membership Value'] ? pharmacyCircleAttributes?.['Circle Membership Value'] : 0
     }
-    postCleverTapEvent(CleverTapEventName.FRQUENTLY_BOUGHT_TOGETHER, eventAttributes)
+    postCleverTapEvent(CleverTapEventName.PHARMACY_ADD_TO_CART, eventAttributes)
   }
 
   const onPressAdd = (selectedProductsArray) => {
