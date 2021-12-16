@@ -74,14 +74,10 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   const [skuList, setSkuList] = useState<string[]>([]);
 
   useEffect(() => {
+    fetchOrders();
     BackHandler.addEventListener('hardwareBackPress', onPressHardwareBack);
-    const focusListener=props.navigation.addListener("didFocus", () => {
-      fetchOrders();
-    });
-
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', onPressHardwareBack);
-      focusListener.remove();
     };
   }, []);
 

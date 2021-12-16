@@ -24,6 +24,7 @@ import { getProductsByCategoryApi } from '@aph/mobile-patients/src/helpers/apiCa
 import { Helpers } from '@aph/mobile-patients/src/components/MedicineCartPrescription';
 import { USER_AGENT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
 import AsyncStorage from '@react-native-community/async-storage';
+import moment from 'moment';
 
 export const useServerCart = () => {
   const client = useApolloClient();
@@ -52,8 +53,9 @@ export const useServerCart = () => {
     addToCartSource,
     setAddToCartSource,
     pharmacyCircleAttributes,
+    setTatDetailsForPrescriptionOptions,
   } = useShoppingCart();
-  const { axdcCode, isPharmacyLocationServiceable } = useAppCommonData();
+  const { axdcCode, pharmacyUserTypeAttribute } = useAppCommonData();
   const { setPharmacyLocation } = useAppCommonData();
   const [userActionPayload, setUserActionPayload] = useState<any>(null);
   const [userAgent, setUserAgent] = useState<string>('');
@@ -62,7 +64,7 @@ export const useServerCart = () => {
   useEffect(() => {
     if (!userAgent) {
       AsyncStorage.getItem(USER_AGENT).then((userAgent) => {
-        setUserAgent(userAgent || '');
+        if (userAgent) setUserAgent(userAgent);
       });
     }
   }, [userAgent]);
@@ -198,6 +200,13 @@ export const useServerCart = () => {
       });
       setCartSubscriptionDetails?.(cartResponse?.subscriptionDetails);
       setNoOfShipments?.(cartResponse?.noOfShipments);
+      setTatDetailsForPrescriptionOptions?.({
+        patientid: currentPatient?.id,
+        userType: pharmacyUserTypeAttribute?.User_Type,
+        tatCity: cartResponse?.city,
+        tatHours: moment(cartResponse?.medicineOrderCartLineItems?.[0]?.tat).diff(moment(), 'h'),
+        items: cartResponse?.medicineOrderCartLineItems?.map((item) => item?.sku),
+      });
     } catch (error) {}
   };
 
@@ -315,27 +324,36 @@ export const useServerCart = () => {
     }
   };
 
-  const uploadEPrescriptionsToServerCart = (ePrescriptionsToBeUploaded: EPrescription[]) => {
+  const uploadEPrescriptionsToServerCart = (
+    ePrescriptionsToBeUploaded: EPrescription[],
+    cartItemsToAdd?: any[]
+  ) => {
     setUserActionPayload?.(null);
     if (ePrescriptionsToBeUploaded?.length) {
-      const prescriptionsToUpload = ePrescriptionsToBeUploaded.map((presToAdd: EPrescription) => {
-        return {
-          prescriptionImageUrl: presToAdd?.uploadedUrl,
-          prismPrescriptionFileId: presToAdd?.prismPrescriptionFileId,
-          uhid: currentPatient?.uhid,
-          appointmentId: presToAdd?.appointmentId,
-          meta: {
-            doctorName: presToAdd?.doctorName,
-            forPatient: presToAdd?.forPatient,
-            medicines: presToAdd?.medicines,
-            date: presToAdd?.date,
-          },
-        };
-      });
-      setUserActionPayload?.({
-        prescriptionType: PrescriptionType.UPLOADED,
-        prescriptionDetails: prescriptionsToUpload,
-      });
+      const prescriptionsToUpload =
+        ePrescriptionsToBeUploaded.map((presToAdd: EPrescription) => {
+          return {
+            prescriptionImageUrl: presToAdd?.uploadedUrl,
+            prismPrescriptionFileId: presToAdd?.prismPrescriptionFileId || presToAdd?.id,
+            uhid: currentPatient?.uhid,
+            appointmentId: presToAdd?.appointmentId,
+            meta: {
+              doctorName: presToAdd?.doctorName,
+              forPatient: presToAdd?.forPatient,
+              medicines: presToAdd?.medicines,
+              date: presToAdd?.date,
+            },
+          };
+        }) || [];
+      const cartInputData: CartInputData = {
+        ...{
+          prescriptionType: PrescriptionType.UPLOADED,
+          prescriptionDetails: prescriptionsToUpload,
+          medicineOrderCartLineItems: cartItemsToAdd?.length ? cartItemsToAdd : [],
+        },
+        patientId: currentPatient?.id,
+      };
+      saveServerCart(cartInputData);
     } else {
       setUserActionPayload?.({
         prescriptionType: PrescriptionType.UPLOADED,
@@ -355,6 +373,7 @@ export const useServerCart = () => {
   return {
     setUserActionPayload,
     fetchServerCart,
+    saveServerCart,
     fetchReviewCart,
     deleteServerCart,
     fetchAddress,

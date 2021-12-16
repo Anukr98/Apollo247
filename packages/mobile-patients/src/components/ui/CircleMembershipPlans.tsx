@@ -298,7 +298,12 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     }
   };
   const onPressMembershipPlans = (index: number) => {
+    fireMembershipPlanSelected();
     const membershipPlan = membershipPlans?.[index];
+
+    setCirclePlanSelected && setCirclePlanSelected(membershipPlan);
+    AsyncStorage.setItem('circlePlanSelected', JSON.stringify(membershipPlan));
+
     if (source === 'Pharma Cart') {
       postAppsFlyerCircleAddRemoveCartEvent(
         membershipPlan,
@@ -306,7 +311,9 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         'add',
         currentPatient
       );
-    } else if (isConsultJourney) {
+    }
+
+    if (isConsultJourney) {
       !isModal &&
         circleWebEngageEventForAddToCart(
           WebEngageEventName.VC_NON_CIRCLE_ADDS_CART,
@@ -321,6 +328,10 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       setCircleMembershipCharges && setCircleMembershipCharges(membershipPlan?.currentSellingPrice);
       onSelectMembershipPlan && onSelectMembershipPlan(membershipPlan);
     }
+
+    setDefaultCirclePlan && setDefaultCirclePlan(null);
+    setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
+
     setUserActionPayload?.({
       subscription: {
         planId: PLAN_ID.CIRCLEPlan,
@@ -1095,6 +1106,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       </View>
     );
   };
+
   return (
     <View style={isModal ? {} : [styles.careBannerView, props.style]}>
       {circlePlanSelected && !isModal && !autoCirlcePlanAdded && !spinning && !defaultCirclePlan

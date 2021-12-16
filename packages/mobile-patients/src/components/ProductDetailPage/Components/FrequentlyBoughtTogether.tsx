@@ -14,9 +14,12 @@ import {
   getDiscountPercentage,
   productsThumbnailUrl,
   getIsMedicine,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 export interface FrequentlyBoughtTogetherProps {
   boughtTogetherArray: MedicineProduct[];
@@ -26,6 +29,7 @@ export interface FrequentlyBoughtTogetherProps {
 export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> = (props) => {
   const { boughtTogetherArray, setShowAddedToCart } = props;
   const defaultSelectedId: number[] = [];
+  const { pharmacyCircleAttributes } = useShoppingCart();
 
   let defaultTotalPrice = 0;
 
@@ -45,6 +49,7 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
   const [totalPrice, setTotalPrice] = useState<number>(defaultTotalPrice || 0);
 
   const { setUserActionPayload } = useServerCart();
+  const { allCurrentPatients, currentPatient } = useAllCurrentPatients()
 
   const onPressIcon = (id: number, itemPrice: number, item) => {
     const newArr = [...selectedProductsId];
@@ -66,9 +71,24 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
     setSelectedProductsId(newArr);
   };
 
+  const postFrequentlyBoughtTogetherEvent = async (item: object) => {
+    const eventAttributes = {
+      source: "Frequently Bought Together",
+      sku: item?.sku,
+      name: item?.name,
+      price: item?.price,
+      special_price: item?.special_price,
+      quantity: 1,
+      'Circle Member': pharmacyCircleAttributes?.['Circle Membership Added'],
+      'Circle Membership Value': pharmacyCircleAttributes?.['Circle Membership Value'] ? pharmacyCircleAttributes?.['Circle Membership Value'] : 0
+    }
+    postCleverTapEvent(CleverTapEventName.PHARMACY_ADD_TO_CART, eventAttributes)
+  }
+
   const onPressAdd = (selectedProductsArray) => {
     if (selectedProductsArray.length > 0) {
       selectedProductsArray.map((item) => {
+        postFrequentlyBoughtTogetherEvent(item)
         setUserActionPayload?.({
           medicineOrderCartLineItems: [
             {

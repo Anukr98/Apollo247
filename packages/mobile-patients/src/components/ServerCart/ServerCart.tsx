@@ -18,6 +18,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import {
   formatAddress,
+  postCleverTapEvent,
   setAsyncPharmaLocation,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -59,6 +60,11 @@ import { EmptyCart } from '@aph/mobile-patients/src/components/ServerCart/Compon
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { saveCart_saveCart_data_medicineOrderCartLineItems } from '@aph/mobile-patients/src/graphql/types/saveCart';
 import { FreeDelivery } from '@aph/mobile-patients/src/components/ServerCart/Components/FreeDelivery';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import AsyncStorage from '@react-native-community/async-storage';
 
 export interface ServerCartProps extends NavigationScreenProps {}
 
@@ -79,6 +85,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
     pharmacyCircleAttributes,
     serverCartErrorMessage,
     setServerCartErrorMessage,
+    isSplitCart,
   } = useShoppingCart();
   const shoppingCart = useShoppingCart();
   const { pharmacyUserTypeAttribute } = useAppCommonData();
@@ -103,6 +110,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
     if (!addresses?.length) fetchAddress();
     if (!cartSuggestedProducts?.length) fetchProductSuggestions();
     firePharmacyCartViewedEvent();
+    fireAddressSelectedEvent(selectedAddress)
   }, []);
 
   useEffect(() => {
@@ -160,6 +168,21 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
     }
   }, [serverCartItems]);
 
+  const fireAddressSelectedEvent = async (selectedAddress: any) => {
+    if(selectedAddress) {
+      const eventAttributes = {
+        address: formatAddress(selectedAddress),
+        'Circle membership added': pharmacyCircleAttributes?.['Circle Membership Added'],
+        'Circle membership value': pharmacyCircleAttributes?.['Circle Membership Value'] ? pharmacyCircleAttributes?.['Circle Membership Value'] : 0,
+        "Split Cart": isSplitCart ? "Yes" : "No",
+        Pincode: selectedAddress?.zipcode,
+        'User Type': await AsyncStorage.getItem('PharmacyUserType'),
+        'TAT': cartTat
+      }
+      postCleverTapEvent(CleverTapEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS, eventAttributes)
+    }
+  }
+
   const showUnServiceableItemsAlert = (
     unserviceableCartItems: saveCart_saveCart_data_medicineOrderCartLineItems[]
   ) => {
@@ -206,7 +229,26 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
       );
   };
 
-  function showAddressPopup() {
+  const postChangeAddressEvent = async () => {
+    try {
+      const currentAddress = addresses?.find((item) => item?.id === cartAddressId);
+      const eventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CART_CHANGE_ADDRESS_CLICKED] = {
+        currentAddress: formatAddress(currentAddress!),
+        pincode: currentAddress?.zipcode,
+        user: currentPatient?.firstName,
+        mobile_number: currentAddress?.mobileNumber ? currentAddress?.mobileNumber : '',
+        user_type: await AsyncStorage.getItem('PharmacyUserType'),
+        circle_member: pharmacyCircleAttributes?.['Circle Membership Added'],
+        circle_membership_value: pharmacyCircleAttributes?.['Circle Membership Value']
+          ? pharmacyCircleAttributes?.['Circle Membership Value']
+          : 0,
+      };
+      postCleverTapEvent(CleverTapEventName.PHARMACY_CART_CHANGE_ADDRESS_CLICKED, eventAttributes);
+    } catch (err) {}
+  };
+
+  async function showAddressPopup() {
+    postChangeAddressEvent();
     showAphAlert!({
       title: string.common.selectAddress,
       removeTopIcon: true,
@@ -231,6 +273,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
             hideAphAlert!();
           }}
           onPressSelectAddress={(address) => {
+            fireAddressSelectedEvent(address)
             setUserActionPayload?.({
               patientAddressId: address.id,
               zipcode: address.zipcode,
@@ -391,10 +434,10 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
           }}
         >
           {!!serverCartItems?.length ? renderScreen() : renderEmptyCart()}
-          {serverCartLoading && <Spinner />}
         </ScrollView>
         {!!serverCartItems?.length && renderProceedBar()}
       </SafeAreaView>
+      {serverCartLoading && <Spinner />}
     </View>
   );
 };

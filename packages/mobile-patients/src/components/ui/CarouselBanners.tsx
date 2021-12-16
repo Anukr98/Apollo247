@@ -64,8 +64,9 @@ interface CarouselProps extends NavigationScreenProps {
   circlePlanValidity?: string;
   from: string;
   source?: 'Pharma' | 'Product Detail' | 'Pharma Cart' | 'Diagnostic' | 'Consult';
-  successCallback: () => void;
+  successCallback?: () => void;
   circleEventSource?: CircleEventSource;
+  postHomeBannerEvent?: (index: number, proHealth: boolean, id: string, title: string) => void;
 }
 export const CarouselBanners: React.FC<CarouselProps> = (props) => {
   const {
@@ -75,6 +76,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     source,
     successCallback,
     circleEventSource,
+    postHomeBannerEvent,
   } = props;
   const [slideIndex, setSlideIndex] = useState(0);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
@@ -215,7 +217,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
   };
 
   const renderHdfcSliderItem = ({ item }) => {
-    const { cta_action, banner_template_info } = item;
+    const { cta_action, banner_template_info, _id } = item;
     const fineText = item?.banner_template_info?.fineText;
     const bannerUri = getMobileURL(item.banner);
     const isDynamicBanner = item?.banner_template_info?.headerText1;
@@ -251,6 +253,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
             cta_action?.url,
             cta_action?.meta,
             banner_template_info,
+            _id
           )
         }
         style={[
@@ -301,7 +304,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
               cta_action?.meta?.message,
               cta_action?.url,
               cta_action?.meta,
-              banner_template_info,
+              banner_template_info
             )
           }
         >
@@ -398,8 +401,10 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     message: any,
     url: string,
     meta: any,
-    bannerContent: any
+    bannerContent: any,
+    id?: string
   ) => {
+    !!id && postHomeBannerEvent?.(slideIndex + 1, false, id, JSON.stringify(meta));
     //if any only hdfc
     // if (from === string.banner_context.HOME && action != hdfc_values.UPGRADE_CIRCLE) {
     if (
@@ -632,7 +637,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
           <HdfcConnectPopup
             onClose={() => setShowHdfcConnectPopup(false)}
             benefitId={benefitId || ''}
-            successCallback={() => successCallback()}
+            successCallback={() => successCallback?.()}
             userSubscriptionId={circleSubscriptionId}
           />
         </Overlay>

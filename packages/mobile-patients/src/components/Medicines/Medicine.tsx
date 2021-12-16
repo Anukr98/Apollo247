@@ -153,7 +153,7 @@ import {
 import ContentLoader from 'react-native-easy-content-loader';
 import { Divider, Image, ListItem } from 'react-native-elements';
 import Carousel from 'react-native-snap-carousel';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, NavigationEvents } from 'react-navigation';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 const { width: winWidth, height: winHeight } = Dimensions.get('window');
 import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -313,6 +313,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     newAddressAdded,
     setNewAddressAdded,
     setAddToCartSource,
+    cartCircleSubscriptionId,
   } = useShoppingCart();
   const {
     setUserActionPayload,
@@ -334,6 +335,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [buyAgainLoading, setBuyAgainLoading] = useState<boolean>(true);
   const [showCirclePopup, setShowCirclePopup] = useState<boolean>(false);
   const [pageLoading, setPageLoading] = useState<boolean>(false);
+  const [searchItemLoading, setSearchItemLoading] = useState<{ [key: string]: boolean }>({});
+  const [searchItemAdded, setSearchItemAdded] = useState<string>('');
 
   const [recommendedProducts, setRecommendedProducts] = useState<MedicineProduct[]>([]);
   const [data, setData] = useState<MedicinePageAPiResponse | null>(medicinePageAPiResponse);
@@ -881,18 +884,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         latitude: deliveryAddress?.latitude,
         longitude: deliveryAddress?.longitude,
       });
-      const formattedLocation = formatAddressToLocation(deliveryAddress! || null);
-
       globalLoading!(false);
     } catch (error) {
       checkLocation(addresses);
       CommonBugFender('set_default_Address_on_Medicine_Page', error);
-      showAphAlert!({
-        title: string.common.uhOh,
-        description:
-          "We're sorry! Unable to set delivery address. Please try again after some time",
-      });
-
       globalLoading!(false);
     }
   }
@@ -1229,11 +1224,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         'Mobile Number': g(currentPatient, 'mobileNumber'),
         'Customer ID': g(currentPatient, 'id'),
         User_Type: getUserType(allCurrentPatients),
-        'Nav src': 'Medicine Page',
-        'Circle Member':
-          getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
-          undefined,
-        'Device Id': getUniqueId(),
+        'Page name': 'Medicine page',
+        'Circle Member': cartCircleSubscriptionId ? 'True' : 'False',
       };
       postCleverTapEvent(CleverTapEventName.HOME_ICON_CLICKED, eventAttributes);
     };
@@ -1476,6 +1468,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED] = {
                 'Nav src': 'Home',
                 'User type': pharmacyUserType,
+                patient_name: currentPatient?.firstName,
+                patient_uhid: currentPatient?.uhid,
+                relation: currentPatient?.relation,
+                gender: currentPatient?.gender,
+                mobile_number: currentPatient?.mobileNumber,
+                age: moment().year() - moment(currentPatient?.dateOfBirth).year(),
+                customerId: currentPatient?.id,
               };
               postCleverTapEvent(
                 CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED,
@@ -1944,7 +1943,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [searchText, setSearchText] = useState<string>('');
   const [medicineList, setMedicineList] = useState<(MedicineProduct | SearchSuggestion)[]>([]);
   const [isSearchFocused, setSearchFocused] = useState(false);
-  const [itemsLoading, setItemsLoading] = useState<{ [key: string]: boolean }>({});
   const [medicineSearchLoading, setMedicineSearchLoading] = useState<boolean>(false);
 
   const onSearchMedicine = (_searchText: string) => {
@@ -2107,13 +2105,21 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const client = useApolloClient();
 
+  useEffect(() => {
+    if (!serverCartLoading && searchItemAdded) {
+      setSearchItemLoading({ ...searchItemLoading, [searchItemAdded]: false });
+      setSearchItemAdded('');
+    }
+  }, [serverCartLoading]);
+
   const onAddCartItem = (
     item: MedicineProduct,
     comingFromSearch: boolean,
     cleverTapSearchSuccessEventAttributes: object
   ) => {
     const { sku, category_id } = item;
-    setItemsLoading({ ...itemsLoading, [sku]: true });
+    setSearchItemAdded(sku);
+    setSearchItemLoading({ ...searchItemLoading, [sku]: true });
     addPharmaItemToCart(
       formatToCartItem(item),
       pharmacyPincode,
@@ -2124,7 +2130,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       !!isPharmacyPincodeServiceable,
       { source: 'Pharmacy Partial Search', categoryId: category_id },
       JSON.stringify(serverCartItems),
-      () => setItemsLoading({ ...itemsLoading, [sku]: false }),
+      () => {},
       pharmacyCircleAttributes!,
       () => {},
       comingFromSearch,
@@ -2259,6 +2265,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           onNotifyMeClick(item?.name);
         }}
         onPressAdd={() => {
+          setSearchItemLoading({ ...searchItemLoading, [item?.sku]: true });
           const q = getItemQuantity(item?.sku);
           if (q == getMaxQtyForMedicineItem(item?.MaxOrderQty)) return;
           setCurrentProductQuantityInCart(q + 1);
@@ -2272,6 +2279,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           });
         }}
         onPressSubstract={() => {
+          setSearchItemLoading({ ...searchItemLoading, [item?.sku]: true });
           const q = getItemQuantity(item?.sku);
           setCurrentProductQuantityInCart(q - 1);
           setUserActionPayload?.({
@@ -2285,7 +2293,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         }}
         quantity={getItemQuantity(item?.sku)}
         data={item}
-        loading={itemsLoading[item?.sku]}
+        loading={searchItemLoading[item?.sku]}
         showSeparator={index !== medicineList?.length - 1}
         style={{
           marginHorizontal: 20,
@@ -2308,7 +2316,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           showsVerticalScrollIndicator={true}
           style={styles.searchResults}
           data={medicineList}
-          extraData={itemsLoading}
+          extraData={searchItemLoading}
           renderItem={renderSearchSuggestionItemView}
         />
         <View style={styles.searchContainer}>
@@ -2361,7 +2369,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       'Patient Name': currentPatient?.firstName,
       'Patient UHID': currentPatient?.uhid,
       'Patient age': getAge(currentPatient?.dateOfBirth),
-      'Circle Member': circleSubscriptionId ? 'True' : 'False',
+      'Circle Member': cartCircleSubscriptionId ? 'True' : 'False',
       'Customer ID': currentPatient?.id,
       'Patient gender': currentPatient?.gender,
       'Mobile number': currentPatient?.mobileNumber,
@@ -2438,16 +2446,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       });
 
     return (
-      <ScrollView
-        removeClippedSubviews={true}
-        bounces={false}
-        style={styles.scrollViewStyle}
-        scrollEventThrottle={0}
-        onScroll={() => {
-          scrollCount.current += 1;
-          postScrollScreenEvent();
-        }}
-      >
+      <ScrollView removeClippedSubviews={true} bounces={false} style={styles.scrollViewStyle}>
         <CategoryAndSpecialOffers
           containerStyle={styles.categoryAndSpecialOffers}
           onPressShopByCategory={() => setCategoryTreeVisible(true)}
@@ -2590,12 +2589,29 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   return (
     <View style={{ flex: 1 }}>
+      <NavigationEvents
+        onDidFocus={() => {
+          scrollCount.current = 0;
+        }}
+        onDidBlur={postScrollScreenEvent}
+      />
       <SafeAreaView style={{ ...viewStyles.container }}>
+        <View style={{ backgroundColor: 'white' }}>
+          {renderTopView()}
+          {renderSearchInput()}
+          {renderSearchResults()}
+        </View>
         <KeyboardAwareScrollView
           ref={scrollViewRef}
           bounces={false}
+          scrollEventThrottle={0}
           keyboardShouldPersistTaps="always"
           onScroll={(event) => {
+            //increments only for down scroll
+            const currentOffset = event.nativeEvent.contentOffset?.y;
+            currentOffset > (this.offset || 0) && (scrollCount.current += 1);
+            this.offset = currentOffset;
+
             bannerScrollRef.current &&
               bannerScrollRef.current.measure(
                 (x: any, y: any, width: any, height: any, pagex: any, pagey: any) => {
@@ -2606,14 +2622,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               );
           }}
         >
-          <View style={{ backgroundColor: 'white' }}>
-            {renderTopView()}
-            {renderSearchInput()}
-            {renderSearchResults()}
-          </View>
-
           {pageLoading ? renderMedicinesShimmer() : null}
-
           <View style={{ flex: 1, paddingBottom: !!serverCartItems?.length ? 80 : 0 }}>
             {renderSections()}
             {renderOverlay()}
@@ -2640,9 +2649,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             setCurrentProductQuantityInCart={setCurrentProductQuantityInCart}
           />
         )}
-      {AppConfig.Configuration.WHATSAPP_TO_ORDER.iconVisibility && showWhatsappRedirectionIcon && (
-        <WhatsappRedirectionStickyNote />
-      )}
+      {AppConfig.Configuration.WHATSAPP_TO_ORDER.iconVisibility &&
+        showWhatsappRedirectionIcon &&
+        medicineList?.length === 0 && <WhatsappRedirectionStickyNote />}
     </View>
   );
 };
