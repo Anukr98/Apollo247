@@ -105,6 +105,7 @@ export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
   };
 
   const renderLowerCont = () => {
+    const priceToShow = isCouponApplied ? mrp - discountedPrice : discountedPrice || mrp;
     return (
       <View style={styles.lowerCountContainer}>
         <View style={styles.lowerCountInnerView}>
@@ -112,13 +113,7 @@ export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
           {itemAvailable && !item?.freeProduct && !!couponApplied && renderCoupon()}
           {isCircleCart && renderCareCashback()}
         </View>
-        {!item?.freeProduct
-          ? discountedPrice || discountedPrice == 0
-            ? renderPrice(mrp - discountedPrice)
-            : renderPrice(mrp)
-          : item?.quantity > 1
-          ? renderPrice(discountedPrice)
-          : renderFree()}
+        {!item?.freeProduct ? renderPrice(priceToShow) : renderFree()}
       </View>
     );
   };
@@ -210,6 +205,7 @@ export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
       return (((mrp - discountedPrice) / mrp) * 100).toFixed(1);
     }
   }
+
   const renderDiscount = () => {
     return (
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -221,6 +217,7 @@ export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
       </View>
     );
   };
+
   const renderSavings = () => {
     const savingsAmount =
       item?.freeProduct && item?.quantity > 1
@@ -235,6 +232,7 @@ export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
       </View>
     );
   };
+
   const renderPrice = (price: number) => {
     const discount = !!(discountedPrice || discountedPrice == 0);
     const finalAmount =
