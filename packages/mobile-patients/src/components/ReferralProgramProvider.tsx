@@ -9,6 +9,8 @@ export interface ReferralProgramContextProps {
   setRewardId: ((rewardId: string) => void) | null;
   rewardId: string;
   setCampaignId: ((campaginId: string) => void) | null;
+  setCampaignName: ((campaginName: string) => void) | null;
+  campaignName: string;
   campaignId: string;
   referrerLink: string;
   setReferrerLink: ((referrerLink: string) => void) | null;
@@ -19,7 +21,9 @@ export const ReferralProgramContext = createContext<ReferralProgramContextProps>
   setRewardId: null,
   rewardId: '',
   campaignId: '',
+  campaignName: '',
   setCampaignId: null,
+  setCampaignName: null,
   referrerLink: '',
   setReferrerLink: null,
   refreeReward: {
@@ -33,6 +37,7 @@ export const ReferralProgramContext = createContext<ReferralProgramContextProps>
 export const ReferralProgramProvider: React.FC = (props) => {
   const [rewardId, setRewardId] = useState('');
   const [campaignId, setCampaignId] = useState('');
+  const [campaignName, setCampaignName] = useState('');
   const [referrerLink, setReferrerLink] = useState('');
   const [refreeReward, setRefreeReward] = useState<InitiateRefreeType>({
     isRefree: false,
@@ -46,7 +51,9 @@ export const ReferralProgramProvider: React.FC = (props) => {
         setRewardId,
         rewardId,
         campaignId,
+        campaignName,
         setCampaignId,
+        setCampaignName,
         referrerLink,
         setReferrerLink,
         refreeReward,
