@@ -1041,6 +1041,7 @@ const styles = StyleSheet.create({
   mOffersTitle: {
     marginHorizontal: 10,
     marginTop: 28,
+    paddingBottom: 4,
     marginBottom: 'auto',
   },
 });
@@ -3770,8 +3771,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               styles.mOffersTitle,
             ]}
           >
-            {item?.title?.text?.length > 36
-              ? item?.title?.text?.substring(0, 36)
+            {item?.title?.text?.length > 60
+              ? item?.title?.text?.substring(0, 60)
               : item?.title?.text}
           </Text>
 
@@ -3779,7 +3780,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             style={{
               ...theme.viewStyles.text('M', 14, offerDesignTemplate?.subtitle_text_color, 1, 18),
               marginHorizontal: 10,
-              marginTop: 4,
               marginBottom: 'auto',
             }}
           >
@@ -3791,7 +3791,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             <View
               style={{
                 flexDirection: 'row',
-                marginVertical: 6,
+                marginVertical: 4,
                 justifyContent: 'space-between',
                 width: '100%',
               }}
