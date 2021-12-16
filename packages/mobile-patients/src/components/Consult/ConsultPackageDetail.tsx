@@ -191,7 +191,14 @@ export const ConsultPackageDetail: React.FC<ConsultPackageDetailProps> = (props)
     setLoading(true);
     getConsultPackageDetailPrePurchase(planId)
       .then((response) => {
-        if (response?.data?.Packagedata && response?.data?.Plandata) {
+        const { Plandata } = response?.data;
+        if (response?.data?.Packagedata && Plandata) {
+          if (Plandata?.length == 1) {
+            setSeletectedPlanIndex(0);
+          } else {
+            const preSelectedIndex = Plandata?.findIndex((plan: any) => !!plan?.PlanPreSelected);
+            !!preSelectedIndex && preSelectedIndex > -1 && setSeletectedPlanIndex(preSelectedIndex);
+          }
           setPackageDetailData(response?.data);
         } else {
           showAphAlert?.({
