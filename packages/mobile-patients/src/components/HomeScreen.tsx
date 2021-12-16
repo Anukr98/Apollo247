@@ -1044,6 +1044,12 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
     marginBottom: 'auto',
   },
+  mOffersCouponContainer: {
+    flexDirection: 'row',
+    marginVertical: 4,
+    justifyContent: 'space-between',
+    width: '100%',
+  },
 });
 
 type menuOptions = {
@@ -3788,14 +3794,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               : item?.subtitle?.text}
           </Text>
           {item?.is_active ? (
-            <View
-              style={{
-                flexDirection: 'row',
-                marginVertical: 4,
-                justifyContent: 'space-between',
-                width: '100%',
-              }}
-            >
+            <View style={styles.mOffersCouponContainer}>
               <View style={styles.offersCardCoupon}>
                 <Text
                   style={{
