@@ -1393,6 +1393,10 @@ export const GET_SD_LATEST_COMPLETED_CASESHEET_DETAILS = gql`
           itemname
           testInstruction
         }
+        radiologyPrescription{
+          servicename,
+          testInstruction
+        }
         blobName
         doctorId
         followUp
