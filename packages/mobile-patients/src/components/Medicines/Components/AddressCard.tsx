@@ -22,12 +22,15 @@ export interface AddressCardProps {
   item: savePatientAddress_savePatientAddress_patientAddress;
   onPressEditAddress?: (address: savePatientAddress_savePatientAddress_patientAddress) => void;
   onPressSelectAddress: (address: savePatientAddress_savePatientAddress_patientAddress) => void;
-  source?: 'Diagnostics';
+  source?: 'Diagnostics' | string;
+  selectedCartAddress?: string;
 }
 
 export const AddressCard: React.FC<AddressCardProps> = (props) => {
-  const { item, onPressSelectAddress, onPressEditAddress, source } = props;
+  const { item, onPressSelectAddress, onPressEditAddress, source, selectedCartAddress } = props;
   const { currentPatient } = useAllCurrentPatients();
+  const isFromPharma = source == 'pharmacy';
+  const highlightAddress = isFromPharma ? item?.id == selectedCartAddress : item.defaultAddress;
 
   const formatText = (text: string, count: number) => {
     if (text) {
@@ -83,7 +86,7 @@ export const AddressCard: React.FC<AddressCardProps> = (props) => {
       {!!source && source === 'Diagnostics' ? (
         renderDiagnosticCard()
       ) : (
-        <View style={{ ...styles.addressCard, borderWidth: item.defaultAddress ? 1 : 0 }}>
+        <View style={{ ...styles.addressCard, borderWidth: highlightAddress ? 1 : 0 }}>
           <TouchableOpacity onPress={() => onPressSelectAddress(item)}>
             <View style={styles.header}>
               <View style={{ flex: 0.85 }}>

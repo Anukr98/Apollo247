@@ -943,6 +943,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             hideAphAlert!();
             showAccessAccessLocationPopup(addressList, true);
           }}
+          source={'pharmacy'}
+          selectedCartAddress={cartAddressId}
         />
       ) : (
         <PincodeInput
