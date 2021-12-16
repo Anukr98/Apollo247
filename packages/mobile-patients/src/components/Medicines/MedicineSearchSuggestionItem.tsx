@@ -77,12 +77,13 @@ export interface MedicineSearchSuggestionItemProps {
   showSeparator?: boolean;
   loading?: boolean;
   data: MedicineProduct | SearchSuggestion;
+  disableAction?: boolean;
 }
 
 export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItemProps> = (
   props
 ) => {
-  const { data } = props;
+  const { data, disableAction } = props;
   const prescriptionRequired = data?.is_prescription_required == '1';
   const imageUri = productsThumbnailUrl(data?.thumbnail);
   const isOutOfStock = !isProductInStock(data);
@@ -192,11 +193,22 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
     return (
       <TouchableOpacity
         activeOpacity={1}
-        onPress={!props.loading && isOutOfStock ? props.onPressNotify : props.onPressAddToCart}
+        onPress={
+          !disableAction
+            ? !props.loading && isOutOfStock
+              ? props.onPressNotify
+              : props.onPressAddToCart
+            : () => {}
+        }
+        disabled={disableAction}
       >
-        <Text style={{ ...theme.viewStyles.text('SB', 12, '#fc9916', 1, 24, 0) }}>
-          {props.loading ? 'Loading...' : isOutOfStock ? 'NOTIFY ME' : 'ADD TO CART'}
-        </Text>
+        {props.loading ? (
+          <Text style={theme.viewStyles.text('SB', 12, '#fc9916', 1, 24, 0)}>{'Loading...'}</Text>
+        ) : (
+          <Text style={theme.viewStyles.text('SB', 12, '#fc9916', disableAction ? 0.5 : 1, 24, 0)}>
+            {isOutOfStock ? 'NOTIFY ME' : 'ADD TO CART'}
+          </Text>
+        )}
       </TouchableOpacity>
     );
   };
@@ -204,16 +216,16 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
   const renderQuantityView = () => {
     if (props?.loading) {
       return (
-        <Text style={{ ...theme.viewStyles.text('SB', 12, '#fc9916', 1, 24, 0) }}>
-          {'Loading...'}
-        </Text>
+        <Text style={theme.viewStyles.text('SB', 12, '#fc9916', 1, 24, 0)}>{'Loading...'}</Text>
       );
     } else {
       return (
         <View style={styles.quantityView}>
-          <QuantityButton text={'-'} onPress={props.onPressSubstract} />
-          <Text style={theme.viewStyles.text('B', 14, '#fc9916', 1, 24, 0)}>{props.quantity}</Text>
-          <QuantityButton text={'+'} onPress={props.onPressAdd} />
+          <QuantityButton text={'-'} onPress={disableAction ? () => {} : props.onPressSubstract} />
+          <Text style={theme.viewStyles.text('B', 14, '#fc9916', disableAction ? 0.5 : 1, 24, 0)}>
+            {props.quantity}
+          </Text>
+          <QuantityButton text={'+'} onPress={disableAction ? () => {} : props.onPressAdd} />
         </View>
       );
     }
