@@ -204,7 +204,7 @@ export const useServerCart = () => {
         patientid: currentPatient?.id,
         userType: pharmacyUserTypeAttribute?.User_Type,
         tatCity: cartResponse?.city,
-        tatHours: moment(cartResponse?.medicineOrderCartLineItems?.[0]?.tat).diff(moment(), 'h'),
+        tatHours: cartResponse?.medicineOrderCartLineItems?.[0]?.tatDuration,
         items: cartResponse?.medicineOrderCartLineItems?.map((item) => item?.sku),
       });
     } catch (error) {}

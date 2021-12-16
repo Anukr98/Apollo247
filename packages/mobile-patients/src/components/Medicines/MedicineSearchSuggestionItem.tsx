@@ -202,13 +202,21 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
   };
 
   const renderQuantityView = () => {
-    return (
-      <View style={styles.quantityView}>
-        <QuantityButton text={'-'} onPress={props.onPressSubstract} />
-        <Text style={theme.viewStyles.text('B', 14, '#fc9916', 1, 24, 0)}>{props.quantity}</Text>
-        <QuantityButton text={'+'} onPress={props.onPressAdd} />
-      </View>
-    );
+    if (props?.loading) {
+      return (
+        <Text style={{ ...theme.viewStyles.text('SB', 12, '#fc9916', 1, 24, 0) }}>
+          {'Loading...'}
+        </Text>
+      );
+    } else {
+      return (
+        <View style={styles.quantityView}>
+          <QuantityButton text={'-'} onPress={props.onPressSubstract} />
+          <Text style={theme.viewStyles.text('B', 14, '#fc9916', 1, 24, 0)}>{props.quantity}</Text>
+          <QuantityButton text={'+'} onPress={props.onPressAdd} />
+        </View>
+      );
+    }
   };
 
   const renderSeachSuggestions = () => (

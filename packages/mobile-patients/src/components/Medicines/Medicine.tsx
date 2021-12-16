@@ -943,6 +943,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             hideAphAlert!();
             showAccessAccessLocationPopup(addressList, true);
           }}
+          source={'pharmacy'}
+          selectedCartAddress={cartAddressId}
         />
       ) : (
         <PincodeInput
@@ -2265,6 +2267,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           onNotifyMeClick(item?.name);
         }}
         onPressAdd={() => {
+          setSearchItemAdded(item?.sku);
           setSearchItemLoading({ ...searchItemLoading, [item?.sku]: true });
           const q = getItemQuantity(item?.sku);
           if (q == getMaxQtyForMedicineItem(item?.MaxOrderQty)) return;
@@ -2279,6 +2282,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           });
         }}
         onPressSubstract={() => {
+          setSearchItemAdded(item?.sku);
           setSearchItemLoading({ ...searchItemLoading, [item?.sku]: true });
           const q = getItemQuantity(item?.sku);
           setCurrentProductQuantityInCart(q - 1);
