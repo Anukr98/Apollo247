@@ -203,7 +203,8 @@ export const useServerCart = () => {
       setTatDetailsForPrescriptionOptions?.({
         patientid: currentPatient?.id,
         userType: pharmacyUserTypeAttribute?.User_Type,
-        tatCity: cartResponse?.city,
+        tatCity: cartResponse?.medicineOrderCartLineItems?.[0]?.tatCity,
+        tatType: cartResponse?.medicineOrderCartLineItems?.[0]?.storeType,
         tatHours: cartResponse?.medicineOrderCartLineItems?.[0]?.tatDuration,
         items: cartResponse?.medicineOrderCartLineItems?.map((item) => item?.sku),
       });
