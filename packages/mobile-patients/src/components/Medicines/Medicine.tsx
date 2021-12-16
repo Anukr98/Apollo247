@@ -2303,6 +2303,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           marginHorizontal: 20,
           paddingBottom: index == medicineList?.length - 1 ? 20 : 0,
         }}
+        disableAction={searchItemAdded ? true : false}
       />
     );
   };

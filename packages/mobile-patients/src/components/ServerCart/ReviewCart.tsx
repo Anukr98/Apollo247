@@ -96,25 +96,25 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
 
   useEffect(() => {
     props.navigation.addListener('didFocus', () => {
-        const isPrescriptionCartItem = serverCartItems?.findIndex(
-          (item) => item?.isPrescriptionRequired == '1'
-        );
-        reviewCartPageViewClevertapEvent(
-          cartLocationDetails?.pincode,
-          shipmentArray?.[0]?.tat,
-          serverCartAmount?.isDeliveryFree ? 0 : serverCartAmount?.deliveryCharges,
-          serverCartAmount?.cartTotal,
-          isPrescriptionCartItem >= 0,
-          cartCoupon?.coupon && cartCoupon?.valid ? cartCoupon?.coupon : '',
-          isCircleCart,
-          isPrescriptionCartItem >= 0 ? cartPrescriptionType : '',
-          pharmacyUserType,
-          currentPatient?.mobileNumber,
-          cartSubscriptionDetails?.currentSellingPrice,
-          shipmentArray?.[1]?.tat
-        );
-    })
-  },[])
+      const isPrescriptionCartItem = serverCartItems?.findIndex(
+        (item) => item?.isPrescriptionRequired == '1'
+      );
+      reviewCartPageViewClevertapEvent(
+        cartLocationDetails?.pincode,
+        shipmentArray?.[0]?.tat,
+        serverCartAmount?.isDeliveryFree ? 0 : serverCartAmount?.deliveryCharges,
+        serverCartAmount?.cartTotal,
+        isPrescriptionCartItem >= 0,
+        cartCoupon?.coupon && cartCoupon?.valid ? cartCoupon?.coupon : '',
+        isCircleCart,
+        isPrescriptionCartItem >= 0 ? cartPrescriptionType : '',
+        pharmacyUserType,
+        currentPatient?.mobileNumber,
+        cartSubscriptionDetails?.currentSellingPrice,
+        shipmentArray?.[1]?.tat
+      );
+    });
+  }, []);
 
   useEffect(() => {
     hasUnserviceableproduct();
@@ -227,10 +227,14 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
           if (orderResponse?.data) {
             const orderData = orderResponse?.data;
             const { transactionId, orders, isCodEligible, codMessage, paymentOrderId } = orderData;
+            const newCartTotal = orders.reduce(
+              (currTotal, currItem) => currTotal + currItem.estimatedAmount,
+              0
+            );
             if (transactionId) {
               props.navigation.navigate(AppRoutes.PaymentMethods, {
                 paymentId: paymentOrderId,
-                amount: serverCartAmount?.estimatedAmount,
+                amount: newCartTotal,
                 orderDetails: getOrderDetails(orders, transactionId, saveMedicineOrderV3Variables),
                 businessLine: 'pharma',
                 customerId: cusId,
