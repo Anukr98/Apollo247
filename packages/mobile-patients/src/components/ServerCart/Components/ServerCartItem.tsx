@@ -38,10 +38,12 @@ export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
   const [discountedPrice, setDiscountedPrice] = useState<any>(undefined);
   const [mrp, setmrp] = useState<number>(item?.price || 0);
   const itemAvailable = item?.isShippable && item?.sellOnline;
+  const isCouponApplied =
+    item?.isCouponApplicable == CouponApplicable.APPLIED && item?.couponDiscountPrice != 0;
 
   useEffect(() => {
     setmrp(item?.price);
-    item?.isCouponApplicable == CouponApplicable.APPLIED && item?.couponDiscountPrice != 0
+    isCouponApplied
       ? setDiscountedPrice(item?.couponDiscountPrice)
       : item?.sellingPrice !== item?.price
       ? setDiscountedPrice(item?.sellingPrice)
@@ -112,7 +114,7 @@ export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
         </View>
         {!item?.freeProduct
           ? discountedPrice || discountedPrice == 0
-            ? renderPrice(discountedPrice)
+            ? renderPrice(mrp - discountedPrice)
             : renderPrice(mrp)
           : item?.quantity > 1
           ? renderPrice(discountedPrice)
@@ -202,7 +204,11 @@ export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
   };
 
   function getDiscountPercent() {
-    return (((mrp - discountedPrice) / mrp) * 100).toFixed(1);
+    if (isCouponApplied) {
+      return ((item?.couponDiscountPrice / mrp) * 100).toFixed(1);
+    } else {
+      return (((mrp - discountedPrice) / mrp) * 100).toFixed(1);
+    }
   }
   const renderDiscount = () => {
     return (
@@ -219,6 +225,8 @@ export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
     const savingsAmount =
       item?.freeProduct && item?.quantity > 1
         ? discountedPrice
+        : isCouponApplied
+        ? (discountedPrice * item?.quantity).toFixed(2)
         : ((mrp - discountedPrice) * item?.quantity).toFixed(2);
     return (
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
