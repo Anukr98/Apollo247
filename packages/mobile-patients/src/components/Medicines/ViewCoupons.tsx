@@ -610,9 +610,9 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
           {!!circleCoupons?.length && renderCircleCoupons()}
           {!!couponList?.length && renderCouponList()}
           {!!productOffers?.length && renderProductOffers()}
-          {serverCartLoading && <Spinner style={{ width: '110%', height: '100%' }} />}
         </ScrollView>
       </SafeAreaView>
+      {serverCartLoading && <Spinner />}
     </View>
   );
 };
