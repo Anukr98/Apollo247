@@ -3480,15 +3480,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const checkUserRegisterThroughReferral = async () => {
-    const referrerInstall = await AsyncStorage.getItem('referrerInstall');
-    if (referrerInstall === 'true') {
-      const rewardStatus = await AsyncStorage.getItem('RefereeStatus');
-      if (rewardStatus === RewardStatus.ELIGIBLE_FOR_REWARD) {
-        props.navigation.navigate('EarnedPoints');
-        AsyncStorage.removeItem('RefereeStatus');
+    try {
+      const referrerInstall = await AsyncStorage.getItem('referrerInstall');
+      if (referrerInstall === 'true') {
+        const rewardStatus = await AsyncStorage.getItem('RefereeStatus');
+        if (rewardStatus === RewardStatus.ELIGIBLE_FOR_REWARD) {
+          props.navigation.navigate('EarnedPoints');
+          AsyncStorage.removeItem('RefereeStatus');
+        }
+        AsyncStorage.removeItem('referrerInstall');
       }
-      AsyncStorage.removeItem('referrerInstall');
-    }
+    } catch (e) {}
   };
 
   const cleverTapEventForAddMemberClick = () => {
