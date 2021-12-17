@@ -309,6 +309,10 @@ export const useServerCart = () => {
               prescriptionImageUrl: prescription?.uploadedUrl,
               prismPrescriptionFileId: prescription?.prismPrescriptionFileId,
               uhid: currentPatient?.uhid,
+              meta: {
+                fileName: prescription?.title,
+                fileType: prescription?.fileType,
+              },
             };
           }
         );

@@ -79,6 +79,7 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
     cartSubscriptionDetails,
     cartCoupon,
     cartLocationDetails,
+    consultProfile,
   } = useShoppingCart();
   const client = useApolloClient();
   const { setauthToken, pharmacyUserTypeAttribute, pharmacyUserType } = useAppCommonData();
@@ -199,7 +200,10 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
   const initiateOrder = async () => {
     try {
       const saveMedicineOrderV3Variables: SaveMedicineOrderV3Input = {
-        patientId: currentPatient?.id,
+        patientId:
+          cartPrescriptionType === PrescriptionType.CONSULT && consultProfile?.id
+            ? consultProfile?.id
+            : currentPatient?.id,
         cartType: MEDICINE_ORDER_TYPE.CART_ORDER,
         medicineDeliveryType: MEDICINE_DELIVERY_TYPE.HOME_DELIVERY,
         bookingSource: BOOKING_SOURCE.MOBILE,
