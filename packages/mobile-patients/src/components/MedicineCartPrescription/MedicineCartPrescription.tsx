@@ -75,9 +75,9 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
     const reqItems = serverCartItems?.filter(
       ({ isPrescriptionRequired }) => isPrescriptionRequired == '1'
     );
-    const count = reqItems.length;
+    const count = reqItems?.length;
     const heading = `${count} ITEM${count > 1 ? 'S' : ''} IN CART NEED PRESCRIPTION`;
-    const items = reqItems.map(({ name }) => (
+    const items = reqItems?.map(({ name }) => (
       <View style={styles.itemContainer}>
         <View style={styles.point} />
         <Text style={styles.item}>{name}</Text>

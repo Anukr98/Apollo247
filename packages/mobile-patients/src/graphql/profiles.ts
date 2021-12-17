@@ -1770,7 +1770,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         couponCode
         paymentOrderId
         passportNo
-        attributesObj{
+        attributesObj {
           initialCollectionCharges
           distanceCharges
           homeCollectionCharges
@@ -4227,9 +4227,12 @@ export const GET_MEDICINE_ORDER_CANCEL_REASONS = gql`
 `;
 
 export const GET_MEDICINE_ORDER_CANCEL_REASONS_V2 = gql`
-query getMedicineOrderCancelReasonsV2($getMedicineOrderCancelReasonsV2Input: GetMedicineOrderCancelReasonsV2Input!) {
-  getMedicineOrderCancelReasonsV2(
-  getMedicineOrderCancelReasonsV2Input: $getMedicineOrderCancelReasonsV2Input) {
+  query getMedicineOrderCancelReasonsV2(
+    $getMedicineOrderCancelReasonsV2Input: GetMedicineOrderCancelReasonsV2Input!
+  ) {
+    getMedicineOrderCancelReasonsV2(
+      getMedicineOrderCancelReasonsV2Input: $getMedicineOrderCancelReasonsV2Input
+    ) {
       cancellationReasonBuckets {
         id
         reasons {
@@ -5234,13 +5237,13 @@ export const GET_INTERNAL_ORDER = gql`
           }
         }
       }
-      SubscriptionOrderDetails{
+      SubscriptionOrderDetails {
         end_date
         expires_in
         order_id
         sub_plan_id
         payment_reference
-        group_plan{
+        group_plan {
           name
           price
           valid_duration
@@ -6667,20 +6670,20 @@ export const GET_PERSONALIZED_OFFERS = gql`
             title {
               text
             }
-            subtitle{
-               text  
-            }
-            cta{
+            subtitle {
               text
-              path{
+            }
+            cta {
+              text
+              path {
                 vertical
                 param
               }
             }
           }
-          global_search_text{
-            search_text{
-              text,
+          global_search_text {
+            search_text {
+              text
               created_at
             }
           }
@@ -6688,7 +6691,7 @@ export const GET_PERSONALIZED_OFFERS = gql`
       }
     }
   }
-  `;
+`;
 
 export const GET_CONFIGURATION_FOR_ASK_APOLLO_LEAD = gql`
   query getConfigurationForAskApolloLead {
@@ -6760,26 +6763,26 @@ export const GET_CAMPAIGN_ID_FOR_REFERRER = gql`
   }
 `;
 
-export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS = gql `
-query getDiagnosticPackageRecommendations($itemId:Int!, $cityId: Int!){
-  getDiagnosticPackageRecommendations(itemId:$itemId, cityId:$cityId){
-    packageRecommendations{
-      itemId
-      itemName
-      inclusions
-      packageCalculatedMrp
-      diagnosticPricing{
-        mrp
-        price
-        groupPlan
-        status
-        startDate
-        endDate
+export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS = gql`
+  query getDiagnosticPackageRecommendations($itemId: Int!, $cityId: Int!) {
+    getDiagnosticPackageRecommendations(itemId: $itemId, cityId: $cityId) {
+      packageRecommendations {
+        itemId
+        itemName
+        inclusions
+        packageCalculatedMrp
+        diagnosticPricing {
+          mrp
+          price
+          groupPlan
+          status
+          startDate
+          endDate
+        }
       }
     }
   }
-}
-`
+`;
 export const CANCELL_SUBSCRIPTION = gql`
   mutation CancelSubscription($CancelSubscriptionInput: CancelSubscriptionInput!) {
     CancelSubscription(CancelSubscriptionInput: $CancelSubscriptionInput) {
@@ -6903,21 +6906,21 @@ export const SERVER_CART_SAVE_CART = gql`
           isShippable
           freeProduct
           shipmentNo
+          tatCity
+          storeType
         }
       }
     }
   }
 `;
 
-export const SAVE_RECENT_SEARCH=gql`
-  mutation saveRecent($searchText: String!){
-    saveRecentSearchData(saveRecentSearchTextInput: {
-      searchText: $searchText
-    }){
+export const SAVE_RECENT_SEARCH = gql`
+  mutation saveRecent($searchText: String!) {
+    saveRecentSearchData(saveRecentSearchTextInput: { searchText: $searchText }) {
       success
     }
   }
-`; 
+`;
 
 export const BOOK_PACKAGE_CONSULT = gql`
   mutation bookFreeAppointmentForPharmacy(
@@ -7021,6 +7024,8 @@ export const SERVER_CART_FETCH_CART = gql`
           isShippable
           freeProduct
           shipmentNo
+          tatCity
+          storeType
         }
       }
     }
@@ -7109,6 +7114,8 @@ export const SERVER_CART_REVIEW_CART = gql`
           isShippable
           freeProduct
           shipmentNo
+          tatCity
+          storeType
         }
       }
     }
@@ -7117,7 +7124,11 @@ export const SERVER_CART_REVIEW_CART = gql`
 
 export const DELETE_SERVER_CART = gql`
   mutation deletecart($patientId: String!, $paymentSuccess: Boolean!, $paymentOrderId: String!) {
-    deletecart(patientId: $patientId, paymentSuccess: $paymentSuccess, paymentOrderId: $paymentOrderId) {
+    deletecart(
+      patientId: $patientId
+      paymentSuccess: $paymentSuccess
+      paymentOrderId: $paymentOrderId
+    ) {
       success
     }
   }

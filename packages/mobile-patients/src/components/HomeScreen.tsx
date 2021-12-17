@@ -5719,7 +5719,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           onPress={() => {
             postHomeCleverTapEvent(
               CleverTapEventName.RECENT_SEARCH_CLICKED_UNDER_SEARCH_BAR,
-              'Search bar'
+              'Search bar',
+              { keyword: item?.text }
             );
             onSearchTextChange(item.text);
           }}
@@ -5790,29 +5791,27 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     //pdp disabled for now ->props.navigation.navigate(AppRoutes.ProductDetailPage, nav_props)
     switch (key) {
       case MedicalRecordType.MEDICATION:
-        postHomeCleverTapEvent(
-          CleverTapEventName.OPTION_FROM_MEDICINE_CLICKED_ON_SEARCH_BAR_PAGE,
-          'Search bar',
-          { Keyword: searchText }
-        );
+        postHomeCleverTapEvent(CleverTapEventName.OPTION_FROM_SEARCH_BAR_CLICKED, 'Search bar', {
+          Keyword: searchText,
+          Vertical: 'Pharmacy',
+        });
         props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
         break;
       case MedicalRecordType.TEST_REPORT:
-        postHomeCleverTapEvent(
-          CleverTapEventName.OPTION_FROM_DIAGNOSTIC_CLICKED_ON_SEARCH_BAR_PAGE,
-          'Search bar',
-          { 'Test Name': data?.testName }
-        );
+        postHomeCleverTapEvent(CleverTapEventName.OPTION_FROM_SEARCH_BAR_CLICKED, 'Search bar', {
+          'Test Name': data?.testName,
+          Vertical: 'Diagnostic',
+        });
         pdp
           ? props.navigation.navigate(AppRoutes.TestDetails, nav_props)
           : props.navigation.navigate(AppRoutes.SearchTestScene, { searchText: searchText });
         break;
       case MedicalRecordType.CONSULTATION:
-        postHomeCleverTapEvent(
-          CleverTapEventName.OPTION_FROM_CONSULT_CLICKED_ON_SEARCH_BAR_PAGE,
-          'Search bar',
-          { 'Doctor Name': data?.doctorName, Speciality: data?.speciality }
-        );
+        postHomeCleverTapEvent(CleverTapEventName.OPTION_FROM_SEARCH_BAR_CLICKED, 'Search bar', {
+          'Doctor Name': data?.doctorName,
+          Speciality: data?.speciality,
+          Vertical: 'Consult',
+        });
         pdp
           ? props.navigation.navigate(AppRoutes.DoctorDetails, nav_props)
           : props.navigation.navigate(AppRoutes.DoctorSearchListing, nav_props);

@@ -34,6 +34,7 @@ import {
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -185,6 +186,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
     addresses,
     cartAddressId,
     setSubscriptionCoupon,
+    serverCartLoading,
   } = useShoppingCart();
   const { showAphAlert, setLoading } = useUIElements();
   const [shimmerLoading, setShimmerLoading] = useState<boolean>(true);
@@ -610,6 +612,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
           {!!productOffers?.length && renderProductOffers()}
         </ScrollView>
       </SafeAreaView>
+      {serverCartLoading && <Spinner />}
     </View>
   );
 };
