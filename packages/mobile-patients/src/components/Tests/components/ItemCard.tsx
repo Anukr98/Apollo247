@@ -131,6 +131,10 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
       const isAddedToCart = !!cartItems?.find(
         (items) => Number(items?.id) == Number(getItem?.itemId)
       );
+      const nonInclusionTests =
+        !!inclusions &&
+        inclusions?.length > 0 &&
+        inclusions?.filter((inclusion: any) => inclusion?.incObservationData?.length == 0);
 
       return (
         <TouchableOpacity
@@ -167,8 +171,8 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
             <View style={{ minHeight: isSmallDevice ? 20 : 25 }}>
               {getMandatoryParameterCount > 0 || !!getInclusionCount ? (
                 <Text style={styles.parameterText}>
-                  {getMandatoryParameterCount || getInclusionCount}{' '}
-                  {(getMandatoryParameterCount || getInclusionCount) == 1 ? 'test' : 'tests'}{' '}
+                  {getMandatoryParameterCount + nonInclusionTests?.length || getInclusionCount}{' '}
+                  {(getMandatoryParameterCount + nonInclusionTests?.length || getInclusionCount) == 1 ? 'test' : 'tests'}{' '}
                   included
                 </Text>
               ) : null}

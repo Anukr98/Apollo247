@@ -118,7 +118,10 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
       const getParamterData =
         !!getMandatoryParamter && getMandatoryParamter?.length > 0 && getMandatoryParamter?.flat(1);
       const dataToShow = getMandatoryParameterCount > 0 ? getParamterData : inclusions;
-
+      const nonInclusionTests =
+        !!inclusions &&
+        inclusions?.length > 0 &&
+        inclusions?.filter((inclusion: any) => inclusion?.incObservationData?.length == 0);
       return (
         <TouchableOpacity
           activeOpacity={1}
@@ -153,7 +156,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
                 >
                   <Text style={styles.inclusionsText}>
                     {getMandatoryParameterCount > 0
-                      ? `Total Tests : ${getMandatoryParameterCount}`
+                      ? `Total Tests : ${getMandatoryParameterCount + nonInclusionTests?.length}`
                       : `Total Tests : ${inclusions?.length}`}{' '}
                   </Text>
 
