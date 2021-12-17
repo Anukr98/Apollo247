@@ -1114,7 +1114,7 @@ export interface CleverTapEvents {
     'Page name': string;
     Keyword: string;
     Status: 'Success' | 'Fail';
-    Vertical: string;
+    Vertical: 'Pharma' | 'Diagnostic' | 'Consult';
   };
   [CleverTapEventName.SCREEN_SCROLLED]: {
     User_Type: string;
