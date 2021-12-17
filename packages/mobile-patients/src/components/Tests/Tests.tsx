@@ -906,6 +906,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     newWidgetsData?.length > 0 && reloadWidget ? setReloadWidget(false) : setReloadWidget(true);
     setWidgetsData(newWidgetsData);
     setIsPriceAvailable(true);
+    setPastOrderRecommendationShimmer(false);
     setSectionLoading(false);
   }
 
