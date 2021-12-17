@@ -1075,7 +1075,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             } as MedicineProduct)
         );
       if (formattedRecommendedProducts?.length >= 5) {
-        setRecommendedProducts(formattedRecommendedProducts);
+        setRecommendedProducts(formattedRecommendedProducts?.slice(0, 9));
 
         cache.set('recomended_product', formattedRecommendedProducts);
 
@@ -2303,6 +2303,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           marginHorizontal: 20,
           paddingBottom: index == medicineList?.length - 1 ? 20 : 0,
         }}
+        disableAction={searchItemAdded ? true : false}
       />
     );
   };
@@ -2434,7 +2435,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           const products = g(data, section_key, 'products');
           const isCategoriesType = g(data, section_key, '0', 'title');
           const filteredProducts = products
-            ? products.filter((product: MedicineProduct) => isProductInStock(product))
+            ? products.filter((product: MedicineProduct) => isProductInStock(product))?.slice(0, 9)
             : null;
 
           return filteredProducts

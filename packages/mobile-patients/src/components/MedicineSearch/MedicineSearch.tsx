@@ -62,7 +62,6 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
   const [searchResults, setSearchResults] = useState<MedicineProduct[]>([]);
   const [isSearchFocused, setSearchFocused] = useState(false);
   const [isLoading, setLoading] = useState(false);
-  const [itemsAddingToCart, setItemsAddingToCart] = useState<{ [key: string]: boolean }>({});
   const [showSuggestedQuantityNudge, setShowSuggestedQuantityNudge] = useState<boolean>(false);
   const [shownNudgeOnce, setShownNudgeOnce] = useState<boolean>(false);
   const [currentProductIdInCart, setCurrentProductIdInCart] = useState<string>(null);
@@ -73,6 +72,8 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
   const navSrcForSearchSuccess = navigation.getParam('navSrcForSearchSuccess')
     ? navigation.getParam('navSrcForSearchSuccess')
     : '';
+  const [searchItemLoading, setSearchItemLoading] = useState<{ [key: string]: boolean }>({});
+  const [searchItemAdded, setSearchItemAdded] = useState<string>('');
 
   const { currentPatient } = useAllCurrentPatients();
   const { setUserActionPayload } = useServerCart();
@@ -92,6 +93,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     axdcCode,
     serverCartItems,
     setAddToCartSource,
+    serverCartLoading,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
 
@@ -112,6 +114,13 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
   const customersAlsoBought: RecentSearch[] = [];
   const categories: MedSearchSectionBadgeViewProps[] = [];
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
+
+  useEffect(() => {
+    if (!serverCartLoading && searchItemAdded) {
+      setSearchItemLoading({ ...searchItemLoading, [searchItemAdded]: false });
+      setSearchItemAdded('');
+    }
+  }, [serverCartLoading]);
 
   useEffect(() => {
     debounce.current(searchText);
@@ -400,7 +409,8 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
       comingFromSearch: boolean,
       cleverTapSearchSuccessEventAttributes: object
     ) => {
-      setItemsAddingToCart({ ...itemsAddingToCart, [item?.sku]: true });
+      setSearchItemAdded(item?.sku);
+      setSearchItemLoading({ ...searchItemLoading, [item?.sku]: true });
       setAddToCartSource?.({ source: 'Pharmacy Full Search', categoryId: item?.category_id });
       setUserActionPayload?.({
         medicineOrderCartLineItems: [
@@ -420,7 +430,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
         !!isPharmacyLocationServiceable,
         { source: 'Pharmacy Partial Search', categoryId: item?.category_id },
         JSON.stringify(serverCartItems),
-        () => setItemsAddingToCart({ ...itemsAddingToCart, [item?.sku]: false }),
+        () => {},
         pharmacyCircleAttributes!,
         () => {},
         comingFromSearch,
@@ -443,6 +453,8 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
       const onPressAdd = () => {
         if (qty < item?.MaxOrderQty) {
           setCurrentProductQuantityInCart(qty + 1);
+          setSearchItemAdded(item?.sku);
+          setSearchItemLoading({ ...searchItemLoading, [item?.sku]: true });
           setUserActionPayload?.({
             medicineOrderCartLineItems: [
               {
@@ -455,6 +467,8 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
       };
       const onPressSubstract = () => {
         setCurrentProductQuantityInCart(qty - 1);
+        setSearchItemAdded(item?.sku);
+        setSearchItemLoading({ ...searchItemLoading, [item?.sku]: true });
         setUserActionPayload?.({
           medicineOrderCartLineItems: [
             {
@@ -494,7 +508,8 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
         onPressAdd: onPressAdd,
         onPressSubstract: onPressSubstract,
         onPressNotify: () => onPressNotify(item?.name),
-        loading: itemsAddingToCart[item?.sku],
+        loading: searchItemLoading[item?.sku],
+        disableAction: searchItemAdded ? true : false,
       };
     });
     return <MedSearchSuggestions data={products} />;
