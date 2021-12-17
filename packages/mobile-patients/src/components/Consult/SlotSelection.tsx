@@ -952,7 +952,9 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     return (
       <View style={styles.noSlotsContainer}>
         <Text style={styles.noSlotsAvailableText}>No slots available!</Text>
-        <Text style={styles.nextAvailabilityTitle}>Next availability - {availabilityTitle}</Text>
+        {(!doctorDetails?.medmantraSync || isOnlineSelected) && (
+          <Text style={styles.nextAvailabilityTitle}>Next availability - {availabilityTitle}</Text>
+        )}
         <Button
           title="VIEW AVAILABLE SLOTS"
           style={styles.viewAvailableSlotsBtn}
