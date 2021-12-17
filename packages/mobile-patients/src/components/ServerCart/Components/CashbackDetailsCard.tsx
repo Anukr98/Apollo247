@@ -48,7 +48,7 @@ export const CashbackDetailsCard: React.FC<CashbackDetailsProps> = (props) => {
       height: 15,
       position: 'absolute',
       left: triangleAlignmentValue || 0,
-      bottom: -14,
+      bottom: -14.5,
       borderLeftWidth: 12,
       borderLeftColor: theme.colors.CLEAR,
       borderRightWidth: 12,
@@ -61,7 +61,7 @@ export const CashbackDetailsCard: React.FC<CashbackDetailsProps> = (props) => {
       width: 15,
       height: 15,
       position: 'absolute',
-      bottom: -14,
+      bottom: -14.5,
       left: triangleAlignmentValue + 1 || 0,
       borderLeftWidth: 11,
       borderLeftColor: theme.colors.CLEAR,
@@ -69,6 +69,7 @@ export const CashbackDetailsCard: React.FC<CashbackDetailsProps> = (props) => {
       borderRightColor: theme.colors.CLEAR,
       borderBottomWidth: 11,
       borderBottomColor: theme.colors.HEX_WHITE,
+
       transform: [{ rotate: '180deg' }],
     },
   };

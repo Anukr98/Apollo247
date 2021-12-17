@@ -172,6 +172,7 @@ const Common = {
   BLUE_REFERRER_BORDER: "#74b9ed",
   PACIFIC_BLUE: '#00A0E3',
   SHADE_OF_GRAY: 'rgba(2, 71, 91, 0.5)',
+  SHADE_OF_CYAN: '#013F32',
 };
 
 const Header = {

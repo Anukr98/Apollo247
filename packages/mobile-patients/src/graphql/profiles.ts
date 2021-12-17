@@ -6836,6 +6836,7 @@ export const SERVER_CART_SAVE_CART = gql`
           cartSavings
           couponSavings
           totalCashBack
+          couponCashBack
           cartTotal
           packagingCharges
           circleSavings {

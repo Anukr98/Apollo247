@@ -7,6 +7,7 @@ import { OneApollo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { CashbackDetailsCard } from '@aph/mobile-patients/src/components/ServerCart/Components/CashbackDetailsCard';
 import { Overlay } from 'react-native-elements';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { CouponDiscountCashbackImage } from '@aph/mobile-patients/src/components/ServerCart/Components/CouponDiscountCashbackImage';
 
 export interface CartTotalSectionProps {}
 
@@ -23,14 +24,20 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
   const estimatedAmount = serverCartAmount?.estimatedAmount;
   const isDeliveryFree = serverCartAmount?.isDeliveryFree;
   const totalCashBack = serverCartAmount?.totalCashBack;
+  const couponCashBack = serverCartAmount?.couponCashBack;
+  console.log('cashback coupon------', couponCashBack);
   const packagingCharges = serverCartAmount?.packagingCharges;
   const circleDeliverySavings = isCircleCart
     ? serverCartAmount?.circleSavings?.circleDelivery || 0
     : 0;
+  const circleMembershipCashback = isCircleCart
+    ? serverCartAmount?.circleSavings?.membershipCashBack || 0
+    : 0;
   const deliverySavings = isDeliveryFree || circleDeliverySavings > 0 ? deliveryCharges : 0;
   const totalSavings =
     cartSavings + couponSavings + deliverySavings + (isCircleCart ? totalCashBack : 0) || 0;
-  const isHealthCreditsAvailable = healthCredits ? true : false;
+  // const isHealthCreditsAvailable = healthCredits ? true : false;
+  const isHealthCreditsAvailable = true;
   const savingsAfterUsingHC =
     isHealthCreditsAvailable && estimatedAmount
       ? estimatedAmount - healthCredits > 0
@@ -43,16 +50,28 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
   const [HCSectionSelected, setHCSectionSelected] = useState<boolean>(false);
 
   const savingsTextRef = useRef<Text>(null);
+  const savingsText1Ref = useRef<Text>(null);
   const hcTextRef = useRef<Text>(null);
   const [savingsTextWidth, setSavingsTextWidth] = useState<number>(0);
+  const [savingsText1Width, setSavingsText1Width] = useState<number>(0);
   const [hcTextWidth, setHCTextWidth] = useState<number>(0);
-  console.log(savingsTextWidth, hcTextWidth);
+  // console.log(savingsTextWidth, hcTextWidth);
 
   const renderCartTotal = () => {
+    const afterSavingsCartTotal = cartSavings && cartTotal ? cartTotal - cartSavings : 0;
+    // const afterSavingsCartTotal = 0;
     return cartTotal ? (
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <Text style={styles.text}>Cart total</Text>
-        <Text style={styles.text}>₹{cartTotal?.toFixed(2)}</Text>
+        {afterSavingsCartTotal ? (
+          <View style={{ flexDirection: 'row' }}>
+            <Text style={styles.strikedThroughText}>₹{cartTotal?.toFixed(2)}</Text>
+            <Text style={styles.text}>₹{afterSavingsCartTotal?.toFixed(2)}</Text>
+          </View>
+        ) : (
+          <Text style={styles.text}>₹{cartTotal?.toFixed(2)}</Text>
+        )}
+        {/* <Text style={styles.text}>₹{cartTotal?.toFixed(2)}</Text> */}
       </View>
     ) : null;
   };
@@ -83,12 +102,12 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
           {isCircleCart && <Text style={styles.circleMessage}>(Free for Circle Members)</Text>}
         </View>
         {deliveryCharges && !isDeliveryFree ? (
-          <Text style={styles.text}>+₹{deliveryCharges?.toFixed(2)}</Text>
+          <Text style={styles.text}>₹{deliveryCharges?.toFixed(2)}</Text>
         ) : (
           <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
             <Text style={styles.free}>Free</Text>
             <Text style={{ ...styles.text, textDecorationLine: 'line-through', marginLeft: 5 }}>
-              +₹{deliveryCharges?.toFixed(2)}
+              ₹{deliveryCharges?.toFixed(2)}
             </Text>
           </View>
         )}
@@ -142,43 +161,83 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
 
   const renderTotalSavings = () => {
     return estimatedAmount ? (
-      <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'center',
+          marginTop: 14,
+          // marginBottom: -7,
+          // backgroundColor: '#00ff33',
+        }}
+      >
         <View style={{ paddingRight: 10, paddingTop: 2 }}>
           <Text style={styles.savingsText}>Total savings: </Text>
         </View>
-        <View style={{ flex: 0.6, maxWidth: 100 }}>
-          <TouchableOpacity
-            onPress={() => {
-              setShowCashbackCard(!showCashbackCard);
-              setSavingsSelected(!savingsSelected);
+        {/* <View style={{}}> */}
+        <TouchableOpacity
+          onPress={() => {
+            setShowCashbackCard(!showCashbackCard);
+            setSavingsSelected(!savingsSelected);
+          }}
+        >
+          <View
+            style={{
+              alignSelf: 'center',
             }}
           >
-            <View
-              style={{
-                alignSelf: 'center',
-                flex: 0.7,
+            <Text
+              style={[styles.savingsAmount, {}]}
+              ref={savingsText1Ref}
+              onLayout={(event) => {
+                const layout = event.nativeEvent.layout;
+                // console.log('layout of savings', layout);
+                setSavingsText1Width(layout.width);
               }}
             >
-              <Text style={[styles.savingsAmount, {}]}>₹{totalSavings?.toFixed(2)}</Text>
-              <Text numberOfLines={1} ellipsizeMode={'clip'} style={styles.textUnderline}>
-                ---------------------------------------------
-              </Text>
-            </View>
-            {/* <Text numberOfLines={1} ellipsizeMode={'clip'} style={styles.textUnderline}>
+              ₹{totalSavings?.toFixed(2)}
+            </Text>
+            <Text
+              numberOfLines={1}
+              ellipsizeMode={'clip'}
+              style={[styles.textUnderline, { width: savingsText1Width }]}
+            >
+              ---------------------------------------------
+            </Text>
+          </View>
+          {/* <Text numberOfLines={1} ellipsizeMode={'clip'} style={styles.textUnderline}>
               ------------------------------------
             </Text> */}
-          </TouchableOpacity>
-        </View>
+        </TouchableOpacity>
+        {/* </View> */}
       </View>
     ) : null;
   };
 
   const renderTotalSavingsAndHealthCredits = () => {
     return estimatedAmount ? (
-      <View style={{ flexDirection: 'row' }}>
-        <View style={{ flexDirection: 'row' }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          backgroundColor: '#00ff99',
+          marginTop: 14,
+          alignSelf: 'baseline',
+          paddingBottom: -5,
+        }}
+      >
+        <View
+          style={{
+            flexDirection: 'row',
+            alignSelf: 'baseline',
+            // backgroundColor: '#00ff33',
+          }}
+        >
           {savingsSelected && renderCashbackDetailsCard(-155)}
-          <View style={{ paddingRight: 8, paddingTop: 7 }}>
+          <View
+            style={{
+              paddingRight: 5,
+              paddingTop: 7,
+            }}
+          >
             <Text style={styles.savingsText}>Total</Text>
             <Text style={styles.savingsText}>savings: </Text>
           </View>
@@ -209,7 +268,7 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
                 ref={savingsTextRef}
                 onLayout={(event) => {
                   const layout = event.nativeEvent.layout;
-                  console.log('layout of savings', layout);
+                  // console.log('layout of savings', layout);
                   setSavingsTextWidth(layout.width);
                 }}
               >
@@ -224,12 +283,12 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
               </Text>
             </TouchableOpacity>
           </View>
-          {console.log('savingsTextWidth', savingsTextWidth, hcTextWidth)}
+          {/* {console.log('savingsTextWidth', savingsTextWidth, hcTextWidth)} */}
           <View style={styles.borderLine}></View>
         </View>
-        <View style={{ flexDirection: 'row' }}>
+        <View style={{ flexDirection: 'row', backgroundColor: '#00ff33', alignSelf: 'center' }}>
           {!savingsSelected && renderCashbackDetailsCard(-107)}
-          <View style={{ paddingLeft: 14, paddingRight: 10 }}>
+          <View style={{ paddingLeft: 8, paddingRight: 8 }}>
             <OneApollo style={{ height: 43, width: 55 }} />
           </View>
           <View style={{ paddingTop: 5 }}>
@@ -260,7 +319,7 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
                   ref={hcTextRef}
                   onLayout={(event) => {
                     const layout = event.nativeEvent.layout;
-                    console.log('layout of HC', layout);
+                    // console.log('layout of HC', layout);
                     setHCTextWidth(layout.width);
                   }}
                 >
@@ -297,7 +356,7 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
             // backgroundColor: '#00ff33',
             // flexDirection: 'row',
           },
-          savingsSelected ? {} : { marginLeft: -50 },
+          savingsSelected ? {} : { marginLeft: -70 },
         ]}
       >
         <CashbackDetailsCard
@@ -306,7 +365,7 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
           deliveryCharges={deliveryCharges || 0}
           couponDiscount={couponSavings || 25}
           circleCashback={54}
-          couponCashback={25}
+          couponCashback={couponCashBack}
           triangleAlignmentValue={savingsSelected ? 70 : 135}
         />
       </View>
@@ -315,7 +374,6 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
 
   return (
     <View>
-      {/* {renderCashbackDetailsCard()} */}
       <View style={styles.card}>
         <View style={{ paddingHorizontal: 15 }}>
           {renderCartTotal()}
@@ -330,12 +388,21 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
         {renderPayUsingHealthCredits()}
         <View style={{ paddingHorizontal: 15 }}>
           {/* {renderCashbackDetailsCard()} */}
-          {/* {renderTotalSavings()} */}
+          {renderTotalSavings()}
           {renderTotalSavingsAndHealthCredits()}
         </View>
       </View>
     </View>
   );
+  // return (
+  //   <View style={{ height: 1000 }}>
+  //     <View style={styles.card}>
+  //       <View style={{ position: 'absolute', zIndex: 5 }}>
+  //         <CouponDiscountCashbackImage />
+  //       </View>
+  //     </View>
+  //   </View>
+  // );
 };
 
 const styles = StyleSheet.create({
@@ -379,11 +446,21 @@ const styles = StyleSheet.create({
   circleMessage: {
     ...theme.viewStyles.text('L', 12, '#02475B', 1, 17),
   },
+  strikedThroughText: {
+    ...theme.fonts.IBMPlexSansRegular(12),
+    fontWeight: '500',
+    lineHeight: 24,
+    color: theme.colors.BORDER_BOTTOM_COLOR,
+    opacity: 0.7,
+    textDecorationLine: 'line-through',
+    marginRight: 8,
+  },
   healthCreditsAvailableView: {
     backgroundColor: 'rgba(0, 135, 186, 0.1)',
     paddingVertical: 10,
     paddingHorizontal: 5,
-    marginVertical: 12,
+    // marginVertical: 12,
+    marginTop: 12,
   },
   healthCreditsAvailableTextStyle: {
     ...theme.fonts.IBMPlexSansRegular(14),
@@ -393,7 +470,7 @@ const styles = StyleSheet.create({
     color: theme.colors.LIGHT_BLUE,
   },
   healthCreditsAvailableBoldTextStyle: {
-    ...theme.fonts.IBMPlexSansRegular(14),
+    ...theme.fonts.IBMPlexSansBold(14),
     fontWeight: '600',
     lineHeight: 18,
     textAlign: 'center',
@@ -406,7 +483,7 @@ const styles = StyleSheet.create({
     color: theme.colors.SHADE_OF_GRAY,
   },
   savingsAmount: {
-    ...theme.fonts.IBMPlexSansRegular(16),
+    ...theme.fonts.IBMPlexSansBold(16),
     fontWeight: '600',
     lineHeight: 21,
     color: theme.colors.PACIFIC_BLUE,
@@ -416,7 +493,7 @@ const styles = StyleSheet.create({
     // textAlign: 'center',
   },
   hcEarned: {
-    ...theme.fonts.IBMPlexSansRegular(13),
+    ...theme.fonts.IBMPlexSansBold(13),
     fontWeight: '600',
     lineHeight: 17,
     color: theme.colors.PACIFIC_BLUE,
@@ -425,7 +502,7 @@ const styles = StyleSheet.create({
     borderRightWidth: 1,
     borderColor: theme.colors.LIGHT_BLUE,
     opacity: 0.5,
-    paddingHorizontal: 10,
+    paddingHorizontal: 4,
   },
   textUnderline: {
     color: theme.colors.LIGHT_BLUE,
