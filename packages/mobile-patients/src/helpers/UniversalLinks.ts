@@ -305,6 +305,7 @@ const pushTheView = (
       navigation.navigate(AppRoutes.ConsultPackageDetail, {
         comingFrom: 'deeplink',
         planId: id,
+        isOneTap: id.startsWith('onetap'),
       });
       break;
 
