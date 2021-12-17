@@ -912,8 +912,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
     newWidgetsData?.length > 0 && reloadWidget ? setReloadWidget(false) : setReloadWidget(true);
     setWidgetsData(newWidgetsData);
     setIsPriceAvailable(true);
-    setSectionLoading(false);
     setPastOrderRecommendationShimmer(false);
+    setSectionLoading(false);
   }
 
   function setPastOrderRecommendationPrices(widgets: any, widgetPricingArr: any) {
@@ -2565,7 +2565,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         {renderWidgetItems(isWidget3)} {/** 3 */}
         {renderStepsToBook()}
         {renderWidgetItems(isWidget4)} {/** 4 */}
-        {renderCarouselBanners()}
         {renderWidgetItems(isWidget5)} {/** 5 */}
         {renderWhyBookUs()}
         {renderWidgetItems(isWidget6)} {/** 6 */}

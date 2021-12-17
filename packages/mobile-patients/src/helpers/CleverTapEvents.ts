@@ -1713,6 +1713,8 @@ export interface CleverTapEvents {
     'Item name': string;
     Pincode: string | number;
     Mode: 'Customer' | 'Automated';
+    itemIdsInCart: any,
+    itemNamesinCart: any
   };
   [CleverTapEventName.DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE]: {
     'Item ID'?: string | number;
