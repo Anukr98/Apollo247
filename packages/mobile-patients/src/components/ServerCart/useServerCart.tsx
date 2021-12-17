@@ -54,6 +54,7 @@ export const useServerCart = () => {
     setAddToCartSource,
     pharmacyCircleAttributes,
     setTatDetailsForPrescriptionOptions,
+    setCirclePlanSelected,
   } = useShoppingCart();
   const { axdcCode, pharmacyUserTypeAttribute } = useAppCommonData();
   const { setPharmacyLocation } = useAppCommonData();
@@ -199,6 +200,12 @@ export const useServerCart = () => {
         state: cartResponse?.state,
       });
       setCartSubscriptionDetails?.(cartResponse?.subscriptionDetails);
+      if (
+        cartResponse?.subscriptionDetails?.currentSellingPrice &&
+        !cartResponse?.subscriptionDetails?.subscriptionApplied
+      ) {
+        setCirclePlanSelected?.(null);
+      }
       setNoOfShipments?.(cartResponse?.noOfShipments);
       setTatDetailsForPrescriptionOptions?.({
         patientid: currentPatient?.id,
