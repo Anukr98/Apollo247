@@ -2961,7 +2961,8 @@ const styles = StyleSheet.create({
   totalChargesContainer: {
     backgroundColor: theme.colors.WHITE,
     marginBottom: 12,
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 16,
     marginTop: 6,
   },
   previousItemContainer: {
