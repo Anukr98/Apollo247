@@ -77,7 +77,6 @@ import {
   AppConfig,
   BLACK_LIST_CANCEL_STATUS_ARRAY,
   BLACK_LIST_RESCHEDULE_STATUS_ARRAY,
-  DIAGNOSTIC_ORDER_FAILED_STATUS,
   DIAGNOSTIC_EDIT_PROFILE_ARRAY,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
