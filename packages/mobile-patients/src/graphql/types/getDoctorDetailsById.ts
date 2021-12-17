@@ -183,6 +183,7 @@ export interface getDoctorDetailsById_getDoctorDetailsById {
   consultHours: (getDoctorDetailsById_getDoctorDetailsById_consultHours | null)[] | null;
   doctorNextAvailSlots: getDoctorDetailsById_getDoctorDetailsById_doctorNextAvailSlots | null;
   doctorCardActiveCTA: getDoctorDetailsById_getDoctorDetailsById_doctorCardActiveCTA | null;
+  medmantraSync: boolean | null;
 }
 
 export interface getDoctorDetailsById {

@@ -1045,6 +1045,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
         PHYSICAL
         DEFAULT
       }
+      medmantraSync
     }
   }
 `;
