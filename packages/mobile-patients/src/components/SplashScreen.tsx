@@ -226,6 +226,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     });
     AppState.addEventListener('change', _handleAppStateChange);
     checkForVersionUpdate();
+    getAllReferrerDataOnInitialsLoad();
     getOffers();
 
     try {
@@ -1287,6 +1288,34 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Diagnostics_UploadPrescription',
       PROD: 'Diagnostics_UploadPrescription',
     },
+    REFERRER_GLOBAL_CONTENT: {
+      QA: 'QA_REFERRER_GLOBAL_CONTENT',
+      PROD: 'REFERRER_GLOBAL_CONTENT',
+    },
+    REFERRER_MAIN_BANNER_CONTENT: {
+      QA: 'QA_REFERRER_MAIN_BANNER_CONTENT',
+      PROD: 'REFERRER_MAIN_BANNER_CONTENT',
+    },
+    SHARE_REFERRER_LINK_CONENT: {
+      QA: 'QA_SHARE_REFERRER_LINK_CONENT',
+      PROD: 'SHARE_REFERRER_LINK_CONENT',
+    },
+    YOUR_REWARD_SCREEN_DATA_CONTENT: {
+      QA: 'QA_YOUR_REWARD_SCREEN_DATA_CONTENT',
+      PROD: 'YOUR_REWARD_SCREEN_DATA_CONTENT',
+    },
+    REFERRER_CONGRATULATIONS_PAGE: {
+      QA: 'QA_REFERRER_CONGRATULATIONS_PAGE',
+      PROD: 'REFERRER_CONGRATULATIONS_PAGE',
+    },
+    REFERRER_TERMS_AND_CONDITION_DATA: {
+      QA: 'QA_REFERRER_TERMS_AND_CONDITION_DATA',
+      PROD: 'REFERRER_TERMS_AND_CONDITION_DATA',
+    },
+    REFERRER_FAQS_DATA: {
+      QA: 'QA_REFERRER_FAQS_DATA',
+      PROD: 'REFERRER_FAQS_DATA',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1734,6 +1763,17 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     } catch (error) {
       CommonBugFender('SplashScreen - Error processing remote config', error);
     }
+  };
+
+  const getAllReferrerDataOnInitialsLoad = async () => {
+    const minimumFetchIntervalMillis = __DEV__ ? 0 : 0;
+    await remoteConfig().setConfigSettings({ minimumFetchIntervalMillis });
+    await remoteConfig().fetchAndActivate();
+    const config = remoteConfig();
+    const globalData = getRemoteConfigValue(
+      'REFERRER_GLOBAL_CONTENT',
+      (key) => config.getString(key) || string.refAndEarn.global
+    );
   };
 
   const showUpdateAlert = (mandatory: boolean) => {
