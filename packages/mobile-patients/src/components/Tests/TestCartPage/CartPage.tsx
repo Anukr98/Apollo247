@@ -44,6 +44,7 @@ import {
   diagnosticsDisplayPrice,
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   getPricesForItem,
+  getUpdatedCartItems,
   sourceHeaders,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import {
@@ -232,6 +233,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     fullDuplicateItems = '';
   var overallDuplicateArray = [] as any;
 
+  const arrayToUse = isModifyFlow ? modifiedPatientCart : patientCartItems;
+
   useEffect(() => {
     triggerCartPageViewed(false, cartItems);
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
@@ -350,33 +353,20 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     }
   }, [addresses, isFocused]);
 
-  function getUpdatedCartItems() {
-    const getExistingItems = patientCartItems
-      ?.map((item) => item?.cartItems?.filter((idd) => idd?.id))
-      ?.flat();
-    const selectedUniqueItems = getExistingItems?.filter((i) => i?.isSelected);
-    const selectedUnqiueItemIds = [
-      ...new Set(selectedUniqueItems?.map((item) => Number(item?.id))),
-    ];
-
-    const findPackageSKU = selectedUniqueItems?.find((_item: any) => _item?.inclusions?.length > 1);
-    const hasPackageSKU = !!findPackageSKU;
-    return {
-      selectedUniqueItems,
-      selectedUnqiueItemIds,
-      hasPackageSKU,
-    };
-  }
-
   /**consider only selected one + for package need to pass one argument + isPackage + if is package and recommendations are not there, then fallback should not come + 2 limit needs to be removed */
   useEffect(() => {
-    if (cartItems?.length > 0 && getUpdatedCartItems()?.selectedUnqiueItemIds?.length > 0) {
+    if (
+      cartItems?.length > 0 &&
+      getUpdatedCartItems(arrayToUse)?.selectedUnqiueItemIds?.length > 0
+    ) {
       const itemIds = isModifyFlow
-        ? getUpdatedCartItems()?.selectedUnqiueItemIds?.concat(modifiedOrderItemIds)
-        : getUpdatedCartItems()?.selectedUnqiueItemIds;
+        ? (getUpdatedCartItems(arrayToUse)?.selectedUnqiueItemIds?.concat(
+            modifiedOrderItemIds
+          ) as any)
+        : (getUpdatedCartItems(arrayToUse)?.selectedUnqiueItemIds as any);
       fetchReportTat(itemIds);
       fetchTestReportGenDetails(itemIds);
-      fetchCartPageRecommendations(itemIds, getUpdatedCartItems()?.selectedUniqueItems);
+      fetchCartPageRecommendations(itemIds, getUpdatedCartItems(arrayToUse)?.selectedUniqueItems);
     }
   }, [cartItems?.length, addressCityId]);
 
@@ -687,14 +677,14 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     const getExisitngItems = patientCartItems
       ?.map((item) => item?.cartItems?.filter((idd) => idd?.id))
       ?.flat();
-    const selectedUnqiueItems = getExisitngItems?.filter((i) => i?.isSelected);
+    const selectedUnqiueItems = getExisitngItems?.filter((i: DiagnosticsCartItem) => i?.isSelected);
     const arrayToChoose = isModifyFlow ? cartItems : selectedUnqiueItems;
 
     if (results?.length == 0) {
       setLoading?.(false);
     }
     const disabledCartItems = arrayToChoose?.filter(
-      (cartItem) =>
+      (cartItem: DiagnosticsCartItem) =>
         !results?.find(
           (d: findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics) =>
             `${d?.itemId}` == cartItem?.id
@@ -703,7 +693,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     let isItemDisable = false,
       isPriceChange = false;
     if (arrayToChoose?.length > 0) {
-      arrayToChoose?.map((cartItem, index: number) => {
+      arrayToChoose?.map((cartItem: DiagnosticsCartItem, index: number) => {
         const isItemInCart = results?.findIndex(
           (item: any) => String(item?.itemId) === String(cartItem?.id)
         );
@@ -787,7 +777,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         //if items not available
         if (disabledCartItems?.length) {
           isItemDisable = true;
-          const disabledCartItemIds = disabledCartItems?.map((item) => item?.id);
+          const disabledCartItemIds = disabledCartItems?.map(
+            (item: DiagnosticsCartItem) => item?.id
+          );
           setLoading?.(false);
           removeDisabledCartItems(disabledCartItemIds);
           removeDisabledPatientCartItems(disabledCartItemIds);
@@ -1530,7 +1522,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   };
 
   const renderCartWidgets = () => {
-    const hasPackageSKU = getUpdatedCartItems()?.hasPackageSKU;
+    const hasPackageSKU = getUpdatedCartItems(arrayToUse)?.hasPackageSKU;
     var newArray: string | any[] = [];
     const dataToShow =
       recommedationData?.length > 2
@@ -1589,7 +1581,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     const isCartEmpty = isModifyFlow
       ? !(modifiedPatientCart?.length == 0 || modifiedPatientCart?.[0]?.cartItems?.length == 0)
       : !!isCartPresent && !isCartPresent;
-    const hasPackageSKU = getUpdatedCartItems()?.hasPackageSKU;
+    const hasPackageSKU = getUpdatedCartItems(arrayToUse)?.hasPackageSKU;
     return (
       <View style={{ margin: 16 }}>
         {renderAddTestOption()}

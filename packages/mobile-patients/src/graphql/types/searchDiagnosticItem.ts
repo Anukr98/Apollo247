@@ -22,7 +22,7 @@ export interface searchDiagnosticItem_searchDiagnosticItem_data_diagnostic_item_
 
 export interface searchDiagnosticItem_searchDiagnosticItem_data_diagnostic_inclusions_test_parameter_data {
   __typename: "Observation";
-  mandatoryValue: boolean | null;
+  mandatoryValue: string | null;
   observationName: string | null;
 }
 
@@ -30,6 +30,7 @@ export interface searchDiagnosticItem_searchDiagnosticItem_data {
   __typename: "DiagnosticsItemData";
   diagnostic_item_id: number | null;
   diagnostic_item_name: string | null;
+  testParametersCount: number | null;
   diagnostic_inclusions: (string | null)[] | null;
   diagnostic_item_alias: string | null;
   diagnostic_item_price: (searchDiagnosticItem_searchDiagnosticItem_data_diagnostic_item_price | null)[] | null;

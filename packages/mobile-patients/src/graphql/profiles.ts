@@ -6379,6 +6379,10 @@ export const GET_DIAGNOSTICS_RECOMMENDATIONS = gql`
         itemId
         itemName
         combinedLift
+        observations{
+          observationName
+          mandatoryValue
+        }
       }
     }
   }
@@ -6523,6 +6527,7 @@ export const GET_DIAGNOSTIC_SEARCH_RESULTS = gql`
       data {
         diagnostic_item_id
         diagnostic_item_name
+        testParametersCount
         diagnostic_inclusions
         diagnostic_item_alias
         diagnostic_item_price {
