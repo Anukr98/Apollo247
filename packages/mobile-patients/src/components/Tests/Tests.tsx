@@ -2561,7 +2561,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         {renderWidgetItems(isWidget3)} {/** 3 */}
         {renderStepsToBook()}
         {renderWidgetItems(isWidget4)} {/** 4 */}
-        {isDiagnosticCircleSubscription ? renderCarouselBanners() : null}
         {renderWidgetItems(isWidget5)} {/** 5 */}
         {renderWhyBookUs()}
         {renderWidgetItems(isWidget6)} {/** 6 */}
