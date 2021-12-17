@@ -87,8 +87,8 @@ export interface saveCart_saveCart_data_medicineOrderCartLineItems {
   isShippable: boolean | null;
   freeProduct: boolean | null;
   shipmentNo: number | null;
-  storeType: string | null;
   tatCity: string | null;
+  storeType: string | null;
 }
 
 export interface saveCart_saveCart_data {
