@@ -162,7 +162,8 @@ const Common = {
   LIGHT_BLUE_TWO: '#DCF0FF',
   BLUE_GRADIENT_ONE: '#1C9FC2',
   DISCOUNT_GREEN: "#34AA55",
-  GREEN_BG: "#F3FFFF"
+  GREEN_BG: "#F3FFFF",
+  SLOT_GRAY: "#F0F0F0"
 };
 
 const Header = {
