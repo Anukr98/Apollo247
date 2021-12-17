@@ -211,7 +211,7 @@ export const useServerCart = () => {
         patientid: currentPatient?.id,
         userType: pharmacyUserTypeAttribute?.User_Type,
         tatCity: cartResponse?.medicineOrderCartLineItems?.[0]?.tatCity,
-        tatType: cartResponse?.medicineOrderCartLineItems?.[0]?.storeType,
+        tatType: cartResponse?.medicineOrderCartLineItems?.[0]?.storeType?.toUpperCase(),
         tatHours: cartResponse?.medicineOrderCartLineItems?.[0]?.tatDuration,
         items: cartResponse?.medicineOrderCartLineItems?.map((item) => item?.sku),
       });
