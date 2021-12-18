@@ -55,10 +55,10 @@ export const SpecialOffersScreen: React.FC<SpecialOffersScreenProps> = (props) =
   useEffect(() => {
     if (widgetOrderData) {
       const widget = [...widgetOrderData];
-      const newArr = widget.sort((a, b) => a?.widgetRank?.localeCompare(b.widgetRank));
+      const newArr = widget.sort((a, b) => a?.widgetRank?.localeCompare(b?.widgetRank));
       const widgetArrayOrder = newArr.map((ele) => {
-        if (+ele.widgetRank > 0) {
-          return ele.widgetTitle;
+        if (+ele?.widgetRank > 0) {
+          return ele?.widgetTitle;
         }
       });
       setWidgetArray(widgetArrayOrder);
@@ -68,7 +68,7 @@ export const SpecialOffersScreen: React.FC<SpecialOffersScreenProps> = (props) =
   const fetchCouponsData = async () => {
     try {
       const offersResponse = await getSpecialOffersPageCoupons();
-      setOffersData(offersResponse.data);
+      setOffersData(offersResponse?.data);
       totalResponsesGenerated[2] = 1;
     } catch (e) {
       totalResponsesGenerated[2] = 1;
@@ -85,7 +85,7 @@ export const SpecialOffersScreen: React.FC<SpecialOffersScreenProps> = (props) =
   const fetchCategoryData = async () => {
     try {
       const categoryResponse = await getSpecialOffersPageCategory();
-      setCategoryData(categoryResponse.data);
+      setCategoryData(categoryResponse?.data);
       totalResponsesGenerated[3] = 1;
     } catch (e) {
       totalResponsesGenerated[3] = 1;
@@ -102,7 +102,7 @@ export const SpecialOffersScreen: React.FC<SpecialOffersScreenProps> = (props) =
   const fetchBrandsData = async () => {
     try {
       const brandResponse = await getSpecialOffersPageBrands();
-      setBrandsData(brandResponse.data);
+      setBrandsData(brandResponse?.data);
       totalResponsesGenerated[4] = 1;
     } catch (e) {
       totalResponsesGenerated[4] = 1;
@@ -153,7 +153,7 @@ export const SpecialOffersScreen: React.FC<SpecialOffersScreenProps> = (props) =
                 break;
               case 'Offers':
                 {
-                  return offersData ? <CouponsSection offersdata={offersData.response} /> : null;
+                  return offersData ? <CouponsSection offersdata={offersData?.response} /> : null;
                 }
                 break;
               case 'Deals by Category':

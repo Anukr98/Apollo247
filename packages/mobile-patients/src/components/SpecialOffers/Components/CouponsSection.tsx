@@ -67,7 +67,7 @@ export const CouponsSection = (props: { offersdata: SpecialOffersCouponsData[] }
 
   const updateKnowMore = (position: number) => {
     const array = [...couponOffersData];
-    array[position].knowMoreOption = !array[position].knowMoreOption;
+    array[position].knowMoreOption = !array[position]?.knowMoreOption;
     setCouponOffersData(array);
   };
 
@@ -230,7 +230,7 @@ export const CouponsSection = (props: { offersdata: SpecialOffersCouponsData[] }
         bounces={false}
         keyExtractor={(_, index) => `${index}`}
         data={
-          visibleOffers < couponOffersData.length
+          visibleOffers < couponOffersData?.length
             ? couponOffersData.slice(0, visibleOffers)
             : couponOffersData
         }
