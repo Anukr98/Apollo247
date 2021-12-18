@@ -967,7 +967,7 @@ export const getSpecialOffersPageCoupons = (): Promise<AxiosResponse<
 };
 
 export const getSpecialOffersPageCategory = (): Promise<AxiosResponse<
-  SpecialOffersCategoryApiResponse
+  SpecialOffersCategoryApiResponse[]
 >> => {
   const url = `${config.SPECIAL_OFFERS_CATEGORY[0]}`;
   return Axios.get(url, {
