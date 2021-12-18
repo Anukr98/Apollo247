@@ -3,6 +3,7 @@ import {
   MedicineRxIcon,
   ExpressDeliveryLogo,
   CircleDiscountBadge,
+  PrescriptionRequiredIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
@@ -103,6 +104,17 @@ const styles = StyleSheet.create({
   },
   discountBadgeIcon: { height: 17, width: 110 },
   discountBadgeView: { position: 'absolute', top: 0 },
+  rxSymbolContainer: {
+    position: 'absolute',
+    right: -10,
+    top: 0,
+    zIndex: 9,
+  },
+  rxSymbol: {
+    resizeMode: 'contain',
+    width: 15,
+    height: 15,
+  },
 });
 
 export interface Props extends MedicineProduct {
@@ -213,6 +225,11 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
     const isPrescriptionRequired = is_prescription_required == 1;
     return (
       <View style={styles.imageContainer}>
+        {isPrescriptionRequired && (
+          <View style={styles.rxSymbolContainer}>
+            <PrescriptionRequiredIcon style={styles.rxSymbol} />
+          </View>
+        )}
         {thumbnail || image ? (
           <Image
             PlaceholderContent={isPrescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
@@ -267,7 +284,7 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
   };
 
   const renderMerchandisingTag = () => {
-    const text = merchandising == 1 ? 'Apollo\'s Choice' : merchandising == 2 ? 'Recommended' : null;
+    const text = merchandising == 1 ? "Apollo's Choice" : merchandising == 2 ? 'Recommended' : null;
     if (text) {
       return (
         <View style={styles.discountBadgeView}>
