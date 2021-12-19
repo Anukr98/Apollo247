@@ -252,7 +252,7 @@ import {
   createVonageSessionToken,
   createVonageSessionTokenVariables,
 } from '../../graphql/types/createVonageSessionToken';
-import useOpenTokSpeedTest from '../../helpers/useOpenTokSpeedTest';
+import useOpenTokSpeedTest from '@aph/mobile-patients/src/helpers/useOpenTokSpeedTest';
 
 interface OpentokStreamObject {
   connection: {
