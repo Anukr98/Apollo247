@@ -153,6 +153,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const [primaryOrderId, setPrimaryOrderId] = useState<string>('');
   const [slotDuration, setSlotDuration] = useState<number>(0);
   const [circlePlanDetails, setCirclePlanDetails] = useState([] as any);
+  const [offerAmount, setOfferAmount] = useState<number>(0);
 
   const moveToMyOrders = () => {
     props.navigation.popToTop({ immediate: true }); //if not added, stack was getting cleared.
@@ -191,13 +192,20 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       let response: any = await getDiagnosticRefundOrders(client, paymentId);
       if (response?.data?.data?.getOrderInternal) {
         const getResponse = response?.data?.data?.getOrderInternal?.DiagnosticsPaymentDetails;
+        const getOffersResponse = response?.data?.data?.getOrderInternal?.offers;
         const getSlotDateTime = getResponse?.ordersList?.[0]?.slotDateTimeInUTC;
         const primaryOrderID = getResponse?.ordersList?.[0]?.primaryOrderID;
         const slotDuration =
           getResponse?.ordersList?.[0]?.attributesObj?.slotDurationInMinutes || 0;
+        const getOffersAmount = getOffersResponse?.[0]?.benefits;
+        const totalOfferAmount = getOffersAmount?.reduce(
+          (prev: any, curr: any) => prev + curr?.amount,
+          0
+        );
         setApiOrderDetails([getResponse]);
         setTimeDate(getSlotDateTime);
         setSlotDuration(slotDuration);
+        setOfferAmount(totalOfferAmount);
         setIsSingleUhid(getResponse?.ordersList?.length == 1); //getResponse?.ordersList?.[0]?.length
         if (primaryOrderID) {
           setPrimaryOrderId(primaryOrderID);
@@ -451,6 +459,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   };
 
   const renderAmount = () => {
+    const totalAmountPaid = orderDetails?.amount - offerAmount;
     return (
       <Text
         style={[
@@ -464,7 +473,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
         {isCOD ? 'Amount to be paid via cash' : 'Total Amount Paid'} :{' '}
         <Text style={styles.amount}>
           {string.common.Rs}
-          {orderDetails?.amount}
+          {totalAmountPaid}
         </Text>
       </Text>
     );

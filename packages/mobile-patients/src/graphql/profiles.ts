@@ -1770,6 +1770,32 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         couponCode
         paymentOrderId
         passportNo
+        diagnosticOrderTransactions {
+          healthCreditsUsed
+          paymentMethod
+          paymentStatus
+          effectivePrepaidAmount
+          prepaidAmount
+          offers {
+            offer_id
+            offer_code
+            offer_description {
+              title
+              tnc
+              description
+            }
+            status
+            benefits {
+              type
+              amount
+              calculation_info {
+                value
+                max_amount
+                calculation_rule
+              }
+            }
+          }
+        }
         attributesObj{
           initialCollectionCharges
           distanceCharges
@@ -5226,6 +5252,20 @@ export const GET_INTERNAL_ORDER = gql`
         created_at
         updated_at
         amount
+      }
+      offers{
+        offer_code
+        offer_description{
+          offer_code
+          title
+          description
+        }
+        benefits{
+          amount
+          calculation_info{
+            value
+          }
+        }
       }
     }
   }
