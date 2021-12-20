@@ -2620,7 +2620,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
       pastOrderRecommendations?.length > 0 &&
       pastOrderRecommendations.find((item: any) => item?.diagnosticPricing);
     const showViewAll = true;
-    const lengthOfTitle = drupalRecommendations?.[0]?.diagnosticWidgetTitle?.length;
+    const widgetName =
+      drupalRecommendations?.[0]?.diagnosticWidgetTitle! ||
+      string.diagnostics.homepagePastOrderRecommendations;
+    const lengthOfTitle = widgetName?.length;
 
     return (
       <View style={styles.widgetSpacing}>
@@ -2630,7 +2633,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               renderDiagnosticWidgetHeadingShimmer() //load heading
             ) : !!isPricesAvailable ? (
               <SectionHeader
-                leftText={nameFormater(drupalRecommendations?.[0]?.diagnosticWidgetTitle, 'upper')}
+                leftText={nameFormater(widgetName, 'upper')}
                 leftTextStyle={[
                   styles.widgetHeading,
                   {
@@ -2653,6 +2656,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                           data: drupalRecommendations?.[0], //for passing title
                           cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
                           widgetType: string.diagnosticCategoryTitle.item,
+                          widgetName: widgetName
                         });
                       }
                     : undefined
@@ -2677,6 +2681,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 navigation={props.navigation}
                 source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME}
                 sourceScreen={AppRoutes.Tests}
+              
               />
             )}
           </>
