@@ -355,7 +355,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
           },
         });
       }
-      if (movedFrom === AppRoutes.TestsCart) {
+      if (movedFrom === AppRoutes.CartPage) {
         breadcrumb.push({
           title: 'Cart',
           onPress: () => {
@@ -487,22 +487,8 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       !!actualItemsToShow &&
       actualItemsToShow?.map((item: any) => {
         const inclusions = item?.inclusionData;
-
-        const getMandatoryParamter =
-          !!inclusions &&
-          inclusions?.length > 0 &&
-          inclusions?.map((inclusion: any) =>
-            inclusion?.incObservationData?.filter((item: any) => item?.mandatoryValue === '1')
-          );
-
-        const getMandatoryParameterCount =
-          !!getMandatoryParamter &&
-          getMandatoryParamter?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
-        if (getMandatoryParameterCount > 1) {
-          itemPackages.push(item);
-        } else {
-          itemTests.push(item);
-        }
+        //segregation of tests/packages
+        !!inclusions && inclusions?.length > 1 ? itemPackages.push(item) : itemTests.push(item);
       });
 
     return (
@@ -540,6 +526,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
                   navigation={props.navigation}
                   source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.LISTING}
                   sourceScreen={AppRoutes.TestListing}
+                  widgetHeading={widgetsData?.diagnosticWidgetTitle}
                 />
               </>
             )}
@@ -571,6 +558,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
                   navigation={props.navigation}
                   source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.LISTING}
                   sourceScreen={AppRoutes.TestListing}
+                  widgetHeading={widgetsData?.diagnosticWidgetTitle}
                 />
               </>
             )}

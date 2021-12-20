@@ -120,6 +120,7 @@ import { PatientListOverlay } from '@aph/mobile-patients/src/components/Tests/co
 const { width, height } = Dimensions.get('window');
 import { getDiagnosticOrdersListByParentOrderID_getDiagnosticOrdersListByParentOrderID_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByParentOrderID';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
+import { PhleboCallPopup } from '@aph/mobile-patients/src/components/Tests/components/PhleboCallPopup';
 
 type orderList = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList;
 
@@ -187,6 +188,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [showMultiUhidOption, setShowMultiUhidOption] = useState<boolean>(false);
   const [isMultiUhid, setIsMultiUhid] = useState<boolean>(false);
   const [showViewReportModal, setShowViewReportModal] = useState<boolean>(false);
+  const [showPhleboCallPopUp, setShowPhleboCallPopUp] = useState<boolean>(false);
+  const [callPhleboObj, setCallPhleboObj] = useState<any>('');
   const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
   const [multipleOrdersList, setMultipleOrdersList] = useState<
     | (getDiagnosticOrdersListByParentOrderID_getDiagnosticOrdersListByParentOrderID_ordersList | null)[]
@@ -945,6 +948,19 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     );
   };
 
+  const renderPhleboCallPopup = () => {
+    return (
+      <PhleboCallPopup
+        onPressBack={() => {
+          setShowPhleboCallPopUp(false);
+        }}
+        onPressProceed={() => {
+          _onPressPhleboCall(callPhleboObj?.name, callPhleboObj?.number, callPhleboObj?.orderId);
+        }}
+      />
+    );
+  };
+
   //new reschedule flow
   const renderBottomPopUp = () => {
     return (
@@ -1690,7 +1706,15 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         phelboObject={order?.diagnosticOrderPhlebotomists}
         onPressRatingStar={(star) => _navigateToRatingScreen(star, order)}
         onPressEditPatient={() => _onPressEditPatient(order)}
-        onPressCallOption={(name, number) => _onPressPhleboCall(name, number, order?.id)}
+        onPressCallOption={(name, number) => {
+          setShowPhleboCallPopUp(true)
+          const callObj = {
+            name: name,
+            number: number,
+            orderId: order?.id
+          }
+          setCallPhleboObj(callObj)
+        }}
         style={[
           { marginHorizontal: 20 },
           index < orders?.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },
@@ -1718,6 +1742,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     //if allowCalling is true.
     const id = orderId.toString();
     DiagnosticPhleboCallingClicked(currentPatient, id, phleboName, isDiagnosticCircleSubscription);
+    setShowPhleboCallPopUp(false);
     _callDiagnosticExotelApi(phoneNumber, orderId);
   }
 
@@ -2163,6 +2188,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         {showPatientsOverlay && renderPatientsOverlay()}
         {showPatientListOverlay && renderPatientsListOverlay()}
         {showViewReportModal ? renderViewReportModal() : null}
+        {showPhleboCallPopUp ? renderPhleboCallPopup() : null}
       </SafeAreaView>
       {loading && !props?.showHeader ? null : loading && <Spinner />}
     </View>

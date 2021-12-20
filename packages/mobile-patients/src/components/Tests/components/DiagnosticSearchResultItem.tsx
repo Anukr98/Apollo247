@@ -44,7 +44,9 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
   );
   const testPramaterDataCount = parameterData?.length;
   const inclusionData = data?.diagnostic_inclusions;
-  const dataLength = inclusionData?.length;
+  const dataLength = !!data?.testParametersCount
+    ? data?.testParametersCount
+    : inclusionData?.length;
 
   const renderItemNamePrice = () => {
     const getDiagnosticPricingForItem = data?.diagnostic_item_price;

@@ -98,6 +98,7 @@ import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 import DiscountPercentage from '@aph/mobile-patients/src/components/Tests/components/DiscountPercentage';
 import { renderDiagnosticWidgetTestShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
+import { DIAGNOSTICS_ITEM_TYPE } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
@@ -163,6 +164,7 @@ export interface TestDetailsProps
     cityId?: string;
     changeCTA?: boolean;
     stateId?: string;
+    widgetTitle?: string;
   }> {}
 
 export const TestDetails: React.FC<TestDetailsProps> = (props) => {
@@ -205,8 +207,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const addressCityId = props.navigation.getParam('cityId');
   const movedFrom = props.navigation.getParam('comingFrom');
   const isDeep = props.navigation.getParam('movedFrom');
+  const widgetTitle = props.navigation.getParam('widgetTitle');
   const itemId =
-    movedFrom == AppRoutes.TestsCart ? testDetails?.ItemID : props.navigation.getParam('itemId');
+    movedFrom == AppRoutes.CartPage ? testDetails?.ItemID : props.navigation.getParam('itemId');
   const source = props.navigation.getParam('source');
   const isAlreadyPartOfOrder =
     !!modifiedOrderItemIds &&
@@ -242,7 +245,48 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const [packageRecommendationsShimmer, setPackageRecommendationsShimmer] = useState<boolean>(
     false
   );
-  const getCTADetails = showDiagnosticCTA(CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL, cityIdToUse);
+  const originalItemIds =
+    !!packageRecommendations?.length || !!frequentlyBroughtRecommendations?.length
+      ? [itemId!]
+      : null;
+  const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
+  const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
+  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
+    CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL
+  );
+  const checkForCtaCityAvailabilty = () => {
+    for (let index = 0; index < ctaDetailArray.length; index++) {
+      const element = ctaDetailArray[index];
+      if (Number(element?.ctaCityId) == cityIdToUse) {
+        return element;
+      } else {
+        return null;
+      }
+    }
+  };
+  const checkItemIdForCta = () => {
+    let newArray = [];
+    for (let index = 0; index < ctaDetailArray.length; index++) {
+      const element = ctaDetailArray[index];
+      if (
+        Number(element?.ctaCityId) == cityIdToUse &&
+        element?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL) &&
+        element?.ctaItemIds?.length > 0 &&
+        element?.ctaItemIds?.includes(Number(itemId))
+      ) {
+        newArray.push(element);
+        return newArray;
+      } else {
+        return null;
+      }
+    }
+  };
+
+  const ctaDetailMatched = checkForCtaCityAvailabilty()
+    ? checkItemIdForCta()
+    : isCtaDetailDefault
+    ? [callToOrderDetails?.ctaDetailsDefault]
+    : [];
   const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
   const itemName =
@@ -551,7 +595,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       cityID: Number(serviceabilityObject?.cityId),
       stateID: Number(serviceabilityObject?.stateId),
     };
-    if (movedFrom === AppRoutes.TestsCart) {
+    if (movedFrom === AppRoutes.CartPage) {
       const selectedAddressIndex = addresses?.findIndex(
         (address) => address?.id == deliveryAddressId
       );
@@ -565,7 +609,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     }
 
     if (
-      (movedFrom == AppRoutes.TestsCart && Number(deliveryAddressStateId) == 0) ||
+      (movedFrom == AppRoutes.CartPage && Number(deliveryAddressStateId) == 0) ||
       !isDiagnosticLocationServiceable
     ) {
       setExpressSlotMsg('');
@@ -603,7 +647,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     const itemIds = [Number(itemId)];
     const id = cityIdToUse;
     const pincode =
-      movedFrom === AppRoutes.TestsCart
+      movedFrom === AppRoutes.CartPage
         ? addresses?.[selectedAddressIndex]?.zipcode!
         : diagnosticLocation?.pincode! || '500030';
     const formattedDate = moment(diagnosticSlot?.date).format('YYYY/MM/DD');
@@ -760,7 +804,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           },
         });
       }
-      if (movedFrom === AppRoutes.TestsCart) {
+      if (movedFrom === AppRoutes.CartPage) {
         breadcrumb.push({
           title: 'Cart',
           onPress: () => {
@@ -778,6 +822,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
   useEffect(() => {
     if (testInfo?.Rate) {
+      const itemType = (testInfo?.type! || testDetails?.type)?.toLowerCase();
       DiagnosticDetailsViewed(
         isDeep == 'deeplink'
           ? 'Deeplink'
@@ -785,12 +830,22 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           ? source
           : testInfo?.source! || testDetails?.source,
         itemName,
-        testInfo?.type! || testDetails?.type,
+        !!itemType && itemType == DIAGNOSTICS_ITEM_TYPE.PACKAGE?.toLowerCase()
+          ? DIAGNOSTICS_ITEM_TYPE.PACKAGE
+          : DIAGNOSTICS_ITEM_TYPE.TEST,
         testInfo?.ItemID || itemId,
         currentPatient,
-        testInfo?.Rate || testDetails?.Rate,
+        calculatePriceToShow() || testInfo?.Rate || testDetails?.Rate,
         pharmacyCircleAttributes,
-        isDiagnosticCircleSubscription
+        isDiagnosticCircleSubscription,
+        originalItemIds,
+        movedFrom == AppRoutes.TestDetails
+          ? widgetTitle
+          : originalItemIds
+          ? packageRecommendations > 2
+            ? 'Recommendations'
+            : 'You can also order'
+          : ''
       );
     }
   }, [testInfo]);
@@ -911,14 +966,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     setPriceHeight(layout?.height);
   }
 
-  const renderPriceView = (isBottom: boolean) => {
-    //if coming from anywhere other than cart page
-    //check other conidtions
-    const slashedPrice =
-      !!testInfo?.packageMrp && testInfo?.packageMrp > testInfo?.Rate
-        ? testInfo?.packageMrp
-        : testInfo?.Rate;
-
+  function calculatePriceToShow() {
     //1. circle sub + promote circle -> circleSpecialPrice
     //2. circle sub + discount -> dicount Price
     //3. circle sub + none -> special price | price
@@ -942,6 +990,19 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         priceToShow = testInfo?.specialPrice || testInfo?.Rate;
       }
     }
+    return priceToShow;
+  }
+
+  const renderPriceView = (isBottom: boolean) => {
+    //if coming from anywhere other than cart page
+    //check other conidtions
+    const slashedPrice =
+      !!testInfo?.packageMrp && testInfo?.packageMrp > testInfo?.Rate
+        ? testInfo?.packageMrp
+        : testInfo?.Rate;
+
+    const priceToShow = calculatePriceToShow();
+
     return (
       <View>
         {!isBottom
@@ -1228,6 +1289,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           : []
       );
 
+      const nonInclusionParamters = cmsTestDetails?.diagnosticInclusionName?.filter(
+        (item: any) => !!item && !item?.TestObservation
+      );
+
     const getMandatoryParameterCount =
       !!getMandatoryParamter &&
       getMandatoryParamter?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
@@ -1252,7 +1317,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           {isInclusionPrsent ? (
             <Text style={styles.testIncludedText}>
               Total tests included :{' '}
-              {getMandatoryParameterCount || cmsTestDetails?.diagnosticInclusionName?.length}
+              {getMandatoryParameterCount + nonInclusionParamters?.length || cmsTestDetails?.diagnosticInclusionName?.length}
             </Text>
           ) : null}
           {isInclusionPrsent &&
@@ -1458,6 +1523,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               navigation={props.navigation}
               source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS}
               sourceScreen={AppRoutes.TestDetails}
+              widgetHeading={data?.diagnosticWidgetTitle}
             />
           </>
         ) : null}
@@ -1490,6 +1556,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               navigation={props.navigation}
               source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS}
               sourceScreen={AppRoutes.TestDetails}
+              widgetHeading={data?.diagnosticWidgetTitle}
             />
           </>
         ) : null}
@@ -1504,25 +1571,32 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     const circleSpecialPrice = testInfo?.circleSpecialPrice!;
     const discountPrice = testInfo?.discountPrice!;
     const discountSpecialPrice = testInfo?.discountSpecialPrice!;
-    const planToConsider = testInfo?.planToConsider;
-    const discountToDisplay = testInfo?.discountToDisplay;
     const mrpToDisplay = testInfo?.mrpToDisplay;
 
-    DiagnosticAddToCartEvent(
-      cmsTestDetails?.diagnosticItemName || testInfo?.itemName,
-      itemId!,
-      mrpToDisplay,
-      discountToDisplay,
-      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS,
-      currentPatient,
-      isDiagnosticCircleSubscription
-    );
     const testInclusions =
       testInfo?.inclusions == null
         ? [Number(itemId)]
         : testInfo?.inclusions?.length > 0
         ? testInfo?.inclusions
         : [Number(testInfo?.inclusions)];
+    const priceToShow = calculatePriceToShow();
+
+    DiagnosticAddToCartEvent(
+      cmsTestDetails?.diagnosticItemName || testInfo?.itemName,
+      itemId!,
+      mrpToDisplay, //mrp
+      priceToShow, //actual price
+      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS,
+      testInclusions < 1 ? DIAGNOSTICS_ITEM_TYPE.TEST : DIAGNOSTICS_ITEM_TYPE.PACKAGE,
+      originalItemIds
+        ? packageRecommendations > 2
+          ? 'Recommendations'
+          : 'You can also order'
+        : '',
+      currentPatient,
+      isDiagnosticCircleSubscription,
+      originalItemIds
+    );
 
     const addedItems = {
       id: `${itemId}`,
@@ -1582,7 +1656,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     );
   };
   const renderCallToOrder = () => {
-    return getCTADetails?.length ? (
+    return ctaDetailMatched?.length ? (
       <CallToOrderView
         cityId={cityIdToUse}
         customMargin={90}
@@ -1601,6 +1675,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   };
 
   const renderFrequentlyBrought = () => {
+    const widgetTitle =
+      frequentlyBroughtRecommendations?.length > 0
+        ? getWidgetTitle?.frequentlyBrought
+        : getWidgetTitle?.topBookedTests;
     return (
       <>
         {frequentlyBroughtShimmer ? (
@@ -1608,11 +1686,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         ) : (
           <View style={{ marginTop: 10 }}>
             <SectionHeader
-              leftText={
-                frequentlyBroughtRecommendations?.length > 0
-                  ? getWidgetTitle?.frequentlyBrought
-                  : getWidgetTitle?.topBookedTests
-              }
+              leftText={widgetTitle}
               leftTextStyle={styles.widgetHeading}
               style={{ borderBottomWidth: 0, borderColor: 'transparent' }}
             />
@@ -1635,6 +1709,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS}
               sourceScreen={AppRoutes.TestDetails}
               changeCTA={true}
+              widgetHeading={widgetTitle}
             />
           </View>
         )}
@@ -1665,6 +1740,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS}
               sourceScreen={AppRoutes.TestDetails}
               changeCTA={true}
+              widgetHeading={getWidgetTitle?.similarPackages}
             />
           </View>
         )}

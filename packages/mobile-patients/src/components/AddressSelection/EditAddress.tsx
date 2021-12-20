@@ -647,7 +647,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
   ) => {
     const screenName = props.navigation.getParam('ComingFrom');
     if (screenName != '') {
-      if (sourceScreenName == AppRoutes.TestsCart) {
+      if (sourceScreenName == AppRoutes.CartPage) {
         if (
           addressList?.latitude != null &&
           addressList?.longitude != null &&

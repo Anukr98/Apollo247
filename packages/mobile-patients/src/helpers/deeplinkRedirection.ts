@@ -361,6 +361,7 @@ export const handleOpenURL = (event: any) => {
         };
         break;
 
+      case 'orderstest':
       case 'mytestorders':
         return {
           routeName: 'MyTestOrders',

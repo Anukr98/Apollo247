@@ -1254,6 +1254,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Radiology_Url',
       PROD: 'Radiology_Url',
     },
+    Diagnostics_Phlebo_Call_Number: {
+      QA: 'QA_Diagnostics_Phlebo_Call_Number',
+      PROD: 'Diagnostics_Phlebo_Call_Number',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1617,7 +1621,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
 
       setAppConfig('Radiology_Url', 'RADIOLOGY_URL', (key) => config.getString(key));
-
+      setAppConfig('Diagnostics_Phlebo_Call_Number', 'DIAGNOSTICS_PHLEBO_CALL_NUMBER', (key) =>
+        config.getString(key)
+      );
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';
       const appVersion = coerce(isIOS ? iOS_Version : Android_Version)?.version;

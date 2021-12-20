@@ -3407,7 +3407,7 @@ export const validateCoupon = async (
     billAmount: (cartTotal - productDiscount).toFixed(2),
     coupon: coupon,
     pinCode: pharmacyPincode,
-    products: cartItems.map((item) => ({
+    products: cartItems?.map((item) => ({
       sku: item.id,
       categoryId: item.productType,
       mrp: item.price,
@@ -4305,4 +4305,20 @@ export const showDiagnosticCTA = (pageName:CALL_TO_ORDER_CTA_PAGE_ID, cityId: st
       return null;
     }
   });
+}
+
+export const calculateDiagnosticCartItems = (cartItem: DiagnosticsCartItem[], patientCartItem: DiagnosticPatientCartItem[]) =>{
+
+  let selectedCartItems ;
+  if(!!patientCartItem && patientCartItem?.length > 0){
+    const getPatientCartItems = patientCartItem
+    ?.map((item) => item?.cartItems?.filter((idd) => idd?.id))
+    ?.flat();
+   const getSelectedItems = getPatientCartItems?.filter((i: DiagnosticsCartItem) => i?.isSelected);
+   selectedCartItems = [...getSelectedItems?.reduce((map: any, obj: any) => map?.set(obj?.id, obj), new Map()).values()];  
+  }
+  else{
+    selectedCartItems = cartItem?.filter((i: DiagnosticsCartItem) => i?.isSelected);  
+  }
+  return selectedCartItems;
 }
