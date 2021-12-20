@@ -191,9 +191,6 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Cache } from 'react-native-cache';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 import { TestPdfRender } from '@aph/mobile-patients/src/components/Tests/components/TestPdfRender';
-import { apiBaseUrl, apiRoutes } from '../../helpers/apiRoutes';
-import firebaseAuth from '@react-native-firebase/auth';
-import { AuthContextProps } from '../AuthProvider';
 const rankArr = ['1', '2', '3', '4', '5', '6'];
 const { width: winWidth, height: winHeight } = Dimensions.get('window');
 const AUTO_SCROLL_INTERVAL = 3000;
@@ -350,6 +347,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const hasLocation = locationDetails || diagnosticLocation || pharmacyLocation || defaultAddress;
   const showNudgeMessage = AppConfig.Configuration.DIAGNOSTICS_NUDGE_MESSAGE_CONDITION?.find(
     (item) => (isDiagnosticCircleSubscription ? item?.Circle : item?.NonCircle)
+  );
+  const uploadViaWhatsapp =
+    AppConfig.Configuration.DIAGNOSTICS_ENABLE_UPLOAD_PRESCRIPTION_VIA_WHATSAPP;
+  const getUploadPrescriptionConfigs = AppConfig.Configuration.DIAGNOSTICS_UPLOAD_PRESCRIPTION?.find(
+    (item) => item?.isWhatsappEnabled == uploadViaWhatsapp
   );
   const isCartAvailable = !!cartItems && cartItems?.length > 0;
 
@@ -2153,19 +2155,49 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   };
 
+  function _navigateToUploadViaWhatsapp() {
+    try {
+      const getMessage =
+        getUploadPrescriptionConfigs?.textMessage ||
+        string.diagnostics.uploadPrescriptionWhatsapp.message;
+      const getPhoneNumber =
+        getUploadPrescriptionConfigs?.phoneNumber ||
+        string.diagnostics.uploadPrescriptionWhatsapp.whatsappPhoneNumber;
+      Linking.openURL(
+        `https://api.whatsapp.com/send/?text=${getMessage}&phone=91${getPhoneNumber}`
+      );
+    } catch (error) {
+      CommonBugFender('Tests_navigateToUploadViaWhatsapp', error);
+      _openGalleryOptions();
+    }
+  }
+
+  function _onPressUpload() {
+    if (uploadViaWhatsapp) {
+      _navigateToUploadViaWhatsapp();
+    } else {
+      _openGalleryOptions();
+    }
+  }
+
+  function _openGalleryOptions() {
+    setIsPrescriptionGallery(false);
+    setIsPrescriptionUpload(true);
+  }
+
   const renderUploadPrescriptionCard = () => {
     return (
       <View style={styles.precriptionContainer}>
         <View style={styles.precriptionContainerUpload}>
           <PrescriptionColored style={{ height: 35 }} />
-          <Text style={styles.prescriptionText}>{string.diagnostics.prescriptionHeading}</Text>
+          <Text style={styles.prescriptionText}>
+            {getUploadPrescriptionConfigs?.uploadPrescriptionText ||
+              string.diagnostics.prescriptionHeading}
+          </Text>
           <Button
-            title={'UPLOAD'}
+            title={getUploadPrescriptionConfigs?.CTA || string.common.upload}
             style={styles.buttonStyle}
-            onPress={() => {
-              setIsPrescriptionGallery(false);
-              setIsPrescriptionUpload(true);
-            }}
+            onPress={() => _onPressUpload()}
           />
         </View>
         {isUploaded ? (
