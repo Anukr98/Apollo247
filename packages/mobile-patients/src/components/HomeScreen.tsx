@@ -2154,10 +2154,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         getTokenforCM();
       },
     },
-  ];
-
-  const listValues: menuOptions[] = [
-    ...listOptions,
     {
       id: 7,
       title: 'View Health Records',
@@ -2176,19 +2172,20 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     },
   ];
 
-  const listValuesForProHealth: menuOptions[] = [
+  const listValues: menuOptions[] = [
     ...listOptions,
-    {
-      id: 7,
-      title: 'ProHealth',
-      image: <ProHealthIcon style={styles.menuOption2SubIconStyle} />,
-      onPress: () => {
-        postHomeFireBaseEvent(FirebaseEventName.PROHEALTH, 'Home Screen');
-        postHomeWEGEvent(WebEngageEventName.PROHEALTH);
-        getTokenForProhealthCM();
-      },
-    },
   ];
+
+  const listValuesForProHealth: menuOptions[]  = Object.assign([], listOptions, {5: {
+        id: 6,
+        title: 'ProHealth',
+        image: <ProHealthIcon style={styles.menuOption2SubIconStyle} />,
+        onPress: () => {
+          postHomeFireBaseEvent(FirebaseEventName.PROHEALTH, 'Home Screen');
+          postHomeWEGEvent(WebEngageEventName.PROHEALTH);
+          getTokenForProhealthCM();
+        },
+      }});
 
   useEffect(() => {
     if (enableCM) {
@@ -3201,6 +3198,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
          * caching the api for 24 hrs.
          */
         const getCachedApiResult: any = await getItem('mobileNumber_CM_Result');
+        console.log({getCachedApiResult})
         const getPhoneNumber =
           patientDetails?.mobileNumber?.length > 10
             ? patientDetails?.mobileNumber?.slice(patientDetails?.mobileNumber?.length - 10)
@@ -3211,6 +3209,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           const res: any = await GetAllUHIDSForNumber_CM(getPhoneNumber! || '');
           if (res?.data?.response && res?.data?.errorCode === 0) {
             let resultData = res?.data?.response?.signUpUserData;
+            console.log({resultData})
             if (resultData?.length > 0) {
               const obj = {
                 data: resultData,
@@ -3238,11 +3237,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   function updateSDKOption(resultData: any, selectedUHID: string, currentPatientDetails: any) {
+    console.log({resultData})
     let getCurrentProfile = resultData?.find(
       (item: any) => item?.uhid == (selectedUHID! || currentPatientDetails?.uhid)
     );
     //get status for active chron.
     let isActive = getCurrentProfile?.isChronActive;
+    console.log({isActive})
     isActive ? setProHealthActive(true) : setProHealthActive(false);
   }
 
