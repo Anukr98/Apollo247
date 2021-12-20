@@ -109,9 +109,8 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
         return null;
       }
 
-      const imageUrl = !!getItem?.itemImageUrl
-        ? getItem?.itemImageUrl
-        : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_ICON;
+      const imageUrl = getItem?.itemImageUrl;
+
       const name = getItem?.itemTitle || getItem?.itemName;
       const inclusions = getItem?.inclusionData;
 
