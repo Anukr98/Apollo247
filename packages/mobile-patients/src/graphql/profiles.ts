@@ -2233,6 +2233,9 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
           PhleboLongitude
         }
         diagnosticOrderPhlebotomists {
+          showPhleboDetails
+          isPhleboChanged
+          phleboDetailsETAText
           phleboRating
           phleboOTP
           checkinDateTime
@@ -5551,13 +5554,17 @@ export const GET_ALL_PRO_HEALTH_APPOINTMENTS = gql`
   }
 `;
 
-export const GET_PHLOBE_DETAILS = gql`
+export const GET_PHLEBO_DETAILS = gql`
   query getOrderPhleboDetailsBulk($diagnosticOrdersIds: [String]!) {
     getOrderPhleboDetailsBulk(diagnosticOrdersIds: $diagnosticOrdersIds) {
       orderPhleboDetailsBulk {
         allowCalling
+        showPhleboDetails
+        phleboDetailsETAText
+        allowCallingETAText
         orderPhleboDetails {
           diagnosticOrdersId
+          isPhleboChanged
           diagnosticPhlebotomists {
             name
             mobile
@@ -6227,6 +6234,7 @@ export const GET_CUSTOMIZED_DIAGNOSTIC_SLOTS_V2 = gql`
         isPaidSlot
       }
       distanceCharges
+      slotDurationInMinutes
     }
   }
 `;
@@ -7156,3 +7164,13 @@ export const SAVE_MEDICINE_ORDER_V3 = gql`
     }
   }
 `;
+export const DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS = gql`
+  query getDiagnosticItemRecommendationsByPastOrders ($mobileNumber: String!){
+    getDiagnosticItemRecommendationsByPastOrders(mobileNumber: $mobileNumber){
+      itemsData{
+        itemId
+        itemName
+      }
+    }
+  }
+`

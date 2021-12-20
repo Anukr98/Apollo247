@@ -29,6 +29,7 @@ import {
   nameFormater,
   isSmallDevice,
   isEmptyObject,
+  showDiagnosticCTA,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
@@ -241,24 +242,45 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const [packageRecommendationsShimmer, setPackageRecommendationsShimmer] = useState<boolean>(
     false
   );
+  const originalItemIds = !!packageRecommendations?.length || !!frequentlyBroughtRecommendations?.length ? [itemId!] : null;
   const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
   const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
   const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
     CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL
   );
-  const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
-    if (item?.ctaCityId == cityIdToUse) {
-      if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL)) {
-        return item;
+  const checkForCtaCityAvailabilty = () => {
+    for (let index = 0; index < ctaDetailArray.length; index++) {
+      const element = ctaDetailArray[index];
+      if (Number(element?.ctaCityId) == cityIdToUse) {
+        return element;
       } else {
         return null;
       }
-    } else if (isCtaDetailDefault) {
-      return callToOrderDetails?.ctaDetailsDefault;
-    } else {
-      return null;
     }
-  });
+  };
+  const checkItemIdForCta = () => {
+    let newArray = [];
+    for (let index = 0; index < ctaDetailArray.length; index++) {
+      const element = ctaDetailArray[index];
+      if (
+        Number(element?.ctaCityId) == cityIdToUse &&
+        element?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL) &&
+        element?.ctaItemIds?.length > 0 &&
+        element?.ctaItemIds?.includes(Number(itemId))
+      ) {
+        newArray.push(element);
+        return newArray;
+      } else {
+        return null;
+      }
+    }
+  };
+
+  const ctaDetailMatched = checkForCtaCityAvailabilty()
+    ? checkItemIdForCta()
+    : isCtaDetailDefault
+    ? [callToOrderDetails?.ctaDetailsDefault]
+    : [];
   const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
   const itemName =
@@ -806,7 +828,13 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         currentPatient,
         testInfo?.Rate || testDetails?.Rate,
         pharmacyCircleAttributes,
-        isDiagnosticCircleSubscription
+        isDiagnosticCircleSubscription,
+        originalItemIds,
+        originalItemIds
+        ? packageRecommendations > 2
+          ? 'Recommendations'
+          : 'You can also order'
+        : '',
       );
     }
   }, [testInfo]);
@@ -1523,15 +1551,20 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     const planToConsider = testInfo?.planToConsider;
     const discountToDisplay = testInfo?.discountToDisplay;
     const mrpToDisplay = testInfo?.mrpToDisplay;
-
     DiagnosticAddToCartEvent(
       cmsTestDetails?.diagnosticItemName || testInfo?.itemName,
       itemId!,
       mrpToDisplay,
       discountToDisplay,
       DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS,
+      originalItemIds
+        ? packageRecommendations > 2
+          ? 'Recommendations'
+          : 'You can also order'
+        : '',
       currentPatient,
-      isDiagnosticCircleSubscription
+      isDiagnosticCircleSubscription,
+      originalItemIds
     );
     const testInclusions =
       testInfo?.inclusions == null
