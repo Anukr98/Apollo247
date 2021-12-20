@@ -89,7 +89,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   const [showCurrCard, setShowCurrCard] = useState<boolean>(true);
   const [passportNo, setPassportNo] = useState<string>('');
   const [newPassValue, setNewPassValue] = useState<string>(passportNo);
-  const [passportData, setPassportData] = useState<any>([])
+  const [passportData, setPassportData] = useState<any>([]);
 
   useEffect(() => {
     DiagnosticOrderSummaryViewed(
@@ -715,16 +715,37 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       ? orderDetails?.totalPrice
       : refundDetails?.[0]?.amount;
 
+    const getOffersResponse = orderDetails?.diagnosticOrderTransactions;
+
     return (
       <View>
         {renderHeading('Payment Mode')}
         <View style={styles.orderSummaryView}>
           {renderPrices(txtToShow, orderDetails?.totalPrice, false)}
+          {getOffersResponse?.map((item) => renderOffers(item))}
           {!!refundText && renderPrices(refundText, refundAmountToShow, false)}
         </View>
       </View>
     );
   };
+
+  function getOffersDetails(transaction: any) {
+    const offersDetails = transaction?.offers?.[0]?.offer_description?.title;
+    const offersAmount = transaction?.offers?.[0]?.benefits?.reduce(
+      (prev: any, curr: any) => prev + curr?.amount,
+      0
+    );
+    return {
+      offersAmount,
+      offersDetails,
+    };
+  }
+
+  const renderOffers = (transaction: any) => {
+    const { offersAmount, offersDetails } = getOffersDetails(transaction);
+    return <View>{renderPrices(offersDetails, offersAmount, false)}</View>;
+  };
+
   const renderAddPassportView = () => {
     const itemIdArray = orderDetails?.diagnosticOrderLineItems?.filter((item: any) => {
       if (AppConfig.Configuration.DIAGNOSTICS_COVID_ITEM_IDS.includes(item?.itemId)) {
@@ -747,9 +768,14 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
             <Text style={styles.textlower}>{passportNo ? 'EDIT' : 'ADD'}</Text>
           </TouchableOpacity>
         </View>
-        {passportNo ? <View>
-          <Text style={styles.textmedium}>{string.diagnostics.passportNo}{passportNo}</Text>
-        </View> : null}
+        {passportNo ? (
+          <View>
+            <Text style={styles.textmedium}>
+              {string.diagnostics.passportNo}
+              {passportNo}
+            </Text>
+          </View>
+        ) : null}
       </View>
     ) : null;
   };
@@ -765,9 +791,9 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           updatePassportDetails(response);
           setShowPassportModal(false);
         }}
-        onChange={(res)=>{
-          setNewPassValue(res?.passportNo)
-          setPassportData(res)
+        onChange={(res) => {
+          setNewPassValue(res?.passportNo);
+          setPassportData(res);
         }}
         value={newPassValue}
         disableButton={!passportData?.[0]?.passportNo}
