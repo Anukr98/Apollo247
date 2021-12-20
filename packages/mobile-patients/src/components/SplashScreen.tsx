@@ -1258,6 +1258,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Diagnostics_Phlebo_Call_Number',
       PROD: 'Diagnostics_Phlebo_Call_Number',
     },
+    Diagnostics_Enable_UploadPrescription_Whatsapp: {
+      QA: 'QA_Diagnostics_UploadPrescription_via_Whatsapp',
+      PROD: 'Diagnostics_UploadPrescription_via_Whatsapp',
+    },
+    Diagnostics_UploadPrescription_Config: {
+      QA: 'QA_Diagnostics_UploadPrescription',
+      PROD: 'Diagnostics_UploadPrescription',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1624,6 +1632,19 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       setAppConfig('Diagnostics_Phlebo_Call_Number', 'DIAGNOSTICS_PHLEBO_CALL_NUMBER', (key) =>
         config.getString(key)
       );
+      setAppConfig(
+        'Diagnostics_Enable_UploadPrescription_Whatsapp',
+        'DIAGNOSTICS_ENABLE_UPLOAD_PRESCRIPTION_VIA_WHATSAPP',
+        (key) => config.getBoolean(key)
+      );
+      setAppConfig(
+        'Diagnostics_UploadPrescription_Config',
+        'DIAGNOSTICS_UPLOAD_PRESCRIPTION',
+        (key) =>
+          JSON.parse(config.getString(key) || 'null') ||
+          AppConfig.Configuration.DIAGNOSTICS_UPLOAD_PRESCRIPTION
+      );
+
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';
       const appVersion = coerce(isIOS ? iOS_Version : Android_Version)?.version;

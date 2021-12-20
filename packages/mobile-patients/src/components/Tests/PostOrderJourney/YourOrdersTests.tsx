@@ -77,7 +77,6 @@ import {
   AppConfig,
   BLACK_LIST_CANCEL_STATUS_ARRAY,
   BLACK_LIST_RESCHEDULE_STATUS_ARRAY,
-  DIAGNOSTIC_ORDER_FAILED_STATUS,
   DIAGNOSTIC_EDIT_PROFILE_ARRAY,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -440,14 +439,14 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             if (selectedPatient === ALL) {
               setOrders(ordersList); // set all the orders present.
             } else {
-              setOrders(setOrders(filterResultsForPatient(ordersList)));
+              setOrders(filterResultsForPatient(ordersList));
             }
             setTimeout(() => setLoading?.(false), 1000);
           } else {
             if (selectedPatient === ALL) {
               setOrders(ordersList); // set all the orders present.
             } else {
-              setOrders(setOrders(filterResultsForPatient(ordersList)));
+              setOrders(filterResultsForPatient(ordersList));
             }
             setLoading?.(false);
           }
@@ -1707,13 +1706,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         onPressRatingStar={(star) => _navigateToRatingScreen(star, order)}
         onPressEditPatient={() => _onPressEditPatient(order)}
         onPressCallOption={(name, number) => {
-          setShowPhleboCallPopUp(true)
+          setShowPhleboCallPopUp(true);
           const callObj = {
             name: name,
             number: number,
-            orderId: order?.id
-          }
-          setCallPhleboObj(callObj)
+            orderId: order?.id,
+          };
+          setCallPhleboObj(callObj);
         }}
         style={[
           { marginHorizontal: 20 },

@@ -748,7 +748,11 @@
     "phleboWaitText": "Wait for Apollo Agent to Connect",
     "phleboPleaseNote": "Please Note: Your personal number would not be shared with the agent",
     "phleboTextOne": "Answer the call from",
-    "phleboTextTwo": "to connect"
+    "phleboTextTwo": "to connect",
+    "uploadPrescriptionWhatsapp": {
+      "whatsappPhoneNumber":"4048218743",
+      "message": "I want to place a Lab Test Order with prescription"
+    }
   },
   "diagnosticCategoryTitle": {
     "category": "category",
