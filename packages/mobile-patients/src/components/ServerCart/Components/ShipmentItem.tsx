@@ -17,10 +17,12 @@ export const ShipmentItem: React.FC<ShipmentItemProps> = (props) => {
   const [discountedPrice, setDiscountedPrice] = useState<any>(undefined);
   const [mrp, setmrp] = useState<number>(0);
   const isPrescriptionRequired = item.isPrescriptionRequired == '1';
+  const isCouponApplied =
+    item?.isCouponApplicable == CouponApplicable.APPLIED && item?.couponDiscountPrice != 0;
 
   useEffect(() => {
     setmrp(item?.price);
-    item?.isCouponApplicable == CouponApplicable.APPLIED && item?.couponDiscountPrice != 0
+    isCouponApplied
       ? setDiscountedPrice(item?.couponDiscountPrice)
       : item?.sellingPrice !== item?.price
       ? setDiscountedPrice(item?.sellingPrice)
@@ -60,6 +62,7 @@ export const ShipmentItem: React.FC<ShipmentItemProps> = (props) => {
   };
 
   const renderProduct = () => {
+    const priceToShow = isCouponApplied ? mrp - discountedPrice : discountedPrice || mrp;
     return (
       <View style={{ flex: 1 }}>
         <View
@@ -77,9 +80,7 @@ export const ShipmentItem: React.FC<ShipmentItemProps> = (props) => {
         </View>
         {!item?.freeProduct ? (
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            {discountedPrice || discountedPrice == 0
-              ? renderPrice(discountedPrice)
-              : renderPrice(mrp)}
+            {renderPrice(priceToShow)}
           </View>
         ) : (
           renderFree()
@@ -101,7 +102,11 @@ export const ShipmentItem: React.FC<ShipmentItemProps> = (props) => {
   );
 
   function getDiscountPercent() {
-    return (((mrp - discountedPrice) / mrp) * 100).toFixed(1);
+    if (isCouponApplied) {
+      return ((item?.couponDiscountPrice / mrp) * 100).toFixed(1);
+    } else {
+      return (((mrp - discountedPrice) / mrp) * 100).toFixed(1);
+    }
   }
   const renderDiscount = () => {
     return (
