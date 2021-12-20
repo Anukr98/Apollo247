@@ -2535,7 +2535,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
         {renderUploadPrescriptionCard()}
         {patientOrdersShimmer ? renderDiagnosticCardShimmer() : renderOrderStatusCard()}
         {/** keep 0th position for recommendations, should come before first widget */}
-        {recommendationWidget &&
+        {!!recommendationWidget &&
+          recommendationWidget?.length > 0 &&
           (pastOrderRecommendationShimmer
             ? renderDiagnosticCardShimmer()
             : pastOrderRecommendations?.length > 0
@@ -2607,7 +2608,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
       pastOrderRecommendations?.length > 0 &&
       pastOrderRecommendations.find((item: any) => item?.diagnosticPricing);
     const showViewAll = true;
-    const lengthOfTitle = drupalRecommendations?.[0]?.diagnosticWidgetTitle?.length;
+    const lengthOfTitle =
+      drupalRecommendations?.[0]?.diagnosticWidgetTitle?.length ||
+      string.diagnostics.homepagePastOrderRecommendations;
 
     return (
       <View style={styles.widgetSpacing}>
@@ -2664,7 +2667,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 navigation={props.navigation}
                 source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME}
                 sourceScreen={'Recommendations'}
-                widgetHeading={drupalRecommendations?.[0]?.diagnosticWidgetTitle}
+                widgetHeading={
+                  drupalRecommendations?.[0]?.diagnosticWidgetTitle ||
+                  string.diagnostics.homepagePastOrderRecommendations
+                }
               />
             )}
           </>
