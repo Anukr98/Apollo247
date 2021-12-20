@@ -4025,7 +4025,10 @@ export const filterAppLaunchSoruceAttributesByKey = (raw: any) => {
       return obj;
     }, {});
 };
-export const replaceVariableInString = (str: string, mapObj: { [propName: string]: string }) => {
+export const replaceVariableInString = (str: string | null | undefined, mapObj: { [propName: string]: any }) => {
+  if (!str) {
+    return ""
+  }
   let newArrayWithUpdatedString = Object.keys(mapObj).map((item) => '{' + item + '}');
   let rgx = new RegExp(newArrayWithUpdatedString.join('|'), 'gi');
   str = str.replace(rgx, function (matched) {
@@ -4033,6 +4036,10 @@ export const replaceVariableInString = (str: string, mapObj: { [propName: string
   });
   return str;
 };
+
+export const validateStringNotToUndefined = (data: string | undefined) => {
+  return data || ""
+}
 export const getAvailabilityForSearchSuccess = (pincode: string, sku: string) => {
   let availability = false;
   availabilityApi247(pincode, sku)
