@@ -6699,6 +6699,14 @@ query getDiagnosticPackageRecommendations($itemId:Int!, $cityId: Int!){
       itemName
       inclusions
       packageCalculatedMrp
+      diagnosticInclusions{
+        itemId
+        name
+        observations{
+          observationName
+          mandatoryValue
+        }
+      }
       diagnosticPricing{
         mrp
         price

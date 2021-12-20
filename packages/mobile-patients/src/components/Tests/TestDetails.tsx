@@ -368,7 +368,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       cityIdToUse
     );
     if (res?.data?.success) {
-      const result = g(res, 'data', 'data');
+      const result = res?.data?.data;
       !!itemName && loadTestDetails(result?.diagnosticItemID);
       setCmsTestDetails(result);
       setLoadingContext?.(false);
@@ -502,7 +502,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       if (source == getWidgetTitle?.frequentlyBrought || source == getWidgetTitle?.topBookedTests) {
         let _frequentlyBrought: any = [];
         widgets?.forEach((_widget: any) => {
-          response?.forEach((_diagItems) => {
+          response?.forEach((_diagItems: any) => {
             if (_widget?.itemId == _diagItems?.itemId) {
               if (source == getWidgetTitle?.frequentlyBrought) {
                 _frequentlyBrought?.push({
@@ -569,7 +569,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           packageArray.push({
             ...item,
             itemTitle: item?.itemName,
-            inclusionData: item?.inclusions,
+            inclusionData: item?.diagnosticInclusions,
           });
         });
         setPackageRecommendations(packageArray);
@@ -1714,6 +1714,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   };
 
   const renderPackageRecommendations = () => {
+    const heading = `${getWidgetTitle?.topPackages} "${itemName}"`;
     return (
       <>
         {packageRecommendationsShimmer ? (
@@ -1721,13 +1722,12 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         ) : (
           <View style={{ marginTop: 10 }}>
             <SectionHeader
-              leftText={getWidgetTitle?.similarPackages}
+              leftText={heading}
               leftTextStyle={styles.widgetHeading}
               style={{ borderBottomWidth: 0, borderColor: 'transparent' }}
             />
-            <ItemCard
+            <PackageCard
               diagnosticWidgetData={packageRecommendations}
-              onPressRemoveItemFromCart={(item) => {}}
               data={packageRecommendations}
               isCircleSubscribed={isDiagnosticCircleSubscription}
               isServiceable={true}
@@ -1735,8 +1735,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               navigation={props.navigation}
               source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS}
               sourceScreen={AppRoutes.TestDetails}
-              changeCTA={true}
-              widgetHeading={getWidgetTitle?.similarPackages}
+              widgetHeading={heading}
             />
           </View>
         )}

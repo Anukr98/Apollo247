@@ -103,13 +103,22 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
       const name = getItem?.itemTitle;
       const inclusions = getItem?.inclusionData;
       const numberOfParametersToShow = isDiagnosticCircleSubscription ? 3 : 2;
-
-      const getMandatoryParamter =
-        !!inclusions &&
-        inclusions?.length > 0 &&
-        inclusions?.map((inclusion: any) =>
-          inclusion?.incObservationData?.filter((item: any) => item?.mandatoryValue === '1')
-        );
+      var getMandatoryParamter = [] as any;
+      if (sourceScreen == AppRoutes.TestDetails) {
+        getMandatoryParamter =
+          !!inclusions &&
+          inclusions?.length > 0 &&
+          inclusions?.map((inclusion: any) =>
+            inclusion?.observations?.filter((item: any) => item?.mandatoryValue === '1')
+          );
+      } else {
+        getMandatoryParamter =
+          !!inclusions &&
+          inclusions?.length > 0 &&
+          inclusions?.map((inclusion: any) =>
+            inclusion?.incObservationData?.filter((item: any) => item?.mandatoryValue === '1')
+          );
+      }
 
       const getMandatoryParameterCount =
         !!getMandatoryParamter &&
@@ -117,6 +126,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
 
       const getParamterData =
         !!getMandatoryParamter && getMandatoryParamter?.length > 0 && getMandatoryParamter?.flat(1);
+
       const dataToShow = getMandatoryParameterCount > 0 ? getParamterData : inclusions;
 
       return (

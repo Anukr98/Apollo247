@@ -335,7 +335,8 @@ const appStaticVariables = {
     {
       "frequentlyBrought": string.diagnostics.frequentlyBrought,
       "topBookedTests": string.diagnostics.topBookedTests,
-      "similarPackages": string.diagnostics.similarPackages
+      "similarPackages": string.diagnostics.similarPackages,
+      "topPackages": "Top Packages with "
     },
   RADIOLOGY_URL : "/radiology?source=Homepage%20Banner",
   DIAGNOSTICS_CERTIFICATE_IMAGE_ARRAY : [
