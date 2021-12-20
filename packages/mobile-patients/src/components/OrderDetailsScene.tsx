@@ -2092,7 +2092,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       sourcePage: 'Order Details',
       refund: refundDetails,
       payment: paymentDetails,
-      etd: getFormattedDateTimeWithBefore(order.orderTat),
+      etd: !!order?.orderTat ? getFormattedDateTimeWithBefore(order?.orderTat) : '',
       billNumber,
       refetchOrders,
     });
