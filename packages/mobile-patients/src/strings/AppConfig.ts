@@ -349,7 +349,22 @@ const appStaticVariables = {
     { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_1.webp') },
     { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_2.webp') },
     { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_3.webp') },
-  ]
+  ],
+  DIAGNOSTICS_ENABLE_UPLOAD_PRESCRIPTION_VIA_WHATSAPP : false,
+  DIAGNOSTICS_UPLOAD_PRESCRIPTION : [
+    {
+      "isWhatsappEnabled": false,
+      "uploadPrescriptionText": string.diagnostics.prescriptionHeading,
+      "CTA": string.common.upload
+    },
+    {
+      "isWhatsappEnabled": true,
+      "uploadPrescriptionText": string.diagnostics.prescriptionHeading,
+      "CTA":  string.common.upload,
+      "textMessage":string.diagnostics.uploadPrescriptionWhatsapp.message,
+      "phoneNumber": string.diagnostics.uploadPrescriptionWhatsapp.whatsappPhoneNumber
+    }
+  ],
 }
 
 const DEV_top_specialties = [
