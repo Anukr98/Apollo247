@@ -6,6 +6,8 @@ import {
   ArrowYellow,
   CheckBox as CheckBoxEmpty,
   CheckBoxFilled,
+  LoginCheckBoxFilled,
+  LoginCheckBoxUnFilled
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import LandingDataView from '@aph/mobile-patients/src/components/ui/LandingDataView';
 import { LoginCard } from '@aph/mobile-patients/src/components/ui/LoginCard';
@@ -51,6 +53,7 @@ import {
   View,
   ScrollView,
   TouchableOpacity,
+  Animated
 } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
 import WebEngage from 'react-native-webengage';
@@ -84,6 +87,8 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { LoginCarousel } from '@aph/mobile-patients/src/components/ui/LoginCarousel';
+import { colors } from '../theme/colors';
 
 let TRUECALLER: any;
 
@@ -93,106 +98,7 @@ if (Platform.OS === 'android') {
 
 const { height, width } = Dimensions.get('window');
 
-const styles = StyleSheet.create({
-  container: {
-    ...theme.viewStyles.container,
-  },
-  inputTextStyle: {
-    ...theme.fonts.IBMPlexSansMedium(18),
-    color: theme.colors.INPUT_TEXT,
-    paddingRight: 6,
-    letterSpacing: 0.5,
-    lineHeight: 28,
-    paddingTop: Platform.OS === 'ios' ? 0 : 6,
-    paddingBottom: Platform.OS === 'ios' ? 5 : 0,
-  },
-  inputStyle: {
-    ...theme.fonts.IBMPlexSansMedium(18),
-    width: '76%',
-    color: theme.colors.INPUT_TEXT,
-    paddingBottom: 4,
-  },
-  inputValidView: {
-    borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
-    borderBottomWidth: 2,
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: width - 135,
-    paddingBottom: 0,
-  },
-  inputView: {
-    borderBottomColor: theme.colors.INPUT_BORDER_FAILURE,
-    borderBottomWidth: 2,
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: width - 135,
-    paddingBottom: 0,
-  },
-  bottomDescription: {
-    lineHeight: 24,
-    color: theme.colors.INPUT_FAILURE_TEXT,
-    paddingTop: 8,
-    paddingBottom: 12,
-    ...theme.fonts.IBMPlexSansMedium(12),
-    letterSpacing: 0.04,
-    paddingHorizontal: 16,
-  },
-  bottomValidDescription: {
-    lineHeight: 24,
-    color: theme.colors.INPUT_SUCCESS_TEXT,
-    opacity: 0.6,
-    paddingTop: 8,
-    letterSpacing: 0.04,
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    ...theme.fonts.IBMPlexSansMedium(12),
-  },
-  viewWebStyles: {
-    position: 'absolute',
-    width: width,
-    height: height,
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    elevation: 20,
-  },
-  hyperlink: {
-    color: theme.colors.PURPLE,
-    ...fonts.IBMPlexSansBold(10),
-    textDecorationLine: 'underline',
-  },
-  checkBoxContainer: {
-    backgroundColor: 'transparent',
-    borderWidth: 0,
-    padding: 0,
-    margin: 0,
-  },
-  checkBoxStyle: {
-    resizeMode: 'contain',
-    width: 20,
-    height: 20,
-  },
-  leftSeperatorLine: {
-    width: '40%',
-    height: 0.5,
-    backgroundColor: theme.colors.BORDER_BOTTOM_COLOR,
-  },
-  rightSeperatorLine: {
-    width: '43%',
-    height: 0.5,
-    backgroundColor: theme.colors.BORDER_BOTTOM_COLOR,
-  },
-  authContainer: {
-    marginTop: 25,
-    marginHorizontal: 20,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-});
+
 
 export interface LoginProps extends NavigationScreenProps {}
 
@@ -217,6 +123,8 @@ export const Login: React.FC<LoginProps> = (props) => {
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [appSign, setAppSign] = useState<string>('');
+  const [isFocused, setIsFocused] = useState<boolean>(false)
+  const [focusAnim] = useState(new Animated.Value(height > 650 ? height*0.55 : height * .6))
   const isAndroid = Platform.OS === 'android';
   const client = useApolloClient();
   const [openFillerView, setOpenFillerView] = useState<boolean>(false);
@@ -226,6 +134,151 @@ export const Login: React.FC<LoginProps> = (props) => {
   const { setLoading, showAphAlert } = useUIElements();
   const webengage = new WebEngage();
   const oneTimeApiCall = useRef<boolean>(true);
+
+  const styles = StyleSheet.create({
+    container: {
+      ...theme.viewStyles.container,
+    },
+    inputTextStyle: {
+      ...theme.fonts.IBMPlexSansMedium(15),
+      color: theme.colors.INPUT_TEXT,
+      paddingRight: 6,
+      letterSpacing: 0.5,
+      // lineHeight: 28,
+      // paddingTop: Platform.OS === 'ios' ? 0 : 6,
+      paddingBottom: Platform.OS === 'ios' ? 5 : 3,
+      // backgroundColor: 'red',
+      width: "30%",
+      textAlign: 'right'
+    },
+    inputContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      width: '85%',
+      alignSelf: 'center',
+      borderBottomWidth: 2
+    },
+    inputStyle: {
+      ...theme.fonts.IBMPlexSansMedium(15),
+      width: "100%",
+      // backgroundColor: 'red', 
+      color: theme.colors.INPUT_TEXT,
+      // paddingLeft: 32,
+      // backgroundColor:'red',
+      // paddingBottom: 4,
+      // backgroundColor: 'red',
+      // borderBottomWidth: 1,
+      height: 40,
+      textAlign: 'center'
+    },
+    inputValidView: {
+      // borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
+      // borderBottomWidth: 2,
+      flexDirection: 'row',
+      alignItems: 'center',
+      width: '100%',
+      // backgroundColor: 'blue',
+      justifyContent: 'center',
+    },
+    inputView: {
+      // borderBottomColor: theme.colors.INPUT_BORDER_FAILURE,
+      // borderBottomWidth: 2,
+      flexDirection: 'row',
+      alignItems: 'center',
+      width: '100%',
+      // backgroundColor: 'green',
+      justifyContent: 'center'
+    },
+    bottomDescription: {
+      lineHeight: 24,
+      color: theme.colors.INPUT_FAILURE_TEXT,
+      paddingTop: 8,
+      paddingBottom: 12,
+      ...theme.fonts.IBMPlexSansMedium(12),
+      letterSpacing: 0.04,
+      paddingHorizontal: 16,
+    },
+    bottomValidDescription: {
+      lineHeight: 24,
+      color: theme.colors.INPUT_SUCCESS_TEXT,
+      opacity: 0.6,
+      paddingTop: 8,
+      letterSpacing: 0.04,
+      paddingHorizontal: 16,
+      paddingBottom: 12,
+      ...theme.fonts.IBMPlexSansMedium(12),
+    },
+    viewWebStyles: {
+      position: 'absolute',
+      width: width,
+      height: height,
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      elevation: 20,
+    },
+    hyperlink: {
+      color: theme.colors.PURPLE,
+      ...fonts.IBMPlexSansBold(10),
+      textDecorationLine: 'underline',
+    },
+    checkBoxContainer: {
+      backgroundColor: 'transparent',
+      borderWidth: 0,
+      padding: 0,
+      margin: 0,
+    },
+    checkBoxStyle: {
+      resizeMode: 'contain',
+      width: 15,
+      height: 15,
+    },
+    uncheckedBoxStyle: {
+      width: 17,
+      height: 17
+    },
+    leftSeperatorLine: {
+      width: '40%',
+      height: 0.5,
+      backgroundColor: theme.colors.BORDER_BOTTOM_COLOR,
+    },
+    rightSeperatorLine: {
+      width: '43%',
+      height: 0.5,
+      backgroundColor: theme.colors.BORDER_BOTTOM_COLOR,
+    },
+    authContainer: {
+      marginTop: 25,
+      marginHorizontal: 20,
+    },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    submitButtonContainer: {
+      width: '85%',
+      marginTop: '7%',
+      alignSelf: 'center',
+    },
+    submitButton: {
+      width: '100%',
+      backgroundColor: 'red',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: 40,
+      borderRadius: 5
+    },
+    logoContainer: {
+      justifyContent: 'center',
+      paddingTop: 10,
+      alignSelf: 'center',
+      backgroundColor: '#f5f8fc',
+      width: '100%',
+      alignItems: 'center'
+    }
+  });
 
   useEffect(() => {
     isAndroid && initializeTruecaller();
@@ -786,14 +839,124 @@ export const Login: React.FC<LoginProps> = (props) => {
     postCleverTapEvent(CleverTapEventName.LOGIN_WITH_TRUECALLER_CONTINUE, eventAttributes);
   };
 
+  const onFocus = () => {
+    setIsFocused(true)
+    Animated.timing(
+      focusAnim,
+      {
+        toValue: height>650 ? height*.5 : height*.58,
+        duration:500
+      }
+    ).start()
+  }
+
+  const onBlur = () => {
+    setIsFocused(false)
+    Animated.timing(
+      focusAnim,
+      {
+        toValue: height>650 ? height*.55 : height*.6,
+        duration: 500
+      }
+    ).start()
+  }
+
   return (
-    <View style={{ flex: 1 }}>
-      <SafeAreaView style={styles.container}>
-        <View style={{ justifyContent: 'center', marginTop: 20, marginLeft: 20 }}>
-          <ApolloLogo style={{ width: 55, height: 47 }} resizeMode="contain" />
+    <View style={{ flex: 1, backgroundColor: colors.WHITE }}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.WHITE }]}>
+          {/* <View style={styles.logoContainer}>
+            <ApolloLogo style={{ width: 55, height: 47 }} resizeMode="contain" />
+          </View> */}
+        <ScrollView keyboardShouldPersistTaps='handled'>
+          <Animated.View style={{ height: focusAnim, backgroundColor: '#f5f8fc'}}>
+            <View style={styles.logoContainer}>
+              <ApolloLogo style={{ width: 55, height: 47 }} resizeMode="contain" />
+            </View>
+            {/* <View style={{ justifyContent: 'center', marginTop: 20, alignSelf: 'center' }}>
+              <ApolloLogo style={{ width: 55, height: 47 }} resizeMode="contain" />
+            </View> */}
+            <LoginCarousel />
+          </Animated.View>
+          <View style={{ height: 16 }} />
+          <View>
+            <View style={{ alignItems: 'center', marginBottom: '5%' }}>
+              <Text style={[theme.fonts.IBMPlexSansSemiBold(16), { color: colors.CARD_HEADER }]}>
+                Sign in/ Sign up
+              </Text>
+            </View>
+            <View style={[styles.inputContainer, { borderBottomColor: !isFocused ? colors.CARD_HEADER : (phoneNumberIsValid || phoneNumber == '') ? theme.colors.INPUT_BORDER_SUCCESS : theme.colors.INPUT_BORDER_FAILURE }]}>
+              {/* <View
+                style={[
+                  phoneNumber == '' || phoneNumberIsValid ? styles.inputValidView : styles.inputView, { backgroundColor: 'red' }
+                ]}
+              > */}
+                {/* <Text style={[styles.inputTextStyle, { opacity: phoneNumber?.length ? 1 : 0 }]}>{string.login.numberPrefix}</Text> */}
+                {/* <Text style={{position: 'absolute', zIndex: 9, left: `${(45.3 - phoneNumber.length*1.3)}%`}} >+91 </Text> */}
+                <TextInput
+                  style={styles.inputStyle}
+                  keyboardType="numeric"
+                  maxLength={10}
+                  value={phoneNumber}
+                  onChangeText={(value: string) => validateAndSetPhoneNumber(value)}
+                  placeholder='Enter mobile number (10 digits)'
+                  onFocus={onFocus}
+                  onBlur={onBlur}
+                />
+              {/* </View> */}
+            </View>
+            <View style={styles.submitButtonContainer}>
+              <TouchableOpacity
+                style={[styles.submitButton, { backgroundColor: (phoneNumberIsValid && isTandCSelected) ? colors.ORANGE_ENABLED : colors.ORANGE_DISABLED }]}
+                disabled={!(phoneNumberIsValid && isTandCSelected)}
+                onPress={() => console.log("ih")}
+              >
+                <Text style={[theme.fonts.IBMPlexSansBold(12), { color: colors.WHITE, letterSpacing: 1 }]}>CONTINUE</Text>
+              </TouchableOpacity>
+            </View>
+            {/* <View style={{ alignItems: 'center', marginTop: '4%' }}>
+              <TextInput
+                onChangeText={(value) => validateAndSetPhoneNumber(value)}
+                value={phoneNumber}
+                maxLength={10}
+                keyboardType='numeric'
+                placeholder='Enter mobile number (10 digits)'
+                style={[styles.inputStyle,]}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+              />
+            </View> */}
+          </View>
+        </ScrollView>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10, justifyContent: 'flex-start', paddingLeft: '2%' }}>
+          <CheckBox
+              checked={isTandCSelected}
+              onPress={() => setTandC(!isTandCSelected)}
+              checkedIcon={<LoginCheckBoxFilled  style={styles.checkBoxStyle} />}
+              uncheckedIcon={<LoginCheckBoxUnFilled style={styles.uncheckedBoxStyle} />}
+              containerStyle={styles.checkBoxContainer}
+            />
+            <Text
+                style={{
+                  color: '#02475b',
+                  marginEnd: 45,
+                  ...fonts.IBMPlexSansMedium(10),
+                }}
+              >
+                {string.login.bySigningUp}{' '}
+                <Text style={styles.hyperlink} onPress={() => openWebViewTandC()}>
+                  {string.login.termsAndCondition}
+                </Text>{' '}
+                {string.login.and}{' '}
+                <Text style={styles.hyperlink} onPress={() => openWebViewPrivacyPolicy()}>
+                  {string.login.privacyPolicy}
+                </Text>{' '}
+                {string.login.ofApollo247}
+              </Text>
         </View>
-        <View style={{ height: 16 }} />
-        <LoginCard
+
+        {/* { borderBottomColor: isFocused ? colors.CONSULT_SUCCESS_TEXT : colors.CARD_HEADER } */}
+
+        {/* <LoginCard
           cardContainer={{ marginTop: 0, paddingBottom: 12 }}
           description={string.login.please_enter_no}
           buttonIcon={
@@ -864,11 +1027,11 @@ export const Login: React.FC<LoginProps> = (props) => {
               {string.login.ofApollo247}
             </Text>
           </View>
-        </LoginCard>
-        <ScrollView>
+        </LoginCard> */}
+        {/* <ScrollView>
           {enableTrueCaller && isAndroid && renderTruecallerButton()}
           <LandingDataView />
-        </ScrollView>
+        </ScrollView> */}
       </SafeAreaView>
       {showSpinner ? <Spinner /> : null}
       {openFillerView && <FetchingDetails />}
