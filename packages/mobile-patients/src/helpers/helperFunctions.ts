@@ -4306,3 +4306,19 @@ export const showDiagnosticCTA = (pageName:CALL_TO_ORDER_CTA_PAGE_ID, cityId: st
     }
   });
 }
+
+export const calculateDiagnosticCartItems = (cartItem: DiagnosticsCartItem[], patientCartItem: DiagnosticPatientCartItem[]) =>{
+
+  let selectedCartItems ;
+  if(!!patientCartItem && patientCartItem?.length > 0){
+    const getPatientCartItems = patientCartItem
+    ?.map((item) => item?.cartItems?.filter((idd) => idd?.id))
+    ?.flat();
+   const getSelectedItems = getPatientCartItems?.filter((i: DiagnosticsCartItem) => i?.isSelected);
+   selectedCartItems = [...getSelectedItems?.reduce((map: any, obj: any) => map?.set(obj?.id, obj), new Map()).values()];  
+  }
+  else{
+    selectedCartItems = cartItem?.filter((i: DiagnosticsCartItem) => i?.isSelected);  
+  }
+  return selectedCartItems;
+}

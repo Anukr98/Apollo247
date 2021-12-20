@@ -27,6 +27,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   aphConsole,
+  calculateDiagnosticCartItems,
   g,
   isEmptyObject,
   isSmallDevice,
@@ -421,7 +422,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   };
 
   const renderHeader = () => {
-    const cartItemsCount = cartItems?.length + shopCartItems?.length;
+    const cartItemsCount = isModify
+      ? cartItems?.length
+      : calculateDiagnosticCartItems(cartItems, patientCartItems);
     return (
       <Header
         container={{ borderBottomWidth: 1 }}

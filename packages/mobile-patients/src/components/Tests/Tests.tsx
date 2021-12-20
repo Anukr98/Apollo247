@@ -62,6 +62,7 @@ import {
   getUserType,
   getCleverTapCircleMemberValues,
   showDiagnosticCTA,
+  calculateDiagnosticCartItems,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
@@ -264,6 +265,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setDiagnosticSlot,
     newAddressAddedHomePage,
     setNewAddressAddedHomePage,
+    patientCartItems,
   } = useDiagnosticsCart();
   const {
     cartItems: shopCartItems,
@@ -301,7 +303,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
 
   const hdfc_values = string.Hdfc_values;
-  const cartItemsCount = cartItems?.length + shopCartItems?.length;
   const [loading, setLoading] = useState<boolean>(false);
 
   const [bannerLoading, setBannerLoading] = useState(true);
@@ -357,6 +358,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
     (item) => (isDiagnosticCircleSubscription ? item?.Circle : item?.NonCircle)
   );
   const isCartAvailable = !!cartItems && cartItems?.length > 0;
+  const cartItemsCount =
+    calculateDiagnosticCartItems(cartItems, patientCartItems)?.length + shopCartItems?.length;
 
   const cache = new Cache({
     namespace: 'tests',
@@ -2688,7 +2691,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         <CartPageSummary
           containerStyle={styles.cartSummaryContainer}
           _onPressShowLess={() => onPressShowLess()}
-          cartItems={cartItems}
+          cartItems={calculateDiagnosticCartItems(cartItems, patientCartItems)}
           isCircleSubscribed={isDiagnosticCircleSubscription}
           locationDetails={
             diagnosticLocation || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_LOCATION
@@ -2702,7 +2705,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderCartDetails = () => {
-    const cartCount = cartItems?.length;
+    const cartCount = calculateDiagnosticCartItems(cartItems, patientCartItems)?.length;
 
     const itemCount = !!cartItems && cartCount > 9 ? `${cartCount}` : `0${cartCount}`;
     return (

@@ -1106,9 +1106,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
             },
           ]}
         >
-          <View
-            style={styles.addressView}
-          >
+          <View style={styles.addressView}>
             <Text style={styles.addressHeadingText}>
               {nameFormater(string.diagnostics.homeVisitText, 'title')}
             </Text>
@@ -1953,5 +1951,5 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     marginHorizontal: 16,
     marginTop: 12,
-  }
+  },
 });

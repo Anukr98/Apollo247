@@ -6378,10 +6378,11 @@ export const GET_DIAGNOSTICS_RECOMMENDATIONS = gql`
       itemsData {
         itemId
         itemName
-        combinedLift
-        observations{
-          observationName
-          mandatoryValue
+        diagnosticInclusions{
+          observations{
+            observationName
+            mandatoryValue
+          }
         }
       }
     }
@@ -6783,6 +6784,12 @@ export const DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS = gql`
       itemsData{
         itemId
         itemName
+        diagnosticInclusions{
+          observations{
+            observationName
+            mandatoryValue
+          }
+        }
       }
     }
   }
