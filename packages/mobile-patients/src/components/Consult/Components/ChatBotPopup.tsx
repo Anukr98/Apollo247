@@ -22,13 +22,7 @@ export const ChatBotPopup: React.FC<ChatBotPopupProps> = (props) => {
   }, [props.visiblity]);
 
   return (
-    <Modal
-      animationType={'none'}
-      transparent={false}
-      visible={visiblity}
-      onRequestClose={() => {}}
-      onDismiss={() => {}}
-    >
+    <Modal animationType={'none'} transparent={false} visible={visiblity}>
       <WebView
         onLoadEnd={() => setLoading(false)}
         source={{ uri }}

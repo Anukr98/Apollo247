@@ -237,7 +237,7 @@ import {
   createVonageSessionToken,
   createVonageSessionTokenVariables,
 } from '../../graphql/types/createVonageSessionToken';
-import { ChatBotPopup } from './Components/ChatBotPopup';
+import { ChatBotPopup } from '@aph/mobile-patients/src/components/Consult/Components/ChatBotPopup';
 
 interface OpentokStreamObject {
   connection: {
@@ -7910,18 +7910,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   }}
                 />
               </View>
-              {/* {displayChatQuestions && Platform.OS === 'ios' && (
-                <ChatQuestions
-                  onItemDone={(value: { k: string; v: string[] }) => {
-                    setAnswerData([value]);
-                  }}
-                  onDonePress={(values: { k: string; v: string[] }[]) => {
-                    setAnswerData(values, true);
-                    setDisplayChatQuestions(false);
-                    setDisplayUploadHealthRecords(true);
-                  }}
-                />
-              )} */}
             </View>
             {!displayChatQuestions ? (
               <TouchableOpacity
@@ -8034,19 +8022,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             </TouchableOpacity>
           </>
         )}
-
-        {/* {displayChatQuestions && Platform.OS === 'android' && (
-          <ChatQuestions
-            onItemDone={(value: { k: string; v: string[] }) => {
-              setAnswerData([value]);
-            }}
-            onDonePress={(values: { k: string; v: string[] }[]) => {
-              setAnswerData(values, true);
-              setDisplayChatQuestions(false);
-              setDisplayUploadHealthRecords(true);
-            }}
-          />
-        )} */}
         {doctorTyping && (
           <Text style={styles.doctorTypingText}>{string.appointments.doctorTyping}</Text>
         )}
