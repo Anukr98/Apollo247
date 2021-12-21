@@ -2669,3 +2669,10 @@ export const DoctorConsultIcon: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/components/ui/icons/doctorConsultIcon-1.webp')}
   />
 );
+
+export const MedicalAssessment: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/assessment.webp')}
+  />
+);

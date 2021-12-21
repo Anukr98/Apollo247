@@ -31,6 +31,7 @@ import {
   UserThumbnailIcon,
   CopyIcon,
   ExternalMeetingVideoCall,
+  MedicalAssessment,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -1178,10 +1179,32 @@ const styles = StyleSheet.create({
   },
   assignmentParentView: {
     width: 300,
-    marginStart: 20,
+    marginStart: 40,
     borderWidth: 1.5,
     borderColor: theme.colors.PORCELAIN_GRAY,
     borderRadius: 10,
+    marginVertical: 20,
+  },
+  proceedBtn: {
+    width: 75,
+    height: 30,
+    borderRadius: 8,
+    alignSelf: 'flex-end',
+  },
+  assessmentHeading: {
+    ...theme.viewStyles.text('M', 14, theme.colors.TUNDORA_BLUE, 1, 16),
+  },
+  assessmentIcon: { height: 35, width: 35, marginStart: 18, marginTop: 12 },
+  startAssessmentView: {
+    borderRadius: 10,
+    borderTopLeftRadius: 0,
+    borderWidth: 1.5,
+    borderColor: theme.colors.PORCELAIN_GRAY,
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 22,
+    marginTop: 40,
+    marginEnd: 30,
   },
 });
 
@@ -1365,6 +1388,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [textChange, setTextChange] = useState(false);
   const [callerAudio, setCallerAudio] = useState<boolean>(true);
   const [callerVideo, setCallerVideo] = useState<boolean>(true);
+  const [startAssessment, setStartAssessment] = useState<boolean>(false);
   const [downgradeToAudio, setDowngradeToAudio] = React.useState<boolean>(false);
   const patientJoinedCall = useRef<boolean>(false); // using ref to get the current values on listener events
   const subscriberConnected = useRef<boolean>(false);
@@ -5794,23 +5818,23 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         return (
           <View style={styles.assignmentParentView}>
             <View style={styles.assessmentView}>
-              <Text>Medical Assessment Summary:</Text>
+              <Text style={styles.assessmentHeading}>{string.common.assessmentSummary}</Text>
             </View>
-            {JSON.parse(rowData?.message)?.map((item: any, i: number) => {
+            {JSON.parse(rowData?.message)?.map((item: any) => {
               return (
-                <View key={i}>
+                <View>
                   <Text style={styles.symptomName}>{item?.symptom || ''}</Text>
                   {!!item?.staticValue && (
                     <Text style={styles.symptomDetail}>{item?.staticValue}</Text>
                   )}
                   {!!item?.since && (
-                    <Text style={styles.symptomDetail}>{`Duration -${item?.since}`} </Text>
+                    <Text style={styles.symptomDetail}>{`Duration- ${item?.since}`} </Text>
                   )}
                   {!!item?.severity && (
-                    <Text style={styles.symptomDetail}>{`Severity -${item?.severity}`} </Text>
+                    <Text style={styles.symptomDetail}>{`Severity- ${item?.severity}`} </Text>
                   )}
                   {!!item?.howOften && (
-                    <Text style={styles.symptomDetail}>{`Course -${item?.howOften}`} </Text>
+                    <Text style={styles.symptomDetail}>{`Course- ${item?.howOften}`} </Text>
                   )}
                 </View>
               );
@@ -6409,7 +6433,22 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
   const renderStartAssessment = () => {
-    return <View></View>;
+    return (
+      <View style={{ flexDirection: 'row' }}>
+        <MedicalAssessment style={styles.assessmentIcon} />
+        <View style={styles.startAssessmentView}>
+          <Text
+            style={{ width: 250 }}
+          >{`Hi, We request you to fill the following medical assessment, before ${appointmentData?.doctorInfo.displayName} speaks with you.`}</Text>
+          <Button
+            title={string.vaccineBooking.proceed}
+            style={styles.proceedBtn}
+            titleTextStyle={theme.viewStyles.text('SB', 12, theme.colors.WHITE)}
+            onPress={() => setStartAssessment(true)}
+          />
+        </View>
+      </View>
+    );
   };
   const renderChatView = () => {
     return (
@@ -7605,8 +7644,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   return (
     <View style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
-      {/* <ChatBotPopup
-        visiblity={displayChatQuestions}
+      <ChatBotPopup
+        visiblity={startAssessment}
         appointmentId={apptId}
         onCloseClicked={(data) => {
           pubnub.publish(
@@ -7625,8 +7664,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             (status, response) => {}
           );
           setDisplayChatQuestions(false);
+          setStartAssessment(false);
         }}
-      /> */}
+      />
       <StatusBar hidden={hideStatusBar} />
       {Platform.OS === 'ios' ? (
         <View
@@ -7723,6 +7763,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       <SafeAreaView
         style={{
           ...theme.viewStyles.container,
+          backgroundColor: theme.colors.WHITE,
         }}
       >
         <Header
