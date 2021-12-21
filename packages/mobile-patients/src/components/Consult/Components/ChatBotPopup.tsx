@@ -7,7 +7,7 @@ import { Spinner } from '../../ui/Spinner';
 interface ChatBotPopupProps extends NavigationScreenProps {
   visiblity: boolean;
   appointmentId: string;
-  onCloseClicked: () => void;
+  onCloseClicked: (data: any) => void;
 }
 
 export const ChatBotPopup: React.FC<ChatBotPopupProps> = (props) => {
@@ -32,10 +32,8 @@ export const ChatBotPopup: React.FC<ChatBotPopupProps> = (props) => {
           onLoadEnd={() => setLoading(false)}
           source={{ uri }}
           onMessage={(event) => {
-            const { data } = event.nativeEvent;
-            console.log({ data });
-
-            JSON.parse(data)?.endAssesment && props.onCloseClicked();
+            const data = JSON.parse(event.nativeEvent?.data);
+            data?.endAssesment && props.onCloseClicked(data?.msgData);
           }}
         />
       </View>

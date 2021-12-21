@@ -1156,6 +1156,33 @@ const styles = StyleSheet.create({
     height: 4,
     width: 20,
   },
+  assessmentView: {
+    padding: 12,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    backgroundColor: theme.colors.WHITE,
+  },
+  symptomName: {
+    backgroundColor: theme.colors.BGK_GRAY,
+    ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
+    paddingVertical: 10,
+    paddingStart: 14,
+    flexWrap: 'wrap',
+  },
+  symptomDetail: {
+    backgroundColor: theme.colors.WHITE,
+    ...theme.viewStyles.text('R', 14, theme.colors.LIGHT_BLUE, 1, 16),
+    paddingVertical: 10,
+    paddingStart: 14,
+    flexWrap: 'wrap',
+  },
+  assignmentParentView: {
+    width: 300,
+    marginStart: 20,
+    borderWidth: 1.5,
+    borderColor: theme.colors.PORCELAIN_GRAY,
+    borderRadius: 10,
+  },
 });
 
 const urlRegEx = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG)/;
@@ -1173,6 +1200,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [currentCaseSheet, setcurrentCaseSheet] = useState<any>([]);
   const [loginToken, setLoginToken] = useState<string | null>('');
   const [userMobileNumber, setUserMobileNumber] = useState<string | null>('');
+  const [displayChatQuestions, setDisplayChatQuestions] = useState<boolean>(false);
   let appointmentData: any = props.navigation.getParam('data');
   const caseSheet = followUpChatDaysCaseSheet(appointmentData.caseSheet);
   const followUpChatDaysCurrentCaseSheet = followUpChatDaysCaseSheet(currentCaseSheet);
@@ -1316,7 +1344,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const currentCallRetryAttempt = useRef<number>(1);
   const isErrorToast = useRef<boolean>(false);
   const jrDoctorJoined = useRef<boolean>(false); // using ref to get the current updated values on event listeners
-  const [displayChatQuestions, setDisplayChatQuestions] = useState<boolean>(false);
   const [displayUploadHealthRecords, setDisplayUploadHealthRecords] = useState<boolean>(false);
   const [userAnswers, setUserAnswers] = useState<ConsultQueueInput>();
   const [isSendAnswers, setisSendAnswers] = useState<boolean[]>([
@@ -1398,6 +1425,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const externalMeetingLink = '^^#externalMeetingLink';
   const jdAutoAssign = '^^#JdInfoMsg';
   const delayedConsultReminder = '^^#DelayReminder';
+  const chatBotPatientVitalsSummary = '^^#chatBotPatientVitalsSummary';
 
   const disconnecting = 'Disconnecting...';
   const callConnected = 'Call Connected';
@@ -5762,6 +5790,35 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     } else {
       leftComponent = 0;
       rightComponent++;
+      if (rowData?.automatedText == chatBotPatientVitalsSummary) {
+        return (
+          <View style={styles.assignmentParentView}>
+            <View style={styles.assessmentView}>
+              <Text>Medical Assessment Summary:</Text>
+            </View>
+            {JSON.parse(rowData?.message)?.map((item: any, i: number) => {
+              return (
+                <View key={i}>
+                  <Text style={styles.symptomName}>{item?.symptom || ''}</Text>
+                  {!!item?.staticValue && (
+                    <Text style={styles.symptomDetail}>{item?.staticValue}</Text>
+                  )}
+                  {!!item?.since && (
+                    <Text style={styles.symptomDetail}>{`Duration -${item?.since}`} </Text>
+                  )}
+                  {!!item?.severity && (
+                    <Text style={styles.symptomDetail}>{`Severity -${item?.severity}`} </Text>
+                  )}
+                  {!!item?.howOften && (
+                    <Text style={styles.symptomDetail}>{`Course -${item?.howOften}`} </Text>
+                  )}
+                </View>
+              );
+            })}
+          </View>
+        );
+      }
+
       return (
         <View style={{ marginHorizontal: 20 }}>
           {!moment(rowData?.messageDate).isSame(messages[index - 1]?.messageDate, 'day') && (
@@ -6351,6 +6408,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       cleverTapEventAttributesFollowUp
     );
   };
+  const renderStartAssessment = () => {
+    return <View></View>;
+  };
   const renderChatView = () => {
     return (
       <View style={{ width: width, height: heightList, marginTop: 0, flex: 1 }}>
@@ -6373,7 +6433,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           showsVerticalScrollIndicator={false}
           initialNumToRender={messages ? messages.length : 0}
           ListFooterComponent={() => {
-            if (disableChat) {
+            if (displayChatQuestions) {
+              return renderStartAssessment();
+            } else if (disableChat) {
               return chatDisabled();
             } else {
               return <View style={{ height: 150 }}></View>;
@@ -7543,13 +7605,28 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   return (
     <View style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
-      <ChatBotPopup
+      {/* <ChatBotPopup
         visiblity={displayChatQuestions}
         appointmentId={apptId}
-        onCloseClicked={() => {
+        onCloseClicked={(data) => {
+          pubnub.publish(
+            {
+              channel: channel.current,
+              message: {
+                message: JSON.stringify(data),
+                automatedText: chatBotPatientVitalsSummary,
+                id: patientId,
+                isTyping: true,
+                messageDate: new Date(),
+              },
+              storeInHistory: true,
+              sendByPost: true,
+            },
+            (status, response) => {}
+          );
           setDisplayChatQuestions(false);
         }}
-      />
+      /> */}
       <StatusBar hidden={hideStatusBar} />
       {Platform.OS === 'ios' ? (
         <View
@@ -7727,7 +7804,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           </View>
         ) : null}
         {renderChatView()}
-        {Platform.OS == 'ios' ? (
+        {displayChatQuestions ? null : Platform.OS == 'ios' ? (
           <>
             {!displayChatQuestions ? (
               <TouchableOpacity
