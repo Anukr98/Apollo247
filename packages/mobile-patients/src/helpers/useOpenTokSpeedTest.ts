@@ -55,7 +55,7 @@ const useOpenTokSpeedTest = (): PublisherSettings => {
           setPublisherSettings(resolution);
         })
         .catch(() => {
-          clearInterval(interval);
+          setPublisherSettings({ frameRate: 15, resolution: '320x240', unstable: true });
         });
     };
     const interval = setInterval(networkTest, 5000);

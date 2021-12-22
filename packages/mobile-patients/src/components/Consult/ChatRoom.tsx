@@ -1284,7 +1284,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     ...theme.viewStyles.cardViewStyle,
   });
 
-
   const disAllowReschedule =
     g(appointmentData, 'appointmentState') != APPOINTMENT_STATE.AWAITING_RESCHEDULE;
 
@@ -3477,7 +3476,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           postAppointmentWEGEvent(WebEngageEventName.JD_COMPLETED);
         } else if (messageType == startConsultMsg) {
           postAppointmentWEGEvent(WebEngageEventName.SD_CONSULTATION_STARTED);
-
         } else if (messageType == videoCallMsg && name == 'DOCTOR') {
           postAppointmentWEGEvent(WebEngageEventName.SD_VIDEO_CALL_STARTED);
         }
@@ -6443,22 +6441,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           </OTSession>
           {callingScreenUI()}
         </View>
-        <Snackbar
-          style={{
-            marginBottom: 100,
-            zIndex: 1001,
-            backgroundColor: isCallReconnecting.current
-              ? theme.colors.BLACK_COLOR
-              : theme.colors.RED,
-          }}
-          visible={snackbarState}
-          onDismiss={() => {
-            setSnackbarState(false);
-          }}
-          duration={5000}
-        >
-          {handlerMessage}
-        </Snackbar>
       </View>
     );
   };
@@ -6498,6 +6480,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         {showDoctorProfile && renderNoSubscriberConnectedThumbnail()}
         {!PipView && renderChatNotificationIcon()}
         {!PipView && renderBottomButtons()}
+        <Snackbar
+          style={{
+            marginBottom: 100,
+            zIndex: 1001,
+            backgroundColor:
+              !isCallReconnecting.current || unstable ? theme.colors.RED : theme.colors.BLACK_COLOR,
+          }}
+          visible={snackbarState}
+          onDismiss={() => {
+            setSnackbarState(false);
+          }}
+          duration={50000}
+        >
+          {handlerMessage}
+        </Snackbar>
       </>
     );
   };
