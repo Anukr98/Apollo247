@@ -108,7 +108,7 @@ export const ProductCard: React.FC<Props> = ({
       <Image
         placeholderStyle={styles.imagePlaceHolder}
         PlaceholderContent={isPrescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
-        source={{ uri: productsThumbnailUrl(image || thumbnail) }}
+        source={{ uri: productsThumbnailUrl(image || thumbnail) + '?imwidth=100' }}
         style={styles.image}
       />
     </View>

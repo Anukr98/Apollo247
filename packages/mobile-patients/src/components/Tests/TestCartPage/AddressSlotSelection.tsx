@@ -71,7 +71,6 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
   const [todaySlotNotAvailable, setTodaySlotNotAvailable] = useState<boolean>(false);
   const [date, setDate] = useState<Date>(new Date());
   const [isFocus, setIsFocus] = useState<boolean>(false);
-  const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
 
   const [slotsInput, setSlotsInput] = useState({});
 
@@ -370,7 +369,6 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
       </View>
     );
   };
-  
 
   const renderWizard = () => {
     return (

@@ -6,9 +6,10 @@
 //  Copyright © 2020 Facebook. All rights reserved.
 //
 
-#import <UserNotifications/UserNotifications.h>
-#import <WebEngageBannerPush/WEXPushNotificationService.h>
+// #import <UserNotifications/UserNotifications.h>
+// #import <WebEngageBannerPush/WEXPushNotificationService.h>
+#import <CTNotificationService/CTNotificationService.h>
 
-@interface NotificationService : WEXPushNotificationService
+@interface NotificationService : CTNotificationServiceExtension
 
 @end

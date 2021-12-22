@@ -485,7 +485,7 @@ export const Login: React.FC<LoginProps> = (props) => {
               key: null,
               actions: [
                 NavigationActions.navigate({
-                  routeName: AppRoutes.ConsultRoom,
+                  routeName: AppRoutes.HomeScreen,
                   params: {
                     previousRoute: 'Login',
                   },

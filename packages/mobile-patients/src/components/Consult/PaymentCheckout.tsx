@@ -135,6 +135,7 @@ import {
 import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { Decimal } from 'decimal.js';
+import { CouponOfferMessage } from '@aph/mobile-patients/src/components/ServerCart/Components/CouponOfferMessage';
 
 interface PaymentCheckoutProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
@@ -664,6 +665,14 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     );
   };
 
+  const renderCouponHighlights = () => {
+    return (
+      <View style={{ marginLeft: -10, marginRight: 10, width: '100%', marginTop: 5 }}>
+        <CouponOfferMessage movedFrom={'consultation'} />
+      </View>
+    );
+  };
+
   const renderApplyCoupon = () => {
     return (
       <ListCard
@@ -676,7 +685,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         leftIcon={<CouponIcon />}
         rightIcon={<ArrowRight />}
         leftTitle={coupon}
-        children={coupon ? renderCouponSavingsView() : null}
+        children={coupon ? renderCouponSavingsView() : renderCouponHighlights()}
         title={coupon ? ' applied' : 'Apply Coupon'}
         onPress={() => {
           if (!selectedTimeSlot) {
@@ -971,7 +980,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   ) => {
     const orderDetails = {
       consultedWithDoctorBefore: consultedWithDoctorBefore,
-      doctorName: doctor?.fullName,
+      doctorName: doctor?.displayName,
       doctorID: doctor?.id,
       doctor: doctor,
       orderId: apptmt?.id,
@@ -1163,7 +1172,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     });
 
     const eventAttributes: FirebaseEvents[FirebaseEventName.CONSULTATION_BOOKED] = {
-      name: g(doctor, 'fullName')!,
+      name: g(doctor, 'displayName')!,
       specialisation: g(doctor, 'specialty', 'userFriendlyNomenclature')!,
       category: g(doctor, 'doctorType')!, // send doctorType
       time: localTimeSlot.format('DD-MM-YYY, hh:mm A'),
@@ -1199,7 +1208,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     });
 
     const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULTATION_BOOKED] = {
-      name: g(doctor, 'fullName')!,
+      name: g(doctor, 'displayName')!,
       specialisation: g(doctor, 'specialty', 'name')!,
       category: g(doctor, 'doctorType')!, // send doctorType
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
@@ -1223,7 +1232,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           ? `${doctorClinics?.[0]?.facility?.city}`
           : '',
       'Doctor ID': g(doctor, 'id')!,
-      'Doctor Name': g(doctor, 'fullName')!,
+      'Doctor Name': g(doctor, 'displayName')!,
       'Net Amount': amountToPay,
       af_revenue: amountToPay,
       af_currency: 'INR',
@@ -1266,7 +1275,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           ? `${doctorClinics?.[0]?.facility?.city}`
           : '',
       'Doctor ID': g(doctor, 'id')!,
-      'Doctor name': g(doctor, 'fullName')!,
+      'Doctor name': g(doctor, 'displayName')!,
       'Net amount': amountToPay,
       af_revenue: amountToPay,
       af_currency: 'INR',
@@ -1356,7 +1365,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.PAY_BUTTON_CLICKED] = {
       'Consult Date Time': localTimeSlot,
       Amount: finalAppointmentInput?.actualAmount,
-      'Doctor Name': g(doctor, 'fullName')!,
+      'Doctor Name': g(doctor, 'displayName')!,
       'Doctor City': g(doctor, 'city')!,
       'Type of Doctor': g(doctor, 'doctorType')!,
       'Doctor Specialty': g(doctor, 'specialty', 'name')!,
@@ -1389,7 +1398,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     };
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PAY_BUTTON_CLICKED] = {
       'Appointment datetime': localTimeSlot,
-      'Doctor name': g(doctor, 'fullName')!,
+      'Doctor name': g(doctor, 'displayName')!,
       'Doctor city': g(doctor, 'city')!,
       'Doctor category': g(doctor, 'doctorType')!,
       'Speciality name': g(doctor, 'specialty', 'name')!,
