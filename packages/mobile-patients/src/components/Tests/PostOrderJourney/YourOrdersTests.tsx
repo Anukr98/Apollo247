@@ -1156,7 +1156,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             title={'RESCHEDULE NOW'}
             style={styles.buttonStyle}
             disabled={selectRescheduleReason == ''}
-            onPress={() => _onPressRescheduleNow()}
+            onPress={() => _onPressRescheduleNow('directReschedule')}
           />
         </View>
       </View>
@@ -1228,7 +1228,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                       <Text style={styles.wantToReschedule}>
                         {string.diagnostics.wantToReschedule}
                       </Text>
-                      <TouchableOpacity activeOpacity={1} onPress={() => _onPressRescheduleNow()}>
+                      <TouchableOpacity
+                        activeOpacity={1}
+                        onPress={() => _onPressRescheduleNow('cancelReschedule')}
+                      >
                         <Text style={styles.yellowText}>RESCHEDULE NOW</Text>
                       </TouchableOpacity>
                     </View>
@@ -1432,8 +1435,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     getSlots();
   }
 
-  function _onPressRescheduleNow() {
-    if (isMultiUhid) {
+  function _onPressRescheduleNow(source: string) {
+    if (isMultiUhid && source == 'cancelReschedule') {
       callMultiUhidApi(string.diagnosticsOrders.cancel);
     } else {
       _proceedWithReschedule();
@@ -2453,7 +2456,7 @@ const styles = StyleSheet.create({
   patientNameText: { ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1, 18) },
   proceedToCancelTouch: {
     height: 40,
-    width: '37%',
+    width: '40%',
     justifyContent: 'center',
     alignItems: 'center',
   },

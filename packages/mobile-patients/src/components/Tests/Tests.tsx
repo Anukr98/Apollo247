@@ -1418,7 +1418,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
       18
     )} ${!!diagnosticLocation?.pincode ? diagnosticLocation?.pincode : ''}`;
     const hasDiagnosticLocationUndefinedValues =
-      !!diagnosticLocation?.state && !!diagnosticLocation?.state && !!diagnosticLocation?.pincode;
+      !!diagnosticLocation?.state || !!diagnosticLocation?.city || !!diagnosticLocation?.pincode;
+
     return (
       <View style={{ paddingLeft: 15, marginTop: 3.5 }}>
         {hasLocation ? (
@@ -2627,9 +2628,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderPastOrderRecommendations = (drupalRecommendations: any) => {
+    const topTenPastRecommendations =
+      pastOrderRecommendations?.length > 10
+        ? pastOrderRecommendations?.slice(0, 10)
+        : pastOrderRecommendations;
+
     const isPricesAvailable =
-      pastOrderRecommendations?.length > 0 &&
-      pastOrderRecommendations.find((item: any) => item?.diagnosticPricing);
+      topTenPastRecommendations?.length > 0 &&
+      topTenPastRecommendations.find((item: any) => item?.diagnosticPricing);
     const showViewAll = true;
     const widgetName =
       drupalRecommendations?.[0]?.diagnosticWidgetTitle! ||
@@ -2683,8 +2689,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
               renderDiagnosticWidgetShimmer(false) //load package card
             ) : (
               <ItemCard
-                data={pastOrderRecommendations}
-                diagnosticWidgetData={pastOrderRecommendations}
+                data={topTenPastRecommendations}
+                diagnosticWidgetData={topTenPastRecommendations}
                 isPriceAvailable={priceAvailable}
                 isCircleSubscribed={isDiagnosticCircleSubscription}
                 isServiceable={isDiagnosticLocationServiceable}
