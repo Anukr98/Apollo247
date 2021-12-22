@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Modal } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { WebView } from 'react-native-webview';
-import { Spinner } from '../../ui/Spinner';
-import { apiBaseUrl } from '@aph/mobile-patients/src/helpers/apiRoutes';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 interface ChatBotPopupProps extends NavigationScreenProps {
