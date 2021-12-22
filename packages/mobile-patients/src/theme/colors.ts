@@ -159,6 +159,7 @@ const Common = {
   LIGHT_GREEN_ONE: '#E8EDF0',
   LIGHT_BLUE_TWO: '#DCF0FF',
   BLUE_GRADIENT_ONE: '#1C9FC2',
+  TUNDORA_GRAY: '#424242',
 };
 
 const Header = {
