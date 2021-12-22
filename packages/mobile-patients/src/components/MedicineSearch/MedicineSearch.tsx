@@ -135,7 +135,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     }
   };
   useEffect(() => {
-    if (serverCartItems.find(({ sku }) => sku?.toUpperCase() === currentProductIdInCart)) {
+    if (serverCartItems?.find(({ sku }) => sku?.toUpperCase() === currentProductIdInCart)) {
       if (shownNudgeOnce === false) {
         setShowSuggestedQuantityNudge(true);
       }
