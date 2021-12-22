@@ -46,6 +46,7 @@ import {
   AppConfig,
   BLACK_LIST_CANCEL_STATUS_ARRAY,
   BLACK_LIST_RESCHEDULE_STATUS_ARRAY,
+  DIAGNOSTIC_ORDER_CANCELLED_STATUS,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { Down, DownO, InfoIconRed, ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -221,7 +222,6 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-
   const keyExtractor = useCallback((item: any, index: number) => `${index}`, []);
   const renderOrder = (order: orderList, index: number) => {
     if (order?.diagnosticOrderLineItems?.length == 0) {
@@ -291,15 +291,15 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
             : getSlotStartTime(order?.slotTimings)
         }
         isPrepaid={order?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT}
-        isCancelled={currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED}
+        isCancelled={DIAGNOSTIC_ORDER_CANCELLED_STATUS.includes(currentStatus)}
         cancelledReason={
-          currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED &&
+          DIAGNOSTIC_ORDER_CANCELLED_STATUS.includes(currentStatus) &&
           order?.diagnosticOrderCancellation != null
             ? order?.diagnosticOrderCancellation
             : null
         }
         showRescheduleCancel={
-          showReschedule && order?.orderStatus != DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED
+          showReschedule && !DIAGNOSTIC_ORDER_CANCELLED_STATUS.includes(order?.orderStatus)
         }
         showReportOption={
           showReport || order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED
@@ -318,7 +318,7 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
         onPressViewReport={() => {}}
         phelboObject={order?.phleboDetailsObj}
         onPressRatingStar={(star) => {}}
-        onPressEditPatient={()=>{}}
+        onPressEditPatient={() => {}}
         onPressCallOption={(name, number) => {}}
         style={[
           { marginHorizontal: 20 },

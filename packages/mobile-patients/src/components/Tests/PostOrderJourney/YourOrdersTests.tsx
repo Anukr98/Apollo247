@@ -78,6 +78,7 @@ import {
   BLACK_LIST_CANCEL_STATUS_ARRAY,
   BLACK_LIST_RESCHEDULE_STATUS_ARRAY,
   DIAGNOSTIC_EDIT_PROFILE_ARRAY,
+  DIAGNOSTIC_ORDER_CANCELLED_STATUS,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -113,6 +114,7 @@ import {
   getRescheduleAndCancellationReasons,
   getRescheduleAndCancellationReasonsVariables,
   getRescheduleAndCancellationReasons_getRescheduleAndCancellationReasons,
+  getRescheduleAndCancellationReasons_getRescheduleAndCancellationReasons_cancellationReasonsv2,
 } from '@aph/mobile-patients/src/graphql/types/getRescheduleAndCancellationReasons';
 import { PatientListOverlay } from '@aph/mobile-patients/src/components/Tests/components/PatientListOverlay';
 
@@ -216,6 +218,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [resultList, setResultList] = useState([] as any);
   const [showPatientListOverlay, setShowPatientListOverlay] = useState<boolean>(false);
   const [patientListSelectedPatient, setPatientListSelectedPatient] = useState([]);
+  const [isDirectCancelRequest, setIsDirectCancelRequest] = useState<boolean>(true);
   const source = props.navigation.getParam('source');
   const getCTADetails = showDiagnosticCTA(CALL_TO_ORDER_CTA_PAGE_ID.MYORDERS, cityId);
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
@@ -356,7 +359,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             (data?.data
               ?.getRescheduleAndCancellationReasons as getRescheduleAndCancellationReasons_getRescheduleAndCancellationReasons) ||
             [];
-          setCancelReasonList(reasonList?.cancellationReasons);
+          setCancelReasonList(reasonList?.cancellationReasonsv2);
           setRescheduleReasonList(reasonList?.rescheduleReasons);
         })
         .catch((error) => {
@@ -476,24 +479,29 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       orderIds: [String(selectedOrderId)],
       patientId: String(selectedOrder?.patientId),
       reason: reason,
+      allowCancellationRequest: true,
     };
     diagnosticCancelOrder(client, orderCancellationInput)
       .then((data: any) => {
-        const cancelResponse = g(data, 'data', 'cancelDiagnosticOrdersv2', 'status');
+        const cancelResponse = data?.data?.cancelDiagnosticOrdersv2?.status;
+        const cancelMsg = data?.data?.cancelDiagnosticOrdersv2?.message;
         if (!!cancelResponse && cancelResponse === true) {
           // updateCancelCard(selectedOrderId);
           setTimeout(() => refetchOrders(), 1000);
           showAphAlert?.({
             unDismissable: true,
             title: string.common.hiWithSmiley,
-            description: string.diagnostics.orderCancelledSuccessText,
+            description:
+              !!cancelMsg && cancelMsg != ''
+                ? cancelMsg
+                : string.diagnostics.orderCancelledSuccessText,
           });
         } else {
           setLoading?.(false);
           showAphAlert?.({
             unDismissable: true,
             title: string.common.uhOh,
-            description: cancelResponse?.message,
+            description: cancelMsg,
           });
         }
         setSelectCancelReason('');
@@ -1190,110 +1198,116 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           {string.diagnostics.reasonForCancellationText}
         </Text>
         <ScrollView style={styles.reasonsContainer}>
-          {cancelReasonArray?.map((item: string, index: number) => {
-            return (
-              <View style={{ flex: 1 }}>
-                <TouchableOpacity
-                  onPress={() => _onPressCancelReason(item)}
-                  style={[
-                    styles.reasonsTouch,
-                    {
-                      height:
-                        selectCancelReason === item &&
-                        selectedOrderRescheduleCount! < 3 &&
-                        (CANCEL_RESCHEDULE_OPTION.includes(selectCancelReason) ||
-                          CANCEL_REASON_OPTIONS.includes(selectCancelReason))
-                          ? 100
-                          : 40,
-                      paddingTop: 10,
-                      justifyContent: 'space-between',
-                    },
-                    styles.marginStyle,
-                  ]}
-                >
-                  <View style={styles.rowStyle}>
-                    <Text style={styles.reasonsText}>{item}</Text>
-                    {selectCancelReason === item ? (
-                      <TickIcon style={styles.checkIconStyle} />
-                    ) : (
-                      <DisabledTickIcon style={styles.checkIconStyle} />
+          {cancelReasonArray?.map(
+            (
+              item: getRescheduleAndCancellationReasons_getRescheduleAndCancellationReasons_cancellationReasonsv2,
+              index: number
+            ) => {
+              const reasonString = item?.reason;
+              return (
+                <View style={{ flex: 1 }}>
+                  <TouchableOpacity
+                    onPress={() => _onPressCancelReason(item)}
+                    style={[
+                      styles.reasonsTouch,
+                      {
+                        height:
+                          selectCancelReason === reasonString &&
+                          selectedOrderRescheduleCount! < 3 &&
+                          (CANCEL_RESCHEDULE_OPTION.includes(selectCancelReason) ||
+                            CANCEL_REASON_OPTIONS.includes(selectCancelReason))
+                            ? 100
+                            : 40,
+                        paddingTop: 10,
+                        justifyContent: 'space-between',
+                      },
+                      styles.marginStyle,
+                    ]}
+                  >
+                    <View style={styles.rowStyle}>
+                      <Text style={styles.reasonsText}>{reasonString}</Text>
+                      {selectCancelReason === reasonString ? (
+                        <TickIcon style={styles.checkIconStyle} />
+                      ) : (
+                        <DisabledTickIcon style={styles.checkIconStyle} />
+                      )}
+                    </View>
+
+                    {selectCancelReason === reasonString &&
+                    selectedOrderRescheduleCount! < 3 &&
+                    CANCEL_RESCHEDULE_OPTION.includes(selectCancelReason) ? (
+                      <View style={{ marginTop: 10, marginBottom: 5 }}>
+                        <Text style={styles.wantToReschedule}>
+                          {string.diagnostics.wantToReschedule}
+                        </Text>
+                        <TouchableOpacity activeOpacity={1} onPress={() => _onPressRescheduleNow()}>
+                          <Text style={styles.yellowText}>RESCHEDULE NOW</Text>
+                        </TouchableOpacity>
+                      </View>
+                    ) : null}
+                    {selectCancelReason === reasonString &&
+                    selectedOrderRescheduleCount! < 3 &&
+                    selectCancelReason ==
+                      string.diagnostics.reasonForCancel_TestOrder.needModifyPatient ? (
+                      <View style={{ marginTop: 10, marginBottom: 5 }}>
+                        <Text style={styles.wantToReschedule}>
+                          {string.diagnostics.needToAddPaitent}
+                        </Text>
+                        <TouchableOpacity
+                          activeOpacity={1}
+                          onPress={() => {
+                            _onPressEditPatient(selectedOrder!);
+                          }}
+                        >
+                          <Text style={styles.yellowText}>EDIT PATIENT</Text>
+                        </TouchableOpacity>
+                      </View>
+                    ) : null}
+
+                    {selectCancelReason === reasonString &&
+                    selectedOrderRescheduleCount! < 3 &&
+                    selectCancelReason ==
+                      string.diagnostics.reasonForCancel_TestOrder.needModifyOrder ? (
+                      <View style={{ marginTop: 10, marginBottom: 5 }}>
+                        <Text style={styles.wantToReschedule}>
+                          {string.diagnostics.needToAddOrder}
+                        </Text>
+                        <TouchableOpacity
+                          activeOpacity={1}
+                          onPress={() => {
+                            setShowCancelReasons(false);
+                            _onPressAddTest(selectedOrder!);
+                          }}
+                        >
+                          <Text style={styles.yellowText}>ADD TESTS</Text>
+                        </TouchableOpacity>
+                      </View>
+                    ) : null}
+
+                    {index === cancelReasonArray?.length - 1 ? null : (
+                      <Spearator style={{ marginTop: 6 }} />
                     )}
-                  </View>
-
-                  {selectCancelReason === item &&
-                  selectedOrderRescheduleCount! < 3 &&
-                  CANCEL_RESCHEDULE_OPTION.includes(selectCancelReason) ? (
-                    <View style={{ marginTop: 10, marginBottom: 5 }}>
-                      <Text style={styles.wantToReschedule}>
-                        {string.diagnostics.wantToReschedule}
-                      </Text>
-                      <TouchableOpacity activeOpacity={1} onPress={() => _onPressRescheduleNow()}>
-                        <Text style={styles.yellowText}>RESCHEDULE NOW</Text>
-                      </TouchableOpacity>
-                    </View>
-                  ) : null}
-                  {selectCancelReason === item &&
-                  selectedOrderRescheduleCount! < 3 &&
-                  selectCancelReason ==
-                    string.diagnostics.reasonForCancel_TestOrder.needModifyPatient ? (
-                    <View style={{ marginTop: 10, marginBottom: 5 }}>
-                      <Text style={styles.wantToReschedule}>
-                        {string.diagnostics.needToAddPaitent}
-                      </Text>
-                      <TouchableOpacity
-                        activeOpacity={1}
-                        onPress={() => {
-                          _onPressEditPatient(selectedOrder!);
+                    {selectCancelReason ===
+                      string.diagnostics.reasonForCancel_TestOrder.otherReasons &&
+                    reasonString === string.diagnostics.reasonForCancel_TestOrder.otherReasons ? (
+                      <TextInputComponent
+                        value={cancelReasonComment}
+                        onChangeText={(text) => {
+                          setCancelReasonComment(text);
                         }}
-                      >
-                        <Text style={styles.yellowText}>EDIT PATIENT</Text>
-                      </TouchableOpacity>
-                    </View>
-                  ) : null}
-
-                  {selectCancelReason === item &&
-                  selectedOrderRescheduleCount! < 3 &&
-                  selectCancelReason ==
-                    string.diagnostics.reasonForCancel_TestOrder.needModifyOrder ? (
-                    <View style={{ marginTop: 10, marginBottom: 5 }}>
-                      <Text style={styles.wantToReschedule}>
-                        {string.diagnostics.needToAddOrder}
-                      </Text>
-                      <TouchableOpacity
-                        activeOpacity={1}
-                        onPress={() => {
-                          setShowCancelReasons(false);
-                          _onPressAddTest(selectedOrder!);
-                        }}
-                      >
-                        <Text style={styles.yellowText}>ADD TESTS</Text>
-                      </TouchableOpacity>
-                    </View>
-                  ) : null}
-
-                  {index === cancelReasonArray?.length - 1 ? null : (
-                    <Spearator style={{ marginTop: 6 }} />
-                  )}
-                  {selectCancelReason ===
-                    string.diagnostics.reasonForCancel_TestOrder.otherReasons &&
-                  item === string.diagnostics.reasonForCancel_TestOrder.otherReasons ? (
-                    <TextInputComponent
-                      value={cancelReasonComment}
-                      onChangeText={(text) => {
-                        setCancelReasonComment(text);
-                      }}
-                      placeholder={string.common.return_order_comment_text}
-                      inputStyle={{ fontSize: 14 }}
-                    />
-                  ) : null}
-                </TouchableOpacity>
-              </View>
-            );
-          })}
+                        placeholder={string.common.return_order_comment_text}
+                        inputStyle={{ fontSize: 14 }}
+                      />
+                    ) : null}
+                  </TouchableOpacity>
+                </View>
+              );
+            }
+          )}
         </ScrollView>
         <View style={styles.buttonView}>
           <Button
-            title={'CANCEL NOW'}
+            title={isDirectCancelRequest ? 'CANCEL NOW' : 'SUBMIT REQUEST'}
             style={styles.buttonStyle}
             disabled={
               selectCancelReason == string.diagnostics.reasonForCancel_TestOrder.otherReasons
@@ -1414,11 +1428,15 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     );
   };
 
-  function _onPressCancelReason(item: string) {
-    if (CANCEL_RESCHEDULE_OPTION.includes(item)) {
-      setSelectRescheduleReason(item);
+  function _onPressCancelReason(
+    item: getRescheduleAndCancellationReasons_getRescheduleAndCancellationReasons_cancellationReasonsv2
+  ) {
+    const selectedCancelReason = item?.reason!;
+    setIsDirectCancelRequest(item?.isDirectCancellation!);
+    if (CANCEL_RESCHEDULE_OPTION.includes(selectedCancelReason)) {
+      setSelectRescheduleReason(selectedCancelReason);
     }
-    setSelectCancelReason(item);
+    setSelectCancelReason(selectedCancelReason);
   }
 
   function _proceedWithReschedule() {
@@ -1681,15 +1699,15 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           order?.attributesObj?.slotDurationInMinutes || AppConfig.Configuration.DEFAULT_PHELBO_ETA
         }
         isPrepaid={order?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT}
-        isCancelled={currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED}
+        isCancelled={DIAGNOSTIC_ORDER_CANCELLED_STATUS.includes(currentStatus)}
         cancelledReason={
-          currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED &&
+          DIAGNOSTIC_ORDER_CANCELLED_STATUS.includes(currentStatus) &&
           order?.diagnosticOrderCancellation != null
             ? order?.diagnosticOrderCancellation
             : null
         }
         showRescheduleCancel={
-          showReschedule && order?.orderStatus != DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED
+          showReschedule && !DIAGNOSTIC_ORDER_CANCELLED_STATUS.includes(order?.orderStatus)
         }
         showReportOption={
           showReport || order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED

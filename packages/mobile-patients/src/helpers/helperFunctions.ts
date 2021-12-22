@@ -3261,7 +3261,6 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
   switch (status) {
     case DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED:
     case 'ORDER_CANCELLED_AFTER_REGISTRATION':
-    case DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED_REQUEST:
       statusString = 'Order cancelled';
       break;
     case DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED:
@@ -3334,6 +3333,10 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
       break;
     case DIAGNOSTIC_ORDER_STATUS.REFUND_INITIATED:
       statusString = 'Partial Refund Initiated';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.CANCELLATION_REQUESTED:
+    case DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED_REQUEST:
+      statusString = 'Cancellation Requested';
       break;
     default:
       statusString = '';
