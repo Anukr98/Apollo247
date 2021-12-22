@@ -1192,7 +1192,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
   },
   assessmentHeading: {
-    ...theme.viewStyles.text('M', 14, theme.colors.TUNDORA_BLUE, 1, 16),
+    ...theme.viewStyles.text('M', 14, theme.colors.TUNDORA_GRAY, 1, 16),
   },
   assessmentIcon: { height: 35, width: 35, marginStart: 18, marginTop: 12 },
   startAssessmentView: {
