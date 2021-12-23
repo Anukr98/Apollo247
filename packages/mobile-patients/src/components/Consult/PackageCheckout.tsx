@@ -29,6 +29,7 @@ import {
   one_apollo_store_code,
   OrderVerticals,
   OrderCreate,
+  PlanPurchaseType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -45,6 +46,7 @@ import {
   createOrderInternalVariables,
 } from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
 import { ConsultPackageHowItWorks } from '@aph/mobile-patients/src/components/Consult/ConsultPackageHowItWorks';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 interface PackageCheckoutProps extends NavigationScreenProps {
   packageDetailData: any;
   selectedPlanIndex: number;
@@ -54,6 +56,7 @@ interface PackageCheckoutProps extends NavigationScreenProps {
 export const PackageCheckout: React.FC<PackageCheckoutProps> = (props) => {
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
+  const { isRenew } = useAppCommonData();
   const { setLoading, showAphAlert } = useUIElements();
   const { cusId, isfetchingId } = useGetJuspayId();
   const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
@@ -103,7 +106,7 @@ export const PackageCheckout: React.FC<PackageCheckoutProps> = (props) => {
   };
 
   const createUserSubscription = () => {
-    const purchaseInput = {
+    const purchaseInput: CreateUserSubscriptionVariables = {
       userSubscription: {
         mobile_number: currentPatient?.mobileNumber,
         plan_id: packageId,
@@ -112,6 +115,9 @@ export const PackageCheckout: React.FC<PackageCheckoutProps> = (props) => {
         FirstName: currentPatient?.firstName,
         LastName: currentPatient?.lastName,
         transaction_date_time: new Date().toISOString(),
+        source_meta_data: {
+          purchase_type: isRenew ? PlanPurchaseType.renew : PlanPurchaseType.first_time,
+        },
       },
     };
 
