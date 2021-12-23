@@ -2,6 +2,8 @@ apply plugin: "com.android.application"
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: "kotlin-android-extensions"
+apply plugin: "com.google.firebase.crashlytics"
+apply plugin: "com.google.gms.google-services"
 
 /* Chron */
 apply plugin: 'kotlinx-serialization'
@@ -273,7 +275,8 @@ dependencies {
     implementation "com.google.android.gms:play-services-location:18.0.0" // <-- added for activity recognition of google fit
     implementation  "com.google.android.gms:play-services-fitness:18.0.0" 
     implementation 'com.google.android.gms:play-services-auth:19.0.0' //17.0.0
-     implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.20.0" // for serialization error
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.1" // for serialization error //0.20.0
+
     implementation 'me.leolin:ShortcutBadger:1.1.21@aar' // <-- Add this line if you wish to use badge on Android
 
     //maps dependencies
@@ -293,27 +296,23 @@ dependencies {
     } else {
         implementation jscFlavor
     }
-
-    //
-    implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.5.10"
+    
+    implementation"org.jetbrains.kotlin:kotlin-stdlib:1.5.21" //1.5.10
     implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation "androidx.core:core-ktx:1.6.0"
-    implementation "androidx.core:core:1.6.0"
+    implementation "androidx.core:core-ktx:1.6.0" 
+    implementation "androidx.core:core:1.6.0" 
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.10.0")
-
+    
     implementation("androidx.appcompat:appcompat:1.1.0-beta01")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.10.0")
-
     implementation("androidx.cardview:cardview:1.0.0")
-    implementation("com.google.android.material:material:1.1.0-alpha07")
-    implementation("androidx.constraintlayout:constraintlayout:2.0.0-beta4")
-    api 'com.google.android.material:material:1.2.0-alpha01'
+    //implementation("com.google.android.material:material:1.1.0-alpha07")
+    //implementation("androidx.constraintlayout:constraintlayout:2.0.0-beta4")
+    // api 'com.google.android.material:material:1.2.0-alpha01'
+    implementation "com.google.android.material:material:1.2.1"
     implementation("com.github.arimorty:floatingsearchview:2.1.1")
 
 // RX JAVA
@@ -326,15 +325,22 @@ dependencies {
     implementation("com.squareup.retrofit2:adapter-rxjava2:2.6.0")
     
 // Glide
-    implementation("com.github.bumptech.glide:glide:4.9.0")
-    kapt("com.github.bumptech.glide:compiler:4.9.0")
+    implementation("com.github.bumptech.glide:glide:4.12.0") //4.9.0	
+	annotationProcessor "com.github.bumptech.glide:compiler:4.12.0"
+    //kapt("com.github.bumptech.glide:compiler:4.12.0") //4.9.0
 
-// Room components
-    implementation("androidx.room:room-runtime:2.2.0") //2.1.0 => 2.2.0
-    kapt("androidx.room:room-compiler:2.2.0")
-    implementation("androidx.room:room-ktx:2.2.0")
-    implementation("androidx.room:room-rxjava2:2.2.0")
-
+	implementation "androidx.paging:paging-runtime-ktx:3.0.0"
+	// optional - RxJava2 support
+	implementation "androidx.paging:paging-rxjava2:3.0.0"
+	
+	// Room components
+	implementation "androidx.room:room-runtime:2.3.0"
+	kapt "androidx.room:room-compiler:2.3.0"//2.2.0
+	// optional - Kotlin Extensions and Coroutines support for Room
+	implementation "androidx.room:room-ktx:2.3.0"//2.2.0
+	// optional - RxJava2 support for Room
+	implementation "androidx.room:room-rxjava2:2.3.0"//2.2.0    
+    
 // For Kotlin use lifecycle-reactivestreams-ktx
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.1.0")
     implementation("androidx.lifecycle:lifecycle-extensions:2.1.0")
@@ -349,9 +355,18 @@ dependencies {
     implementation ("androidx.navigation:navigation-ui-ktx:2.1.0")
 
 // Kotlin
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.11.1")
+    // implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.11.1") -> due to duplicate error
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.1.1")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.1.1")
+
+//firebase
+    implementation platform("com.google.firebase:firebase-bom:28.2.0")
+    // Declare the dependencies for the Firebase Cloud Messaging and Analytics libraries
+    implementation 'com.google.firebase:firebase-messaging-ktx'
+    // Declare the dependencies for the Analytics library
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+    // Declare the dependencies for the Crashlytics library
+    implementation 'com.google.firebase:firebase-crashlytics-ktx'
 
 // Recurrence Library
     implementation("org.dmfs:rfc5545-datetime:0.2.4")
@@ -402,7 +417,8 @@ configurations {
     }
 }
 apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
-apply plugin: 'com.google.gms.google-services'
-apply plugin: 'com.google.firebase.crashlytics'
+//moved to top
+// apply plugin: 'com.google.firebase.crashlytics'
+// apply plugin: 'com.google.gms.google-services'
 apply from: "../../node_modules/react-native-code-push/android/codepush.gradle"
 googleServices { disableVersionCheck = true }

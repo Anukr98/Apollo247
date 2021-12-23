@@ -1271,6 +1271,22 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'DeliveryIn_TAT_Text_QA',
       PROD: 'DeliveryIn_TAT_Text_PROD',
     },
+    Radiology_Url: {
+      QA: 'QA_Radiology_Url',
+      PROD: 'Radiology_Url',
+    },
+    Diagnostics_Phlebo_Call_Number: {
+      QA: 'QA_Diagnostics_Phlebo_Call_Number',
+      PROD: 'Diagnostics_Phlebo_Call_Number',
+    },
+    Diagnostics_Enable_UploadPrescription_Whatsapp: {
+      QA: 'QA_Diagnostics_UploadPrescription_via_Whatsapp',
+      PROD: 'Diagnostics_UploadPrescription_via_Whatsapp',
+    },
+    Diagnostics_UploadPrescription_Config: {
+      QA: 'QA_Diagnostics_UploadPrescription',
+      PROD: 'Diagnostics_UploadPrescription',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1679,6 +1695,24 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         (key) =>
           JSON.parse(config.getString(key) || 'null') ||
           AppConfig.Configuration.DIAGNOSITCS_WIDGET_TITLES
+      );
+
+      setAppConfig('Radiology_Url', 'RADIOLOGY_URL', (key) => config.getString(key));
+      setAppConfig('Diagnostics_Phlebo_Call_Number', 'DIAGNOSTICS_PHLEBO_CALL_NUMBER', (key) =>
+        config.getString(key)
+      );
+      setAppConfig(
+        'Diagnostics_Enable_UploadPrescription_Whatsapp',
+        'DIAGNOSTICS_ENABLE_UPLOAD_PRESCRIPTION_VIA_WHATSAPP',
+        (key) => config.getBoolean(key)
+      );
+
+      setAppConfig(
+        'Diagnostics_UploadPrescription_Config',
+        'DIAGNOSTICS_UPLOAD_PRESCRIPTION',
+        (key) =>
+          JSON.parse(config.getString(key) || 'null') ||
+          AppConfig.Configuration.DIAGNOSTICS_UPLOAD_PRESCRIPTION
       );
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;

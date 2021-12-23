@@ -171,7 +171,9 @@
     "selectSpeciality": "Select Speciality",
     "apollo247UniversalLink": "www.apollo247.com",
     "apolloPharmacyUniversalLink": "www.apollopharmacy.in",
-    "stagingBlogUrl":"https://stagingpatients.apollo247.com/blog?user_from_device=true"
+    "stagingBlogUrl":"https://stagingpatients.apollo247.com/blog?user_from_device=true",
+    "goBack": "GO BACK",
+    "proceedCta": "PROCEED TO CONNECT"
   },
   "diagnosticsLocation": {
     "savedAddressText": "Saved Addresses",
@@ -216,6 +218,14 @@
     "circleMembership": "Circle Membership",
     "onThisOrder": "on this order.",
     "congratsText": "Congrats! You have successfully purchased the {{duration}} {{months}} (Trial) Circle Plan for {{symbol}}{planPrice}"
+  },
+  "diagnosticsOrders":{
+    "proceedToCancel": "PROCEED TO CANCEL",
+    "proceedToReschedule": "PROCEED TO RESCHEDULE",
+    "cancel":"Cancel",
+    "reschedule":"Reschedule",
+    "noSlot":"Sorry! No Slots are Available",
+    "callPhleboText": "You can call the apollo agent now using the call button"
   },
   "components": {
     "medicineDetails": {
@@ -731,7 +741,20 @@
     "topBookedTests": "Top Booked Tests",
     "similarPackages":"Similar Packages",
     "needToAddPaitent":"• Do you want to edit patient details?",
-    "needToAddOrder":"• Do you want to add tests to your order?"
+    "needToAddOrder":"• Do you want to add tests to your order?",
+    "radiology": "radiology",
+    "prescriptionUploaded": "Prescription Uploaded",
+    "homepagePastOrderRecommendations":"Recommended for You",
+    "phleboConnectCall" : "Connect on a phone call with the Apollo Agent",
+    "phleboFollowSteps" : "Please follow the steps below to connect",
+    "phleboWaitText": "Wait for Apollo Agent to Connect",
+    "phleboPleaseNote": "Please Note: Your personal number would not be shared with the agent",
+    "phleboTextOne": "Answer the call from",
+    "phleboTextTwo": "to connect",
+    "uploadPrescriptionWhatsapp": {
+      "whatsappPhoneNumber":"4048218743",
+      "message": "I want to place a Lab Test Order with prescription"
+    }
   },
   "diagnosticCategoryTitle": {
     "category": "category",

@@ -175,6 +175,12 @@ const styles = StyleSheet.create({
     width: '43%',
     margin: 10,
   },
+  diagnosticCard2Right: {
+    borderRadius: 10,
+    height: 20,
+    width: '23%',
+    margin: 10,
+  },
   diagnosticCard3: {
     borderRadius: 10,
     height: 179,
@@ -360,7 +366,7 @@ const styles = StyleSheet.create({
   },
   itemPrice: {
     ...theme.viewStyles.cardViewStyle,
-    width: '90%',
+    width: '80%',
     marginRight: 5,
     marginTop: 5,
     height: 50,
@@ -1113,7 +1119,7 @@ export const renderDiagnosticWidgetHeadingShimmer = () => {
       <ShimmerPlaceHolder
         LinearGradient={LinearGradient}
         shimmerColors={shimmerColors}
-        shimmerStyle={styles.diagnosticCard2}
+        shimmerStyle={styles.diagnosticCard2Right}
       />
     </View>
   );
@@ -1337,6 +1343,18 @@ export const renderDiagnosticWidgetTestShimmer = (showHeading: boolean) => {
           shimmerStyle={styles.diagnosticsCardBottom1}
         />
       </View>
+    </View>
+  );
+};
+
+export const renderDiagnosticCardShimmer = () => {
+  return (
+    <View style={{ marginLeft: 16 }}>
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.diagnosticsCardBottom}
+      />
     </View>
   );
 };
