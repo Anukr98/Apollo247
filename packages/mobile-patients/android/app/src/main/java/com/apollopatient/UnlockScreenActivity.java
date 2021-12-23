@@ -129,10 +129,10 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
             @Override
             public void onClick(View view) {
                 //screen lock check
-                KeyguardManager myKM = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
-                if(myKM.inKeyguardRestrictedInputMode()) {
+                KeyguardManager keyboardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
+                if(keyboardManager.inKeyguardRestrictedInputMode()) {
                     if (Build.VERSION.SDK_INT >= 26) {
-                        myKM.requestDismissKeyguard(UnlockScreenActivity.this, null);
+                        keyboardManager.requestDismissKeyguard(UnlockScreenActivity.this, null);
                     } else {
                         getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
                     }
