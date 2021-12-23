@@ -242,7 +242,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const [packageRecommendationsShimmer, setPackageRecommendationsShimmer] = useState<boolean>(
     false
   );
-  const originalItemIds = !!packageRecommendations?.length || !!frequentlyBroughtRecommendations?.length ? [itemId!] : null;
+  const originalItemIds =
+    !!packageRecommendations?.length || !!frequentlyBroughtRecommendations?.length
+      ? [itemId!]
+      : null;
   const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
   const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
   const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
@@ -831,10 +834,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         isDiagnosticCircleSubscription,
         originalItemIds,
         originalItemIds
-        ? packageRecommendations > 2
-          ? 'Recommendations'
-          : 'You can also order'
-        : '',
+          ? packageRecommendations > 2
+            ? 'Recommendations'
+            : 'You can also order'
+          : ''
       );
     }
   }, [testInfo]);
@@ -1280,10 +1283,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       <>
         <View style={{ width: '75%' }}>
           <Text style={styles.itemNameText}>
-            {testName ||
-              testDetails?.ItemName ||
-              cmsTestDetails?.diagnosticItemName ||
-              testInfo?.itemName}
+            {testDetails?.ItemName || cmsTestDetails?.diagnosticItemName || testInfo?.itemName}
           </Text>
           {renderAliasName()}
         </View>
