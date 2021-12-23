@@ -358,7 +358,13 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   const renderSlotSelectionView = () => {
     const distanceCharges = overallDistanceCharge;
     return (
-      <View style={[styles.slotsView,{height: distanceCharges > 0 && !props.isReschdedule ? '65%' : '75%' }]}>
+      <View
+        style={[
+          styles.slotsView,
+          { height: distanceCharges > 0 && !props.isReschdedule ? '65%' : '75%' },
+          !isReschdedule && { paddingBottom: 30 },
+        ]}
+      >
         <View style={styles.dayPhaseContainer}>
           {dayPhaseArray?.map((item, index) => (
             <TouchableOpacity
@@ -387,7 +393,12 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
             </TouchableOpacity>
           ))}
         </View>
-        <View style={[styles.slotsList,{height: distanceCharges > 0 && !props.isReschdedule ? '80%' : '90%' }]}>
+        <View
+          style={[
+            styles.slotsList,
+            { height: distanceCharges > 0 && !props.isReschdedule ? '80%' : '90%' },
+          ]}
+        >
           {!!overallSlotsArray && overallSlotsArray?.length != 0 ? (
             <FlatList
               bounces={false}
@@ -435,9 +446,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
         style={[
           styles.dateContentStyle,
           {
-            backgroundColor: isSelected
-              ? theme.colors.APP_GREEN
-              : theme.colors.SLOT_GRAY,
+            backgroundColor: isSelected ? theme.colors.APP_GREEN : theme.colors.SLOT_GRAY,
           },
         ]}
       >
@@ -806,8 +815,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  slotsList: { marginBottom: 20, marginTop: 10, backgroundColor: 'white' },
-  slotsView: { marginBottom: 30, paddingBottom: 30 },
+  slotsList: { marginBottom: 20, marginTop: 10, backgroundColor: colors.WHITE },
+  slotsView: { marginBottom: 30, flex: 1 },
 });
 
 TestSlotSelectionOverlayNew.defaultProps = {
