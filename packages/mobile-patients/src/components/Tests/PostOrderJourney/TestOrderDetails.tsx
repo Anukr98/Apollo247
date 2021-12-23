@@ -22,6 +22,7 @@ import {
   DIAGNOSTIC_SAMPLE_COLLECTED_STATUS,
   DIAGNOSTIC_SUB_STATUS_TO_SHOW,
   DIAGNOSTIC_FAILURE_STATUS_ARRAY,
+  DIAGNOSTIC_ORDER_CANCELLED_STATUS,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
   GetPatientFeedback,
@@ -215,7 +216,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     } else {
       callOrderLevelStatusApi(orderId);
       callOrderDetailsApi(orderId);
-      console.log({ selectedOrder });
       !!selectedOrder?.paymentOrderId &&
         isPrepaid &&
         callGetOrderInternal(selectedOrder?.paymentOrderId); //for getting the circle membership in case of prepaid
@@ -546,7 +546,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         ? orderLevelStatus?.statusHistory.concat(orderLevelStatus?.upcomingStatuses)
         : orderLevelStatus?.statusHistory;
     scrollToSlots();
-
     return (
       <View>
         <View style={{ margin: 20 }}>
@@ -583,11 +582,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
               order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_MODIFIED &&
               DIAGNOSTIC_SUB_STATUS_TO_SHOW?.includes(order?.subStatus!);
 
-            const slotDate = moment(selectedOrder?.slotDateTimeInUTC).format('Do MMM');
-            const slotTime1 = moment(selectedOrder?.slotDateTimeInUTC).format('hh:mm A');
-            const slotTime2 = moment(selectedOrder?.slotDateTimeInUTC)
-              .add(slotDuration, 'minutes')
-              .format('hh:mm A');
             return (
               <>
                 {!!showStatus && showStatus ? (
@@ -711,7 +705,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     if (orderStatus === DIAGNOSTIC_ORDER_STATUS.REFUND_INITIATED) {
       return renderPartialOrder(order, index);
     }
-    if (orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED) {
+    if (DIAGNOSTIC_ORDER_CANCELLED_STATUS.includes(orderStatus)) {
       return renderOrderCancelledView(order, index);
     }
   }

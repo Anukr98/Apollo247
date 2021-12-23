@@ -21,35 +21,39 @@ interface StatusCardProps {
 
 export const StatusCard: React.FC<StatusCardProps> = (props) => {
   return (
-    <View
-      style={[
-        styles.container,
-        props.containerStyle,
-        {
-          backgroundColor: DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.includes(props.titleText)
-            ? colors.COMPLETE_STATUS_BGK
-            : DIAGNOSTIC_FAILURE_STATUS_ARRAY.includes(props.titleText)
-            ? colors.FAILURE_STATUS_BGK
-            : colors.INTERMITTENT_STATUS_BGK,
-        },
-      ]}
-    >
-      <Text
-        style={[
-          styles.titleStyle,
-          props.titleStyle,
-          {
-            color: DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.includes(props.titleText)
-              ? colors.COMPLETE_STATUS_TEXT
-              : DIAGNOSTIC_FAILURE_STATUS_ARRAY.includes(props.titleText)
-              ? colors.FAILURE_STATUS_TEXT
-              : colors.SHERPA_BLUE,
-          },
-        ]}
-      >
-        {nameFormater(getTestOrderStatusText(props.titleText!, props.customText), 'title')}
-      </Text>
-    </View>
+    <>
+      {getTestOrderStatusText(props.titleText!, props.customText) == '' ? null : (
+        <View
+          style={[
+            styles.container,
+            props.containerStyle,
+            {
+              backgroundColor: DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.includes(props.titleText)
+                ? colors.COMPLETE_STATUS_BGK
+                : DIAGNOSTIC_FAILURE_STATUS_ARRAY.includes(props.titleText)
+                ? colors.FAILURE_STATUS_BGK
+                : colors.INTERMITTENT_STATUS_BGK,
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.titleStyle,
+              props.titleStyle,
+              {
+                color: DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.includes(props.titleText)
+                  ? colors.COMPLETE_STATUS_TEXT
+                  : DIAGNOSTIC_FAILURE_STATUS_ARRAY.includes(props.titleText)
+                  ? colors.FAILURE_STATUS_TEXT
+                  : colors.SHERPA_BLUE,
+              },
+            ]}
+          >
+            {nameFormater(getTestOrderStatusText(props.titleText!, props.customText), 'title')}
+          </Text>
+        </View>
+      )}
+    </>
   );
 };
 

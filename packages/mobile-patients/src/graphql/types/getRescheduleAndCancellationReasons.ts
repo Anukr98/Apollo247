@@ -7,10 +7,17 @@
 // GraphQL query operation: getRescheduleAndCancellationReasons
 // ====================================================
 
+export interface getRescheduleAndCancellationReasons_getRescheduleAndCancellationReasons_cancellationReasonsv2 {
+  __typename: "CancellationReason";
+  reason: string | null;
+  isDirectCancellation: boolean | null;
+}
+
 export interface getRescheduleAndCancellationReasons_getRescheduleAndCancellationReasons {
   __typename: "rescheduleAndCancellationReasons";
   rescheduleReasons: (string | null)[] | null;
   cancellationReasons: (string | null)[] | null;
+  cancellationReasonsv2: (getRescheduleAndCancellationReasons_getRescheduleAndCancellationReasons_cancellationReasonsv2 | null)[] | null;
 }
 
 export interface getRescheduleAndCancellationReasons {

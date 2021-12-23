@@ -153,6 +153,7 @@ export enum DIAGNOSTIC_ORDER_PAYMENT_TYPE {
 }
 
 export enum DIAGNOSTIC_ORDER_STATUS {
+  CANCELLATION_REQUESTED = "CANCELLATION_REQUESTED",
   ORDER_CANCELLED = "ORDER_CANCELLED",
   ORDER_CANCELLED_REQUEST = "ORDER_CANCELLED_REQUEST",
   ORDER_COMPLETED = "ORDER_COMPLETED",
@@ -1124,6 +1125,7 @@ export interface CancellationDiagnosticsInputv2 {
   orderIds: (string | null)[];
   patientId: string;
   reason: string;
+  allowCancellationRequest?: boolean | null;
 }
 
 export interface ChargeDetailsInput {

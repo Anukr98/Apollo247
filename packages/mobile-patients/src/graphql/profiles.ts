@@ -6182,6 +6182,10 @@ export const GET_RESCHEDULE_AND_CANCELLATION_REASONS = gql`
     getRescheduleAndCancellationReasons(appointmentDateTimeInUTC: $appointmentDateTimeInUTC) {
       rescheduleReasons
       cancellationReasons
+      cancellationReasonsv2{
+        reason
+        isDirectCancellation
+      }
     }
   }
 `;
