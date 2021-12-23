@@ -722,7 +722,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
         {renderHeading('Payment Mode')}
         <View style={styles.orderSummaryView}>
           {renderPrices(txtToShow, orderDetails?.totalPrice, false)}
-          {getOffersResponse?.map((item) => renderOffers(item))}
+          {!!getOffersResponse && getOffersResponse?.map((item) => renderOffers(item))}
           {!!refundText && renderPrices(refundText, refundAmountToShow, false)}
         </View>
       </View>

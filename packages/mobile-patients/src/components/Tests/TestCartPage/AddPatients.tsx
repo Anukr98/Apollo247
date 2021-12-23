@@ -909,9 +909,12 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
 
     return (
       <View
-        style={[styles.itemStyleView, {
-          marginBottom: index === patientListToShow?.length - 1 ? 16 : 0,
-        }]}
+        style={[
+          styles.itemStyleView,
+          {
+            marginBottom: index === patientListToShow?.length - 1 ? 16 : 0,
+          },
+        ]}
       >
         <TouchableOpacity
           activeOpacity={1}
@@ -1153,7 +1156,7 @@ const styles = StyleSheet.create({
   },
   patientNameTextStyle: {
     ...text('SB', 14, SHERPA_BLUE, 1, 19, 0),
-    width: '75%',
+    width: '72%',
   },
   genderAgeTextStyle: {
     ...text('M', 12, SHERPA_BLUE, 1, 15.6, -0.36),
@@ -1177,7 +1180,6 @@ const styles = StyleSheet.create({
     borderStyle: 'solid',
     overflow: 'hidden',
     marginTop: -10,
-    paddingTop: 10,
   },
   patientSelectTouch: {
     flexDirection: 'row',

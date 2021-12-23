@@ -197,15 +197,18 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
         const primaryOrderID = getResponse?.ordersList?.[0]?.primaryOrderID;
         const slotDuration =
           getResponse?.ordersList?.[0]?.attributesObj?.slotDurationInMinutes || 0;
-        const getOffersAmount = getOffersResponse?.[0]?.benefits;
-        const totalOfferAmount = getOffersAmount?.reduce(
-          (prev: any, curr: any) => prev + curr?.amount,
-          0
-        );
+        if (!!getOffersResponse) {
+          const getOffersAmount = getOffersResponse?.[0]?.benefits;
+          const totalOfferAmount = getOffersAmount?.reduce(
+            (prev: any, curr: any) => prev + curr?.amount,
+            0
+          );
+          !!totalOfferAmount && setOfferAmount(totalOfferAmount);
+        }
+
         setApiOrderDetails([getResponse]);
         setTimeDate(getSlotDateTime);
         setSlotDuration(slotDuration);
-        setOfferAmount(totalOfferAmount);
         setIsSingleUhid(getResponse?.ordersList?.length == 1); //getResponse?.ordersList?.[0]?.length
         if (primaryOrderID) {
           setPrimaryOrderId(primaryOrderID);
