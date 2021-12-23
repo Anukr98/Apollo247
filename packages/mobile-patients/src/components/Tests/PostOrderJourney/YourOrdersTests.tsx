@@ -1165,7 +1165,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             title={'RESCHEDULE NOW'}
             style={styles.buttonStyle}
             disabled={selectRescheduleReason == ''}
-            onPress={() => _onPressRescheduleNow()}
+            onPress={() => _onPressRescheduleNow('directReschedule')}
           />
         </View>
       </View>
@@ -1242,7 +1242,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                         <Text style={styles.wantToReschedule}>
                           {string.diagnostics.wantToReschedule}
                         </Text>
-                        <TouchableOpacity activeOpacity={1} onPress={() => _onPressRescheduleNow()}>
+                        <TouchableOpacity
+                          activeOpacity={1}
+                          onPress={() => _onPressRescheduleNow('cancelReschedule')}
+                        >
                           <Text style={styles.yellowText}>RESCHEDULE NOW</Text>
                         </TouchableOpacity>
                       </View>
@@ -1452,7 +1455,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   }
 
   function _onPressRescheduleNow() {
-    if (isMultiUhid) {
+    if (isMultiUhid && source == 'cancelReschedule') {
       callMultiUhidApi(string.diagnosticsOrders.cancel);
     } else {
       _proceedWithReschedule();

@@ -1289,9 +1289,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           : []
       );
 
-      const nonInclusionParamters = cmsTestDetails?.diagnosticInclusionName?.filter(
-        (item: any) => !!item && !item?.TestObservation
-      );
+    const nonInclusionParamters = cmsTestDetails?.diagnosticInclusionName?.filter(
+      (item: any) => !!item && !item?.TestObservation
+    );
 
     const getMandatoryParameterCount =
       !!getMandatoryParamter &&
@@ -1301,10 +1301,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       <>
         <View style={{ width: '75%' }}>
           <Text style={styles.itemNameText}>
-            {testName ||
-              testDetails?.ItemName ||
-              cmsTestDetails?.diagnosticItemName ||
-              testInfo?.itemName}
+            {testDetails?.ItemName || cmsTestDetails?.diagnosticItemName || testInfo?.itemName}
           </Text>
           {renderAliasName()}
         </View>
@@ -1317,7 +1314,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           {isInclusionPrsent ? (
             <Text style={styles.testIncludedText}>
               Total tests included :{' '}
-              {getMandatoryParameterCount + nonInclusionParamters?.length || cmsTestDetails?.diagnosticInclusionName?.length}
+              {getMandatoryParameterCount + nonInclusionParamters?.length ||
+                cmsTestDetails?.diagnosticInclusionName?.length}
             </Text>
           ) : null}
           {isInclusionPrsent &&

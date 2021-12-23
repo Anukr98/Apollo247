@@ -717,13 +717,31 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       : refundDetails?.[0]?.amount;
 
     const getOffersResponse = orderDetails?.diagnosticOrderTransactions;
+    const getTotalEffectivePrice = !!getOffersResponse
+      ? getOffersResponse
+          ?.map((diag) => diag?.effectivePrepaidAmount)
+          ?.reduce((curr, prev) => prev! + curr!, 0)
+      : 0;
+
+    const getTotalPrepaidPrice = !!getOffersResponse
+      ? getOffersResponse
+          ?.map((diag) => diag?.prepaidAmount)
+          ?.reduce((curr, prev) => prev! + curr!, 0)
+      : orderDetails?.totalPrice;
+
+    const offerAmountSplit = getTotalPrepaidPrice! - getTotalEffectivePrice!;
 
     return (
       <View>
         {renderHeading('Payment Mode')}
         <View style={styles.orderSummaryView}>
-          {renderPrices(txtToShow, orderDetails?.totalPrice, false)}
-          {!!getOffersResponse && getOffersResponse?.map((item) => renderOffers(item))}
+          {renderPrices(
+            txtToShow,
+            !!getOffersResponse ? getTotalEffectivePrice! : orderDetails?.totalPrice,
+            false
+          )}
+          {!!getOffersResponse &&
+            getOffersResponse?.map((item) => renderOffers(item, offerAmountSplit))}
           {!!refundText && renderPrices(refundText, refundAmountToShow, false)}
         </View>
       </View>
@@ -732,19 +750,14 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
 
   function getOffersDetails(transaction: any) {
     const offersDetails = transaction?.offers?.[0]?.offer_description?.title;
-    const offersAmount = transaction?.offers?.[0]?.benefits?.reduce(
-      (prev: any, curr: any) => prev + curr?.amount,
-      0
-    );
     return {
-      offersAmount,
       offersDetails,
     };
   }
 
-  const renderOffers = (transaction: any) => {
-    const { offersAmount, offersDetails } = getOffersDetails(transaction);
-    return <View>{renderPrices(offersDetails, offersAmount, false)}</View>;
+  const renderOffers = (transaction: any, offerAmount: number) => {
+    const { offersDetails } = getOffersDetails(transaction);
+    return <View>{renderPrices(offersDetails, offerAmount, false)}</View>;
   };
 
   const renderAddPassportView = () => {
