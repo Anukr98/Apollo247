@@ -768,7 +768,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Patient Gender': g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Doctor ID': g(doctorDetails, 'id')!,
-      'Doctor Name': g(doctorDetails, 'fullName')!,
+      'Doctor Name': g(doctorDetails, 'displayName')!,
       'Speciality Name': g(doctorDetails, 'specialty', 'name')!,
       'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
       'Media Source': mediaSource,
@@ -788,7 +788,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Patient gender': g(currentPatient, 'gender'),
       'Mobile number': g(currentPatient, 'mobileNumber'),
       'Doctor ID': g(doctorDetails, 'id')!,
-      'Doctor name': g(doctorDetails, 'fullName')!,
+      'Doctor name': g(doctorDetails, 'displayName')!,
       'Speciality name': g(doctorDetails, 'specialty', 'name')!,
       'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
       Experience: String(doctorDetails?.experience) || '',
@@ -835,7 +835,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         ),
         'Patient gender': g(currentPatient, 'gender'),
         doctorId: g(doctorDetails, 'id')!,
-        doctorName: g(doctorDetails, 'fullName')!,
+        doctorName: g(doctorDetails, 'displayName')!,
         specialtyName: g(doctorDetails, 'specialty', 'name')! || undefined,
         specialtyId: g(doctorDetails, 'specialty', 'id')! || undefined,
         User_Type: getUserType(allCurrentPatients),
@@ -902,7 +902,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         isOnlineSelected={onlineSelected}
         DoctorId={doctorId}
         chatDays={chatDays}
-        DoctorName={doctorDetails ? doctorDetails.fullName : ''}
+        DoctorName={doctorDetails ? doctorDetails?.displayName : ''}
         nextAppointemntOnlineTime={availableTime}
         nextAppointemntInPresonTime={physicalAvailableTime}
         circleDoctorDetails={circleDoctorDetails}
@@ -1051,7 +1051,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Patient Gender': g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Doctor ID': g(doctorDetails, 'id')!,
-      'Doctor Name': g(doctorDetails, 'fullName')!,
+      'Doctor Name': g(doctorDetails, 'displayName')!,
       'Speciality Name': g(doctorDetails, 'specialty', 'name')!,
       'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
       Source: 'Doctor profile',
@@ -1094,7 +1094,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           {doctorDetails && (
             <View style={styles.detailsViewStyle}>
               <View style={styles.doctorNameViewStyle}>
-                <Text style={styles.doctorNameStyles}>{doctorDetails.fullName}</Text>
+                <Text style={styles.doctorNameStyles}>{doctorDetails?.displayName}</Text>
                 <TouchableOpacity
                   activeOpacity={1}
                   onPress={() => onClickDoctorShare()}
@@ -1408,7 +1408,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           <View style={styles.cardView}>
             <View style={styles.labelView}>
               <Text style={styles.labelStyle}>
-                {doctorDetails.fullName}’s location for physical visits
+                {doctorDetails?.displayName}’s location for physical visits
               </Text>
             </View>
             <FlatList
@@ -1575,7 +1575,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       return (
         <View style={styles.cardView}>
           <View style={styles.labelView}>
-            <Text style={styles.labelStyle}>{doctorDetails.fullName}’s Team</Text>
+            <Text style={styles.labelStyle}>{doctorDetails?.displayName}’s Team</Text>
             <Text style={styles.labelStyle}>
               {doctorDetails.starTeam.length}
               {doctorDetails.starTeam.length == 1 ? ' Doctor' : ' Doctors'}
@@ -1729,7 +1729,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       }
     );
     const eventAttributes: WebEngageEvents[WebEngageEventName.BOOK_APPOINTMENT] = {
-      'Doctor Name': g(doctorDetails, 'fullName')!,
+      'Doctor Name': g(doctorDetails, 'displayName')!,
       'Doctor City': g(doctorDetails, 'city')!,
       'Type of Doctor': g(doctorDetails, 'doctorType')!,
       'Doctor Specialty': g(doctorDetails, 'specialty', 'name')!,
@@ -1761,7 +1761,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     };
     postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED] = {
-      'Doctor name': g(doctorDetails, 'fullName')! || undefined,
+      'Doctor name': g(doctorDetails, 'displayName')! || undefined,
       Source: 'doctor profile',
       'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
@@ -1811,7 +1811,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_TYPE_SELECTION] = {
       'Consult Type': consultType,
       'Doctor ID': doctorId,
-      'Doctor Name': doctorDetails?.fullName || '',
+      'Doctor Name': doctorDetails?.displayName || '',
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
@@ -1872,7 +1872,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Screen type': 'Doctor Detail Page',
       'Patient Number': currentPatient?.mobileNumber,
       'Doctor ID': doctorDetails?.id,
-      'Doctor Name': doctorDetails?.fullName || '',
+      'Doctor Name': doctorDetails?.displayName || '',
       'Doctor Type': doctorDetails?.doctorType,
       'Doctor Hospital Id': id || '',
       'Doctor Hospital Name': name || '',

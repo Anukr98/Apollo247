@@ -381,7 +381,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           return item.facility.facilityType === 'HOSPITAL';
       });
       const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_SLOT_SELECTED] = {
-        doctorName: g(props.doctor, 'fullName')!,
+        doctorName: g(props.doctor, 'displayName')!,
         specialisation: g(props.doctor, 'specialty', 'name')!,
         experience: Number(g(props.doctor, 'experience')!),
         'language known': g(props.doctor, 'languages')! || 'NA',
@@ -398,7 +398,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
 
   const postProceedClickedCleverTapEvents = () => {
     const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION] = {
-      'Doctor name': g(props.doctor, 'fullName')!,
+      'Doctor name': g(props.doctor, 'displayName')!,
       'Speciality name': g(props.doctor, 'specialty', 'name')!,
       Experience: Number(g(props.doctor, 'experience')!),
       Languages: g(props.doctor, 'languages')! || 'NA',

@@ -88,7 +88,7 @@ export const EarnedPoints: React.FC<EarnedPointsProps> = (props) => {
         <Header
           leftIcon="backArrow"
           title="Refer & Earn"
-          onPressLeftIcon={() => navigation.replace('ConsultRoom')}
+          onPressLeftIcon={() => navigation.replace('HomeScreen')}
           container={{
             borderColor: 'transparent',
           }}

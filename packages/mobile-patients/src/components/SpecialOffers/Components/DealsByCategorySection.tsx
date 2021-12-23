@@ -19,7 +19,7 @@ export interface DealsByCategoryProps extends NavigationScreenProps<{}> {
 }
 
 export const DealsByCategorySection: React.FC<DealsByCategoryProps> = (props) => {
-  const categoryData = props.categoryData;
+  const categoryData = props?.categoryData;
   const title = 'DEALS BY CATEGORY';
 
   const onPressImage = (id: number, title: string) => {

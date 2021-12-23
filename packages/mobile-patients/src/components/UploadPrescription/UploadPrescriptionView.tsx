@@ -62,6 +62,7 @@ import {
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { postCleverTapUploadPrescriptionEvents } from '@aph/mobile-patients/src/components/UploadPrescription/Events';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 const { width, height } = Dimensions.get('window');
 
@@ -213,16 +214,18 @@ const styles = StyleSheet.create({
 });
 
 export interface UploadPrescriptionViewProps extends NavigationScreenProps {
-  phyPrescriptionUploaded: PhysicalPrescription[];
-  ePresscriptionUploaded: EPrescription[];
+  phyPrescriptionUploaded?: PhysicalPrescription[];
+  ePresscriptionUploaded?: EPrescription[];
 }
 
 const MAX_FILE_SIZE = 25000000; // ~25MB
 
 export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (props) => {
-  const phyPrescriptionUploaded = props.navigation.getParam('phyPrescriptionUploaded') || [];
-  const ePresscriptionUploaded = props.navigation.getParam('ePresscriptionUploaded') || [];
-  const { ePrescriptions } = useShoppingCart();
+  const { cartPrescriptions, serverCartLoading } = useShoppingCart();
+  const {
+    uploadPhysicalPrescriptionsToServerCart,
+    uploadEPrescriptionsToServerCart,
+  } = useServerCart();
   const [photoBase64, setPhotoBase64] = useState<string>('');
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [isFocused, setIsFocused] = useState<boolean>(false);
@@ -312,10 +315,9 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
             onPress={() => {
               removeClickedPhoto();
               postCleverTapUploadPrescriptionEvents('Camera', 'Non-Cart');
+              uploadPhysicalPrescriptionsToServerCart(imageClickData);
               props.navigation.navigate(AppRoutes.UploadPrescription, {
                 type: 'Camera',
-                phyPrescriptionsProp: [...phyPrescriptionUploaded, ...imageClickData],
-                ePrescriptionsProp: ePresscriptionUploaded,
                 source: 'UploadPrescription',
               });
             }}
@@ -553,10 +555,9 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
       );
       setShowSpinner(false);
       postCleverTapUploadPrescriptionEvents('Gallery', 'Non-Cart');
+      uploadPhysicalPrescriptionsToServerCart(documentData);
       props.navigation.navigate(AppRoutes.UploadPrescription, {
         type: 'Gallery',
-        phyPrescriptionsProp: [...phyPrescriptionUploaded, ...documentData],
-        ePrescriptionsProp: ePresscriptionUploaded,
         source: 'UploadPrescription',
       });
     } catch (e) {
@@ -598,10 +599,9 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
         }
         const uploadedImages = formatResponse(images);
         postCleverTapUploadPrescriptionEvents('Gallery', 'Non-Cart');
+        uploadPhysicalPrescriptionsToServerCart(uploadedImages);
         props.navigation.navigate(AppRoutes.UploadPrescription, {
           type: 'Gallery',
-          phyPrescriptionsProp: [...phyPrescriptionUploaded, ...uploadedImages],
-          ePrescriptionsProp: ePresscriptionUploaded,
           source: 'UploadPrescription',
         });
       })
@@ -638,15 +638,14 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           if (selectedEPres.length == 0) {
             return;
           }
+          uploadEPrescriptionsToServerCart(selectedEPres);
           postCleverTapUploadPrescriptionEvents('My Prescription', 'Non-Cart');
           props.navigation.navigate(AppRoutes.UploadPrescription, {
             type: 'E-Prescription',
-            ePrescriptionsProp: [...ePresscriptionUploaded, ...selectedEPres],
-            phyPrescriptionsProp: phyPrescriptionUploaded,
             source: 'UploadPrescription',
           });
         }}
-        selectedEprescriptionIds={ePrescriptions.map((item) => item.id)}
+        selectedEprescriptionIds={cartPrescriptions?.map((item) => item?.prismPrescriptionFileId)}
         isVisible={isSelectPrescriptionVisible}
       />
     );
@@ -659,7 +658,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           title={'UPLOAD PRESCRIPTION'}
           leftIcon="backArrow"
           container={{ ...theme.viewStyles.shadowStyle, zIndex: 1 }}
-          onPressLeftIcon={() => props.navigation.goBack()}
+          onPressLeftIcon={() => props.navigation.navigate('MEDICINES')}
         />
         {!!photoBase64 && renderInstructions()}
         <ScrollView bounces={false} contentContainerStyle={{ paddingBottom: 20 }}>
@@ -691,7 +690,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
             }}
           />
         </ScrollView>
-        {showSpinner && <Spinner />}
+        {(showSpinner || serverCartLoading) && <Spinner />}
       </SafeAreaView>
     </View>
   );
