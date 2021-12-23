@@ -128,6 +128,15 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
         acceptCallBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
+                //screen lock check
+                KeyguardManager myKM = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
+                if(myKM.inKeyguardRestrictedInputMode()) {
+                    if (Build.VERSION.SDK_INT >= 26) {
+                        myKM.requestDismissKeyguard(UnlockScreenActivity.this, null);
+                    } else {
+                        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+                    }
+                }
                 WritableMap params = Arguments.createMap();
                 params.putBoolean("done", true);
                 params.putString("appointment_id", appointment_id);
