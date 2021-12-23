@@ -1172,8 +1172,8 @@ const styles = StyleSheet.create({
   },
   symptomDetail: {
     backgroundColor: theme.colors.WHITE,
-    ...theme.viewStyles.text('R', 14, theme.colors.LIGHT_BLUE, 1, 16),
-    paddingVertical: 10,
+    ...theme.viewStyles.text('B', 14, theme.colors.LIGHT_BLUE, 1, 16),
+    paddingVertical: 4,
     paddingStart: 14,
     flexWrap: 'wrap',
   },
@@ -1205,6 +1205,11 @@ const styles = StyleSheet.create({
     paddingBottom: 22,
     marginTop: 40,
     marginEnd: 30,
+  },
+  symptomValue: {
+    ...theme.viewStyles.text('R', 14, theme.colors.LIGHT_BLUE, 1, 16),
+    flexShrink: 1,
+    flexWrap: 'wrap',
   },
 });
 
@@ -5815,27 +5820,89 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       leftComponent = 0;
       rightComponent++;
       if (rowData?.automatedText == chatBotPatientVitalsSummary) {
+        const finalSummary = JSON.parse(rowData?.message);
         return (
           <View style={styles.assignmentParentView}>
             <View style={styles.assessmentView}>
               <Text style={styles.assessmentHeading}>{string.common.assessmentSummary}</Text>
             </View>
-            {JSON.parse(rowData?.message)?.map((item: any) => {
+            {finalSummary?.[0]?.staticQuestions && (
+              <>
+                <Text style={styles.symptomDetail}>
+                  Age:{' '}
+                  <Text style={styles.symptomValue}>{`${finalSummary?.[0]?.staticQuestions?.age ||
+                    ''}`}</Text>
+                </Text>
+                <Text style={styles.symptomDetail}>
+                  Height:{' '}
+                  <Text style={styles.symptomValue}>{`${finalSummary?.[0]?.staticQuestions
+                    ?.Height || ''}`}</Text>
+                </Text>
+                <Text style={styles.symptomDetail}>
+                  Weight:{' '}
+                  <Text style={styles.symptomValue}>{`${finalSummary?.[0]?.staticQuestions
+                    ?.Weight || ''}`}</Text>
+                </Text>
+                {finalSummary?.[0]?.staticQuestions?.medicineAllergies?.length ? (
+                  <Text style={styles.symptomDetail}>
+                    Medicine Allergies:{' '}
+                    <Text style={styles.symptomValue}>{`${finalSummary?.[0]?.staticQuestions
+                      ?.medicineAllergies || ''}`}</Text>
+                  </Text>
+                ) : (
+                  ''
+                )}
+                {finalSummary?.[0]?.staticQuestions?.foodAllergies?.length ? (
+                  <Text style={styles.symptomDetail}>
+                    Food Allergies:{' '}
+                    <Text style={styles.symptomValue}>{`${finalSummary?.[0]?.staticQuestions
+                      ?.foodAllergies || ''}`}</Text>
+                  </Text>
+                ) : (
+                  ''
+                )}
+              </>
+            )}
+            {finalSummary?.[0]?.dynamicQuestions?.map((item: any) => {
               return (
                 <View>
                   <Text style={styles.symptomName}>{item?.symptom || ''}</Text>
-                  {!!item?.staticValue && (
-                    <Text style={styles.symptomDetail}>{item?.staticValue}</Text>
-                  )}
                   {!!item?.since && (
-                    <Text style={styles.symptomDetail}>{`Duration- ${item?.since}`} </Text>
+                    <Text style={styles.symptomDetail}>
+                      Duration: <Text style={styles.symptomValue}>{`${item.since}`}</Text>
+                    </Text>
                   )}
+
                   {!!item?.severity && (
-                    <Text style={styles.symptomDetail}>{`Severity- ${item?.severity}`} </Text>
+                    <Text style={styles.symptomDetail}>
+                      Severity: <Text style={styles.symptomValue}>{`${item.severity}`}</Text>
+                    </Text>
                   )}
+
                   {!!item?.howOften && (
-                    <Text style={styles.symptomDetail}>{`Course- ${item?.howOften}`} </Text>
+                    <Text style={styles.symptomDetail}>
+                      HowOften: <Text style={styles.symptomValue}>{`${item.howOften}`}</Text>
+                    </Text>
                   )}
+
+                  {!!item?.details &&
+                    !!Object.keys(item.details).length &&
+                    Object.entries(item?.details).map(([key, value]: any) => {
+                      return (
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <Text style={styles.symptomDetail}>{`${key}: `}</Text>
+                          {Array.isArray(value) ? (
+                            <View style={{ flexDirection: 'column' }}>
+                              {value?.map((detailsItem: any, j: number) => {
+                                return <Text style={styles.symptomValue}>{detailsItem}</Text>;
+                              })}
+                            </View>
+                          ) : (
+                            <Text style={styles.symptomValue}>{`${value?.join()}`}</Text>
+                          )}
+                        </View>
+                      );
+                    })}
                 </View>
               );
             })}
@@ -7845,7 +7912,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           </View>
         ) : null}
         {renderChatView()}
-        {displayChatQuestions ? null : Platform.OS == 'ios' ? (
+        {Platform.OS == 'ios' ? (
           <>
             {!displayChatQuestions ? (
               <TouchableOpacity
