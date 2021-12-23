@@ -362,6 +362,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
         style={[
           styles.slotsView,
           { height: distanceCharges > 0 && !props.isReschdedule ? '65%' : '75%' },
+          !isReschdedule && { paddingBottom: 30 },
         ]}
       >
         <View style={styles.dayPhaseContainer}>
@@ -814,8 +815,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  slotsList: { marginBottom: 20, marginTop: 10, backgroundColor: 'white' },
-  slotsView: { marginBottom: 30, paddingBottom: 30, flex: 1 },
+  slotsList: { marginBottom: 20, marginTop: 10, backgroundColor: colors.WHITE },
+  slotsView: { marginBottom: 30, flex: 1 },
 });
 
 TestSlotSelectionOverlayNew.defaultProps = {
