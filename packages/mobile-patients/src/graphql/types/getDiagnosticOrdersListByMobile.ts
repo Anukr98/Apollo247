@@ -213,6 +213,7 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   __typename: "DiagnosticOrdersResultMemberDetails";
   ordersList: (getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList | null)[] | null;
   ordersCount: number | null;
+  cancellationRequestedDisplayText: string | null;
   membersDetails: (getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_membersDetails | null)[] | null;
 }
 

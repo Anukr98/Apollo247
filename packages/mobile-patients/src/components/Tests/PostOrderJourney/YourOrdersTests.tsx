@@ -172,8 +172,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [slots, setSlots] = useState<TestSlot[]>([]);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<TestSlot>();
   const [todaySlotNotAvailable, setTodaySlotNotAvailable] = useState<boolean>(false);
-
-  //new reschedule.
+  const [cancelRequestedReason, setCancelRequestedReason] = useState<string>('');
   const [showBottomOverlay, setShowBottomOverlay] = useState<boolean>(false);
   const [showRescheduleOptions, setShowRescheduleOptions] = useState<boolean>(false);
   const [selectRescheduleOption, setSelectRescheduleOption] = useState<boolean>(true);
@@ -311,7 +310,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         })
         .then((data) => {
           const ordersList = data?.data?.getDiagnosticOrdersListByMobile?.ordersList || [];
+          const requestedCancelReason =
+            data?.data?.getDiagnosticOrdersListByMobile?.cancellationRequestedDisplayText;
           setOrderListData(ordersList);
+          setCancelRequestedReason(requestedCancelReason!);
           if (currentOffset == 1) {
             setResultList(ordersList);
           } else {
@@ -1737,6 +1739,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           index < orders?.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },
           index == 0 ? { marginTop: 20 } : {},
         ]}
+        cancelRequestedReason={cancelRequestedReason}
       />
     );
   };

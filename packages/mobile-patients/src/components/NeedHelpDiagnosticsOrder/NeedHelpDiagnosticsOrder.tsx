@@ -109,6 +109,7 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
   const [onPressIssue, setOnPressIssue] = useState<string>('');
   const [currentOffset, setCurrentOffset] = useState<number>(1);
   const [orderListData, setOrderListData] = useState<(orderListByMobile | null)[] | null>([]);
+  const [cancelRequestedReason, setCancelRequestedReason] = useState<string>('');
   const [resultList, setResultList] = useState<(orderListByMobile | null)[] | null>([]);
   const medicineOrderStatus = navigation.getParam('medicineOrderStatus');
   const { saveNeedHelpQuery, getQueryData, getQueryDataByOrderStatus } = Helpers;
@@ -168,12 +169,15 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
   useEffect(() => {
     fetchOrders();
   }, []);
+
   useEffect(() => {
     fetchOrders();
   }, [currentOffset]);
+
   useEffect(() => {
     setOrders(resultList);
   }, [resultList]);
+
   const fetchOrders = async () => {
     try {
       setLoading?.(true);
@@ -193,7 +197,10 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
         })
         .then((data) => {
           const ordersList = data?.data?.getDiagnosticOrdersListByMobile?.ordersList || [];
+          const requestedCancelReason =
+            data?.data?.getDiagnosticOrdersListByMobile?.cancellationRequestedDisplayText;
           setOrderListData(ordersList);
+          setCancelRequestedReason(requestedCancelReason!);
           if (currentOffset == 1) {
             setResultList(ordersList);
           } else {
@@ -325,6 +332,7 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
           index < orders?.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },
           index == 0 ? { marginTop: 20 } : {},
         ]}
+        cancelRequestedReason={cancelRequestedReason}
       />
     );
   };

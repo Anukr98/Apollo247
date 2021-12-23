@@ -2291,6 +2291,7 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
         }
       }
       ordersCount
+      cancellationRequestedDisplayText
       membersDetails {
         id
         firstName

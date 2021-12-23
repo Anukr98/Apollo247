@@ -77,6 +77,7 @@ interface OrderTestCardProps {
   onPressRatingStar: (star: number) => void;
   onPressCallOption: (name: string, number: string) => void;
   onPressEditPatient: () => void;
+  cancelRequestedReason?: string;
 }
 
 export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
@@ -593,32 +594,45 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
   };
 
   const renderAdditionalInfoView = () => {
-    const isPresent =
-      (!!props.additonalRejectedInfo && props.additonalRejectedInfo?.length > 0) ||
-      (props.isCancelled && props.cancelledReason != null);
-    const consRejectedString = isPresent && props.additonalRejectedInfo?.join(', ');
-    let textToShow =
-      props.isCancelled && props.cancelledReason != null
-        ? `${string.diagnostics.orderCancelledReasonText} ${
-            !!props.cancelledReason?.comments && props.cancelledReason?.comments != ''
-              ? props.cancelledReason?.comments
-              : props.cancelledReason.cancellationReason === 'DIAGNOSTIC_STATUS_UPDATED_FROM_ITDOSE'
-              ? string.diagnostics.itDoseCancelledText
-              : props.cancelledReason?.cancellationReason
-          }`
-        : `Sample for ${consRejectedString} ${
-            props.additonalRejectedInfo?.length > 1 ? 'are' : 'is'
-          } rejected`;
+    let isPresent;
+    let textToShow;
+    if (orderLevelStatus === DIAGNOSTIC_ORDER_STATUS.CANCELLATION_REQUESTED) {
+      isPresent = props.isCancelled && props.cancelRequestedReason != '';
+      textToShow = props.cancelRequestedReason! || string.diagnostics.cancelRequestedText;
+    } else {
+      isPresent =
+        (!!props.additonalRejectedInfo && props.additonalRejectedInfo?.length > 0) ||
+        (props.isCancelled && props.cancelledReason != null);
+      const consRejectedString = isPresent && props.additonalRejectedInfo?.join(', ');
+      textToShow =
+        props.isCancelled && props.cancelledReason != null
+          ? `${string.diagnostics.orderCancelledReasonText} ${
+              !!props.cancelledReason?.comments && props.cancelledReason?.comments != ''
+                ? props.cancelledReason?.comments
+                : props.cancelledReason.cancellationReason ===
+                  'DIAGNOSTIC_STATUS_UPDATED_FROM_ITDOSE'
+                ? string.diagnostics.itDoseCancelledText
+                : props.cancelledReason?.cancellationReason
+            }`
+          : `Sample for ${consRejectedString} ${
+              props.additonalRejectedInfo?.length > 1 ? 'are' : 'is'
+            } rejected`;
+    }
+
     return (
       <>
         {isPresent ? (
           <View style={styles.preparationViewContainer}>
-            <Text style={styles.preparationText}>{nameFormater(textToShow, 'default')}</Text>
+            <Text style={styles.preparationText}>{textToShow}</Text>
           </View>
         ) : null}
       </>
     );
   };
+
+  if (props.orderId == 8775) {
+    console.log({ props });
+  }
 
   return (
     <TouchableOpacity
