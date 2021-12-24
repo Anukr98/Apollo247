@@ -1153,10 +1153,11 @@ const styles = StyleSheet.create({
     minHeight: 45,
     borderColor: NEWGRAY,
     borderWidth: 1,
+    shadowRadius: 4,
   },
   patientNameTextStyle: {
     ...text('SB', 14, SHERPA_BLUE, 1, 19, 0),
-    width: '72%',
+    width: '70%',
   },
   genderAgeTextStyle: {
     ...text('M', 12, SHERPA_BLUE, 1, 15.6, -0.36),

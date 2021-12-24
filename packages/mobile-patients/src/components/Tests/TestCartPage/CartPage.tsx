@@ -1483,49 +1483,53 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         reportTat={reportTAT}
         showCartInclusions={false} //showInclusions
         duplicateArray={filterDuplicateItemsForPatients}
-        onPressCard={(item) => {
-          CommonLogEvent(AppRoutes.CartPage, 'Navigate to test details scene');
-          fetchPackageDetails(
-            item?.id,
-            (product) => {
-              props.navigation.navigate(AppRoutes.TestDetails, {
-                comingFrom: AppRoutes.CartPage,
-                cityId: addressCityId,
-                testDetails: {
-                  ItemID: item?.id,
-                  ItemName: item?.name,
-                  Rate: item?.price,
-                  specialPrice: item?.specialPrice! || item?.price,
-                  circleRate: item?.circlePrice,
-                  circleSpecialPrice: item?.circleSpecialPrice,
-                  discountPrice: item?.discountPrice,
-                  discountSpecialPrice: item?.discountSpecialPrice,
-                  FromAgeInDays: product?.fromAgeInDays!,
-                  ToAgeInDays: product?.toAgeInDays!,
-                  Gender: product?.gender,
-                  collectionType: test?.collectionMethod,
-                  preparation: product?.testPreparationData,
-                  testDescription: product?.testDescription,
-                  source: 'Cart page',
-                  type: product?.itemType,
-                  packageMrp: item?.itemPackageMrp,
-                  inclusions: item?.inclusions == null ? [Number(item?.itemId)] : item?.inclusions,
-                } as TestPackageForDetails,
-              });
-            },
-            'onPress'
-          );
-        }}
-        onPressRemove={(item) => {
-          CommonLogEvent(AppRoutes.CartPage, 'Remove item from cart');
-          if (isModifyFlow) {
-            removeCartItem?.(item?.id);
-          }
-          onRemoveCartItem(item, patientItems?.id);
-        }}
+        onPressCard={(item) => _onPressCartItem(item, test)}
+        onPressRemove={(item) => _onPressRemoveCartItem(item, patientItems)}
       />
     );
   };
+
+  function _onPressRemoveCartItem(item: any, patientItems: any) {
+    CommonLogEvent(AppRoutes.CartPage, 'Remove item from cart');
+    if (isModifyFlow) {
+      removeCartItem?.(item?.id);
+    }
+    onRemoveCartItem(item, patientItems?.id);
+  }
+
+  function _onPressCartItem(item: any, test: DiagnosticsCartItem) {
+    CommonLogEvent(AppRoutes.CartPage, 'Navigate to test details scene');
+    fetchPackageDetails(
+      item?.id,
+      (product) => {
+        props.navigation.navigate(AppRoutes.TestDetails, {
+          comingFrom: AppRoutes.CartPage,
+          cityId: addressCityId,
+          testDetails: {
+            ItemID: item?.id,
+            ItemName: item?.name,
+            Rate: item?.price,
+            specialPrice: item?.specialPrice! || item?.price,
+            circleRate: item?.circlePrice,
+            circleSpecialPrice: item?.circleSpecialPrice,
+            discountPrice: item?.discountPrice,
+            discountSpecialPrice: item?.discountSpecialPrice,
+            FromAgeInDays: product?.fromAgeInDays!,
+            ToAgeInDays: product?.toAgeInDays!,
+            Gender: product?.gender,
+            collectionType: test?.collectionMethod,
+            preparation: product?.testPreparationData,
+            testDescription: product?.testDescription,
+            source: 'Cart page',
+            type: product?.itemType,
+            packageMrp: item?.itemPackageMrp,
+            inclusions: item?.inclusions == null ? [Number(item?.itemId)] : item?.inclusions,
+          } as TestPackageForDetails,
+        });
+      },
+      'onPress'
+    );
+  }
 
   const renderCartWidgets = () => {
     const hasPackageSKU = getUpdatedCartItems(arrayToUse)?.hasPackageSKU;
@@ -1940,7 +1944,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: -20,
     zIndex: 99,
-    margin: 16,
+    margin: 18,
     paddingBottom: 8,
   },
   cartCountText: { ...theme.viewStyles.text('SB', 12, theme.colors.SHERPA_BLUE, 1, 18) },
