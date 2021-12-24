@@ -554,6 +554,8 @@ const getConsiderDate = (type: string, dataObject: any) => {
       return dataObject?.startDateTime || dataObject?.recordDateTime;
     case 'immunization':
       return dataObject?.dateOfImmunization;
+    case 'clinicalDocument':
+      return dataObject?.createddate;
   }
 };
 
@@ -574,13 +576,13 @@ export const initialSortByDays = (
       minute: 59,
     });
     const dateToConsider = getConsiderDate(type, dataObject);
-    const dateDifferenceInDays = moment(startDate).diff(dateToConsider, 'days');
-    const dateDifferenceInMonths = moment(startDate).diff(dateToConsider, 'months');
-    const dateDifferenceInYears = moment(startDate).diff(dateToConsider, 'years');
-
-    if (dateDifferenceInDays <= 0 && dateDifferenceInMonths <= 0 && dateDifferenceInYears <= 0) {
-      finalData = getFinalSortData('Upcoming', finalData, dataObject);
-    } else if (dateDifferenceInYears !== 0) {
+    const dateFormat = new Date(Number(dateToConsider));
+    const formatToMoment = moment(dateFormat).format('YYYY-MM-DD');
+    const typeDecider = type === 'clinicalDocument' ? formatToMoment : dateToConsider;
+    const dateDifferenceInDays = moment(startDate).diff(typeDecider, 'days');
+    const dateDifferenceInMonths = moment(startDate).diff(typeDecider, 'months');
+    const dateDifferenceInYears = moment(startDate).diff(typeDecider, 'years');
+    if (dateDifferenceInYears !== 0) {
       if (dateDifferenceInYears >= 5) {
         finalData = getFinalSortData('More than 5 years', finalData, dataObject);
       } else if (dateDifferenceInYears >= 2) {
@@ -601,8 +603,10 @@ export const initialSortByDays = (
     } else {
       if (dateDifferenceInDays > 30) {
         finalData = getFinalSortData('Past 2 months', finalData, dataObject);
-      } else {
+      } else if (dateDifferenceInDays > 7) {
         finalData = getFinalSortData('Past 30 days', finalData, dataObject);
+      } else {
+        finalData = getFinalSortData('Past 7 days', finalData, dataObject);
       }
     }
   });

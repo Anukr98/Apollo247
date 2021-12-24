@@ -293,6 +293,48 @@ export const GET_INFORMATIVE_CONTENT = gql`
   }
 `;
 
+export const SAVE_CLINICAL_DOCUMENTS = gql`
+  mutation saveClinicalDocuments($addClinicalDocumentInput: AddClinicalDocumentInput) {
+    saveClinicalDocuments(addClinicalDocumentInput: $addClinicalDocumentInput) {
+      status
+      id
+    }
+  }
+`;
+
+export const GET_ALL_CLINICAL_DOCUMENTS = gql`
+  query getClinicalDocuments($uhid: String!, $mobileNumber: String!) {
+    getClinicalDocuments(uhid: $uhid, mobileNumber: $mobileNumber) {
+      response {
+        id
+        documentName
+        uhid
+        mobileNumber
+        uploadedVia
+        documentStatus
+        fileTypeId
+        fileType
+        createddate
+        lastmodifieddate
+        authToken
+        source
+        parentFolder
+        fileInfoList {
+          id
+          fileStatus
+          locationtype
+          file_location
+          fileName
+          mimeType
+          content
+          byteContent
+          file_Url
+        }
+      }
+    }
+  }
+`;
+
 export const GET_PATIENT_FUTURE_APPOINTMENT_COUNT = gql`
   query getPatientFutureAppointmentCount($patientId: String) {
     getPatientFutureAppointmentCount(patientId: $patientId) {
@@ -7165,12 +7207,12 @@ export const SAVE_MEDICINE_ORDER_V3 = gql`
   }
 `;
 export const DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS = gql`
-  query getDiagnosticItemRecommendationsByPastOrders ($mobileNumber: String!){
-    getDiagnosticItemRecommendationsByPastOrders(mobileNumber: $mobileNumber){
-      itemsData{
+  query getDiagnosticItemRecommendationsByPastOrders($mobileNumber: String!) {
+    getDiagnosticItemRecommendationsByPastOrders(mobileNumber: $mobileNumber) {
+      itemsData {
         itemId
         itemName
       }
     }
   }
-`
+`;

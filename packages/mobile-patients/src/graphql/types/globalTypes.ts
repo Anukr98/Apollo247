@@ -476,6 +476,7 @@ export enum MedicalConditionIllnessTypes {
 
 export enum MedicalRecordType {
   ALLERGY = 'ALLERGY',
+  CLINICAL_DOCUMENTS = 'CLINICAL_DOCUMENTS',
   CONSULTATION = 'CONSULTATION',
   EHR = 'EHR',
   FAMILY_HISTORY = 'FAMILY_HISTORY',
@@ -857,6 +858,19 @@ export interface AddAllergyRecordInput {
   reactionToAllergy?: string | null;
   notes?: string | null;
   attachmentList?: (AllergyFileProperties | null)[] | null;
+}
+
+export interface AddClinicalDocumentInput {
+  id?: string | null;
+  createdDate?: string | null;
+  lastmodifieddate?: string | null;
+  mobileNumber?: string | null;
+  uhid?: string | null;
+  uploadedVia?: string | null;
+  documentName?: string | null;
+  fileType?: string | null;
+  fileInfoList?: (fileUploadType | null)[] | null;
+  source?: string | null;
 }
 
 export interface AddCommentHelpdeskTicketInput {
@@ -1412,6 +1426,12 @@ export interface LabTestParameters {
   minimum?: number | null;
   parameterName?: string | null;
   result?: number | null;
+  unit?: string | null;
+}
+
+export interface PrescriptionParameters {
+  medication?: string | null;
+  dosage?: number | null;
   unit?: string | null;
 }
 
@@ -2081,6 +2101,12 @@ export interface diagnosticLineItem {
 export interface fileProperties {
   fileType?: string | null;
   base64FileInput?: string | null;
+}
+
+export interface fileUploadType {
+  fileName?: string | null;
+  mimeType?: string | null;
+  content?: string | null;
 }
 
 export interface patientAddressObj {
