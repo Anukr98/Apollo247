@@ -850,7 +850,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           onPress={() => {
             props.navigation.navigate(AppRoutes.ConsultPackagePostPurchase, {
               planId: pkg?.sub_plan_id,
-              subscriptionId: pkg?.subscriptionId,
+              subscriptionId: pkg?.subscription_id,
               onSubscriptionCancelled: () => {
                 props.navigation.goBack();
               },
