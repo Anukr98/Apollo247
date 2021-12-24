@@ -20,6 +20,7 @@ export enum AppEnv {
   VAPT = 'VAPT',
   DEVReplica = 'DEVReplica',
   QA6 = 'QA6',
+  QA8 = 'QA8',
 }
 
 const APP_ENV: AppEnv = AppEnv.QA5 as AppEnv; // For respective API environments in the app.
