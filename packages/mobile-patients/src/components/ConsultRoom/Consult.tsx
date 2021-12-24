@@ -656,7 +656,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       | WebEngageEvents[WebEngageEventName.CONSULT_CARD_CLICKED]
       | WebEngageEvents[WebEngageEventName.CONTINUE_CONSULT_CLICKED]
       | WebEngageEvents[WebEngageEventName.FILL_MEDICAL_DETAILS] = {
-      'Doctor Name': g(data, 'doctorInfo', 'fullName')!,
+      'Doctor Name': g(data, 'doctorInfo', 'displayName')!,
       'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
       'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,
       'Doctor Category': g(data, 'doctorInfo', 'doctorType')!,
@@ -683,7 +683,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       eventAttributes
     );
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_CARD_CLICKED] = {
-      doctorName: g(data, 'doctorInfo', 'fullName')!,
+      doctorName: g(data, 'doctorInfo', 'displayName')!,
       specialityId: g(data, 'doctorInfo', 'specialty', 'id')! || undefined,
       specialityName: g(data, 'doctorInfo', 'specialty', 'name')! || undefined,
       'Doctor Category': g(data, 'doctorInfo', 'doctorType')!,
@@ -803,7 +803,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const onViewPrescriptionClick = async (item: Appointment) => {
     const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
     const eventAttributes: CleverTapEvents[CleverTapEventName.VIEW_PRESCRIPTION_CLICKED_APPOINTMENT_CARD] = {
-      'Doctor Name': g(item, 'doctorInfo', 'fullName') || '',
+      'Doctor Name': g(item, 'doctorInfo', 'displayName') || '',
       'Doctor Phone Number': g(item, 'doctorInfo', 'mobileNumber') || '',
       'Doctor ID': g(item, 'doctorInfo', 'id') || '',
       'Doctor Speciality Name': g(item, 'doctorInfo', 'specialty', 'name') || '',
@@ -1022,7 +1022,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         patientUhid: g(currentPatient, 'uhid'),
         patientAge: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
         doctorId: g(item, 'doctorId') || undefined,
-        doctorName: g(item, 'doctorInfo', 'fullName') || undefined,
+        doctorName: g(item, 'doctorInfo', 'displayName') || undefined,
         doctorCategory: g(item, 'doctorInfo', 'doctorType') || undefined,
         doctorCity: g(item, 'doctorInfo', 'city') || undefined,
         specialityId: g(item, 'doctorInfo', 'specialty', 'id') || undefined,
@@ -1055,7 +1055,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         patientUhid: g(currentPatient, 'uhid'),
         patientAge: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
         doctorId: g(item, 'doctorId') || undefined,
-        doctorName: g(item, 'doctorInfo', 'fullName') || undefined,
+        doctorName: g(item, 'doctorInfo', 'displayName') || undefined,
         doctorCategory: g(item, 'doctorInfo', 'doctorType') || undefined,
         doctorCity: g(item, 'doctorInfo', 'city') || undefined,
         specialityId: g(item, 'doctorInfo', 'specialty', 'id') || undefined,
@@ -1400,8 +1400,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             item.status == STATUS.NO_SHOW ||
             item.status == STATUS.CALL_ABANDON ? (
               <View>
-                {(item?.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE
-                  && item?.status == STATUS.PENDING) ||
+                {(item?.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE &&
+                  item?.status == STATUS.PENDING) ||
                 item.status == STATUS.NO_SHOW ||
                 item.status == STATUS.CALL_ABANDON
                   ? renderPickAnotherButton()
@@ -1510,7 +1510,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       <TabHeader
         containerStyle={containerStyle}
         navigation={props.navigation}
-        screenAsSource={'Appointment Page'}
+        screenAsSource={'Appointment Section'}
       />
     );
   };

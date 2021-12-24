@@ -28,7 +28,7 @@ export const AddedToCartToast: React.FC<AddedToCartToastProps> = (props) => {
 
   const onPressGoToCart = () => {
     props.navigation.navigate(
-      diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.MedicineCart
+      diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.ServerCart
     );
   };
   return (

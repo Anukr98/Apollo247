@@ -48,6 +48,7 @@ export interface getLinkedProfilesPastConsultsAndPrescriptionsByMobile_getLinked
 
 export interface getLinkedProfilesPastConsultsAndPrescriptionsByMobile_getLinkedProfilesPastConsultsAndPrescriptionsByMobile_consults_caseSheet {
   __typename: "CaseSheet";
+  prismFileId: string | null;
   notes: string | null;
   blobName: string | null;
   consultType: string | null;

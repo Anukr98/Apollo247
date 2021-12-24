@@ -199,6 +199,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
         userParams: {
           rewardId: rewardId,
           linkToUse: 'ForReferrarInstall',
+          referrerId: g(currentPatient, 'id'),
         },
       },
       (link) => {

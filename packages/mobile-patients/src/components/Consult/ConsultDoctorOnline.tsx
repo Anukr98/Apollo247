@@ -297,7 +297,7 @@ export const ConsultDoctorOnline: React.FC<ConsultDoctorOnlineProps> = (props) =
                         }}
                       >
                         {`${
-                          props.doctor ? props.doctor.fullName : ''
+                          props.doctor ? props.doctor?.displayName : ''
                         } is not available in the ${selectedtiming.toLowerCase()} slot :(`}
                       </Text>
                     );
