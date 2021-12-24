@@ -285,6 +285,16 @@ const styles = StyleSheet.create({
     marginTop: 25,
     width: '100%',
   },
+  minView: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 5,
+  },
+  cameraView: {
+    marginTop: 28,
+    paddingHorizontal: 16,
+    marginBottom: 30,
+  },
 });
 
 const TestRecordInitialValues: LabTestParameters = {
@@ -489,7 +499,7 @@ export const AddClinicalDocumentDetails: React.FC<AddClinicalDocumentDetailsProp
 
     return (
       <ScrollView bounces={false} style={{ flex: 1 }}>
-        <View style={{ marginTop: 28, paddingHorizontal: 16, marginBottom: 30 }}>
+        <View style={styles.cameraView}>
           <Text style={styles.ensureTextStyle}>
             {'Ensure your document is in focus and placed with in the box'}
           </Text>
@@ -1170,7 +1180,7 @@ export const AddClinicalDocumentDetails: React.FC<AddClinicalDocumentDetailsProp
             </View>
             <View style={{ marginTop: 20 }}>
               {renderListItem('Range', true)}
-              <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 5 }}>
+              <View style={styles.minView}>
                 <TextInput
                   placeholder={'min'}
                   style={[styles.textInputStyle, { marginBottom: 0 }]}
