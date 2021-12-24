@@ -46,6 +46,7 @@ import {
   AppConfig,
   BLACK_LIST_CANCEL_STATUS_ARRAY,
   BLACK_LIST_RESCHEDULE_STATUS_ARRAY,
+  DIAGNOSTIC_ORDER_CANCELLED_STATUS,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { Down, DownO, InfoIconRed, ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -108,6 +109,7 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
   const [onPressIssue, setOnPressIssue] = useState<string>('');
   const [currentOffset, setCurrentOffset] = useState<number>(1);
   const [orderListData, setOrderListData] = useState<(orderListByMobile | null)[] | null>([]);
+  const [cancelRequestedReason, setCancelRequestedReason] = useState<string>('');
   const [resultList, setResultList] = useState<(orderListByMobile | null)[] | null>([]);
   const medicineOrderStatus = navigation.getParam('medicineOrderStatus');
   const { saveNeedHelpQuery, getQueryData, getQueryDataByOrderStatus } = Helpers;
@@ -167,12 +169,15 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
   useEffect(() => {
     fetchOrders();
   }, []);
+
   useEffect(() => {
     fetchOrders();
   }, [currentOffset]);
+
   useEffect(() => {
     setOrders(resultList);
   }, [resultList]);
+
   const fetchOrders = async () => {
     try {
       setLoading?.(true);
@@ -192,7 +197,10 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
         })
         .then((data) => {
           const ordersList = data?.data?.getDiagnosticOrdersListByMobile?.ordersList || [];
+          const requestedCancelReason =
+            data?.data?.getDiagnosticOrdersListByMobile?.cancellationRequestedDisplayText;
           setOrderListData(ordersList);
+          setCancelRequestedReason(requestedCancelReason!);
           if (currentOffset == 1) {
             setResultList(ordersList);
           } else {
@@ -220,7 +228,6 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
       CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchOrders`, error);
     }
   };
-
 
   const keyExtractor = useCallback((item: any, index: number) => `${index}`, []);
   const renderOrder = (order: orderList, index: number) => {
@@ -291,15 +298,15 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
             : getSlotStartTime(order?.slotTimings)
         }
         isPrepaid={order?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT}
-        isCancelled={currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED}
+        isCancelled={DIAGNOSTIC_ORDER_CANCELLED_STATUS.includes(currentStatus)}
         cancelledReason={
-          currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED &&
+          DIAGNOSTIC_ORDER_CANCELLED_STATUS.includes(currentStatus) &&
           order?.diagnosticOrderCancellation != null
             ? order?.diagnosticOrderCancellation
             : null
         }
         showRescheduleCancel={
-          showReschedule && order?.orderStatus != DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED
+          showReschedule && !DIAGNOSTIC_ORDER_CANCELLED_STATUS.includes(order?.orderStatus)
         }
         showReportOption={
           showReport || order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED
@@ -318,13 +325,14 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
         onPressViewReport={() => {}}
         phelboObject={order?.phleboDetailsObj}
         onPressRatingStar={(star) => {}}
-        onPressEditPatient={()=>{}}
+        onPressEditPatient={() => {}}
         onPressCallOption={(name, number) => {}}
         style={[
           { marginHorizontal: 20 },
           index < orders?.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },
           index == 0 ? { marginTop: 20 } : {},
         ]}
+        cancelRequestedReason={cancelRequestedReason}
       />
     );
   };

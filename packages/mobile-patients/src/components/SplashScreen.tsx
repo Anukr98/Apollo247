@@ -1637,7 +1637,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'DIAGNOSTICS_ENABLE_UPLOAD_PRESCRIPTION_VIA_WHATSAPP',
         (key) => config.getBoolean(key)
       );
-
       setAppConfig(
         'Diagnostics_UploadPrescription_Config',
         'DIAGNOSTICS_UPLOAD_PRESCRIPTION',

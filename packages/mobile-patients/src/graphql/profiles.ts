@@ -1770,6 +1770,32 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         couponCode
         paymentOrderId
         passportNo
+        diagnosticOrderTransactions {
+          healthCreditsUsed
+          paymentMethod
+          paymentStatus
+          effectivePrepaidAmount
+          prepaidAmount
+          offers {
+            offer_id
+            offer_code
+            offer_description {
+              title
+              tnc
+              description
+            }
+            status
+            benefits {
+              type
+              amount
+              calculation_info {
+                value
+                max_amount
+                calculation_rule
+              }
+            }
+          }
+        }
         attributesObj{
           initialCollectionCharges
           distanceCharges
@@ -2265,6 +2291,7 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
         }
       }
       ordersCount
+      cancellationRequestedDisplayText
       membersDetails {
         id
         firstName
@@ -5227,6 +5254,20 @@ export const GET_INTERNAL_ORDER = gql`
         updated_at
         amount
       }
+      offers{
+        offer_code
+        offer_description{
+          offer_code
+          title
+          description
+        }
+        benefits{
+          amount
+          calculation_info{
+            value
+          }
+        }
+      }
     }
   }
 `;
@@ -6142,6 +6183,10 @@ export const GET_RESCHEDULE_AND_CANCELLATION_REASONS = gql`
     getRescheduleAndCancellationReasons(appointmentDateTimeInUTC: $appointmentDateTimeInUTC) {
       rescheduleReasons
       cancellationReasons
+      cancellationReasonsv2{
+        reason
+        isDirectCancellation
+      }
     }
   }
 `;
@@ -6378,7 +6423,12 @@ export const GET_DIAGNOSTICS_RECOMMENDATIONS = gql`
       itemsData {
         itemId
         itemName
-        combinedLift
+        diagnosticInclusions{
+          observations{
+            observationName
+            mandatoryValue
+          }
+        }
       }
     }
   }
@@ -6523,6 +6573,7 @@ export const GET_DIAGNOSTIC_SEARCH_RESULTS = gql`
       data {
         diagnostic_item_id
         diagnostic_item_name
+        testParametersCount
         diagnostic_inclusions
         diagnostic_item_alias
         diagnostic_item_price {
@@ -6699,6 +6750,14 @@ query getDiagnosticPackageRecommendations($itemId:Int!, $cityId: Int!){
       itemName
       inclusions
       packageCalculatedMrp
+      diagnosticInclusions{
+        itemId
+        name
+        observations{
+          observationName
+          mandatoryValue
+        }
+      }
       diagnosticPricing{
         mrp
         price
@@ -6778,6 +6837,12 @@ export const DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS = gql`
       itemsData{
         itemId
         itemName
+        diagnosticInclusions{
+          observations{
+            observationName
+            mandatoryValue
+          }
+        }
       }
     }
   }

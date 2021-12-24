@@ -139,6 +139,10 @@ export const handleUniversalLinks = (
         pushTheView('ConsultPackage', navigation, data.length === 2 ? linkId : undefined);
         break;
 
+      case 'orderstest':
+        pushTheView('ordersTest', navigation);
+        break;
+
       default:
         pushTheView('ConsultRoom', navigation, undefined);
         break;
@@ -303,7 +307,12 @@ const pushTheView = (
         planId: id,
       });
       break;
-
+    
+    case 'ordersTest':
+      navigation.navigate(AppRoutes.YourOrdersTest, {
+      });
+      break;
+      
     default:
       break;
   }

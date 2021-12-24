@@ -355,7 +355,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
           },
         });
       }
-      if (movedFrom === AppRoutes.TestsCart) {
+      if (movedFrom === AppRoutes.CartPage) {
         breadcrumb.push({
           title: 'Cart',
           onPress: () => {
@@ -526,6 +526,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
                   navigation={props.navigation}
                   source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.LISTING}
                   sourceScreen={AppRoutes.TestListing}
+                  widgetHeading={widgetsData?.diagnosticWidgetTitle}
                 />
               </>
             )}
@@ -557,6 +558,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
                   navigation={props.navigation}
                   source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.LISTING}
                   sourceScreen={AppRoutes.TestListing}
+                  widgetHeading={widgetsData?.diagnosticWidgetTitle}
                 />
               </>
             )}

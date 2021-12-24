@@ -33,6 +33,7 @@ import {
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { DIAGNOSTICS_ITEM_TYPE } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 const screenWidth = Dimensions.get('window').width;
 const CARD_WIDTH = screenWidth > 350 ? screenWidth * 0.44 : screenWidth * 0.5;
 const CARD_HEIGHT = 230; //210
@@ -57,6 +58,7 @@ export interface ItemCardProps {
   onPressAddToCartFromCart?: (item: any, addedItems: any) => void;
   onPressRemoveItemFromCart?: (item: any) => void;
   recommedationDataSource?: string;
+  widgetHeading?: string;
 }
 
 const ItemCard: React.FC<ItemCardProps> = (props) => {
@@ -81,6 +83,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     onPressAddToCartFromCart,
     onPressRemoveItemFromCart,
     recommedationDataSource,
+    widgetHeading,
   } = props;
   const { currentPatient } = useAllCurrentPatients();
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
@@ -106,9 +109,8 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
         return null;
       }
 
-      const imageUrl = !!getItem?.itemImageUrl
-        ? getItem?.itemImageUrl
-        : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_ICON;
+      const imageUrl = getItem?.itemImageUrl;
+
       const name = getItem?.itemTitle || getItem?.itemName;
       const inclusions = getItem?.inclusionData;
 
@@ -128,6 +130,10 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
       const isAddedToCart = !!cartItems?.find(
         (items) => Number(items?.id) == Number(getItem?.itemId)
       );
+      const nonInclusionTests =
+        !!inclusions &&
+        inclusions?.length > 0 &&
+        inclusions?.filter((inclusion: any) => inclusion?.incObservationData?.length == 0);
 
       return (
         <TouchableOpacity
@@ -161,11 +167,11 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
                 {name}
               </Text>
             </View>
-            <View style={{ minHeight: isSmallDevice ? 25 : 30 }}>
+            <View style={{ minHeight: isSmallDevice ? 20 : 25 }}>
               {getMandatoryParameterCount > 0 || !!getInclusionCount ? (
                 <Text style={styles.parameterText}>
-                  {getMandatoryParameterCount || getInclusionCount}{' '}
-                  {(getMandatoryParameterCount || getInclusionCount) == 1 ? 'test' : 'tests'}{' '}
+                  {getMandatoryParameterCount + nonInclusionTests?.length || getInclusionCount}{' '}
+                  {(getMandatoryParameterCount + nonInclusionTests?.length || getInclusionCount) == 1 ? 'test' : 'tests'}{' '}
                   included
                 </Text>
               ) : null}
@@ -314,7 +320,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     return <View style={{ height: 23 }} />;
   };
 
-  const renderMainPriceView = (pricesForItem: any, packageMrpForItem: any) => {
+  function calculatePriceToShow(pricesForItem: any, packageMrpForItem: any) {
     const promoteCircle = pricesForItem?.promoteCircle;
     const promoteDiscount = pricesForItem?.promoteDiscount;
     const specialPrice = pricesForItem?.specialPrice!;
@@ -349,6 +355,32 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
         priceToShow = specialPrice || price;
       }
     }
+    return {
+      promoteCircle,
+      promoteDiscount,
+      price,
+      circleSpecialPrice,
+      circleDiscount,
+      specialDiscount,
+      discount,
+      totalDiscount,
+      priceToShow,
+    };
+  }
+
+  const renderMainPriceView = (pricesForItem: any, packageMrpForItem: any) => {
+    const {
+      priceToShow,
+      promoteCircle,
+      promoteDiscount,
+      price,
+      circleSpecialPrice,
+      circleDiscount,
+      specialDiscount,
+      discount,
+      totalDiscount,
+    } = calculatePriceToShow(pricesForItem, packageMrpForItem);
+
     const slashedPrice =
       !!packageMrpForItem && packageMrpForItem > price ? packageMrpForItem : price;
     //1. circle sub + promote -> packageMrp/price
@@ -434,7 +466,6 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     const discountPrice = pricesForItem?.discountPrice!;
     const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
     const planToConsider = pricesForItem?.planToConsider;
-    const discountToDisplay = pricesForItem?.discountToDisplay;
     const mrpToDisplay = pricesForItem?.mrpToDisplay;
     const widgetType = Array.isArray(data)
       ? sourceScreen === AppRoutes.CartPage
@@ -453,15 +484,18 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     DiagnosticAddToCartEvent(
       item?.itemTitle || item?.itemName,
       `${item?.itemId}`,
-      mrpToDisplay,
-      discountToDisplay,
+      mrpToDisplay, //mrp
+      calculatePriceToShow(pricesForItem, packageCalculatedMrp)?.priceToShow, //actual selling price
       source,
+      item?.inclusionData == null || (!!inclusions && inclusions?.length < 1)
+        ? DIAGNOSTICS_ITEM_TYPE.TEST
+        : DIAGNOSTICS_ITEM_TYPE.PACKAGE,
       recommedationDataSource
         ? recommedationDataSource
         : widgetType === string.diagnosticCategoryTitle.categoryGrid ||
           widgetType == string.diagnosticCategoryTitle.category
         ? 'Category page'
-        : data?.diagnosticWidgetTitle,
+        : data?.diagnosticWidgetTitle || widgetHeading,
       currentPatient,
       isDiagnosticCircleSubscription,
       originalItemIds
@@ -507,10 +541,15 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     }
   };
 
-  function postHomePageWidgetClicked(name: string, id: string, section: string) {
+  function postHomePageWidgetClicked(
+    name: string,
+    id: string,
+    section: string,
+    sourceScreen?: string
+  ) {
     DiagnosticHomePageWidgetClicked(
       currentPatient,
-      section,
+      sourceScreen == 'Recommendations' ? sourceScreen : section,
       name,
       id,
       '',
@@ -526,16 +565,24 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     const discountPrice = pricesForItem?.discountPrice!;
     const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
     const mrpToDisplay = pricesForItem?.mrpToDisplay;
-    const widgetTitle = data?.diagnosticWidgetTitle;
+    const widgetTitle = data?.diagnosticWidgetTitle || widgetHeading;
     const widgetType = data?.diagnosticWidgetType;
     const inclusions =
       !!item?.inclusionData && item?.inclusionData?.map((item: any) => Number(item?.incItemId));
+    //only for homepage widgets
+    source == DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME &&
+      postHomePageWidgetClicked(
+        item?.itemTitle! || item?.itemName,
+        `${item?.itemId}`,
+        widgetTitle,
+        sourceScreen
+      );
 
-    postHomePageWidgetClicked(item?.itemTitle! || item?.itemName, `${item?.itemId}`, widgetTitle);
     if (sourceScreen == AppRoutes.TestDetails) {
       navigation.replace(AppRoutes.TestDetails, {
         itemId: item?.itemId,
         comingFrom: sourceScreen,
+        widgetTitle: widgetTitle,
         testDetails: {
           Rate: price,
           specialPrice: specialPrice! || price,
@@ -561,6 +608,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
       navigation.navigate(AppRoutes.TestDetails, {
         itemId: item?.itemId,
         comingFrom: sourceScreen,
+        widgetTitle: widgetTitle,
         changeCTA: changeCTA,
         testDetails: {
           Rate: price,

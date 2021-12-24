@@ -44,6 +44,7 @@ import {
   diagnosticsDisplayPrice,
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   getPricesForItem,
+  getUpdatedCartItems,
   sourceHeaders,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import {
@@ -163,10 +164,14 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     uploadPrescriptionRequired,
     coupon,
     hcCharges,
-    diagnosticSlot
+    diagnosticSlot,
   } = useDiagnosticsCart();
 
-  const { setAddresses: setMedAddresses,circlePlanValidity, circleSubscriptionId } = useShoppingCart();
+  const {
+    setAddresses: setMedAddresses,
+    circlePlanValidity,
+    circleSubscriptionId,
+  } = useShoppingCart();
 
   const {
     locationDetails,
@@ -228,8 +233,10 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     fullDuplicateItems = '';
   var overallDuplicateArray = [] as any;
 
+  const arrayToUse = isModifyFlow ? modifiedPatientCart : patientCartItems;
+
   useEffect(() => {
-    triggerCartPageViewed();
+    triggerCartPageViewed(false, cartItems);
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setIsFocused(true);
       BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -258,7 +265,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     newAddressAddedCartPage != '' && setNewAddressAddedCartPage?.('');
   }
 
-  function triggerCartPageViewed(isRecommendationShown : boolean,recomData: any) {
+  function triggerCartPageViewed(isRecommendationShown: boolean, recomData: any) {
     const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
     const pinCodeFromAddress = addressToUse?.zipcode!;
     const cityFromAddress = addressToUse?.city;
@@ -271,7 +278,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       uploadPrescriptionRequired,
       diagnosticSlot,
       coupon,
-      hcCharges,circlePlanValidity,
+      hcCharges,
+      circlePlanValidity,
       circleSubscriptionId,
       isDiagnosticCircleSubscription,
       pinCodeFromAddress,
@@ -345,61 +353,50 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     }
   }, [addresses, isFocused]);
 
-  function getUpdatedCartItems() {
-    const getExistingItems = patientCartItems
-      ?.map((item) => item?.cartItems?.filter((idd) => idd?.id))
-      ?.flat();
-    const selectedUniqueItems = getExistingItems?.filter((i) => i?.isSelected);
-    const selectedUnqiueItemIds = [
-      ...new Set(selectedUniqueItems?.map((item) => Number(item?.id))),
-    ];
-
-    const findPackageSKU = selectedUniqueItems?.find((_item) => _item?.inclusions?.length > 1);
-    const hasPackageSKU = !!findPackageSKU;
-    return {
-      selectedUniqueItems,
-      selectedUnqiueItemIds,
-      hasPackageSKU,
-    };
-  }
-
   /**consider only selected one + for package need to pass one argument + isPackage + if is package and recommendations are not there, then fallback should not come + 2 limit needs to be removed */
   useEffect(() => {
-    if (cartItems?.length > 0 && getUpdatedCartItems()?.selectedUnqiueItemIds?.length > 0) {
+    if (
+      cartItems?.length > 0 &&
+      getUpdatedCartItems(arrayToUse)?.selectedUnqiueItemIds?.length > 0
+    ) {
       const itemIds = isModifyFlow
-        ? getUpdatedCartItems()?.selectedUnqiueItemIds?.concat(modifiedOrderItemIds)
-        : getUpdatedCartItems()?.selectedUnqiueItemIds;
+        ? (getUpdatedCartItems(arrayToUse)?.selectedUnqiueItemIds?.concat(
+            modifiedOrderItemIds
+          ) as any)
+        : (getUpdatedCartItems(arrayToUse)?.selectedUnqiueItemIds as any);
       fetchReportTat(itemIds);
       fetchTestReportGenDetails(itemIds);
-      fetchCartPageRecommendations(itemIds, getUpdatedCartItems()?.selectedUniqueItems);
+      fetchCartPageRecommendations(itemIds, getUpdatedCartItems(arrayToUse)?.selectedUniqueItems);
     }
   }, [cartItems?.length, addressCityId]);
 
-  const recomData = recommedationData?.length > 2 ? recommedationData : alsoAddListData
+  const recomData = recommedationData?.length > 2 ? recommedationData : alsoAddListData;
+
   useEffect(() => {
     const isRecommendationShown = recommedationData?.length > 2;
-    if (cartItems?.length > 0 && recomData?.length > 0 && !loading) {
-    const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
-    const pinCodeFromAddress = addressToUse?.zipcode!;
-    const cityFromAddress = addressToUse?.city;
-    DiagnosticCartViewed(
-      'cart page',
-      currentPatient,
-      cartItems,
-      couponDiscount,
-      grandTotal,
-      uploadPrescriptionRequired,
-      diagnosticSlot,
-      coupon,
-      hcCharges,circlePlanValidity,
-      circleSubscriptionId,
-      isDiagnosticCircleSubscription,
-      pinCodeFromAddress,
-      cityFromAddress,
-      '',
-      isRecommendationShown,
-      recomData
-    );
+    if (cartItems?.length > 0 && recomData?.length > 0 && !loading && isFocused) {
+      const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
+      const pinCodeFromAddress = addressToUse?.zipcode!;
+      const cityFromAddress = addressToUse?.city;
+      DiagnosticCartViewed(
+        'cart page',
+        currentPatient,
+        cartItems,
+        couponDiscount,
+        grandTotal,
+        uploadPrescriptionRequired,
+        diagnosticSlot,
+        coupon,
+        hcCharges,
+        circlePlanValidity,
+        circleSubscriptionId,
+        isDiagnosticCircleSubscription,
+        pinCodeFromAddress,
+        cityFromAddress,
+        '',
+        isRecommendationShown,
+        recomData
+      );
     }
   }, [cartItems?.length, recomData?.length, loading]);
 
@@ -680,14 +677,14 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     const getExisitngItems = patientCartItems
       ?.map((item) => item?.cartItems?.filter((idd) => idd?.id))
       ?.flat();
-    const selectedUnqiueItems = getExisitngItems?.filter((i) => i?.isSelected);
+    const selectedUnqiueItems = getExisitngItems?.filter((i: DiagnosticsCartItem) => i?.isSelected);
     const arrayToChoose = isModifyFlow ? cartItems : selectedUnqiueItems;
 
     if (results?.length == 0) {
       setLoading?.(false);
     }
     const disabledCartItems = arrayToChoose?.filter(
-      (cartItem) =>
+      (cartItem: DiagnosticsCartItem) =>
         !results?.find(
           (d: findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics) =>
             `${d?.itemId}` == cartItem?.id
@@ -696,7 +693,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     let isItemDisable = false,
       isPriceChange = false;
     if (arrayToChoose?.length > 0) {
-      arrayToChoose?.map((cartItem, index: number) => {
+      arrayToChoose?.map((cartItem: DiagnosticsCartItem, index: number) => {
         const isItemInCart = results?.findIndex(
           (item: any) => String(item?.itemId) === String(cartItem?.id)
         );
@@ -780,7 +777,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         //if items not available
         if (disabledCartItems?.length) {
           isItemDisable = true;
-          const disabledCartItemIds = disabledCartItems?.map((item) => item?.id);
+          const disabledCartItemIds = disabledCartItems?.map(
+            (item: DiagnosticsCartItem) => item?.id
+          );
           setLoading?.(false);
           removeDisabledCartItems(disabledCartItemIds);
           removeDisabledPatientCartItems(disabledCartItemIds);
@@ -995,7 +994,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           props.navigation.push(AppRoutes.AddAddressNew, {
             KeyName: 'Update',
             addressDetails: address,
-            ComingFrom: AppRoutes.TestsCart,
+            ComingFrom: AppRoutes.CartPage,
             updateLatLng: true,
             source: 'Diagnostics Cart' as AddressSource,
           });
@@ -1023,7 +1022,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           hidePincodeCurrentLocation
           addresses={addresses}
           onPressSelectAddress={(_address) => {
-            CommonLogEvent(AppRoutes.TestsCart, 'Check service availability');
+            CommonLogEvent(AppRoutes.CartPage, 'Check service availability');
             setDefaultAddress(_address);
             const tests = cartItems?.filter(
               (item) => item.collectionMethod == TEST_COLLECTION_TYPE.CENTER
@@ -1062,7 +1061,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
             }
           }}
           onPressEditAddress={(_address) => {
-            _navigateToEditAddress('Update', _address, AppRoutes.TestsCart);
+            _navigateToEditAddress('Update', _address, AppRoutes.CartPage);
             hideAphAlert?.();
           }}
           onPressAddAddress={() => {
@@ -1103,26 +1102,26 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           style={[
             styles.addressOutermostView,
             {
-              minHeight: screenHeight > 800 ? 150 : screenHeight < 600 ? 165 : 175,
+              minHeight: screenHeight > 800 ? 150 : screenHeight < 600 ? 145 : 155,
             },
           ]}
         >
-          <Text style={styles.addressHeadingText}>
-            {nameFormater(string.diagnostics.homeVisitText, 'title')}
-          </Text>
-          <View>
-            <View style={styles.addressTextView}>
-              {!!addressText && (
-                <Text numberOfLines={2} style={styles.addressTextStyle}>
-                  {addressText}
-                </Text>
-              )}
-              {isModifyFlow ? null : (
-                <Text style={styles.changeTextStyle} onPress={() => showAddressPopup()}>
-                  {string.diagnostics.changeText}
-                </Text>
-              )}
-            </View>
+          <View style={styles.addressView}>
+            <Text style={styles.addressHeadingText}>
+              {nameFormater(string.diagnostics.homeVisitText, 'title')}
+            </Text>
+            {isModifyFlow ? null : (
+              <Text style={styles.changeTextStyle} onPress={() => showAddressPopup()}>
+                {string.diagnostics.changeText}
+              </Text>
+            )}
+          </View>
+          <View style={styles.addressTextView}>
+            {!!addressText && (
+              <Text numberOfLines={2} style={styles.addressTextStyle}>
+                {addressText}
+              </Text>
+            )}
           </View>
         </View>
       </>
@@ -1229,14 +1228,20 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         id,
         name,
         addresses?.[selectedAddressIndex]?.zipcode!,
-        'Customer'
+        'Customer',
+        currentPatient,
+        isDiagnosticCircleSubscription,
+        cartItems
       );
     } else {
       DiagnosticRemoveFromCartClicked(
         id,
         name,
         diagnosticLocation?.pincode! || locationDetails?.pincode!,
-        'Customer'
+        'Customer',
+        currentPatient,
+        isDiagnosticCircleSubscription,
+        cartItems
       );
     }
   };
@@ -1484,7 +1489,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
             item?.id,
             (product) => {
               props.navigation.navigate(AppRoutes.TestDetails, {
-                comingFrom: AppRoutes.TestsCart,
+                comingFrom: AppRoutes.CartPage,
                 cityId: addressCityId,
                 testDetails: {
                   ItemID: item?.id,
@@ -1512,7 +1517,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           );
         }}
         onPressRemove={(item) => {
-          CommonLogEvent(AppRoutes.TestsCart, 'Remove item from cart');
+          CommonLogEvent(AppRoutes.CartPage, 'Remove item from cart');
           if (isModifyFlow) {
             removeCartItem?.(item?.id);
           }
@@ -1523,7 +1528,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   };
 
   const renderCartWidgets = () => {
-    const hasPackageSKU = getUpdatedCartItems()?.hasPackageSKU;
+    const hasPackageSKU = getUpdatedCartItems(arrayToUse)?.hasPackageSKU;
     var newArray: string | any[] = [];
     const dataToShow =
       recommedationData?.length > 2
@@ -1554,7 +1559,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                 }}
                 onPressRemoveItemFromCart={(item) => {}}
                 data={dataToShow}
-                recommedationDataSource = {recommedationData?.length > 2 ? 'Recommendations' : 'You can also order'}
+                recommedationDataSource={
+                  recommedationData?.length > 2 ? 'Recommendations' : 'You can also order'
+                }
                 isCircleSubscribed={isDiagnosticCircleSubscription}
                 isServiceable={isServiceable}
                 isVertical={false}
@@ -1562,6 +1569,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                 source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.CART_PAGE}
                 sourceScreen={AppRoutes.CartPage}
                 changeCTA={true}
+                widgetHeading={
+                  recommedationData?.length > 2 ? 'Recommendations' : 'You can also order'
+                }
               />
             </View>
           </ScrollView>
@@ -1577,7 +1587,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     const isCartEmpty = isModifyFlow
       ? !(modifiedPatientCart?.length == 0 || modifiedPatientCart?.[0]?.cartItems?.length == 0)
       : !!isCartPresent && !isCartPresent;
-    const hasPackageSKU = getUpdatedCartItems()?.hasPackageSKU;
+    const hasPackageSKU = getUpdatedCartItems(arrayToUse)?.hasPackageSKU;
     return (
       <View style={{ margin: 16 }}>
         {renderAddTestOption()}
@@ -1787,8 +1797,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 
 const styles = StyleSheet.create({
   addressHeadingText: {
-    marginLeft: 16,
-    marginTop: 16,
     ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 1, 20),
   },
   changeTextStyle: {
@@ -1937,4 +1945,11 @@ const styles = StyleSheet.create({
   },
   cartCountText: { ...theme.viewStyles.text('SB', 12, theme.colors.SHERPA_BLUE, 1, 18) },
   patientNameCartItemView: { marginBottom: -50, zIndex: 3000 },
+  addressView: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignContent: 'center',
+    marginHorizontal: 16,
+    marginTop: 12,
+  },
 });
