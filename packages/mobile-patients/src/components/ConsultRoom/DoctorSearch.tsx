@@ -1059,6 +1059,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                       : pkg?.benefits?.[0]?.attribute_type?.used,
                   validTill: pkg.subscriptionEndDate,
                   banner: pkg?.post_purchase_background_image_url,
+                  subscriptionId: pkg?.subscription_id,
                 });
               }
             });
@@ -2347,6 +2348,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         onPress={() => {
           props.navigation.navigate(AppRoutes.ConsultPackagePostPurchase, {
             planId: pkg?.packageId,
+            subscriptionId: pkg?.subscriptionId,
             onSubscriptionCancelled: () => {
               props.navigation.goBack();
             },
