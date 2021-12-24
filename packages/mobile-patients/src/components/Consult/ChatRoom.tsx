@@ -7526,6 +7526,23 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   return (
     <View style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
       <StatusBar hidden={hideStatusBar} />
+      {isCancelVisible && (
+        <CancelReasonPopup
+          isCancelVisible={isCancelVisible}
+          closePopup={() => setCancelVisible(false)}
+          data={appointmentData}
+          cancelSuccessCallback={() => {
+            postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER);
+            postAppointmentCleverTapEvents(
+              CleverTapEventName.CONSULT_CANCELLED_BY_PATIENT,
+              appointmentData,
+              currentPatient,
+              secretaryData
+            );
+          }}
+          navigation={props.navigation}
+        />
+      )}
       {Platform.OS === 'ios' ? (
         <View
           style={{
@@ -7653,23 +7670,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         ) : null}
         {renderChatHeader()}
         {callMinimize && renderTapToReturnToCallView()}
-        {isCancelVisible && (
-          <CancelReasonPopup
-            isCancelVisible={isCancelVisible}
-            closePopup={() => setCancelVisible(false)}
-            data={appointmentData}
-            cancelSuccessCallback={() => {
-              postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER);
-              postAppointmentCleverTapEvents(
-                CleverTapEventName.CONSULT_CANCELLED_BY_PATIENT,
-                appointmentData,
-                currentPatient,
-                secretaryData
-              );
-            }}
-            navigation={props.navigation}
-          />
-        )}
         {doctorJoined ? (
           <View
             style={{
