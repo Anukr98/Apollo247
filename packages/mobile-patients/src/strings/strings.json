@@ -1804,7 +1804,16 @@
       "whyChooseApollo247": "Why choose Apollo 247?",
       "deleiveryInHours": "Delivery in 2 hours",
       "consultDoctorIn15Minutes": "Consult doctor in 15 mins",
-      "labTestAtHome": "Lab test at home"
+      "labTestAtHome": "Lab test at home",
+      "tncHeading":"Terms & Conditions",
+      "termsAndCondition":[{
+        "id":"1",
+        "data":"Max referrals allowed per person is 5 in a week, referrals above 5 will not be rewarded"
+      },
+    {
+        "id":"2",
+        "data":"New accounts created from a same device will not be rewarded"
+      }]
     },
     "refererTermsAndCondition": [
       {

@@ -73,6 +73,11 @@ type CongratulationPageDataType = {
   deleiveryInHours: string;
   consultDoctorIn15Minutes: string;
   labTestAtHome: string;
+  tncHeading: string;
+  termsAndCondition: {
+    id: number | string;
+    data: string;
+  }[];
 };
 
 type RefererTermsAndConditionDataType = {
