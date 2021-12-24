@@ -41,7 +41,7 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import {
   AppConfig,
   BLACK_LIST_CANCEL_STATUS_ARRAY,
@@ -116,7 +116,7 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
   const subQueries = (subQueriesData?.queries as NeedHelpHelpers.HelpSectionQuery[]) || [];
   const headingTitle = queries?.find((q) => q.id === queryIdLevel1)?.title || 'Query';
   const helpSectionQueryId = AppConfig.Configuration.HELP_SECTION_CUSTOM_QUERIES;
-
+  const { buildApolloClient, authToken } = useAuth();
   const client = useApolloClient();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
@@ -129,7 +129,7 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
   const [filteredOrderList, setFilteredOrderList] = useState<(orderListByMobile | null)[] | null>(
     []
   );
-
+  const apolloClientWithAuth = buildApolloClient(authToken);
   const [orders, setOrders] = useState<any>([]);
   const { getHelpSectionQueries } = NeedHelpHelpers;
 
@@ -176,7 +176,7 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
   const fetchOrders = async () => {
     try {
       setLoading?.(true);
-      client
+      apolloClientWithAuth
         .query<getDiagnosticOrdersListByMobile, getDiagnosticOrdersListByMobileVariables>({
           query: GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
           context: {
@@ -220,7 +220,6 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
       CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchOrders`, error);
     }
   };
-
 
   const keyExtractor = useCallback((item: any, index: number) => `${index}`, []);
   const renderOrder = (order: orderList, index: number) => {
@@ -318,7 +317,7 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
         onPressViewReport={() => {}}
         phelboObject={order?.phleboDetailsObj}
         onPressRatingStar={(star) => {}}
-        onPressEditPatient={()=>{}}
+        onPressEditPatient={() => {}}
         onPressCallOption={(name, number) => {}}
         style={[
           { marginHorizontal: 20 },

@@ -36,7 +36,7 @@ import {
   getCleverTapCircleMemberValues,
   isEmptyObject,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -94,6 +94,8 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const client = useApolloClient();
   const { setLoading, showAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
+  const { buildApolloClient, authToken } = useAuth();
+  const apolloClientWithAuth = buildApolloClient(authToken);
 
   const modifiedOrderDetails = props.navigation.getParam('isModify');
   const orderDetails = props.navigation.getParam('orderDetails');
@@ -117,7 +119,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const isModifyCod = modifiedOrderDetails && isCOD;
 
   const fetchOrderDetails = (orderId: string) =>
-    client.query<getDiagnosticOrderDetails, getDiagnosticOrderDetailsVariables>({
+    apolloClientWithAuth.query<getDiagnosticOrderDetails, getDiagnosticOrderDetailsVariables>({
       query: GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
       variables: { diagnosticOrderId: orderId },
       fetchPolicy: 'no-cache',

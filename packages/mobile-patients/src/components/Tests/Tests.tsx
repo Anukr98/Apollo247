@@ -64,7 +64,7 @@ import {
   postCleverTapEvent,
   showDiagnosticCTA,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
@@ -296,12 +296,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
   } = useAppCommonData();
 
   type Address = savePatientAddress_savePatientAddress_patientAddress;
+  const { buildApolloClient, authToken } = useAuth();
   const client = useApolloClient();
   const movedFrom = props.navigation.getParam('movedFrom');
   const homeScreenAttributes = props.navigation.getParam('homeScreenAttributes');
   const phyPrescriptionUploaded = props.navigation.getParam('phyPrescriptionUploaded') || [];
   const ePresscriptionUploaded = props.navigation.getParam('ePresscriptionUploaded') || [];
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+  const apolloClientWithAuth = buildApolloClient(authToken);
 
   const hdfc_values = string.Hdfc_values;
   const cartItemsCount = cartItems?.length + shopCartItems?.length;
@@ -554,7 +556,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setPatientOrdersShimmer(true);
     try {
       let openOrdersResponse: any = await getDiagnosticOpenOrders(
-        client,
+        apolloClientWithAuth,
         currentPatient?.mobileNumber,
         0,
         3
@@ -578,7 +580,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setPatientOrdersShimmer(true);
     try {
       let closedOrdersResponse: any = await getDiagnosticClosedOrders(
-        client,
+        apolloClientWithAuth,
         currentPatient?.mobileNumber,
         0,
         3
@@ -614,7 +616,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     try {
       setLoading?.(true);
       const getOrdersResponse = await getDiagnosticsOrder(
-        client,
+        apolloClientWithAuth,
         currentPatient.mobileNumber,
         1,
         currentOffset
