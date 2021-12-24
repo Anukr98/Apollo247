@@ -1433,13 +1433,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [isVideoCallFeedback, setIsVideoCallFeedback] = useState<boolean>(false);
   const [isCallEnded, setIsCallEnded] = useState<boolean>(false);
 
-  let cancelAppointmentTitle = '';
-  if (appointmentDiffMin >= 15) {
-    cancelAppointmentTitle =
-      "Since you're cancelling 15 minutes before your appointment, we'll issue you a full refund!";
-  } else {
-    cancelAppointmentTitle = 'We regret the inconvenience caused. We’ll issue you a full refund.';
-  }
+  let cancelAppointmentTitle = `${string.common.cancelAppointmentBody} ${
+    appointmentData?.appointmentType === APPOINTMENT_TYPE.PHYSICAL ? 'Physical' : 'Online'
+  } Appointment ${appointmentData?.displayId}. A full refund will be issued.`;
   const isAppointmentStartsInFifteenMin = appointmentDiffMin <= 15 && appointmentDiffMin > 0;
   const isAppointmentExceedsTenMin = appointmentDiffMin <= 0 && appointmentDiffMin > -10;
   type messageType = 'PDF' | 'Text' | 'Image';
@@ -7982,6 +7978,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           data={appointmentData}
           navigation={props.navigation}
           title={cancelAppointmentTitle}
+          customTitle={string.common.cancelAppointmentTitleHeading}
           onPressBack={() => setShowCancelPopup(false)}
           onPressReschedule={() => {
             postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);

@@ -2593,6 +2593,7 @@ export interface CleverTapEvents {
     'Secretary Name': string;
     'Secretary Mobile Number': string;
     'Doctor Mobile Number': string;
+    'Display ID'?: any;
   };
   [CleverTapEventName.CONSULT_CONTINUE_CONSULTATION_CLICKED]: {
     'Doctor Name': string;

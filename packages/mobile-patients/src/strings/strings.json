@@ -171,6 +171,9 @@
     "selectSpeciality": "Select Speciality",
     "apollo247UniversalLink": "www.apollo247.com",
     "apolloPharmacyUniversalLink": "www.apollopharmacy.in",
+    "cancelAppointmentTitleHeading": "Appointment Cancellation",
+    "cancelAppointmentBody": "Confirm if you would like to proceed with the cancellation of your",
+    "cancelRefundBody": "We regret the inconvenience caused. We’ll issue you a full refund.",
     "stagingBlogUrl":"https://stagingpatients.apollo247.com/blog?user_from_device=true"
   },
   "diagnosticsLocation": {

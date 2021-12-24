@@ -1766,6 +1766,7 @@ export const postAppointmentCleverTapEvents = (
     'Secretary number': g(secretaryData, 'mobileNumber'),
     'Doctor number': g(data, 'doctorInfo', 'mobileNumber')!,
     'Patient number': g(currentPatient, 'mobileNumber') || undefined,
+    'Display ID': data?.displayId || '',
   };
   postCleverTapEvent(type, eventAttributes);
 };
