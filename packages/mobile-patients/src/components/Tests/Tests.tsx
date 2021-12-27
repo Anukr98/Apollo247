@@ -3222,7 +3222,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         {showLocationPopup && renderLocationSearch()}
         {showUnserviceablePopup && renderNonServiceableToolTip(false)}
         {showNoLocationPopUp && renderNonServiceableToolTip(true)}
-        {showCartSummary && renderCartSummary()}
+        {showCartSummary && cartItems?.length > 0 && renderCartSummary()}
       </SafeAreaView>
       {showViewReportModal ? renderViewReportModal() : null}
       {showbookingStepsModal ? renderBookingStepsModal() : null}

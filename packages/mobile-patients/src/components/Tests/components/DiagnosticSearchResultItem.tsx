@@ -126,7 +126,12 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
           <Text numberOfLines={2} style={styles.greyedOutTextStyle}>
             Includes:{' '}
             <Text
-              style={{ color: !!findMatchItem ? theme.colors.APP_GREEN : theme.colors.SHERPA_BLUE }}
+              style={{
+                color:
+                  !!textToHighlight && textToHighlight != ''
+                    ? theme.colors.APP_GREEN
+                    : theme.colors.SHERPA_BLUE,
+              }}
             >
               {nameFormater(textToHighlight, 'default')}
             </Text>{' '}
