@@ -118,7 +118,6 @@ export const addPharmaItemToCart = (
 
 export const reviewCartPageViewClevertapEvent = (
   pincode: string,
-  tatDayOne: string,
   shippingCharges: number,
   toPay: number,
   isPrescriptionRequired: boolean,
@@ -127,16 +126,12 @@ export const reviewCartPageViewClevertapEvent = (
   prescriptionOption: string,
   userType: string,
   mobileNumber: string,
+  shipmentInfo: object[], 
   circleMembershipValue?: number,
-  tatDayTwo?: string,
 ) => {
   try {
     const eventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CART_REVIEW_ORDER_PAGE_VIEWED] = {
       Pincode: pincode,
-      TAT_1_Day: moment(tatDayOne).diff(new Date(), 'd'),
-      TAT_1_Hour: moment(tatDayOne).format('hh:mm a'),
-      TAT_2_Day: moment(tatDayTwo).diff(new Date(), 'd'),
-      TAT_2_Hour: moment(tatDayTwo).format('hh:mm a'),
       Shipping_Charges: shippingCharges,
       Amount_To_Pay: toPay,
       Prescription_Required: isPrescriptionRequired ? 'Yes' : 'No',
@@ -146,6 +141,7 @@ export const reviewCartPageViewClevertapEvent = (
       Circle_Membership_Value: circleMembershipValue,
       User_Type: userType,
       User_Mobile_Number: mobileNumber,
+      Shipment: shipmentInfo,
     };
     postCleverTapEvent(CleverTapEventName.PHARMACY_CART_REVIEW_ORDER_PAGE_VIEWED, eventAttributes);
   } catch (e) {}
