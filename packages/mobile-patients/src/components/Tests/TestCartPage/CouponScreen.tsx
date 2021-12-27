@@ -10,7 +10,6 @@ import {
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  DIAGNOSTIC_GROUP_PLAN,
   fetchDiagnosticCoupons,
   validateConsultCoupon,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -45,11 +44,12 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
     isDiagnosticCircleSubscription,
     isCircleAddedToCart,
     setCoupon,
-    couponDiscount,
     setCouponDiscount,
     setCouponCircleBenefits,
-    circleSaving,
     setCouponOnMrp,
+    setHcCharges,
+    setModifyHcCharges,
+    setDistanceCharges,
   } = useDiagnosticsCart();
   const { circleSubscriptionId, hdfcSubscriptionId } = useShoppingCart();
   const { hdfcPlanId, circlePlanId, hdfcStatus, circleStatus } = useAppCommonData();
@@ -177,6 +177,9 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
             const responseData = resp?.data?.response;
             const getCircleBenefits = responseData?.circleBenefits;
             const hasOnMrpTrue = responseData?.diagnostics?.filter((item: any) => item?.onMrp);
+            const isFreeHomeCollection = responseData?.diagnostics?.filter(
+              (item: any) => item?.freeHomeCollection
+            );
             /**
              * case for if user is claiming circle benefits, but coupon => circleBenefits as false
              */
@@ -195,6 +198,8 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
               );
             } else {
               const successMessage = responseData?.successMessage || '';
+              //if any sku has freeCollection as true => waive off
+              isFreeHomeCollection?.length > 0 && clearCollectionCharges();
               setCoupon?.({
                 ...responseData,
                 successMessage: successMessage,
@@ -250,6 +255,12 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
         setCouponCircleBenefits?.(false); //reset it to default value
       });
   };
+
+  function clearCollectionCharges() {
+    setHcCharges?.(0);
+    setDistanceCharges?.(0);
+    setModifyHcCharges?.(0);
+  }
 
   function _onPressApplyCoupon(coupon: string, appliedFromList: boolean) {
     validateAppliedCoupon(coupon, lineItemWithQuantity, appliedFromList);
