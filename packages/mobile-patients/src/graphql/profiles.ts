@@ -6809,6 +6809,7 @@ export const GET_PACKAGE_PURCHASE_INFO = gql`
       payment_status
       total_amount
       SubscriptionOrderDetails {
+        _id
         end_date
         payment_reference
         group_plan {
