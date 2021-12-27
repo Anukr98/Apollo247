@@ -1460,7 +1460,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (unstable) {
       setSnackbarState(true);
       setHandlerMessage(
-        `Your Internet connection appears to be Unstable….if the problem persists, the video will be automatically turned off at doctor's end`
+        showVideo
+          ? `Your Internet connection appears to be Unstable….if the problem persists, the video will be automatically turned off at doctor's end`
+          : 'Your Internet connection appears to be Unstable…call might disconnect'
       );
     }
   }, [unstable]);
