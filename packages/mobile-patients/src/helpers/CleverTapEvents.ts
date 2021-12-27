@@ -171,7 +171,7 @@ export enum CleverTapEventName {
   PHARMACY_CHRONIC_UPSELL_NUDGE = 'Chronic Upsell Nudge',
   PHARMACY_SEARCH_SUCCESS = 'Pharmacy Search Success',
   PHARMACY_CART_REVIEW_ORDER_PAGE_VIEWED = 'Pharmacy Cart Review Order Page Viewed',
-  PHARMACY_DONT_HAVE_PRESCRIPTION = "Pharmacy does not have prescription",
+  PHARMACY_DONT_HAVE_PRESCRIPTION = 'Pharmacy does not have prescription',
   PHARMACY_CART_ITEM_QUANTITY_CHANGED = 'Pharmacy cart item quantity changed',
   PHARMACY_CART_ADD_ITEMS_CLICKED = 'Pharmacy cart add items clicked',
   PHARMACY_CART_CHANGE_ADDRESS_CLICKED = 'Pharmacy cart change address clicked',
@@ -640,6 +640,8 @@ export enum CleverTapEventName {
   REFER_EARN_CTA_CLICKED = 'Refer & Earn CTA Clicked',
   REFERRAL_CHECK_REWARDS_CLICKED = 'Referral Check Rewards Clicked',
   REFERRAL_TNC_FAQ_CLICKED = 'Referral TnC & FAQ Clicked',
+
+  PATIENT_API_ERROR = 'Patient_API_Error',
 }
 
 export interface PatientInfo {
