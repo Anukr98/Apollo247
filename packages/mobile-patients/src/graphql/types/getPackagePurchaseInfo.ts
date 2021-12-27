@@ -27,6 +27,7 @@ export interface getPackagePurchaseInfo_getOrderInternal_SubscriptionOrderDetail
 
 export interface getPackagePurchaseInfo_getOrderInternal_SubscriptionOrderDetails {
   __typename: "UserSubscription";
+  _id: string | null;
   end_date: any;
   payment_reference: any;
   group_plan: getPackagePurchaseInfo_getOrderInternal_SubscriptionOrderDetails_group_plan;
@@ -40,7 +41,7 @@ export interface getPackagePurchaseInfo_getOrderInternal {
   payment_order_id: string;
   payment_status: PAYMENT_STATUS | null;
   total_amount: number;
-  SubscriptionOrderDetails: getPackagePurchaseInfo_getOrderInternal_SubscriptionOrderDetails;
+  SubscriptionOrderDetails: getPackagePurchaseInfo_getOrderInternal_SubscriptionOrderDetails | null;
 }
 
 export interface getPackagePurchaseInfo {
