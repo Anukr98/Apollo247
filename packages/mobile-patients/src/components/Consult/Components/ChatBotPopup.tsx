@@ -4,6 +4,7 @@ import { NavigationScreenProps } from 'react-navigation';
 import { WebView } from 'react-native-webview';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { getAsyncStorageValues } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 interface ChatBotPopupProps extends NavigationScreenProps {
   visiblity: boolean;
@@ -14,11 +15,21 @@ interface ChatBotPopupProps extends NavigationScreenProps {
 export const ChatBotPopup: React.FC<ChatBotPopupProps> = (props) => {
   const [visiblity, setVisiblity] = useState<boolean>(props.visiblity);
   const [loading, setLoading] = useState<boolean>(true);
-  const uri = `${AppConfig.Configuration.PATIENT_VITALS}?appointmentId=${props.appointmentId}`;
+  const [uri, setUri] = useState<string>('');
 
   useEffect(() => {
     setVisiblity(props.visiblity);
   }, [props.visiblity]);
+
+  useEffect(() => {
+    const setWebViewUri = async () => {
+      const [loginToken, phoneNumber] = await getAsyncStorageValues();
+      let token = JSON.parse(loginToken);
+      const uri = `${AppConfig.Configuration.PATIENT_VITALS}?utm_token=${token}&utm_mobile_number=${phoneNumber}&appointmentId=${props.appointmentId}`;
+      setUri(uri);
+    };
+    setWebViewUri();
+  }, []);
 
   return (
     <Modal animationType={'none'} transparent={false} visible={visiblity}>
