@@ -1208,6 +1208,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     pinCode,
     isPharmacyPincodeServiceable,
     serverCartItems,
+    locationCode,
   } = useShoppingCart();
   const cartItemsCount = cartItems.length + serverCartItems?.length;
 
@@ -4893,10 +4894,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     const onPressCart = () => {
       postVaccineWidgetEvents(CleverTapEventName.MY_CART_CLICKED, 'Top bar');
       const route =
-        (serverCartItems.length && cartItems.length) ||
-        (!serverCartItems.length && !cartItems.length)
+        (serverCartItems?.length && cartItems.length) ||
+        (!serverCartItems?.length && !cartItems.length)
           ? AppRoutes.MedAndTestCart
-          : serverCartItems.length
+          : serverCartItems?.length
           ? AppRoutes.ServerCart
           : AppRoutes.AddPatients;
       props.navigation.navigate(route);
@@ -5249,7 +5250,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         sortBy,
         selectedFilters,
         axdcCode,
-        pinCode
+        pinCode,
+        locationCode
       );
 
       let finalProducts: any[] = [];

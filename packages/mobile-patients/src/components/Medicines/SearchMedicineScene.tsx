@@ -184,6 +184,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     axdcCode,
     serverCartItems,
     cartLocationDetails,
+    locationCode,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
@@ -247,7 +248,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
 
   const onSearchMedicine = (_searchText: string) => {
     setsearchSate('load');
-    getMedicineSearchSuggestionsApi(_searchText, axdcCode, pharmacyPincode)
+    getMedicineSearchSuggestionsApi(_searchText, axdcCode, pharmacyPincode, locationCode)
       .then(({ data }) => {
         const products = data.products || [];
         setMedicineList(products);
@@ -283,7 +284,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       }
       setShowMatchingMedicines(true);
       setProductsIsLoading(true);
-      searchMedicineApi(_searchText, pageCount, sortBy, {}, axdcCode, pharmacyPincode)
+      searchMedicineApi(_searchText, pageCount, sortBy, {}, axdcCode, pharmacyPincode, locationCode)
         .then(async ({ data }) => {
           const products = data.products || [];
           setSearchHeading(data.search_heading!);
@@ -456,7 +457,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   };
 
   const renderHeader = () => {
-    const cartItemsCount = serverCartItems.length + diagnosticCartItems.length;
+    const cartItemsCount = serverCartItems?.length + diagnosticCartItems.length;
     return (
       <Header
         container={{ borderBottomWidth: 0 }}
@@ -843,7 +844,15 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
                 onEndReached={() => {
                   if (!listFetching && !endReached) {
                     setListFetching(true);
-                    searchMedicineApi(searchText, pageCount, sortBy, {}, axdcCode, pharmacyPincode)
+                    searchMedicineApi(
+                      searchText,
+                      pageCount,
+                      sortBy,
+                      {},
+                      axdcCode,
+                      pharmacyPincode,
+                      locationCode
+                    )
                       .then(({ data }) => {
                         const products = data.products || [];
                         if (prevData && JSON.stringify(prevData) !== JSON.stringify(products)) {

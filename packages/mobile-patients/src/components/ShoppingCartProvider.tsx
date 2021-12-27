@@ -362,6 +362,8 @@ export interface ShoppingCartContextProps {
   setIsPharmacyPincodeServiceable: ((value: boolean) => void) | null;
   vdcType: string;
   setVdcType: ((value: string) => void) | null;
+  locationCode: string;
+  setLocationCode: ((value: string) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -535,6 +537,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setIsPharmacyPincodeServiceable: null,
   vdcType: '',
   setVdcType: null,
+  locationCode: '',
+  setLocationCode: null,
 });
 
 const AsyncStorageKeys = {
@@ -781,6 +785,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
   >(true);
 
   const [vdcType, setVdcType] = useState<ShoppingCartContextProps['vdcType']>('');
+  const [locationCode, setLocationCode] = useState<ShoppingCartContextProps['locationCode']>('');
 
   const setCartItems: ShoppingCartContextProps['setCartItems'] = (cartItems) => {
     if (cartItems.length) {
@@ -1566,6 +1571,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setIsPharmacyPincodeServiceable,
         vdcType,
         setVdcType,
+        locationCode,
+        setLocationCode,
       }}
     >
       {props.children}

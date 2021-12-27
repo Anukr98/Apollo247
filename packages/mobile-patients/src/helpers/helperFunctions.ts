@@ -15,6 +15,7 @@ import {
   getDiagnosticDoctorPrescriptionResults,
   autoCompletePlaceSearch,
   pinCodeServiceabilityApi247,
+  getLocationCode,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -4279,4 +4280,17 @@ export const shareDocument = async (
   }
   return viewReportOrderId;
 };
+
+export const setLocationCodeFromApi = (pincode: string, setLocationCode: ((value: string) => void) | null, locationCode: string) => {
+  if (pincode) {
+    getLocationCode(pincode)
+    .then((response) => {
+      const code = response?.data?.sr_code;
+      if (code && code !== locationCode) setLocationCode?.(code);
+    })
+    .catch((error) => {
+      CommonBugFender('setLocationCodeFromApi_helperFunction', error);
+    })
+  }
+}
 
