@@ -94,6 +94,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     serverCartItems,
     setAddToCartSource,
     serverCartLoading,
+    locationCode,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
 
@@ -176,7 +177,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
       setLoading(true);
       const {
         data: { products },
-      } = await getMedicineSearchSuggestionsApi(searchText, axdcCode, pinCode);
+      } = await getMedicineSearchSuggestionsApi(searchText, axdcCode, pinCode, locationCode);
       fireSearchEvent(searchText, products.length);
       setSearchResults(products || []);
       setLoading(false);

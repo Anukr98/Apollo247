@@ -730,7 +730,8 @@ export const searchMedicineApi = async (
   sortBy: string | null,
   filters: { [key: string]: string[] } | null,
   axdcCode?: string | null,
-  pincode?: string | null
+  pincode?: string | null,
+  srCode?: string | null,
 ): Promise<AxiosResponse<PopcSrchPrdApiResponse>> => {
   return Axios({
     url: config.MED_SEARCH[0],
@@ -742,6 +743,7 @@ export const searchMedicineApi = async (
       filters,
       axdcCode: `${axdcCode}`,
       pincode: `${pincode}`,
+      sr_code: `${srCode}`
     },
     headers: {
       Authorization: config.MED_SEARCH[1],
@@ -862,7 +864,8 @@ let cancelGetMedicineSearchSuggestionsApi: Canceler | undefined;
 export const getMedicineSearchSuggestionsApi = (
   searchText: string,
   axdcCode?: string | null,
-  pincode?: string | null
+  pincode?: string | null,
+  srCode?: string | null,
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
   const CancelToken = Axios.CancelToken;
   cancelGetMedicineSearchSuggestionsApi && cancelGetMedicineSearchSuggestionsApi();
@@ -873,6 +876,7 @@ export const getMedicineSearchSuggestionsApi = (
       params: searchText,
       axdcCode: `${axdcCode}`,
       pincode: `${pincode}`,
+      sr_code: `${srCode}`
     },
     headers: {
       Authorization: config.MED_SEARCH_SUGGESTION[1],
@@ -1029,6 +1033,23 @@ export const fetchCouponsPDP = async (
     headers: {},
   });
   return response;
+};
+
+export const getLocationCode = (
+  pincode: string
+): Promise<AxiosResponse<any>> => {
+  const url = `${AppConfig.Configuration.GET_LOCATION_CODE[0]}`;
+  return Axios.post(
+    url,
+    {
+      pincode: `${pincode}`,
+    },
+    {
+      headers: {
+        Authorization: AppConfig.Configuration.GET_LOCATION_CODE[1],
+      },
+    }
+  );
 };
 
 export const getBoughtTogether = (

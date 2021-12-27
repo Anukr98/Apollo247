@@ -103,6 +103,7 @@ export const MedicineListing: React.FC<Props> = (props) => {
     serverCartLoading,
     serverCartErrorMessage,
     setServerCartErrorMessage,
+    locationCode,
   } = useShoppingCart();
 
   // states
@@ -297,7 +298,8 @@ export const MedicineListing: React.FC<Props> = (props) => {
         sortBy,
         _selectedFilters,
         axdcCode,
-        pinCode
+        pinCode,
+        locationCode
       );
       updateProducts(pageId, products, data);
       setProductsTotal(data.product_count);
