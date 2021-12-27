@@ -1169,6 +1169,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingStart: 14,
     flexWrap: 'wrap',
+    marginVertical: 4,
   },
   symptomDetail: {
     backgroundColor: theme.colors.WHITE,
@@ -1208,9 +1209,13 @@ const styles = StyleSheet.create({
   },
   symptomValue: {
     ...theme.viewStyles.text('R', 14, theme.colors.LIGHT_BLUE, 1, 16),
-    flexShrink: 1,
-    flexWrap: 'wrap',
   },
+  sympDetailView: {
+    flexDirection: 'column',
+    paddingStart: 20,
+    paddingBottom: 6,
+  },
+  symParentText: { paddingStart: 14, paddingVertical: 4 },
 });
 
 const urlRegEx = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG)/;
@@ -5691,6 +5696,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
+  const symptomTextRow = (heading: string, value: string) => {
+    return (
+      <Text style={styles.symParentText}>
+        <Text style={styles.symptomDetail}>{heading}</Text>
+        <Text style={styles.symptomValue}>{value}</Text>
+      </Text>
+    );
+  };
+
   const renderChatRow = (
     rowData: {
       id: string;
@@ -5821,6 +5835,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rightComponent++;
       if (rowData?.automatedText == chatBotPatientVitalsSummary) {
         const finalSummary = JSON.parse(rowData?.message);
+        const { age, Height, Weight, medicineAllergies, foodAllergies } =
+          finalSummary?.[0]?.staticQuestions || {};
         return (
           <View style={styles.assignmentParentView}>
             <View style={styles.assessmentView}>
@@ -5828,77 +5844,37 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             </View>
             {finalSummary?.[0]?.staticQuestions && (
               <>
-                <Text style={styles.symptomDetail}>
-                  Age:{' '}
-                  <Text style={styles.symptomValue}>{`${finalSummary?.[0]?.staticQuestions?.age ||
-                    ''}`}</Text>
-                </Text>
-                <Text style={styles.symptomDetail}>
-                  Height:{' '}
-                  <Text style={styles.symptomValue}>{`${finalSummary?.[0]?.staticQuestions
-                    ?.Height || ''}`}</Text>
-                </Text>
-                <Text style={styles.symptomDetail}>
-                  Weight:{' '}
-                  <Text style={styles.symptomValue}>{`${finalSummary?.[0]?.staticQuestions
-                    ?.Weight || ''}`}</Text>
-                </Text>
-                {finalSummary?.[0]?.staticQuestions?.medicineAllergies?.length ? (
-                  <Text style={styles.symptomDetail}>
-                    Medicine Allergies:{' '}
-                    <Text style={styles.symptomValue}>{`${finalSummary?.[0]?.staticQuestions
-                      ?.medicineAllergies || ''}`}</Text>
-                  </Text>
-                ) : (
-                  ''
-                )}
-                {finalSummary?.[0]?.staticQuestions?.foodAllergies?.length ? (
-                  <Text style={styles.symptomDetail}>
-                    Food Allergies:{' '}
-                    <Text style={styles.symptomValue}>{`${finalSummary?.[0]?.staticQuestions
-                      ?.foodAllergies || ''}`}</Text>
-                  </Text>
-                ) : (
-                  ''
-                )}
+                {symptomTextRow('Age: ', age || '')}
+                {symptomTextRow('Height: ', Height || '')}
+                {symptomTextRow('Weight: ', Weight || '')}
+                {!!medicineAllergies && symptomTextRow('Medicine Allergies: ', medicineAllergies)}
+                {!!foodAllergies && symptomTextRow('Food Allergies: ', foodAllergies)}
               </>
             )}
             {finalSummary?.[0]?.dynamicQuestions?.map((item: any) => {
               return (
                 <View>
                   <Text style={styles.symptomName}>{item?.symptom || ''}</Text>
-                  {!!item?.since && (
-                    <Text style={styles.symptomDetail}>
-                      Duration: <Text style={styles.symptomValue}>{`${item.since}`}</Text>
-                    </Text>
-                  )}
-
-                  {!!item?.severity && (
-                    <Text style={styles.symptomDetail}>
-                      Severity: <Text style={styles.symptomValue}>{`${item.severity}`}</Text>
-                    </Text>
-                  )}
-
-                  {!!item?.howOften && (
-                    <Text style={styles.symptomDetail}>
-                      HowOften: <Text style={styles.symptomValue}>{`${item.howOften}`}</Text>
-                    </Text>
-                  )}
+                  {!!item?.since && symptomTextRow('Duration: ', item.since)}
+                  {!!item?.severity && symptomTextRow('Severity: ', item.severity)}
+                  {!!item?.howOften && symptomTextRow('HowOften: ', item.howOften)}
 
                   {!!item?.details &&
                     !!Object.keys(item.details).length &&
                     Object.entries(item?.details).map(([key, value]: any) => {
                       return (
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View>
                           <Text style={styles.symptomDetail}>{`${key}: `}</Text>
-                          {Array.isArray(value) ? (
-                            <View style={{ flexDirection: 'column' }}>
+                          {Array.isArray(value) && (
+                            <View style={styles.sympDetailView}>
                               {value?.map((detailsItem: any, j: number) => {
-                                return <Text style={styles.symptomValue}>{detailsItem}</Text>;
+                                return (
+                                  <Text style={{ ...styles.symptomValue, paddingVertical: 2 }}>
+                                    {'\u2022 ' + detailsItem}
+                                  </Text>
+                                );
                               })}
                             </View>
-                          ) : (
-                            <Text style={styles.symptomValue}>{`${value?.join()}`}</Text>
                           )}
                         </View>
                       );
@@ -6501,7 +6477,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
   const renderStartAssessment = () => {
     return (
-      <View style={{ flexDirection: 'row' }}>
+      <View style={{ flexDirection: 'row', marginBottom: 60 }}>
         <MedicalAssessment style={styles.assessmentIcon} />
         <View style={styles.startAssessmentView}>
           <Text
@@ -7914,31 +7890,29 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         {renderChatView()}
         {Platform.OS == 'ios' ? (
           <>
-            {!displayChatQuestions ? (
-              <TouchableOpacity
-                activeOpacity={1}
-                style={[styles.uploadButtonStyles, { opacity: disableChat ? 0.5 : 1 }]}
-                onPress={async () => {
-                  if (!disableChat) {
-                    CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
-                    setDropdownVisible(!isDropdownVisible);
-                  }
+            <TouchableOpacity
+              activeOpacity={1}
+              style={[styles.uploadButtonStyles, { opacity: disableChat ? 0.5 : 1 }]}
+              onPress={async () => {
+                if (!disableChat) {
+                  CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
+                  setDropdownVisible(!isDropdownVisible);
+                }
+              }}
+            >
+              <UploadHealthRecords
+                style={{ width: 21, height: 21, backgroundColor: 'transparent' }}
+              />
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 7, '#01475b', 1, undefined, -0.03),
+                  marginTop: 2,
+                  textAlign: 'center',
                 }}
               >
-                <UploadHealthRecords
-                  style={{ width: 21, height: 21, backgroundColor: 'transparent' }}
-                />
-                <Text
-                  style={{
-                    ...theme.viewStyles.text('M', 7, '#01475b', 1, undefined, -0.03),
-                    marginTop: 2,
-                    textAlign: 'center',
-                  }}
-                >
-                  {'Upload Records'}
-                </Text>
-              </TouchableOpacity>
-            ) : null}
+                {'Upload Records'}
+              </Text>
+            </TouchableOpacity>
             {availableMessages == 0 && <ChatDisablePrompt followChatLimit={followChatLimit} />}
             <View
               style={[
@@ -7978,29 +7952,27 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 />
               </View>
             </View>
-            {!displayChatQuestions ? (
-              <TouchableOpacity
-                activeOpacity={1}
-                style={[styles.sendButtonStyles, { opacity: disableChat ? 0.5 : 1 }]}
-                onPress={async () => {
-                  if (!disableChat) {
-                    const textMessage = messageText.trim();
+            <TouchableOpacity
+              activeOpacity={1}
+              style={[styles.sendButtonStyles, { opacity: disableChat ? 0.5 : 1 }]}
+              onPress={async () => {
+                if (!disableChat) {
+                  const textMessage = messageText.trim();
 
-                    if (textMessage.length == 0) {
-                      Alert.alert('Apollo', 'Please write something to send message.');
-                      CommonLogEvent(AppRoutes.ChatRoom, 'Please write something to send message.');
-                      return;
-                    }
-                    CommonLogEvent(AppRoutes.ChatRoom, 'Message sent clicked');
-
-                    send(textMessage);
-                    setContentHeight(40);
+                  if (textMessage.length == 0) {
+                    Alert.alert('Apollo', 'Please write something to send message.');
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Please write something to send message.');
+                    return;
                   }
-                }}
-              >
-                <ChatSend style={{ width: 24, height: 24, marginTop: 8, marginLeft: 14 }} />
-              </TouchableOpacity>
-            ) : null}
+                  CommonLogEvent(AppRoutes.ChatRoom, 'Message sent clicked');
+
+                  send(textMessage);
+                  setContentHeight(40);
+                }
+              }}
+            >
+              <ChatSend style={{ width: 24, height: 24, marginTop: 8, marginLeft: 14 }} />
+            </TouchableOpacity>
           </>
         ) : (
           <>
