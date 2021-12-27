@@ -41,7 +41,7 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsByItemIDsAndCityID';
 import { getConfigurableReportTAT_getConfigurableReportTAT_itemLevelReportTATs } from '@aph/mobile-patients/src/graphql/types/getConfigurableReportTAT';
-
+import { renderDiagnosticRecommendationShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 export interface CartPageSummaryProps {
   containerStyle: StyleProp<ViewStyle>;
   _onPressShowLess: () => void;
@@ -75,6 +75,7 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
   const [reportTat, setReportTat] = useState([] as any);
   const [recommendationsTat, setRecommendationsTat] = useState([] as any);
   const [topBookedTests, setTopBookedTests] = useState([] as any);
+  const [recommendationShimmer, setRecommendationShimmer] = useState<boolean>(false);
 
   const itemCount = cartItems?.length;
   const itemCountText = itemCount > 9 ? `${itemCount}` : `0${itemCount}`;
@@ -85,6 +86,7 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
   type itemReportTat = getConfigurableReportTAT_getConfigurableReportTAT_itemLevelReportTATs;
 
   useEffect(() => {
+    cartItems?.length == 0 && _onPressShowLess();
     if (cartItems?.length > 0) {
       fetchPricesForItems(cartItemIds); //fetch prices.
       fetchReportTat(cartItemIds); //for fetching the report tat
@@ -275,6 +277,8 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
     } catch (error) {
       setLoading?.(false);
       CommonBugFender('fetchPricesforItem_CartSummaryView', error);
+    } finally {
+      setRecommendationShimmer(false);
     }
   };
 
@@ -313,6 +317,7 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
   }
 
   const fetchCartPageRecommendations = async (_cartItemId: string | number[]) => {
+    setRecommendationShimmer(true);
     try {
       const listOfIds = _cartItemId;
       const recommedationResponse: any = await getDiagnosticCartRecommendations(
@@ -336,16 +341,17 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
             'fetchCartPageRecommendations'
           );
         } else {
-          //in case no results are there, or less than 2 -> show top booked test as result in case of test
           setRecommendationsData([]);
+          setRecommendationShimmer(false);
         }
       } else {
-        setRecommendationsData([]); //show top booked tests
+        setRecommendationsData([]);
+        setRecommendationShimmer(false);
       }
     } catch (error) {
       CommonBugFender('CartPage_fetchCartPageRecommendations', error);
       setRecommendationsData([]);
-      //show top booked tests
+      setRecommendationShimmer(false);
     }
   };
 
@@ -626,7 +632,9 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
       <Spearator style={{ marginTop: -8 }} />
       <ScrollView bounces={false}>
         {renderCartItems()}
-        {recommendationsData?.length > 0 && renderCartRecommendations()}
+        {recommendationShimmer
+          ? renderDiagnosticRecommendationShimmer()
+          : recommendationsData?.length > 0 && renderCartRecommendations()}
       </ScrollView>
     </View>
   );
