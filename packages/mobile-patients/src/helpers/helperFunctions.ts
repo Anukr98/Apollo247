@@ -4294,3 +4294,25 @@ export const setLocationCodeFromApi = (pincode: string, setLocationCode: ((value
   }
 }
 
+export const getShipmentAndTatInfo = (shipments) => {
+  return shipments.map((shipment) => {
+    const { tat, estimatedAmount, items } = shipment;
+    const tatDate = tat ? tat : null;
+    const tatDayDifference = tatDate
+      ? moment(tatDate).diff(new Date(), 'd')
+      : null;
+    const tatHourDifference = tatDate
+      ? moment(tatDate).format('hh:mm a')
+      : null;
+
+    const skuIds = items.map(({ sku }) => sku).join(" , ");
+    return {
+      tatDayDifference,
+      tatHourDifference,
+      estimatedAmount,
+      skuIds,
+      tat,
+    };
+  });
+};
+

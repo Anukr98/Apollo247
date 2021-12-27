@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { availabilityApi247 } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { getDeliveryTAT247v3, TatApiInput247 } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 export interface MultiVariantProps {
   multiVariantAttributes?: any[];
@@ -22,6 +23,11 @@ export const MultiVariant: React.FC<MultiVariantProps> = (props) => {
     pincode,
   } = props;
 
+  const { addresses, cartLocationDetails, cartAddressId } = useShoppingCart();
+
+  const defaultAddress = addresses.find((item) => item.id == cartAddressId);
+  const pharmacyLocation = cartLocationDetails || defaultAddress;
+
   const multiVariantsProductsKeys = Object.keys(multiVariantProducts);
 
   const selectedSku = skusInformation?.filter((value) => value.sku == currentSku);
@@ -40,26 +46,35 @@ export const MultiVariant: React.FC<MultiVariantProps> = (props) => {
       multiVariantsProductsKeys.map((item) => {
         if (item.startsWith(selectedOptions[0] + '_')) {
           const x = multiVariantProducts && multiVariantProducts?.[item]?.sku;
-          skus.push(x);
+          skus.push({ sku: x, qty: 1 });
         }
       });
     } else {
       skusInformation?.map((item) => {
-        skus.push(item?.sku);
+        skus.push({ sku: item?.sku, qty: 1 });
       });
     }
-    availabilityApi247(pincode, skus.join(',')).then((res) => {
-      if (res?.data?.response?.length) {
-        const availabilityInfo = skuAvailability?.map((data, index) => {
-          const checkExist = res?.data?.response?.filter((resData) => resData?.sku === data?.sku);
-          if (checkExist?.length) {
-            return { ...data, available: checkExist?.[0].exist };
-          }
-          return { ...data, available: false };
-        });
-        setSkuAvailability(availabilityInfo);
-      }
-    });
+    getDeliveryTAT247v3({
+      items: skus,
+      pincode: pincode,
+      lat: pharmacyLocation?.latitude || 0,
+      lng: pharmacyLocation?.longitude || 0,
+    } as TatApiInput247)
+      .then((res) => {
+        if (res?.data?.response?.length > 0) {
+          const availabilityInfo = skuAvailability?.map((data, index) => {
+            const checkExist = res?.data?.response?.[0]?.items?.filter(
+              (resData) => resData?.sku === data?.sku
+            );
+            if (checkExist?.[0]?.exist) {
+              return { ...data, available: true };
+            }
+            return { ...data, available: false };
+          });
+          setSkuAvailability(availabilityInfo);
+        }
+      })
+      .catch((error) => {});
   };
 
   const getSkuStatus = (code, index) => {
