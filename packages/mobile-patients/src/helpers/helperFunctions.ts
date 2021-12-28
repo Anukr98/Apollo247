@@ -1775,6 +1775,7 @@ export const postAppointmentCleverTapEvents = (
     'Secretary number': g(secretaryData, 'mobileNumber'),
     'Doctor number': g(data, 'doctorInfo', 'mobileNumber')!,
     'Patient number': g(currentPatient, 'mobileNumber') || undefined,
+    'Display ID': data?.displayId || '',
   };
 
   if (type === CleverTapEventName.CONSULT_CANCEL_CLICKED_BY_PATIENT) {

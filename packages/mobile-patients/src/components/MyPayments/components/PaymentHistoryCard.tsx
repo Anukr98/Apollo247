@@ -31,7 +31,7 @@ const PaymentHistoryCard: FC<PaymentHistoryCardProps> = (props) => {
       const { id, item, lastIndex, index, paymentFor, patientId } = props;
       const appointmentId = props.navigationProps.getParam('appointmentId');
       if (id === appointmentId) {
-        props.navigationProps.navigate(AppRoutes.PaymentStatusScreen, {
+        props.navigationProps.navigate(AppRoutes.ConsultPaymentScreen, {
           item: item,
           paymentFor: paymentFor,
           status: 'TXN_REFUND',

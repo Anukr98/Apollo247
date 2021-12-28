@@ -22,13 +22,14 @@ interface FooterButtonProps {
   item: any;
   paymentFor: string;
   navigationProps: any;
+  paymentStatus: string;
 }
 const FooterButton: FC<FooterButtonProps> = (props) => {
   const { SUCCESS, FAILED, REFUND } = PaymentConstants;
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { circleSubscriptionId, circleSubPlanId } = useShoppingCart();
   const statusItemValues = () => {
-    const { paymentFor, item } = props;
+    const { paymentFor, item, paymentStatus } = props;
     let status = 'PENDING';
     let orderID = 0;
     if (paymentFor === 'consult') {
@@ -38,7 +39,7 @@ const FooterButton: FC<FooterButtonProps> = (props) => {
       const paymentInfo = PaymentOrders?.paymentStatus ? PaymentOrders : appointmentPayments[0];
       if (!paymentInfo) {
         status = 'PENDING';
-      } else if (refundInfo.length) {
+      } else if (refundInfo.length || paymentStatus == REFUND) {
         status = REFUND;
       } else {
         status = paymentInfo?.paymentStatus;

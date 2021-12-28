@@ -16,9 +16,7 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import {
-  CONSULT_ORDER_INVOICE,
-} from '@aph/mobile-patients/src/graphql/profiles';
+import { CONSULT_ORDER_INVOICE } from '@aph/mobile-patients/src/graphql/profiles';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string, { Payment, NewPaymentStatuses } from '@aph/mobile-patients/src/strings/strings.json';
@@ -42,7 +40,7 @@ import {
   TextInput,
   SafeAreaView,
 } from 'react-native';
-import { NavigationScreenProps} from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
 import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
 import { Snackbar } from 'react-native-paper';
@@ -53,9 +51,7 @@ import { paymentTransactionStatus_paymentTransactionStatus_appointment_amountBre
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 import moment from 'moment';
-import {
-  convertNumberToDecimal,
-} from '@aph/mobile-patients/src/utils/commonUtils';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { RenderPdf } from '@aph/mobile-patients/src/components/ui/RenderPdf';
 import PaymentStatusConstants from '@aph/mobile-patients/src/components/MyPayments/constants';
 import FooterButton from '@aph/mobile-patients/src/components/MyPayments/PaymentStatus/components/FooterButton';
@@ -66,6 +62,7 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
   const itemDetails = props.navigation.getParam('item');
   const paymentType = props.navigation.getParam('paymentFor');
   const patientId = props.navigation.getParam('patientId');
+  const paymentStatus = props.navigation.getParam('status');
   const { SUCCESS, FAILED, REFUND } = PaymentStatusConstants;
 
   const client = useApolloClient();
@@ -133,7 +130,7 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
       return <ConsultSuccess style={styles.statusIconStyles} />;
     } else if (status === failure) {
       return <ConsultFailure style={styles.statusIconStyles} />;
-    } else if(status == REFUND){
+    } else if (status == REFUND) {
       return <ConsultRefund style={styles.refundIconStyles} />;
     } else {
       return <ConsultPending style={styles.statusIconStyles} />;
@@ -145,38 +142,38 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
     let refId = '';
     let price = 0;
     const {
-        appointmentPayments,
-        PaymentOrders,
-        actualAmount,
-        displayId,
-        discountedAmount,
-        appointmentRefunds,
-      } = itemDetails;
-      const { refund } = PaymentOrders;
-      const refundInfo = refund?.length ? refund : appointmentRefunds;
-      const paymentInfo = PaymentOrders?.paymentStatus ? PaymentOrders : appointmentPayments[0];
-      if (!paymentInfo) {
-        status = 'PENDING';
-      } else if (refundInfo.length) {
-        const { paymentRefId, amountPaid } = paymentInfo;
-        refId = paymentRefId;
-        price = amountPaid;
-        status = REFUND;
-      } else {
-        const { paymentStatus, paymentRefId, amountPaid } = paymentInfo;
-        status = paymentStatus;
-        refId = paymentRefId;
-        price = amountPaid;
-      }
-      return {
-        status: status,
-        refId: refId,
-        price: `${string.common.Rs} ` + String(price),
-        orderId: displayId,
-      };
+      appointmentPayments,
+      PaymentOrders,
+      actualAmount,
+      displayId,
+      discountedAmount,
+      appointmentRefunds,
+    } = itemDetails;
+    const { refund } = PaymentOrders;
+    const refundInfo = refund?.length ? refund : appointmentRefunds;
+    const paymentInfo = PaymentOrders?.paymentStatus ? PaymentOrders : appointmentPayments[0];
+    if (!paymentInfo) {
+      status = 'PENDING';
+    } else if (refundInfo.length || paymentStatus == REFUND) {
+      const { paymentRefId, amountPaid } = paymentInfo;
+      refId = paymentRefId;
+      price = amountPaid;
+      status = REFUND;
+    } else {
+      const { paymentStatus, paymentRefId, amountPaid } = paymentInfo;
+      status = paymentStatus;
+      refId = paymentRefId;
+      price = amountPaid;
+    }
+    return {
+      status: status,
+      refId: refId,
+      price: `${string.common.Rs} ` + String(price),
+      orderId: displayId,
+    };
   };
   const { refId, price, orderId, status } = statusItemValues();
-  
+
   const textComponent = (
     message: string,
     numOfLines: number | undefined,
@@ -206,7 +203,7 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
       message = ' Payment Failed';
       textColor = theme.colors.FAILURE_TEXT;
     } else if (status == REFUND) {
-      message = ' Refund Processed'
+      message = ' Refund Processed';
       textColor = theme.colors.DEEP_RED;
     }
     return textComponent(message, undefined, textColor, false);
@@ -225,20 +222,20 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
   };
 
   const renderViewInvoice = () => {
-    if (status == success || status == REFUND) {
+    if (status == success) {
       return (
         <View style={styles.viewInvoice}>
           <TouchableOpacity
-           style={styles.viewInvoiceContainer}
-           onPress={() => requestStoragePermission()}
+            style={styles.viewInvoiceContainer}
+            onPress={() => requestStoragePermission()}
           >
             <PdfGray style={styles.viewIcon} />
             {textComponent('VIEW INVOICE', undefined, theme.colors.TANGERINE_YELLOW, false)}
           </TouchableOpacity>
           <TouchableOpacity
-           style={styles.emailInvoiceView}
-           onPress={() => setshowEmailInput(!showEmailInput)}
-           >
+            style={styles.emailInvoiceView}
+            onPress={() => setshowEmailInput(!showEmailInput)}
+          >
             <EmailGray style={styles.emailIcon} />
             {textComponent(
               'EMAIL INVOICE',
@@ -333,11 +330,6 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
   };
 
   const downloadInvoice = () => {
-      console.log({
-        patientId: patientId,
-        appointmentId: orderId,
-      });
-      
     client
       .query({
         query: CONSULT_ORDER_INVOICE,
@@ -351,7 +343,8 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
         const { data } = res;
         const { getOrderInvoice } = data;
         let dirs = RNFetchBlob.fs.dirs;
-        let fileName: string = 'Apollo_Consult_Invoice' + moment().format('MMM_D_YYYY_HH_mm') + '.pdf';
+        let fileName: string =
+          'Apollo_Consult_Invoice' + moment().format('MMM_D_YYYY_HH_mm') + '.pdf';
         const downloadPath =
           Platform.OS === 'ios'
             ? (dirs.DocumentDir || dirs.MainBundleDir) +
@@ -392,16 +385,18 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
   };
   const renderStatusCard = () => {
     const orderIdText = 'Order ID: ' + String(orderId);
-    const {appointmentType, appointmentDateTime, doctor} = itemDetails || {};
+    const { appointmentType, appointmentDateTime, doctor } = itemDetails || {};
     return (
       <View style={styles.statusCardStyle}>
-        <View style={[
-          styles.statusCardSubContainerStyle,
-          (status == pending || status == failure) &&
-          {
-            ...styles.failureCardStyle,
-            borderColor: status == failure ? theme.colors.APP_RED : theme.colors.PENDING_TEXT
-          }]}>
+        <View
+          style={[
+            styles.statusCardSubContainerStyle,
+            (status == pending || status == failure) && {
+              ...styles.failureCardStyle,
+              borderColor: status == failure ? theme.colors.APP_RED : theme.colors.PENDING_TEXT,
+            },
+          ]}
+        >
           <View style={styles.centerHorizontal}>
             {statusIcon()}
             <View style={styles.statusView}>
@@ -415,17 +410,16 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
             </Text>
           </View>
         </View>
-        {(status == success || status == REFUND) &&
-          <TouchableOpacity
-            style={styles.refStyles}
-            onPress={() => copyToClipboard(refId)}>
+        {status == success && (
+          <TouchableOpacity style={styles.refStyles} onPress={() => copyToClipboard(refId)}>
             <Text style={theme.viewStyles.text('R', 10, theme.colors.SLATE_GRAY, 1, 20)}>
               {'Payment Ref. Number - ' + refId}
             </Text>
             <Copy style={styles.iconStyle} />
-          </TouchableOpacity>}
+          </TouchableOpacity>
+        )}
         <View>
-          {renderViewInvoice()} 
+          {renderViewInvoice()}
           {renderEmailInputContainer()}
           <Snackbar
             style={styles.snackbarView}
@@ -444,8 +438,10 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
             {string.consultPayment.appointmentDetails}
           </Text>
           <Text style={theme.viewStyles.text('M', 12, theme.colors.CONSULT_SUCCESS_TEXT, 1, 20)}>
-            {appointmentType.charAt(0).toUpperCase() + appointmentType.slice(1).toLowerCase()
-            + ' Consultation,' + getDate(appointmentDateTime)}
+            {appointmentType.charAt(0).toUpperCase() +
+              appointmentType.slice(1).toLowerCase() +
+              ' Consultation,' +
+              getDate(appointmentDateTime)}
           </Text>
           <Text style={theme.viewStyles.text('M', 12, theme.colors.BLACK_COLOR, 1, 20)}>
             {doctor?.name}
@@ -506,14 +502,10 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
         <Text style={theme.viewStyles.text('SB', 12, theme.colors.LIGHT_BLUE)}>
           {string.consultPayment.knowConsultation}
         </Text>
-        <Text style={styles.callReceiveText}>
-          {string.consultPayment.receiveCallText}
-        </Text>
+        <Text style={styles.callReceiveText}>{string.consultPayment.receiveCallText}</Text>
         <View style={styles.consultStepView}>
           <View style={styles.stepNumberContainer}>
-            <Text style={theme.viewStyles.text('R', 10, theme.colors.WHITE)}>
-              1
-            </Text>
+            <Text style={theme.viewStyles.text('R', 10, theme.colors.WHITE)}>1</Text>
           </View>
           <Text style={theme.viewStyles.text('R', 10, theme.colors.LIGHT_BLUE)}>
             {string.consultPayment.beforeConsultation}
@@ -530,9 +522,7 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
         </View>
         <View style={styles.consultStepView}>
           <View style={styles.stepNumberContainer}>
-            <Text style={theme.viewStyles.text('R', 10, theme.colors.WHITE)}>
-              2
-            </Text>
+            <Text style={theme.viewStyles.text('R', 10, theme.colors.WHITE)}>2</Text>
           </View>
           <Text style={theme.viewStyles.text('R', 10, theme.colors.LIGHT_BLUE)}>
             {string.consultPayment.consultation}
@@ -540,32 +530,22 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
         </View>
         <View style={styles.infoContainer}>
           <View style={styles.dashLine} />
-          <Text style={styles.consultInfoText}>
-            {string.consultPayment.stepTwo}
-          </Text>
+          <Text style={styles.consultInfoText}>{string.consultPayment.stepTwo}</Text>
         </View>
         <View style={styles.consultStepView}>
           <View style={styles.stepNumberContainer}>
-            <Text style={theme.viewStyles.text('R', 10, theme.colors.WHITE)}>
-              3
-            </Text>
+            <Text style={theme.viewStyles.text('R', 10, theme.colors.WHITE)}>3</Text>
           </View>
           <Text style={theme.viewStyles.text('R', 10, theme.colors.LIGHT_BLUE)}>
             {string.consultPayment.postConsultation}
           </Text>
         </View>
         <View style={styles.lastStepView}>
-          <Text style={styles.consultInfoText}>
-            {string.consultPayment.stepThree}
-          </Text>
+          <Text style={styles.consultInfoText}>{string.consultPayment.stepThree}</Text>
         </View>
-        <Text style={styles.guidelineText}>
-          {string.consultPayment.detailedGuidelines}
-        </Text>
-        <TouchableOpacity
-          onPress={() => setShowPDF(true)} 
-          style={styles.pdfView}>
-          <Pdf style={styles.pdfIcon}/>
+        <Text style={styles.guidelineText}>{string.consultPayment.detailedGuidelines}</Text>
+        <TouchableOpacity onPress={() => setShowPDF(true)} style={styles.pdfView}>
+          <Pdf style={styles.pdfIcon} />
           <Text style={theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE)}>
             {string.consultPayment.viewGuideline}
             <Text style={theme.viewStyles.text('R', 12, theme.colors.SLATE_GRAY)}>
@@ -573,13 +553,13 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
             </Text>
           </Text>
           <View style={styles.arrowIconView}>
-            <RightArrowBlue style={{height: 12, width: 6}} />
+            <RightArrowBlue style={{ height: 12, width: 6 }} />
           </View>
         </TouchableOpacity>
       </View>
-    )
-  }
-  
+    );
+  };
+
   const renderMedicineNote = () => {
     return (
       <View style={styles.medicineNoteView}>
@@ -587,8 +567,8 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
           {string.consultPayment.medicineNote}
         </Text>
       </View>
-    )
-  }
+    );
+  };
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
@@ -596,26 +576,28 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
         <Header
           leftIcon="backArrow"
           title="PAYMENT STATUS"
-          onPressLeftIcon={() => props.navigation.goBack()} />
+          onPressLeftIcon={() => props.navigation.goBack()}
+        />
         <View style={styles.container}>
-            <ScrollView style={styles.container}>
-              {renderStatusCard()}
-              {renderConsultInfo()}
-              {circleSavings > 0 && !circleSubscriptionId
-                ? renderAddedCirclePlanWithValidity()
-                : null}
-              {circleSavings > 0 && !!circleSubscriptionId ? renderCircleSavingsOnPurchase() : null}
-              {renderNote()}
-              {renderMedicineNote()}
-            </ScrollView>
-            <View style={{backgroundColor: theme.colors.WHITE}}>
+          <ScrollView style={styles.container}>
+            {renderStatusCard()}
+            {renderConsultInfo()}
+            {circleSavings > 0 && !circleSubscriptionId
+              ? renderAddedCirclePlanWithValidity()
+              : null}
+            {circleSavings > 0 && !!circleSubscriptionId ? renderCircleSavingsOnPurchase() : null}
+            {renderNote()}
+            {renderMedicineNote()}
+          </ScrollView>
+          <View style={{ backgroundColor: theme.colors.WHITE }}>
             <FooterButton
               item={itemDetails}
               paymentFor={paymentType}
+              paymentStatus={paymentStatus}
               navigationProps={props.navigation}
             />
-            </View>
           </View>
+        </View>
         {notificationAlert && (
           <NotificationPermissionAlert
             onPressOutside={() => setNotificationAlert(false)}
@@ -663,7 +645,7 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 10,
     paddingBottom: 15,
-    backgroundColor: theme.colors.WHITE
+    backgroundColor: theme.colors.WHITE,
   },
   statusCardSubContainerStyle: {
     padding: 12,
@@ -705,7 +687,7 @@ const styles = StyleSheet.create({
   refStyles: {
     flexDirection: 'row',
     marginHorizontal: 12,
-    flexWrap: 'wrap'
+    flexWrap: 'wrap',
   },
   iconStyle: {
     marginLeft: 6,
@@ -732,7 +714,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 0.5,
     paddingVertical: 6,
-    borderColor: theme.colors.LIGHT_GRAY_2
+    borderColor: theme.colors.LIGHT_GRAY_2,
   },
   viewInvoice: {
     marginTop: 10,
@@ -863,99 +845,99 @@ const styles = StyleSheet.create({
   separator: {
     height: 1,
     flex: 1,
-    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR
+    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
   },
   appointmentView: {
-    marginTop: 8, 
-    marginStart: 12
+    marginTop: 8,
+    marginStart: 12,
   },
   statusView: {
-    paddingStart: 18
+    paddingStart: 18,
   },
   consultStepView: {
-    width: 114, 
-    backgroundColor: theme.colors.AQUA_BLUE, 
-    borderRadius: 6, 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    marginStart: 5
+    width: 114,
+    backgroundColor: theme.colors.AQUA_BLUE,
+    borderRadius: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginStart: 5,
   },
   stepNumberContainer: {
     height: 12,
     width: 12,
     borderRadius: 6,
-    backgroundColor: theme.colors.LIGHT_BLUE, 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    marginEnd: 6
+    backgroundColor: theme.colors.LIGHT_BLUE,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginEnd: 6,
   },
   infoContainer: {
-    marginStart: 10, 
-    flexDirection: 'row'
+    marginStart: 10,
+    flexDirection: 'row',
   },
   dashLine: {
-    width: 1, 
-    height: 56, 
-    borderStyle: 'dashed', 
-    borderWidth: 1, 
-    borderColor: theme.colors.LIGHT_BLUE, 
-    marginEnd: 16
+    width: 1,
+    height: 56,
+    borderStyle: 'dashed',
+    borderWidth: 1,
+    borderColor: theme.colors.LIGHT_BLUE,
+    marginEnd: 16,
   },
   consultInfoText: {
-    paddingTop: 4, 
-    ...theme.viewStyles.text('R', 10, theme.colors.LIGHT_BLUE)
+    paddingTop: 4,
+    ...theme.viewStyles.text('R', 10, theme.colors.LIGHT_BLUE),
   },
   lastStepView: {
-    marginStart: 26, 
-    marginBottom: 14
+    marginStart: 26,
+    marginBottom: 14,
   },
   guidelineText: {
-    ...theme.viewStyles.text('R', 10, theme.colors.SLATE_GRAY), 
-    marginStart: 5, 
-    marginBottom: 5
+    ...theme.viewStyles.text('R', 10, theme.colors.SLATE_GRAY),
+    marginStart: 5,
+    marginBottom: 5,
   },
   pdfView: {
-    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR, 
-    flex: 1, 
-    borderRadius: 6, 
-    flexDirection: 'row', 
-    paddingVertical: 8, 
-    alignItems: 'center'
+    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+    flex: 1,
+    borderRadius: 6,
+    flexDirection: 'row',
+    paddingVertical: 8,
+    alignItems: 'center',
   },
   pdfIcon: {
     width: 22,
     height: 26,
-    marginStart: 9, 
-    marginEnd: 13
+    marginStart: 9,
+    marginEnd: 13,
   },
   arrowIconView: {
-    flex: 1, 
-    alignItems: 'flex-end', 
-    marginEnd: 16
+    flex: 1,
+    alignItems: 'flex-end',
+    marginEnd: 16,
   },
-  snackbarView: { 
-    position: 'absolute', 
-    zIndex: 1001, 
-    bottom: -10 
+  snackbarView: {
+    position: 'absolute',
+    zIndex: 1001,
+    bottom: -10,
   },
   viewInvoiceContainer: {
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   viewIcon: {
-    width: 16, 
-    height: 10, 
-    marginEnd: 4
+    width: 16,
+    height: 10,
+    marginEnd: 4,
   },
   emailIcon: {
-    width: 17, 
-    height: 13, 
-    marginEnd: 4
+    width: 17,
+    height: 13,
+    marginEnd: 4,
   },
   emailInvoiceView: {
-    flexDirection: 'row', 
+    flexDirection: 'row',
     alignItems: 'center',
-    marginStart: 20
+    marginStart: 20,
   },
   locationSubView: {
     flexDirection: 'row',
@@ -977,5 +959,5 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
-  }
+  },
 });
