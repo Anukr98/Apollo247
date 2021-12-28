@@ -243,6 +243,8 @@ export enum CleverTapEventName {
   DIAGNOSTIC_MODIFY_ORDER = 'Diagnostic modify order',
   DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED = 'Diagnostic product listing page viewed',
   DIAGNOSTIC_PRESCRIPTION_SUBMITTED = 'Diagnostic prescription submitted',
+  DIAGNOSTIC_RADIOLOGY_HOME_PAGE = 'Diagnostic Radiology lead gen page viewed',
+  DIAGNOSTIC_RADIOLOGY_BOOKING_COMPLETE = 'Diagnostic Radiology Booking completed',
 
   //Conult Package Purchase Attribite
   CONSULT_PACKAGE_CLICKED = 'Consult Package Clicked',
@@ -1705,20 +1707,27 @@ export interface CleverTapEvents {
     'Item ID': string | number;
     'Item Price'?: number | string;
     'Circle user'?: string;
+    'Original Item ids'?: any;
+    'Section name'?: string;
   };
   [CleverTapEventName.DIAGNOSTIC_CART_VIEWED]: {
-    'Page source': string;
-    'Total items in cart': number;
-    'Cart Items': object[];
+    'Page source': string | undefined;
+    'Total items in cart': number | undefined;
+    'Cart Items': any;
     'Circle user': 'Yes' | 'No';
-    Pincode: string | number;
-    city: string;
+    Pincode: string | number | undefined;
+    city: string | undefined;
     UHID: string;
-    'Prescription Needed'?: 'Yes' | 'No';
-    'Net after discount'?: number; //item total
-    'Delivery charge'?: number;
-    'Coupon code used'?: string;
-    'Coupon Discount'?: number;
+    'Prescription Needed': 'Yes' | 'No';
+    'Net after discount': number; //item total
+    'Delivery charge': number;
+    'Coupon code used': string;
+    'Coupon Discount': number;
+    'Total Discount': number;
+    'Item ids': any;
+    'Item names': any;
+    'Recommendation Shown': string,
+    'Recommendation Item ids': any,
   };
   [CleverTapEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED]: {
     'Slot time': string;
@@ -1787,6 +1796,7 @@ export interface CleverTapEvents {
       | 'Prescription';
     Section?: string;
     'Circle user'?: string;
+    'Original Item ids'?: any;
   };
   [CleverTapEventName.DIAGNOSTIC_ORDER_PLACED]: {
     'Order id': string | number;
@@ -3423,4 +3433,21 @@ export interface CleverTapEvents {
     Response: string;
     Status: string;
   };
+  [CleverTapEventName.DIAGNOSTIC_RADIOLOGY_HOME_PAGE]:{
+    'Source': string;
+    'URL': string;
+    'Circle user': 'Yes'| 'No'
+  }
+  [CleverTapEventName.DIAGNOSTIC_RADIOLOGY_BOOKING_COMPLETE]:{
+    'Name': string;
+    'Mobile No entered': string;
+    'City': string;
+    'Appointment date': string;
+    'Test': string;
+    'Subtest': string;
+    'isSuccessful': boolean;
+    'Source': string;
+    'URL': string;
+    'Circle user': 'Yes'| 'No'
+  }
 }

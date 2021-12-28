@@ -170,6 +170,11 @@ import { CouponScreen } from '@aph/mobile-patients/src/components/Tests/TestCart
 import { InformativeContent } from '@aph/mobile-patients/src/components/HealthRecords/InformationContent';
 import { ServerCart } from '@aph/mobile-patients/src/components/ServerCart/ServerCart';
 import { ReviewCart } from '@aph/mobile-patients/src/components/ServerCart/ReviewCart';
+import { ShowWelcomeMessage } from '@aph/mobile-patients/src/components/HealthRecords/Components/ShowWelcomeMessage';
+import { ClinicalDocumentPreview } from '@aph/mobile-patients/src/components/HealthRecords/Components/ClinicalDocumentPreview';
+import { ClinicalDocumentImageReview } from '@aph/mobile-patients/src/components/HealthRecords/Components/ClinicalDocumentImageReview';
+import { AddClinicalDocumentDetails } from '@aph/mobile-patients/src/components/HealthRecords/Components/AddClinicalDocumentDetails';
+import { ClinicalDocumentListing } from '@aph/mobile-patients/src/components/HealthRecords/Components/ClinicalDocumentListing';
 
 export enum AppRoutes {
   Login = 'Login',
@@ -331,6 +336,11 @@ export enum AppRoutes {
   InformativeContent = 'InformativeContent',
   ServerCart = 'ServerCart',
   ReviewCart = 'ReviewCart',
+  ShowWelcomeMessage = 'ShowWelcomeMessage',
+  ClinicalDocumentPreview = 'ClinicalDocumentPreview',
+  ClinicalDocumentImageReview = 'ClinicalDocumentImageReview',
+  AddClinicalDocumentDetails = 'AddClinicalDocumentDetails',
+  ClinicalDocumentListing = 'ClinicalDocumentListing',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -847,6 +857,21 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ReviewCart]: {
     screen: ReviewCart,
+  },
+  [AppRoutes.ShowWelcomeMessage]: {
+    screen: ShowWelcomeMessage,
+  },
+  [AppRoutes.ClinicalDocumentPreview]: {
+    screen: ClinicalDocumentPreview,
+  },
+  [AppRoutes.ClinicalDocumentImageReview]: {
+    screen: ClinicalDocumentImageReview,
+  },
+  [AppRoutes.AddClinicalDocumentDetails]: {
+    screen: AddClinicalDocumentDetails,
+  },
+  [AppRoutes.ClinicalDocumentListing]: {
+    screen: ClinicalDocumentListing,
   },
 };
 

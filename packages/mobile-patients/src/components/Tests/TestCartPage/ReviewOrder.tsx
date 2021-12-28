@@ -58,7 +58,6 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
-  CALL_TO_ORDER_CTA_PAGE_ID,
   DEVICETYPE,
   diagnosticLineItem,
   DiagnosticLineItem,
@@ -137,7 +136,6 @@ import { saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patientsObjWith
 import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/GetPlanDetailsByPlanId';
-import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 import {
   CreateUserSubscription,
   CreateUserSubscriptionVariables,
@@ -146,8 +144,6 @@ import CircleCard from '@aph/mobile-patients/src/components/Tests/components/Cir
 import { CirclePlansListOverlay } from '@aph/mobile-patients/src/components/Tests/components/CirclePlansListOverlay';
 import { debounce } from 'lodash';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import { Decimal } from 'decimal.js';
-import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 import {
   CleverTapEventName,
   CleverTapEvents,
@@ -443,13 +439,19 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       'review page',
       currentPatient,
       cartItems,
+      couponDiscount,
+      grandTotal,
+      uploadPrescriptionRequired,
+      diagnosticSlot,
+      coupon,
+      hcCharges,circlePlanValidity,
+      circleSubscriptionId,
       isDiagnosticCircleSubscription,
       pinCodeFromAddress,
       cityFromAddress,
+      coupon,
       false,
-      toPayPrice,
-      hcCharges,
-      circleSubscriptionId
+      []
     );
     //add coupon code + coupon discount
   }
@@ -2791,7 +2793,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       <SafeAreaView style={[{ ...theme.viewStyles.container }]}>
         {renderHeader()}
         {renderWizard()}
-        <ScrollView bounces={false} style={{ flexGrow: 1 }} showsVerticalScrollIndicator={true}>
+        <ScrollView
+          bounces={false}
+          style={{ flexGrow: 1, flex: 1 }}
+          showsVerticalScrollIndicator={true}
+        >
           {renderMainView()}
         </ScrollView>
         {renderTestProceedBar()}

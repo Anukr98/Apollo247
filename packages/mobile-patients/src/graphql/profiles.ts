@@ -293,6 +293,48 @@ export const GET_INFORMATIVE_CONTENT = gql`
   }
 `;
 
+export const SAVE_CLINICAL_DOCUMENTS = gql`
+  mutation saveClinicalDocuments($addClinicalDocumentInput: AddClinicalDocumentInput) {
+    saveClinicalDocuments(addClinicalDocumentInput: $addClinicalDocumentInput) {
+      status
+      id
+    }
+  }
+`;
+
+export const GET_ALL_CLINICAL_DOCUMENTS = gql`
+  query getClinicalDocuments($uhid: String!, $mobileNumber: String!) {
+    getClinicalDocuments(uhid: $uhid, mobileNumber: $mobileNumber) {
+      response {
+        id
+        documentName
+        uhid
+        mobileNumber
+        uploadedVia
+        documentStatus
+        fileTypeId
+        fileType
+        createddate
+        lastmodifieddate
+        authToken
+        source
+        parentFolder
+        fileInfoList {
+          id
+          fileStatus
+          locationtype
+          file_location
+          fileName
+          mimeType
+          content
+          byteContent
+          file_Url
+        }
+      }
+    }
+  }
+`;
+
 export const GET_PATIENT_FUTURE_APPOINTMENT_COUNT = gql`
   query getPatientFutureAppointmentCount($patientId: String) {
     getPatientFutureAppointmentCount(patientId: $patientId) {
@@ -2234,6 +2276,9 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
           PhleboLongitude
         }
         diagnosticOrderPhlebotomists {
+          showPhleboDetails
+          isPhleboChanged
+          phleboDetailsETAText
           phleboRating
           phleboOTP
           checkinDateTime
@@ -5552,13 +5597,17 @@ export const GET_ALL_PRO_HEALTH_APPOINTMENTS = gql`
   }
 `;
 
-export const GET_PHLOBE_DETAILS = gql`
+export const GET_PHLEBO_DETAILS = gql`
   query getOrderPhleboDetailsBulk($diagnosticOrdersIds: [String]!) {
     getOrderPhleboDetailsBulk(diagnosticOrdersIds: $diagnosticOrdersIds) {
       orderPhleboDetailsBulk {
         allowCalling
+        showPhleboDetails
+        phleboDetailsETAText
+        allowCallingETAText
         orderPhleboDetails {
           diagnosticOrdersId
+          isPhleboChanged
           diagnosticPhlebotomists {
             name
             mobile
@@ -6228,6 +6277,7 @@ export const GET_CUSTOMIZED_DIAGNOSTIC_SLOTS_V2 = gql`
         isPaidSlot
       }
       distanceCharges
+      slotDurationInMinutes
     }
   }
 `;
@@ -6737,12 +6787,14 @@ export const GET_HC_REFREE_RECORD = gql`
       pending {
         name
         registrationDate
+        rewardEligibility
       }
       referee {
         registrationDate
         name
         rewardValue
         rewardType
+        rewardEligibility
       }
     }
   }
@@ -6760,6 +6812,7 @@ export const GET_CAMPAIGN_ID_FOR_REFERRER = gql`
   query campaignInfo($camp: CAMPAIGN_TYPES!) {
     getCampaignInfoByCampaignType(campaignType: $camp) {
       id
+      campaignType
     }
   }
 `;
@@ -7155,6 +7208,24 @@ export const SAVE_MEDICINE_ORDER_V3 = gql`
         codMessage
         paymentOrderId
       }
+    }
+  }
+`;
+export const DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS = gql`
+  query getDiagnosticItemRecommendationsByPastOrders($mobileNumber: String!) {
+    getDiagnosticItemRecommendationsByPastOrders(mobileNumber: $mobileNumber) {
+      itemsData {
+        itemId
+        itemName
+      }
+    }
+  }
+`;
+export const INSERT_REFEREE_DATA_TO_REFERRER = gql`
+  mutation addReferralRecord($referralDataInput:createReferralInput!){
+    addReferralRecord(referralInput:$referralDataInput){
+      id
+      rewardStatus
     }
   }
 `;
