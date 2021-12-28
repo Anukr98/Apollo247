@@ -27,28 +27,28 @@ const APP_ENV: AppEnv = AppEnv.QA5 as AppEnv; // For respective API environments
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
-  ? 'https://pmt.apollo247.com'
-  : APP_ENV == AppEnv.QA
-  ? 'https://aph-staging-pmt.apollo247.com'
-  : APP_ENV == AppEnv.QA2
-  ? 'https://qapmt.apollo247.com'
-  : APP_ENV == AppEnv.QA3
-  ? 'https://qathreepmt.apollo247.com'
-  : APP_ENV == AppEnv.QA4
-  ? 'https://qa4pmt.apollo247.com'
-  : APP_ENV == AppEnv.QA5
-  ? 'https://qa5pmt.apollo247.com'
-  : APP_ENV == AppEnv.PERFORM
-  ? 'https://perfpmt.apollo247.com'
-  : APP_ENV == AppEnv.VAPT
-  ? 'https://stagingpmt.apollo247.com'
-  : APP_ENV == AppEnv.DEV
-  ? 'https://aph-dev-pmt.apollo247.com'
-  : APP_ENV == AppEnv.DEVReplica
-  ? 'https://devpmt.apollo247.com'
-  : APP_ENV == AppEnv.QA6
-  ? 'https://qa6pmt.apollo247.com '
-  : 'https://aph-staging-pmt.apollo247.com';
+    ? 'https://pmt.apollo247.com'
+    : APP_ENV == AppEnv.QA
+    ? 'https://aph-staging-pmt.apollo247.com'
+    : APP_ENV == AppEnv.QA2
+    ? 'https://qapmt.apollo247.com'
+    : APP_ENV == AppEnv.QA3
+    ? 'https://qathreepmt.apollo247.com'
+    : APP_ENV == AppEnv.QA4
+    ? 'https://qa4pmt.apollo247.com'
+    : APP_ENV == AppEnv.QA5
+    ? 'https://qa5pmt.apollo247.com'
+    : APP_ENV == AppEnv.PERFORM
+    ? 'https://perfpmt.apollo247.com'
+    : APP_ENV == AppEnv.VAPT
+    ? 'https://stagingpmt.apollo247.com'
+    : APP_ENV == AppEnv.DEV
+    ? 'https://aph-dev-pmt.apollo247.com'
+    : APP_ENV == AppEnv.DEVReplica
+    ? 'https://devpmt.apollo247.com'
+    : APP_ENV == AppEnv.QA6
+    ? 'https://qa6pmt.apollo247.com '
+    : 'https://aph-staging-pmt.apollo247.com';
 
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
@@ -146,6 +146,9 @@ const appStaticVariables = {
   TAT_API_TIMEOUT_IN_SEC: 10,
   DOCTOR_PARTNER_TEXT: 'Doctor Partners',
   MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY: 0,
+  Payment_Processing_Timer: 30,
+  Show_COD_While_Retrying_Pharma_Payment: true,
+  Show_COD_While_Retrying_Diag_Payment: true,
   CART_UPDATE_PRICE_CONFIG: {
     updatePrices: 'ByPercentage' as 'Yes' | 'No' | 'ByPercentage',
     percentage: 30,
@@ -1288,24 +1291,24 @@ const ConfigurationDevReplica = {
 
 const Configuration =
   APP_ENV == AppEnv.PROD
-  ? ConfigurationProd
-  : APP_ENV == AppEnv.QA
-  ? ConfigurationQA
-  : APP_ENV == AppEnv.QA2
-  ? ConfigurationQA2
-  : APP_ENV == AppEnv.QA3
-  ? ConfigurationQA3
-  : APP_ENV == AppEnv.QA5
-  ? ConfigurationQA5
-  : APP_ENV == AppEnv.PERFORM
-  ? ConfigurationPERFORM
-  : APP_ENV == AppEnv.VAPT
-  ? ConfigurationVAPT
-  : APP_ENV == AppEnv.DEVReplica
-  ? ConfigurationDevReplica
-  : APP_ENV == AppEnv.QA6
-  ? ConfigurationQA6
-  : ConfigurationDev;
+    ? ConfigurationProd
+    : APP_ENV == AppEnv.QA
+    ? ConfigurationQA
+    : APP_ENV == AppEnv.QA2
+    ? ConfigurationQA2
+    : APP_ENV == AppEnv.QA3
+    ? ConfigurationQA3
+    : APP_ENV == AppEnv.QA5
+    ? ConfigurationQA5
+    : APP_ENV == AppEnv.PERFORM
+    ? ConfigurationPERFORM
+    : APP_ENV == AppEnv.VAPT
+    ? ConfigurationVAPT
+    : APP_ENV == AppEnv.DEVReplica
+    ? ConfigurationDevReplica
+    : APP_ENV == AppEnv.QA6
+    ? ConfigurationQA6
+    : ConfigurationDev;
 
 export const MedicineFeedBackData = {
   POOR: {

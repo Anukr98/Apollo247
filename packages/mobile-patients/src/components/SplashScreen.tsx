@@ -290,6 +290,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     });
   };
 
+  // Avoid Red screen Error Alerts
+  console.error = (error: any) => error.apply;
+
   const getDeviceToken = async () => {
     const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
     const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
@@ -1262,6 +1265,18 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Free_Consult_Message',
       PROD: 'Free_Consult_Message',
     },
+    Payment_Processing_Timer: {
+      QA: 'Payment_Processing_Timer_QA',
+      PROD: 'Payment_Processing_Timer_Prod',
+    },
+    Show_COD_While_Retrying_Pharma_Payment: {
+      QA: 'Show_COD_While_Retrying_Pharma_Payment_QA',
+      PROD: 'Show_COD_While_Retrying_Pharma_Payment_Prod',
+    },
+    Show_COD_While_Retrying_Diag_Payment: {
+      QA: 'Show_COD_While_Retrying_Diag_Payment_QA',
+      PROD: 'Show_COD_While_Retrying_Diag_Payment_Prod',
+    },
     WhatsApp_To_Order: {
       QA: 'QA_WhatsApp_To_Order',
       PROD: 'WhatsApp_To_Order',
@@ -1640,6 +1655,19 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       setAppConfig('Consult_Free_Book_Key', 'Consult_Free_Book_Key', (key) =>
         config.getString(key)
+      );
+      setAppConfig('Payment_Processing_Timer', 'Payment_Processing_Timer', (key) =>
+        config.getString(key)
+      );
+      setAppConfig(
+        'Show_COD_While_Retrying_Pharma_Payment',
+        'Show_COD_While_Retrying_Pharma_Payment',
+        (key) => config.getBoolean(key)
+      );
+      setAppConfig(
+        'Show_COD_While_Retrying_Diag_Payment',
+        'Show_COD_While_Retrying_Diag_Payment',
+        (key) => config.getBoolean(key)
       );
 
       setAppConfig('DeliveryIn_TAT_Text', 'DeliveryIn_TAT_Text', (key) => config.getString(key));

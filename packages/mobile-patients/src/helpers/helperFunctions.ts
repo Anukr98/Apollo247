@@ -3275,6 +3275,25 @@ export const navigateToScreenWithEmptyStack = (
   }
 };
 
+export const clearStackAndNavigate = (
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>,
+  screenName: string,
+  params?: any
+) => {
+  navigation.dispatch(
+    StackActions.reset({
+      index: 0,
+      key: null,
+      actions: [
+        NavigationActions.navigate({
+          routeName: screenName,
+          params,
+        }),
+      ],
+    })
+  );
+};
+
 export const navigateToScreenWithHomeScreeninStack = (
   navigation: NavigationScreenProp<NavigationRoute<object>, object>,
   screenName: string,
@@ -4242,6 +4261,16 @@ export const getFormattedDateTimeWithBefore = (time: string) => {
     moment(time).format('hh:mm A');
 
   return finalDateTime;
+};
+
+export const getConsultInvoiceDownloadPath = () => {
+  let dirs = RNFetchBlob.fs.dirs;
+  let fileName: string = 'Apollo_Consult_Invoice' + moment().format('MMM_D_YYYY_HH_mm') + '.pdf';
+  const downloadPath =
+    Platform.OS === 'ios'
+      ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + (fileName || 'Apollo_Consult_Invoice.pdf')
+      : dirs.DownloadDir + '/' + (fileName || 'Apollo_Consult_Invoice.pdf');
+  return downloadPath;
 };
 
 export const getPageId = (pageId: CALL_TO_ORDER_CTA_PAGE_ID) => {

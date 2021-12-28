@@ -233,7 +233,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     };
 
   const handleBack = () => {
-    if (source === AppRoutes.OrderStatus) {
+    if (source === AppRoutes.PaymentStatusDiag) {
       navigateToScreenWithEmptyStack(props.navigation, 'TESTS');
     } else {
       props.navigation.goBack();

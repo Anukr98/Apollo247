@@ -148,6 +148,7 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
@@ -2069,6 +2070,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         subscriptionInclusionId: null,
         userSubscriptionId: circleSubscriptionId != '' ? circleSubscriptionId : localCircleSubId,
       };
+      AsyncStorage.setItem('bookingOrderInfo', JSON.stringify({ bookingOrderInfo }));
       if (!!coupon) {
         bookingOrderInfo.couponCode = coupon?.coupon;
       }
@@ -2501,6 +2503,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           processModifiyCODOrder(getOrderDetails, grandTotal, eventAttributes, orderInfo, payId!);
         } else {
           setLoading?.(false);
+          AsyncStorage.setItem('orderInfo', JSON.stringify(orderInfo));
           props.navigation.navigate(AppRoutes.PaymentMethods, {
             paymentId: payId!,
             amount: toPayPrice,
@@ -2631,6 +2634,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       subscriptionInclusionId: null,
       amountToPay: grandTotal, //total amount to pay
     };
+    AsyncStorage.setItem('modifyBookingInput', JSON.stringify({ modifyBookingInput }));
     saveModifyOrder?.(modifyBookingInput)
       .then((data) => {
         const getModifyResponse = data?.data?.saveModifyDiagnosticOrder;

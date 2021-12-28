@@ -168,6 +168,10 @@ import { RefererFAQ } from '@aph/mobile-patients/src/components/ReferAndEarn/Ref
 import { BrandPages } from '@aph/mobile-patients/src/components/BrandPages/BrandPages';
 import { CouponScreen } from '@aph/mobile-patients/src/components/Tests/TestCartPage/CouponScreen';
 import { InformativeContent } from '@aph/mobile-patients/src/components/HealthRecords/InformationContent';
+import { PaymentStatusPharma } from '@aph/mobile-patients/src/components/PaymentGateway/PaymentStatusPharma';
+import { PaymentStatusDiag } from '@aph/mobile-patients/src/components/PaymentGateway/PaymentStatusDiag';
+import { PaymentStatusConsult } from '@aph/mobile-patients/src/components/PaymentGateway/PaymentStatusConsult';
+import { PaymentFailed } from '@aph/mobile-patients/src/components/PaymentGateway/PaymentFailed';
 import { ServerCart } from '@aph/mobile-patients/src/components/ServerCart/ServerCart';
 import { ReviewCart } from '@aph/mobile-patients/src/components/ServerCart/ReviewCart';
 import { ShowWelcomeMessage } from '@aph/mobile-patients/src/components/HealthRecords/Components/ShowWelcomeMessage';
@@ -334,6 +338,10 @@ export enum AppRoutes {
   BrandPages = 'BrandPages',
   CouponScreen = 'CouponScreen',
   InformativeContent = 'InformativeContent',
+  PaymentStatusPharma = 'PaymentStatusPharma',
+  PaymentStatusDiag = 'PaymentStatusDiag',
+  PaymentStatusConsult = 'PaymentStatusConsult',
+  PaymentFailed = 'PaymentFailed',
   ServerCart = 'ServerCart',
   ReviewCart = 'ReviewCart',
   ShowWelcomeMessage = 'ShowWelcomeMessage',
@@ -851,6 +859,18 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.InformativeContent]: {
     screen: InformativeContent,
+  },
+  [AppRoutes.PaymentStatusPharma]: {
+    screen: PaymentStatusPharma,
+  },
+  [AppRoutes.PaymentStatusDiag]: {
+    screen: PaymentStatusDiag,
+  },
+  [AppRoutes.PaymentStatusConsult]: {
+    screen: PaymentStatusConsult,
+  },
+  [AppRoutes.PaymentFailed]: {
+    screen: PaymentFailed,
   },
   [AppRoutes.ServerCart]: {
     screen: ServerCart,

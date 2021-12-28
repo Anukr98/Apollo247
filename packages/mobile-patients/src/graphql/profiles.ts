@@ -5265,9 +5265,7 @@ export const GET_INTERNAL_ORDER = gql`
   query getOrderInternal($order_id: String!) {
     getOrderInternal(order_id: $order_id) {
       id
-      txn_uuid
-      txn_id
-      status_id
+      payment_method_type
       payment_order_id
       DiagnosticsPaymentDetails {
         ordersList {
@@ -5324,6 +5322,7 @@ export const GET_APPOINTMENT_INFO = gql`
   query getAppointmentInfo($order_id: String!) {
     getOrderInternal(order_id: $order_id) {
       payment_order_id
+      payment_method_type
       payment_status
       AppointmentDetails {
         displayId
@@ -5331,6 +5330,12 @@ export const GET_APPOINTMENT_INFO = gql`
           actual_price
           slashed_price
         }
+      }
+      SubscriptionOrderDetails {
+        status
+        end_date
+        payment_reference
+        expires_in
       }
     }
   }
@@ -7008,6 +7013,15 @@ export const BOOK_PACKAGE_CONSULT = gql`
   }
 `;
 
+export const GET_PAYMENT_STATUS = gql`
+  query getPaymentStatus($order_id: String!) {
+    getOrderInternal(order_id: $order_id) {
+      id
+      payment_order_id
+      payment_status
+    }
+  }
+`;
 export const SERVER_CART_FETCH_CART = gql`
   query fetchCart($patientId: String!) {
     fetchCart(patientId: $patientId) {
@@ -7094,6 +7108,14 @@ export const SERVER_CART_FETCH_CART = gql`
           storeType
         }
       }
+    }
+  }
+`;
+
+export const CANCEL_PAYMENT = gql`
+  mutation cancelPayment($payment_order_id: String!) {
+    cancelPaymentOrder(payment_order_id: $payment_order_id) {
+      success
     }
   }
 `;

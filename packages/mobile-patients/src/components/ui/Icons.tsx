@@ -904,8 +904,6 @@ export const CashbackIcon: React.FC<IconProps> = (props) => (
   />
 );
 
-
-
 export const ToggleOn: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ height: 32, width: 32 }}
@@ -2878,6 +2876,30 @@ export const DoctorConsultIcon: React.FC<IconProps> = (props) => (
     size="sm"
     {...props}
     source={require('@aph/mobile-patients/src/components/ui/icons/doctorConsultIcon-1.webp')}
+  />
+);
+
+export const PaymentSuccess: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/SuccessIcon.webp')}
+  />
+);
+
+export const PaymentFailedIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/FailedIcon.webp')}
+  />
+);
+
+export const SavingsBlast: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/Blast.webp')}
   />
 );
 
