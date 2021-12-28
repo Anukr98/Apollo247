@@ -86,6 +86,7 @@ import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments 
 import { CancelConsultation } from '../../strings/AppConfig';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { useShoppingCart } from '../ShoppingCartProvider';
 
 const OTHER_REASON = string.ReasonFor_Cancel_Consultation.otherReasons;
 const { width, height } = Dimensions.get('window');
@@ -291,6 +292,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const { showAphAlert, hideAphAlert } = useUIElements();
+  const { circleSubscriptionId, circleSubPlanId } = useShoppingCart();
 
   const isSubmitDisableForOther = selectedReason == OTHER_REASON && comment == '';
 
@@ -1027,7 +1029,11 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                       CleverTapEventName.CONSULT_CANCEL_CLICKED_BY_PATIENT,
                       data,
                       currentPatient,
-                      secretaryData
+                      secretaryData,
+                      {
+                        circleSubscriptionId: circleSubscriptionId,
+                        circleSubPlanId: circleSubPlanId,
+                      }
                     );
                     CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'CANCEL CONSULT_CLICKED');
                     setShowCancelPopup(false);

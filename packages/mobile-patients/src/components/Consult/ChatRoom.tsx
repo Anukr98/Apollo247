@@ -1987,7 +1987,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   useEffect(() => {
     if (!disableChat && status.current !== STATUS.COMPLETED && isInFuture && !fromIncomingCall) {
-      callPermissions();
+      callPermissions(() => {}, 'Consult Chat Screen', currentPatient);
     }
   }, []);
 
@@ -2234,16 +2234,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (callType && !fromIncomingCall) {
       AsyncStorage.setItem('callDisconnected', 'false');
 
-      callPermissions(() => {
-        if (callType === 'VIDEO') {
-          isVoipCall || fromIncomingCall ? setOnSubscribe(false) : setOnSubscribe(true);
-          isAudio.current = false;
-        } else if (callType === 'AUDIO') {
-          isVoipCall || fromIncomingCall ? setOnSubscribe(false) : setOnSubscribe(true);
-          isAudio.current = true;
-          callhandelBack = false;
-        }
-      });
+      callPermissions(
+        () => {
+          if (callType === 'VIDEO') {
+            isVoipCall || fromIncomingCall ? setOnSubscribe(false) : setOnSubscribe(true);
+            isAudio.current = false;
+          } else if (callType === 'AUDIO') {
+            isVoipCall || fromIncomingCall ? setOnSubscribe(false) : setOnSubscribe(true);
+            isAudio.current = true;
+            callhandelBack = false;
+          }
+        },
+        'Consult Chat Screen',
+        currentPatient
+      );
     }
     if (prescription) {
       // write code for opening prescripiton
@@ -2826,39 +2830,43 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     } else if (nextAppState === 'active') {
       const permissionSettings: string | null = await AsyncStorage.getItem('permissionHandler');
       if (permissionSettings && permissionSettings === 'true') {
-        callPermissions(() => {
-          if (callType) {
-            if (callType === 'VIDEO') {
-              setOnSubscribe(true);
-              isAudio.current = false;
-            } else if (callType === 'AUDIO') {
-              setOnSubscribe(true);
-              isAudio.current = true;
-              callhandelBack = false;
-            }
-            !jrDoctorJoined.current && setDoctorJoinedChat && setDoctorJoinedChat(true);
-          } else {
-            if (onSubscribe) {
-              setOnSubscribe(false);
-              setCallAccepted(true);
-              setHideStatusBar(true);
-              setChatReceived(false);
-              Keyboard.dismiss();
-              setConvertVideo(false);
-              setDowngradeToAudio(false);
-              setCallerAudio(true);
-              setCallerVideo(true);
-              changeVideoStyles();
-              setDropdownVisible(false);
-              if (token) {
-                PublishAudioVideo();
-              } else {
-                makeUpdateAppointmentCall.current = true;
-                APICallAgain(true);
+        callPermissions(
+          () => {
+            if (callType) {
+              if (callType === 'VIDEO') {
+                setOnSubscribe(true);
+                isAudio.current = false;
+              } else if (callType === 'AUDIO') {
+                setOnSubscribe(true);
+                isAudio.current = true;
+                callhandelBack = false;
+              }
+              !jrDoctorJoined.current && setDoctorJoinedChat && setDoctorJoinedChat(true);
+            } else {
+              if (onSubscribe) {
+                setOnSubscribe(false);
+                setCallAccepted(true);
+                setHideStatusBar(true);
+                setChatReceived(false);
+                Keyboard.dismiss();
+                setConvertVideo(false);
+                setDowngradeToAudio(false);
+                setCallerAudio(true);
+                setCallerVideo(true);
+                changeVideoStyles();
+                setDropdownVisible(false);
+                if (token) {
+                  PublishAudioVideo();
+                } else {
+                  makeUpdateAppointmentCall.current = true;
+                  APICallAgain(true);
+                }
               }
             }
-          }
-        });
+          },
+          'Consult Chat Screen',
+          currentPatient
+        );
         AsyncStorage.removeItem('permissionHandler');
       }
     }
@@ -4694,6 +4702,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     postCleverTapEvent(CleverTapEventName.CONSULT_ORDER_MEDICINES_IN_CHATROOM_CLICKED, {
       ...UserInfo,
       'Order Type': isCartOrder ? 'Cart' : 'Non-Cart',
+      'Patient name': `${currentPatient?.firstName} ${currentPatient?.lastName}` || '',
+      'Patient age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
     });
   };
 
@@ -6239,21 +6249,25 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const joinCallHandler = () => {
-    callPermissions(() => {
-      AsyncStorage.setItem('leftSoundPlayed', 'false');
-      callStatus.current = '';
-      callToastStatus.current = '';
-      setLoading(true);
-      setCallAccepted(true);
-      setHideStatusBar(true);
-      setChatReceived(false);
-      Keyboard.dismiss();
-      changeVideoStyles();
-      setDropdownVisible(false);
-      setCallerVideo(true);
-      makeUpdateAppointmentCall.current = true;
-      APICallAgain(true);
-    });
+    callPermissions(
+      () => {
+        AsyncStorage.setItem('leftSoundPlayed', 'false');
+        callStatus.current = '';
+        callToastStatus.current = '';
+        setLoading(true);
+        setCallAccepted(true);
+        setHideStatusBar(true);
+        setChatReceived(false);
+        Keyboard.dismiss();
+        changeVideoStyles();
+        setDropdownVisible(false);
+        setCallerVideo(true);
+        makeUpdateAppointmentCall.current = true;
+        APICallAgain(true);
+      },
+      'Consult Chat Screen',
+      currentPatient
+    );
     //startCallConnectionUpdate();
   };
 
@@ -7350,23 +7364,23 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       | CleverTapEvents[CleverTapEventName.CONSULT_FEEDBACK_GIVEN] = {
       'Doctor Name': g(data, 'doctorInfo', 'displayName')!,
       'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
-      'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,
-      'Doctor Category': g(data, 'doctorInfo', 'doctorType')!,
-      'Consult Date Time': moment(g(data, 'appointmentDateTime')).toDate(),
-      'Consult Mode': g(data, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
-      'Hospital Name': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name')!,
-      'Hospital City': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'city')!,
+      'Speciality name': g(data, 'doctorInfo', 'specialty', 'name')!,
+      'Doctor category': g(data, 'doctorInfo', 'doctorType')!,
+      'Appointment datetime': moment(g(data, 'appointmentDateTime')).toDate(),
+      'Consult mode': g(data, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
+      'Hospital name': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name')!,
+      'Hospital city': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'city')!,
       'Consult ID': g(data, 'id')!,
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
-      'Patient Age': Math.round(
+      'Patient age': Math.round(
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
-      'Patient Gender': g(currentPatient, 'gender'),
+      'Patient gender': g(currentPatient, 'gender'),
       'Customer ID': g(currentPatient, 'id'),
       Rating: rating,
-      'Rating Reason': reason,
+      'Rating reason': reason,
     };
     postWebEngageEvent(WebEngageEventName.CONSULT_FEEDBACK_GIVEN, eventAttributes);
     postCleverTapEvent(CleverTapEventName.CONSULT_FEEDBACK_GIVEN, eventAttributes);
@@ -8006,7 +8020,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               CleverTapEventName.CONSULT_CANCEL_CLICKED_BY_PATIENT,
               appointmentData,
               currentPatient,
-              secretaryData
+              secretaryData,
+              {
+                circleSubscriptionId: circleSubscriptionId,
+                circleSubPlanId: circleSubPlanId,
+              }
             );
             CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'CANCEL CONSULT_CLICKED');
             setShowCancelPopup(false);

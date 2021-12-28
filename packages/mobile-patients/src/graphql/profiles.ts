@@ -225,9 +225,16 @@ export const GET_PATIENT_PAST_SEARCHES = gql`
       typeId
       name
       image
+      languages
       specialty
+      specialtyId
       symptoms
       allowBookingRequest
+      facility {
+        city
+        name
+      }
+      fee
     }
   }
 `;
@@ -1427,6 +1434,10 @@ export const GET_SD_LATEST_COMPLETED_CASESHEET_DETAILS = gql`
         }
         diagnosticPrescription {
           itemname
+          testInstruction
+        }
+        radiologyPrescription{
+          servicename,
           testInstruction
         }
         blobName

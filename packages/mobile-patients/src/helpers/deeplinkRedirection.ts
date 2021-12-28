@@ -497,7 +497,7 @@ export const pushTheView = (
   vaccinationCmsIdentifier?: string,
   vaccinationSubscriptionId?: string,
   params?: any,
-  movedFromBrandPages?: boolean,
+  movedFromBrandPages?: boolean
 ) => {
   setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
   switch (routeName) {
@@ -526,7 +526,7 @@ export const pushTheView = (
         navigation.navigate(AppRoutes.ProductDetailPage, {
           sku: isUrlKey ? null : id,
           urlKey: isUrlKey ? id : null,
-          movedFrom: ProductPageViewedSource.BRAND_PAGES
+          movedFrom: ProductPageViewedSource.BRAND_PAGES,
         });
       } else {
         navigateToView(navigation, AppRoutes.ProductDetailPage, {

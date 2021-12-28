@@ -5,6 +5,7 @@ import { name as appName } from './app.json';
 import AppContainer from '@aph/mobile-patients/src/components/AppContainer';
 import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
+
 if (__DEV__) {
   import('./ReactotronConfig').then(() => aphConsole.log('Reactotron Configured'));
 }
@@ -16,6 +17,7 @@ YellowBox.ignoreWarnings([
   'Module RCTCardIOUtilities',
   'Module RNFetchBlob',
 ]);
+
 
 console.ignoredYellowBox = ['Warning: Each', 'Warning: Failed'];
 console.disableYellowBox = true;

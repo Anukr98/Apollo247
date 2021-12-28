@@ -771,6 +771,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
      * */
     const notificationListener = messaging().onMessage((notification) => {
       aphConsole.log('notificationListener');
+
       if (notification.data?.type !== 'chat_room' && notification.data?.type !== 'call_started') {
         processNotification(notification, true); // when app in foreground
       }

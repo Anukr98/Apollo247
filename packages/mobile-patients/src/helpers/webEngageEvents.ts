@@ -41,7 +41,7 @@ export enum ProductPageViewedSource {
 }
 
 export enum WebEngageEventName {
-  Patient_API_Error = 'Patient_API_Error',
+  Patient_API_Error = 'Consult Patient API error',
   //DOH
   DOH_Clicked = 'DOH Clicked',
   DOH_Viewed = 'DOH Viewed',
@@ -131,7 +131,7 @@ export enum WebEngageEventName {
   GO_BACK_CLICKED_DOC_LIST = 'go back clicked doc list',
   SHARE_CLICKED_DOC_PROFILE_SCREEN = 'share clicked doc profile screen',
   SHARE_PROFILE_CLICKED_DOC_PROFILE = 'Share profile clicked doc profile',
-  GO_BACK_CLICKED_DOC_PROFILE = 'go back clicked doc profile',
+  GO_BACK_CLICKED_DOC_PROFILE = 'Consult share go back clicked',
   DOCTOR_PROFILE_SCREEN_BY_SHARE_LINK = 'Doctor profile screen by share link',
 
   MY_ORDERS_CLICKED = 'My Orders Clicked',
@@ -491,7 +491,7 @@ export enum WebEngageEventName {
   VACCINE_REGISTRATION_COMPLETED = 'Vaccine Registeration Completed',
   ERROR_WHILE_FETCHING_JWT_TOKEN = 'Error while Fetching JWT token',
   AUTHTOKEN_UPDATED = 'Authtoken Updated',
-  NO_FIREBASE_USER = 'No user on Firebase'
+  NO_FIREBASE_USER = 'No user on Firebase',
 }
 
 export interface PatientInfo {

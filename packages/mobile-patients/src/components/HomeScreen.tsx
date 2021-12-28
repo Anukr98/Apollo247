@@ -1569,7 +1569,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           showFreeConsultOverlay(params);
         } else if (!params?.isPhysicalConsultBooked) {
           overlyCallPermissions(
-            currentPatient!.firstName!,
+            currentPatient!,
             params?.doctorName,
             showAphAlert,
             hideAphAlert,
@@ -1625,7 +1625,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           showFreeConsultOverlay(params);
         } else if (!params?.isPhysicalConsultBooked) {
           overlyCallPermissions(
-            currentPatient!.firstName!,
+            currentPatient!,
             params?.doctorName,
             showAphAlert,
             hideAphAlert,
@@ -1709,7 +1709,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           getCurrentRoute() !== AppRoutes.ChatRoom
         ) {
           overlyCallPermissions(
-            currentPatient!.firstName!,
+            currentPatient!,
             'the doctor',
             showAphAlert,
             hideAphAlert,
@@ -1723,6 +1723,27 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       CommonBugFender('ConsultRoom_getPatientFutureAppointmentCount', error);
     }
   };
+
+  const postGoToConsultRoomEvent = (item: any) => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_GO_TO_CONSULT_ROOM_CLICKED] = {
+      'Patient name': `${currentPatient?.firstName} ${currentPatient?.lastName}` || '',
+      'Patient UHID': currentPatient?.uhid || '',
+      'Doctor name': item?.doctorInfo?.fullName || '',
+      'Speciality name': item?.doctorInfo?.specialty?.name || '',
+      'Doctor ID': item?.doctorId || '',
+      'Speciality ID': item?.doctorInfo?.specialty?.id || '',
+      'Patient gender': currentPatient?.gender || '',
+      'Patient age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
+      'Hospital name': item?.doctorInfo?.doctorHospital?.[0]?.facility?.name || '',
+      'Hospital city': item?.doctorInfo?.doctorHospital?.[0]?.facility?.city || '',
+      Source: 'Payment confirmation screen',
+      'Appointment datetime': moment(item?.appointmentDateTime).toDate(),
+      'Display ID': item?.displayId,
+      'Consult mode': item?.appointmentType || '',
+    };
+    postCleverTapEvent(CleverTapEventName.CONSULT_GO_TO_CONSULT_ROOM_CLICKED, eventAttributes);
+  };
+
   const showFreeConsultOverlay = (params: any) => {
     const { isJdQuestionsComplete, appointmentDateTime, doctorInfo } = params?.appointmentData;
     const { skipAutoQuestions, isPhysicalConsultBooked } = params;
@@ -1787,6 +1808,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                 props.navigation.navigate(AppRoutes.ChatRoom, {
                   data: params?.appointmentData,
                 });
+                postGoToConsultRoomEvent(params?.appointmentData);
               }}
             >
               <Text style={theme.viewStyles.yellowTextStyle}>GO TO CONSULT ROOM</Text>
@@ -1946,7 +1968,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     if (eventName == CleverTapEventName.CONSULT_ACTIVE_APPOINTMENTS) {
       eventAttributes = {
         ...eventAttributes,
-        'Nav src': source === 'Home Screen' ? 'homepage bar' : 'Bottom bar',
+        'Nav src': source === 'Home Screen' ? 'Homepage' : 'Bottom bar',
+        'Circle Member': !!circleSubscriptionId,
+        'Circle Plan type': circleSubPlanId || '',
       };
     }
     if (eventName == CleverTapEventName.HDFC_HEALTHY_LIFE) {
@@ -2188,20 +2212,20 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     },
   ];
 
-  const listValues: menuOptions[] = [
-    ...listOptions,
-  ];
+  const listValues: menuOptions[] = [...listOptions];
 
-  const listValuesForProHealth: menuOptions[]  = Object.assign([], listOptions, {5: {
-        id: 6,
-        title: 'ProHealth',
-        image: <ProHealthIcon style={styles.menuOption2SubIconStyle} />,
-        onPress: () => {
-          postHomeFireBaseEvent(FirebaseEventName.PROHEALTH, 'Home Screen');
-          postHomeWEGEvent(WebEngageEventName.PROHEALTH);
-          getTokenForProhealthCM();
-        },
-      }});
+  const listValuesForProHealth: menuOptions[] = Object.assign([], listOptions, {
+    5: {
+      id: 6,
+      title: 'ProHealth',
+      image: <ProHealthIcon style={styles.menuOption2SubIconStyle} />,
+      onPress: () => {
+        postHomeFireBaseEvent(FirebaseEventName.PROHEALTH, 'Home Screen');
+        postHomeWEGEvent(WebEngageEventName.PROHEALTH);
+        getTokenForProhealthCM();
+      },
+    },
+  });
 
   useEffect(() => {
     if (enableCM) {
@@ -3214,7 +3238,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
          * caching the api for 24 hrs.
          */
         const getCachedApiResult: any = await getItem('mobileNumber_CM_Result');
-        console.log({getCachedApiResult})
+        console.log({ getCachedApiResult });
         const getPhoneNumber =
           patientDetails?.mobileNumber?.length > 10
             ? patientDetails?.mobileNumber?.slice(patientDetails?.mobileNumber?.length - 10)
@@ -3225,7 +3249,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           const res: any = await GetAllUHIDSForNumber_CM(getPhoneNumber! || '');
           if (res?.data?.response && res?.data?.errorCode === 0) {
             let resultData = res?.data?.response?.signUpUserData;
-            console.log({resultData})
+            console.log({ resultData });
             if (resultData?.length > 0) {
               const obj = {
                 data: resultData,
@@ -3253,13 +3277,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   function updateSDKOption(resultData: any, selectedUHID: string, currentPatientDetails: any) {
-    console.log({resultData})
+    console.log({ resultData });
     let getCurrentProfile = resultData?.find(
       (item: any) => item?.uhid == (selectedUHID! || currentPatientDetails?.uhid)
     );
     //get status for active chron.
     let isActive = getCurrentProfile?.isChronActive;
-    console.log({isActive})
+    console.log({ isActive });
     isActive ? setProHealthActive(true) : setProHealthActive(false);
   }
 
