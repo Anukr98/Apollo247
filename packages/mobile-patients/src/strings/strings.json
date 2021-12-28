@@ -1741,7 +1741,9 @@
     "global":{
       "refereeInitialsEarnAmount":"100",
       "currency":"₹",
-      "currencyName":"HC"
+      "currencyName":"HC",
+      "validUptoPurchase":"300",
+      "shareLinkMessage":"Save on medical bills like me!\nSign up on Apollo 247 app and get Flat ₹100 worth of health credits"
     },
     "referralMainBanner":{
       "bannerTextLineOne":"Refer & Earn {currency}{initialEarnAmount}",
@@ -1751,22 +1753,22 @@
     "shareReferrerLink":{
       "banerTextLineOne":"Refer & Earn",
       "bannerTextLineTwo":"{currency}{initialEarnAmount}",
-      "banerTextLineThree":"Your friend get ₹100 on signup & you get ₹100 on their first order.",
+      "banerTextLineThree":"Your friend get {currency}{initialEarnAmount} on signup & you get {currency}{initialEarnAmount} on their first order.",
       "referViaText":"Refer Via",
       "howItWorks":{
         "mainHeading": "How it works?",
         "pointOne": "Invite your friend",
-        "pointTwo": "Friend receives ₹{referShareAmount} on signup",
-        "pointThree": "You get ₹{referShareAmount} on their first\ntransaction",
-        "pointThreeNote": "Not valid for order below ₹{validRuppes}*"
+        "pointTwo": "Friend receives {currency}{referShareAmount} on signup",
+        "pointThree": "You get {currency}{referShareAmount} on their first\ntransaction",
+        "pointThreeNote": "Not valid for order below {currency}{validUptoPurchase}*"
       },
       "termsAndCondition":"Terms and Condition",
       "faqs":"FAQs",
-      "checkReward":"Check Rewards"
+      "checkReward":"Check Rewards",
+      "redeemNow":"REDEEM NOW"
     },
     "yourRewards":{
       "totalEarningHeading":"Earned {currencyName} : {earnedAmount}", 
-      "shareLinkMessage":"Save on medical bills like me!\nSign up on Apollo 247 app and get Flat ₹100 worth of health credits",
       "claimedCard":{
         "eligible":{
           "youEarnedRefreePoints":"You earned refree points on",
@@ -1798,7 +1800,7 @@
       "referrerAmountAndCurrencyName":"{earnedAmount} {currencyName}",
       "willBeCreditSoon":"Will be credited in a few mins*",
       "subjectedToTnC":"Subjected to TnC",
-      "reedeemPoints": "Redeem Points",
+      "redeemPoints": "Redeem Points",
       "whyChooseApollo247": "Why choose Apollo 247?",
       "deleiveryInHours": "Delivery in 2 hours",
       "consultDoctorIn15Minutes": "Consult doctor in 15 mins",

@@ -20,6 +20,7 @@ import {
   getUserType,
   postCleverTapEvent,
   replaceVariableInString,
+  validateStringNotToUndefined,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
@@ -65,16 +66,15 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
   });
   const {
     rewardId,
-    setRewardId,
     campaignId,
     campaignName,
-    setCampaignId,
     referrerLink,
     setReferrerLink,
+    referralGlobalData,
+    shareReferrerLinkData,
   } = useReferralProgram();
 
   const { pharmacyCircleAttributes } = useShoppingCart();
-
   const { navigation } = props;
 
   useEffect(() => {
@@ -131,7 +131,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
     const shareOptions = {
       title: string.referAndEarn.referalLink,
       url: referrerLink,
-      message: string.referAndEarn.shareLinkText,
+      message: validateStringNotToUndefined(referralGlobalData?.shareLinkMessage),
       failOnCancel: false,
       showAppsToView: true,
       social: Share.Social.WHATSAPP,
@@ -152,7 +152,9 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
   };
 
   const copyLinkToShare = () => {
-    Clipboard.setString(string.referAndEarn.shareLinkText + '\n' + referrerLink);
+    Clipboard.setString(
+      validateStringNotToUndefined(referralGlobalData?.shareLinkMessage) + '\n' + referrerLink
+    );
     setLinkCopied(true);
     const eventArributes = {
       ...getReferEarnCommonAttributes(),
@@ -219,14 +221,21 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
         <View>
           <View style={styles.referSharetextMainContainer}>
             <View style={styles.referSharetextContainer}>
-              <Text style={styles.referSharetext}>{string.referAndEarn.referAndEarn}</Text>
+              <Text style={styles.referSharetext}>
+                {validateStringNotToUndefined(shareReferrerLinkData?.banerTextLineOne)}
+              </Text>
               <Text style={styles.referShareamount}>
-                <Text style={styles.rupeesSymbolForBanner}>{string.referAndEarn.currency}</Text>
-                {referShareAmount && referShareAmount}
+                <Text style={styles.rupeesSymbolForBanner}>
+                  {validateStringNotToUndefined(referralGlobalData?.currency)}
+                </Text>
+                {validateStringNotToUndefined(referralGlobalData?.refereeInitialsEarnAmount)}
               </Text>
               <View>
                 <Text style={styles.referShareotherDetails}>
-                  {string.referAndEarn.yourFriendGot}
+                  {replaceVariableInString(shareReferrerLinkData?.banerTextLineThree, {
+                    currency: referralGlobalData?.currency || '',
+                    initialEarnAmount: referralGlobalData?.refereeInitialsEarnAmount || '',
+                  })}
                 </Text>
               </View>
             </View>
@@ -242,7 +251,9 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
           <View style={styles.referSharebtnTextContainer}>
             <View style={styles.referSharereferViaContainer}>
               <View style={styles.referSharereferViaHRLineLeft} />
-              <Text style={styles.referSharereferViaText}>{string.referAndEarn.referVia}</Text>
+              <Text style={styles.referSharereferViaText}>
+                {validateStringNotToUndefined(shareReferrerLinkData?.referViaText)}
+              </Text>
               <View style={styles.referSharereferViaHRLineRight} />
             </View>
             <View style={styles.referSharebtnContainer}>
@@ -266,14 +277,18 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
   const renderHowItWork = () => {
     return (
       <View style={styles.howItWorkMainContainer}>
-        <Text style={styles.howWorkmainHeading}>{string.referAndEarn.howItWorks}</Text>
+        <Text style={styles.howWorkmainHeading}>
+          {validateStringNotToUndefined(shareReferrerLinkData?.howItWorks.mainHeading)}
+        </Text>
         <View style={styles.howWorklistMainContainer}>
           <View style={styles.howWorklistSpecificContainer}>
             <View style={styles.howWorklistContainer}>
               <View style={styles.howWorklistImageCircle} />
               <InviteYourFriendIcon />
             </View>
-            <Text style={styles.howWorklistText}>{string.referAndEarn.inviteYourFriend}</Text>
+            <Text style={styles.howWorklistText}>
+              {validateStringNotToUndefined(shareReferrerLinkData?.howItWorks.pointOne)}
+            </Text>
           </View>
           <View style={styles.howWorklistSpecificContainer}>
             <View style={styles.howWorklistContainer}>
@@ -281,8 +296,9 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
               <FriendReceiveIcon />
             </View>
             <Text style={styles.howWorklistText}>
-              {replaceVariableInString(string.referAndEarn.friendReceiveRs, {
-                referShareAmount: referShareAmount ? referShareAmount : '',
+              {replaceVariableInString(shareReferrerLinkData?.howItWorks.pointTwo, {
+                currency: referralGlobalData?.currency || '',
+                referShareAmount: referralGlobalData?.refereeInitialsEarnAmount || '',
               })}
             </Text>
           </View>
@@ -293,13 +309,15 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
             </View>
             <View>
               <Text style={styles.howWorklistText}>
-                {replaceVariableInString(string.referAndEarn.youReceive, {
-                  referShareAmount: referShareAmount ? referShareAmount : '',
+                {replaceVariableInString(shareReferrerLinkData?.howItWorks.pointThree, {
+                  currency: referralGlobalData?.currency || '',
+                  referShareAmount: referralGlobalData?.refereeInitialsEarnAmount || '',
                 })}
               </Text>
               <Text style={styles.howWorklistTextSpecialNote}>
-                {replaceVariableInString(string.referAndEarn.notValidForOrder, {
-                  validRuppes: string.referAndEarn.validUpTo,
+                {replaceVariableInString(shareReferrerLinkData?.howItWorks.pointThreeNote, {
+                  currency: referralGlobalData?.currency || '',
+                  validUptoPurchase: referralGlobalData?.validUptoPurchase || '',
                 })}
               </Text>
             </View>
@@ -320,7 +338,9 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
             style={styles.howWorklinkBtnForTC}
           >
             <View style={styles.howWorklinkContainer} />
-            <Text style={styles.howWorklinkText}>{string.referAndEarn.termsAndCondition}</Text>
+            <Text style={styles.howWorklinkText}>
+              {validateStringNotToUndefined(shareReferrerLinkData?.termsAndCondition)}
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
@@ -336,7 +356,9 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
             style={styles.howWorklinkBtn}
           >
             <View style={styles.howWorklinkContainer} />
-            <Text style={styles.howWorklinkText}>{string.referAndEarn.FAQs}</Text>
+            <Text style={styles.howWorklinkText}>
+              {validateStringNotToUndefined(shareReferrerLinkData?.faqs)}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -361,7 +383,9 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
         }}
         style={styles.checkRewardbtn}
       >
-        <Text style={styles.checkRewardtext}>{string.referAndEarn.checkRewards}</Text>
+        <Text style={styles.checkRewardtext}>
+          {validateStringNotToUndefined(shareReferrerLinkData?.checkReward)}
+        </Text>
         <ArrowRight />
       </TouchableOpacity>
     );
@@ -378,7 +402,9 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
         </Text>
         <View style={styles.initialHCreedemContainer}>
           <TouchableOpacity onPress={() => navigation.navigate('MEDICINES')}>
-            <Text style={styles.initialHCreedemContainerText}>{string.referAndEarn.reedemNow}</Text>
+            <Text style={styles.initialHCreedemContainerText}>
+              {validateStringNotToUndefined(shareReferrerLinkData?.redeemNow)}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>

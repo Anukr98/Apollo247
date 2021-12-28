@@ -10,6 +10,8 @@ type ReferralGlobalDataType = {
   refereeInitialsEarnAmount: string;
   currency: string;
   currencyName: string;
+  validUptoPurchase: string;
+  shareLinkMessage: string;
 };
 type ReferralMainBannerDataType = {
   bannerTextLineOne: string;
@@ -18,7 +20,6 @@ type ReferralMainBannerDataType = {
 };
 type ShareReferrerLinkDataType = {
   banerTextLineOne: string;
-  bannerTextLineTwo: string;
   banerTextLineThree: string;
   referViaText: string;
   howItWorks: {
@@ -31,11 +32,11 @@ type ShareReferrerLinkDataType = {
   termsAndCondition: string;
   faqs: string;
   checkReward: string;
+  redeemNow: string;
 };
 
 type YourRewardsScreenDataType = {
   totalEarningHeading: string;
-  shareLinkMessage: string;
   claimedCard: {
     eligible: {
       youEarnedRefreePoints: string;
@@ -67,7 +68,7 @@ type CongratulationPageDataType = {
   referrerAmountAndCurrencyName: string;
   willBeCreditSoon: string;
   subjectedToTnC: string;
-  reedeemPoints: string;
+  redeemPoints: string;
   whyChooseApollo247: string;
   deleiveryInHours: string;
   consultDoctorIn15Minutes: string;

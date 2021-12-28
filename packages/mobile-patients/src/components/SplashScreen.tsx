@@ -103,6 +103,7 @@ import CleverTap from 'clevertap-react-native';
 import { CleverTapEventName } from '../helpers/CleverTapEvents';
 import analytics from '@react-native-firebase/analytics';
 import appsFlyer from 'react-native-appsflyer';
+import { useReferralProgram } from './ReferralProgramProvider';
 
 (function() {
   /**
@@ -192,6 +193,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const CONST_SPLASH_LOADER = [string.splash.CAPSULE, string.splash.SYRINGE, string.splash.STETHO];
   const [selectedAnimationIndex, setSelectedAnimationIndex] = useState(0);
   const { currentPatient } = useAllCurrentPatients();
+  const {
+    setReferralGlobalData,
+    setReferralMainBanner,
+    setShareReferrerLinkData,
+    setYourRewardsScreenData,
+    setCongratulationPageData,
+    setRefererTermsAndConditionData,
+    setRefererFAQsData,
+  } = useReferralProgram();
 
   const { setPhrNotificationData } = useAppCommonData();
 
@@ -1772,8 +1782,52 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     const config = remoteConfig();
     const globalData = getRemoteConfigValue(
       'REFERRER_GLOBAL_CONTENT',
-      (key) => config.getString(key) || string.refAndEarn.global
+      (key) =>
+        (config.getString(key) && JSON.parse(config.getString(key))) || string.refAndEarn.global
     );
+    setReferralGlobalData?.(globalData);
+    const mainBannerContent = getRemoteConfigValue(
+      'REFERRER_MAIN_BANNER_CONTENT',
+      (key) =>
+        (config.getString(key) && JSON.parse(config.getString(key))) ||
+        string.refAndEarn.referralMainBanner
+    );
+    setReferralMainBanner?.(mainBannerContent);
+    const shareReferrerLinkScreenContent = getRemoteConfigValue(
+      'SHARE_REFERRER_LINK_CONENT',
+      (key) =>
+        (config.getString(key) && JSON.parse(config.getString(key))) ||
+        string.refAndEarn.shareReferrerLink
+    );
+    setShareReferrerLinkData?.(shareReferrerLinkScreenContent);
+    const yourRewardScreenContent = getRemoteConfigValue(
+      'YOUR_REWARD_SCREEN_DATA_CONTENT',
+      (key) =>
+        (config.getString(key) && JSON.parse(config.getString(key))) ||
+        string.refAndEarn.yourRewards
+    );
+    setYourRewardsScreenData?.(yourRewardScreenContent);
+    const congratulationsScreenContent = getRemoteConfigValue(
+      'REFERRER_CONGRATULATIONS_PAGE',
+      (key) =>
+        (config.getString(key) && JSON.parse(config.getString(key))) ||
+        string.refAndEarn.congratulationPage
+    );
+    setCongratulationPageData?.(congratulationsScreenContent);
+    const termsAndConditonsScreenContent = getRemoteConfigValue(
+      'REFERRER_TERMS_AND_CONDITION_DATA',
+      (key) =>
+        (config.getString(key) && JSON.parse(config.getString(key))) ||
+        string.refAndEarn.refererTermsAndCondition
+    );
+    setRefererTermsAndConditionData?.(termsAndConditonsScreenContent);
+    const faqScreenContent = getRemoteConfigValue(
+      'REFERRER_FAQS_DATA',
+      (key) =>
+        (config.getString(key) && JSON.parse(config.getString(key))) ||
+        string.refAndEarn.refererFAQs
+    );
+    setRefererFAQsData?.(faqScreenContent);
   };
 
   const showUpdateAlert = (mandatory: boolean) => {

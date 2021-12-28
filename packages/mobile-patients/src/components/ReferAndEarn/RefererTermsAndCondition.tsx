@@ -3,7 +3,7 @@ import { View, Text, StatusBar, StyleSheet, ScrollView } from 'react-native';
 import { FlatList, NavigationScreenProps, SafeAreaView } from 'react-navigation';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import string from '@aph/mobile-patients/src/strings/strings.json';
+import { useReferralProgram } from '../ReferralProgramProvider';
 
 interface TermsAndConditionItemType {
   id: number;
@@ -11,33 +11,35 @@ interface TermsAndConditionItemType {
 }
 export interface RefererTermsAndConditionProps extends NavigationScreenProps {}
 
-const renderTermsAndConditionSingleItem = (item: TermsAndConditionItemType) => {
-  return (
-    <View style={styles.listItemContainer}>
-      <Text style={styles.listItemText}>
-        <Text style={styles.listItemId}>
-          {item.id}
-          {'.  '}
-        </Text>
-        {item.condition}
-      </Text>
-    </View>
-  );
-};
-const rednerTermsAndConditionList = () => {
-  return (
-    <View style={styles.listMainContainer}>
-      <FlatList
-        data={string.referAndEarn.refererTermsAndCondition}
-        renderItem={({ item }) => renderTermsAndConditionSingleItem(item)}
-        keyExtractor={(item: any) => item.id}
-      />
-    </View>
-  );
-};
-
 export const RefererTermsAndCondition: React.FC<RefererTermsAndConditionProps> = (props) => {
   const { navigation } = props;
+  const { refererTermsAndConditionData } = useReferralProgram();
+
+  const renderTermsAndConditionSingleItem = (item: TermsAndConditionItemType | any) => {
+    return (
+      <View style={styles.listItemContainer}>
+        <Text style={styles.listItemText}>
+          <Text style={styles.listItemId}>
+            {item.id}
+            {'.  '}
+          </Text>
+          {item.condition}
+        </Text>
+      </View>
+    );
+  };
+  const rednerTermsAndConditionList = () => {
+    return (
+      <View style={styles.listMainContainer}>
+        <FlatList
+          data={refererTermsAndConditionData}
+          renderItem={({ item }) => renderTermsAndConditionSingleItem(item)}
+          keyExtractor={(item: any) => item.id}
+        />
+      </View>
+    );
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={theme.colors.SHERPA_BLUE} />
