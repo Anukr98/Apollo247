@@ -68,7 +68,6 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
     rewardId,
     campaignId,
     campaignName,
-    setCampaignId,
     referrerLink,
     setReferrerLink,
     referralGlobalData,
