@@ -1087,6 +1087,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
         PHYSICAL
         DEFAULT
       }
+      medmantraSync
     }
   }
 `;
@@ -6861,6 +6862,7 @@ export const GET_PACKAGE_PURCHASE_INFO = gql`
       payment_status
       total_amount
       SubscriptionOrderDetails {
+        _id
         end_date
         payment_reference
         group_plan {

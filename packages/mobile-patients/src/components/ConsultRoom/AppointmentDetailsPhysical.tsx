@@ -439,11 +439,15 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
   const minutes = moment.duration(moment(data.appointmentDateTime).diff(new Date())).asMinutes();
   const [appointmentDiffMin, setAppointmentDiffMin] = useState<number>(0);
   let cancelAppointmentTitle = '';
+  let cancelAppointmentTitleHeadingState = false;
   if (appointmentDiffMin >= 15) {
-    cancelAppointmentTitle =
-      "Since you're cancelling 15 minutes before your appointment, we'll issue you a full refund!";
+    cancelAppointmentTitle = `${string.common.cancelAppointmentBody} ${
+      data?.appointmentType === APPOINTMENT_TYPE.PHYSICAL ? 'Physical' : 'Online'
+    } Appointment ${data?.displayId}.`;
+    cancelAppointmentTitleHeadingState = true;
   } else {
-    cancelAppointmentTitle = 'We regret the inconvenience caused. We’ll issue you a full refund.';
+    cancelAppointmentTitle = string.common.cancelRefundBody;
+    if (cancelAppointmentTitleHeadingState) cancelAppointmentTitleHeadingState = false;
   }
   const isAppointmentStartsInFifteenMin = appointmentDiffMin <= 15 && appointmentDiffMin > 0;
   const isAppointmentExceedsTenMin = appointmentDiffMin <= 0 && appointmentDiffMin > -10;
@@ -504,10 +508,13 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
     const diffMin = Math.ceil(moment(data?.appointmentDateTime).diff(moment(), 'minutes', true));
     setAppointmentDiffMin(diffMin);
     if (diffMin >= 15) {
-      cancelAppointmentTitle =
-        "Since you're cancelling 15 minutes before your appointment, we'll issue you a full refund!";
+      cancelAppointmentTitle = `${string.common.cancelAppointmentBody} ${
+        data?.appointmentType === APPOINTMENT_TYPE.PHYSICAL ? 'Physical' : 'Online'
+      } Appointment ${data?.displayId}.`;
+      cancelAppointmentTitleHeadingState = true;
     } else {
-      cancelAppointmentTitle = 'We regret the inconvenience caused. We’ll issue you a full refund.';
+      cancelAppointmentTitle = string.common.cancelRefundBody;
+      if (cancelAppointmentTitleHeadingState) cancelAppointmentTitleHeadingState = false;
     }
     if (diffMin <= 30 && diffMin >= -10) {
       appointmentDiffMinTimerId = BackgroundTimer.setInterval(() => {
@@ -519,11 +526,15 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
           BackgroundTimer.clearInterval(appointmentDiffMinTimerId);
         }
         if (updatedDiffMin >= 15) {
-          cancelAppointmentTitle =
-            "Since you're cancelling 15 minutes before your appointment, we'll issue you a full refund!";
+          cancelAppointmentTitle = `${
+            string.common.cancelAppointmentBody
+          } ${
+            data?.appointmentType === APPOINTMENT_TYPE.PHYSICAL ? 'Physical' : 'Online'
+          } Appointment ${data?.displayId}.`;
+          cancelAppointmentTitleHeadingState = true;
         } else {
-          cancelAppointmentTitle =
-            'We regret the inconvenience caused. We’ll issue you a full refund.';
+          cancelAppointmentTitle = string.common.cancelRefundBody;
+          if (cancelAppointmentTitleHeadingState) cancelAppointmentTitleHeadingState = false;
         }
       }, 40000);
     }
@@ -1001,6 +1012,9 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
             data={data}
             navigation={props.navigation}
             title={cancelAppointmentTitle}
+            customTitle={
+              cancelAppointmentTitleHeadingState ? string.common.cancelAppointmentTitleHeading : ''
+            }
             onPressBack={() => setShowCancelPopup(false)}
             onPressReschedule={() => {
               postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
