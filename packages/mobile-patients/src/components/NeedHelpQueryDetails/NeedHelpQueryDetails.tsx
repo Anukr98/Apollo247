@@ -417,7 +417,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       });
   };
 
-  const renderReturnOrderOverlay = () => {
+  const renderCancelOrderOverlay = () => {
     return (
       <OrderCancelComponent
         showReasons={showReasons}
