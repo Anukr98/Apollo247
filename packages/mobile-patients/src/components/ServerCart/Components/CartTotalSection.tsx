@@ -268,7 +268,7 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
                 ref={savingsTextRef}
                 onLayout={(event) => {
                   const layout = event.nativeEvent.layout;
-                  // console.log('layout of savings', layout);
+                  console.log('layout of savings', layout);
                   setSavingsTextWidth(layout.width);
                 }}
               >
@@ -349,7 +349,8 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
             position: 'absolute',
             marginLeft: 5,
             marginRight: 5,
-            top: topValue,
+            top: savingsSelected ? -75 : -45,
+            // top: topValue,
             flexWrap: 'wrap',
             flex: 1,
             // width: '80%',
@@ -361,11 +362,6 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
       >
         <CashbackDetailsCard
           savingsClicked={savingsSelected ? savingsSelected : false}
-          productDiscount={110}
-          deliveryCharges={deliveryCharges || 0}
-          couponDiscount={couponSavings || 25}
-          circleCashback={54}
-          couponCashback={couponCashBack}
           triangleAlignmentValue={savingsSelected ? 70 : 135}
         />
       </View>

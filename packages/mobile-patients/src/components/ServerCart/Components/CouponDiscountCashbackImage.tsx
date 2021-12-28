@@ -1,93 +1,86 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, ImageBackground } from 'react-native';
-import { Confetti, DiscountCashback } from '../../ui/Icons';
+import { View, Text, TouchableOpacity, StyleSheet, ImageBackground } from 'react-native';
+import { Confetti } from '../../ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
-export const CouponDiscountCashbackImage = () => {
+export interface CouponDiscountCashbackImageProps {
+  setShowCouponImage: (showCouponImage: boolean) => void;
+}
+
+export const CouponDiscountCashbackImage: React.FC<CouponDiscountCashbackImageProps> = (props) => {
+  const { setShowCouponImage } = props;
+  const { serverCartAmount, cartCoupon } = useShoppingCart();
+  const couponCashBack = serverCartAmount?.couponCashBack || 0;
+  const couponSavings = serverCartAmount?.couponSavings || 0;
+  const bothDiscountAndCashbackAvailable = couponCashBack && couponSavings ? true : false;
+  const eitherDiscountAndCashbackAvailable = couponCashBack || couponSavings ? true : false;
+  console.log(bothDiscountAndCashbackAvailable, eitherDiscountAndCashbackAvailable);
+  console.log('coupon.........', serverCartAmount);
+
   const renderDiscountCashback = () => {
     return (
       <View style={styles.container}>
-        <View style={styles.couponContainer}>
-          {/* <ImageBackground
-            source={require('@aph/mobile-patients/src/components/ui/icons/Discount+Cashback.png')}
-            style={{ width: '100%', height: '80%' }}
-          >
-            <View
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                justifyContent: 'flex-end',
-                alignItems: 'center',
-              }}
-            >
-              <Text style={styles.hcText}>HCs will be credited after order delivery. 1HC = ₹1</Text>
-            </View>
-          </ImageBackground> */}
+        {/* <Confetti style={styles.confetti} /> */}
+        <View style={[styles.couponContainer]}>
           {/* <Confetti style={styles.confetti} /> */}
-          <DiscountCashback style={styles.couponImage} />
-          <View
-            style={[
-              styles.textUnderline,
-              {
-                position: 'absolute',
-                top: 160,
-                //   bottom: 206,
-                left: 110,
-                justifyContent: 'center',
-                // backgroundColor: '#00ff33',
-              },
-            ]}
+          <ImageBackground
+            // source={require('@aph/mobile-patients/src/components/ui/icons/Discount-Cashback.webp')}
+            source={
+              bothDiscountAndCashbackAvailable
+                ? require('@aph/mobile-patients/src/components/ui/icons/CouponDiscountCashback.webp')
+                : require('@aph/mobile-patients/src/components/ui/icons/CashbackOrDiscount.webp')
+            }
+            style={{ width: 191, height: bothDiscountAndCashbackAvailable ? 311 : 275 }}
           >
-            <Text style={styles.couponText}>DOUBLE</Text>
-            <Text style={styles.couponText}>Applied!</Text>
-          </View>
-          <View
-            style={{
-              position: 'absolute',
-              top: 240,
-              //   bottom: 206,
-              left: 110,
-              justifyContent: 'center',
-              //   backgroundColor: '#00ff33',
-            }}
-          >
-            <Text style={styles.discountAmount}>₹25</Text>
-            <Text style={styles.discountAmount}>OFF</Text>
-          </View>
-          <View
-            style={{
-              position: 'absolute',
-              // top: 50, left: 70 ,
-              bottom: 280,
-              left: 115,
-              //   width: 180,
-              justifyContent: 'center',
-              //   backgroundColor: '#00ff33',
-            }}
-          >
-            <Text style={styles.hcAmount}>25 HC</Text>
-            <Text style={styles.cashbackText}>cashback earned</Text>
-          </View>
-          <View
-            style={{
-              position: 'absolute',
-              // top: 50, left: 70 ,
-              bottom: 206,
-              left: 85,
-              width: 180,
-              justifyContent: 'center',
-              //   backgroundColor: '#00ff33',
-            }}
-          >
-            <Text style={styles.hcText}>HCs will be credited after order delivery. 1HC = ₹1</Text>
-          </View>
+            <View style={{ flex: 1, justifyContent: 'space-between' }}>
+              <View style={styles.textUnderline}>
+                <Text style={styles.couponText}>{cartCoupon?.coupon}</Text>
+                <Text style={styles.couponText}>Applied!</Text>
+              </View>
+              {couponSavings ? (
+                <View style={{ marginHorizontal: 18 }}>
+                  <Text style={styles.discountAmount}>₹{couponSavings} OFF</Text>
+                  {/* <Text style={styles.discountAmount}>OFF</Text> */}
+                </View>
+              ) : null}
+              {couponCashBack ? (
+                <View style={{ width: 160, marginLeft: 18 }}>
+                  <Text style={styles.hcAmount}>{couponCashBack} HC</Text>
+                  <Text style={styles.cashbackText}>cashback earned</Text>
+                </View>
+              ) : null}
+              <View
+                style={{
+                  paddingLeft: 16,
+                  marginVertical: 10,
+                  width: 160,
+                }}
+              >
+                {couponCashBack ? (
+                  <Text style={styles.hcText}>
+                    HCs will be credited after order delivery. 1HC = ₹1
+                  </Text>
+                ) : (
+                  <Text style={styles.hcText}>Glad we could help you save :)</Text>
+                )}
+              </View>
+            </View>
+          </ImageBackground>
+          {/* <Confetti style={styles.confetti} /> */}
         </View>
       </View>
     );
   };
+  // return (
+  //   <TouchableOpacity
+  //     onPress={() => {
+  //       setShowCouponImage(false);
+  //     }}
+  //   >
+  //     {renderDiscountCashback()}
+  //   </TouchableOpacity>
+  // );
   return renderDiscountCashback();
 };
 
@@ -103,21 +96,12 @@ const styles = StyleSheet.create({
   },
   couponContainer: {
     flex: 1,
-    paddingTop: 50,
-    justifyContent: 'flex-start',
-    // margin: 5,
-    // height: '100%',
-    // width: '100%',
-    // backgroundColor: '#ffffff',
+    justifyContent: 'center',
+    alignSelf: 'center',
   },
   confetti: {
-    // height: 500,
-    // width: 300,
-  },
-  couponImage: {
-    // position: 'absolute',
-    height: 500,
-    width: 350,
+    // height: 400,
+    // width: 200,
   },
   couponText: {
     ...theme.fonts.IBMPlexSansBold(13),
@@ -127,15 +111,16 @@ const styles = StyleSheet.create({
     paddingBottom: 3,
   },
   textUnderline: {
-    //   paddingTop: 5,
     borderBottomWidth: 2.5,
     borderColor: theme.colors.SHADE_OF_CYAN,
-    // borderColor: theme.colors.HEX_WHITE,
-    // borderBottomColor: theme.colors.SHADE_OF_CYAN,
+    marginTop: 23,
+    marginLeft: 18,
+    alignSelf: 'baseline',
+    width: 100,
   },
   discountAmount: {
-    ...theme.fonts.IBMPlexSansBold(46),
-    lineHeight: 56,
+    ...theme.fonts.IBMPlexSansBold(42),
+    lineHeight: 52,
     fontWeight: '500',
     color: theme.colors.HEX_WHITE,
   },

@@ -96,7 +96,11 @@ export const useServerCart = () => {
       })
       .then((result) => {
         const saveCartResponse = result?.data?.saveCart;
-        console.log('savecart response>>>>>>>>>>>>>', saveCartResponse);
+        console.log(
+          'savecart response>>>>>>>>>>>>>',
+          saveCartResponse?.data?.amount?.circleSavings,
+          saveCartResponse
+        );
         if (saveCartResponse?.errorMessage) {
           setServerCartErrorMessage?.(saveCartResponse?.errorMessage || genericErrorMessage);
           return;
@@ -132,7 +136,11 @@ export const useServerCart = () => {
       })
       .then((result) => {
         const fetchCartResponse = result?.data?.fetchCart;
-        console.log('fetchcart response>>>>>>>>>>>>>', fetchCartResponse);
+        console.log(
+          'fetchcart response>>>>>>>>>>>>>',
+          fetchCartResponse?.data?.amount?.circleSavings,
+          fetchCartResponse
+        );
         if (fetchCartResponse?.errorMessage) {
           return;
         }

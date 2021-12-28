@@ -168,6 +168,14 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
     }
   }, [serverCartItems]);
 
+  useEffect(() => {
+    if (showCouponImage) {
+      setTimeout(() => {
+        setShowCouponImage(false);
+      }, 3000);
+    }
+  }, [showCouponImage]);
+
   const showUnServiceableItemsAlert = (
     unserviceableCartItems: saveCart_saveCart_data_medicineOrderCartLineItems[]
   ) => {
@@ -286,7 +294,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
         },
       });
       applyCouponClickedEvent(currentPatient?.id, JSON.stringify(serverCartItems));
-      props.navigation.navigate(AppRoutes.ViewCoupons);
+      props.navigation.navigate(AppRoutes.ViewCoupons, { setShowCouponImage: setShowCouponImage });
     }
   };
 
@@ -393,7 +401,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
       }}
     />
   );
-
+  console.log(props?.navigation?.state);
   const renderScreen = () => (
     <>
       {renderUnserviceableMessage()}
@@ -410,7 +418,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
 
   return (
     <View style={{ flex: 1 }}>
-      {showCouponImage && <CouponDiscountCashbackImage />}
+      {showCouponImage && <CouponDiscountCashbackImage setShowCouponImage={setShowCouponImage} />}
       <SafeAreaView style={theme.viewStyles.container}>
         <CartHeader navigation={props.navigation} />
         <ScrollView
