@@ -6786,12 +6786,14 @@ export const GET_HC_REFREE_RECORD = gql`
       pending {
         name
         registrationDate
+        rewardEligibility
       }
       referee {
         registrationDate
         name
         rewardValue
         rewardType
+        rewardEligibility
       }
     }
   }
@@ -7214,6 +7216,14 @@ export const DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS = gql`
         itemId
         itemName
       }
+    }
+  }
+`;
+export const INSERT_REFEREE_DATA_TO_REFERRER = gql`
+  mutation addReferralRecord($referralDataInput:createReferralInput!){
+    addReferralRecord(referralInput:$referralDataInput){
+      id
+      rewardStatus
     }
   }
 `;

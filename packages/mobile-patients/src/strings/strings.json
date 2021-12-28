@@ -1590,6 +1590,7 @@
     "referAndEarnLine2": "Your friends get ₹100 on signup",
     "earnNow": "Earn Now",
     "willBeCreditSoon":"Will be credited in a few mins*",
+    "subjectedToTnC":"Subjected to TnC",
     "yourFriendGot": "Your friend get ₹100 on signup & you get ₹100 on their first order.",
     "onSignUp": "on signup &",
     "youGet": "You get",
@@ -1614,6 +1615,9 @@
     "expireOn": "Expires on 12 Sep,21",
     "purchasedOn": "Purchased On 20th July",
     "signedUp": "Signed up {signedUpDate}\nPurchase is Pending.",
+    "notEligibleForRewardMaxLimitReadched": "Not eligible for reward, Max limit reached. Read TnC",
+    "useYourFirstTnc":"Use code FIRST3 to get Flat 25% off ",
+    "firstThreeMedecineTransition":"on your first 3 medicine transactions.",
     "purchaseIsPending": ", ",
     "noReferralReward": "No referral rewards",
     "youHaveNotInvited": "You have not invited your friends yet",
@@ -1632,19 +1636,19 @@
     "refererTermsAndCondition": [
       {
         "id": 1,
-        "condition": "The credits received from a referral can only be redeemed as a discount on services availed on the Apollo247 app."
+        "condition": "The Health Credits received from a referral can only be redeemed as discounts on services available on the Apollo 24|7 app."
       },
       {
         "id": 2,
-        "condition": "Referrers will get 100 HC only after the first medicine order is delivered and the return period is passed (i.e 3 days). For 1st diagnostic orders, once the report is generated the referrer will get 100 HC."
+        "condition": "Referrers will get 100 Health Credits only after the first medicine order is delivered to the referee and the return period has passed (i.e. 3 days). For first diagnostic bookings, once the report is generated the referrer will get 100 Health Credits."
       },
       {
         "id": 3,
-        "condition": "HC will only be credited to the referrer’s account if the referee places an order of min 300 and above."
+        "condition": "Health Credits will be credited to the referrer’s account only if the referee’s minimum order value is INR 300 or above."
       },
       {
         "id": 4,
-        "condition": "Credits will only be credited for the 1st order of the referee on the App be it for Pharmacy or diagnostic. Referral rewards are not applicable for consultations booked via the app."
+        "condition": "Health Credits will only be credited for the referee’s first pharmacy or diagnostic order on the Apollo 24|7 app. Referral rewards are not applicable for doctor consultations booked via the app."
       },
       {
         "id": 5,
@@ -1673,6 +1677,10 @@
       {
         "id": 11,
         "condition": "Any rewards earned as part of this program are strictly non-transferable and shall be used by the same user on the same device ID."
+      },
+      {
+        "id": 12,
+        "condition": "Maximum number of referrals allowed by a user in a week is 5 and in a month is 20. Any other referral above this will not be counted and no signup reward will be credited to the referee."
       }
     ],
     "refererFAQs": [

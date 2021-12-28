@@ -226,6 +226,12 @@ const styles = StyleSheet.create({
   earnPointtotalWillGetInSomeMinute: {
     marginTop: 5,
     fontSize: 13,
+    textAlign: 'center',
+    color: theme.colors.GRAY,
+  },
+  earnPointtotalSubjectedToTnc: {
+    marginTop: 0,
+    textDecorationLine: 'underline',
   },
   earnPointgiftedHeading: {
     marginTop: 20,

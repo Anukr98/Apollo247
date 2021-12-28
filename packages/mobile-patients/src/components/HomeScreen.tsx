@@ -1052,6 +1052,14 @@ const styles = StyleSheet.create({
   },
 });
 
+const RewardStatus = {
+  REFEREE_REWARDED: 'REFEREE_REWARDED',
+  REFERRER_REWARDED: 'REFERRER_REWARDED',
+  NOT_ELIGIBLE_FOR_REWARD: 'NOT_ELIGIBLE_FOR_REWARD',
+  ELIGIBLE_FOR_REWARD: 'ELIGIBLE_FOR_REWARD',
+  SUCCESS: 'SUCCESS',
+};
+
 type menuOptions = {
   id: number;
   title: string;
@@ -3480,11 +3488,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const checkUserRegisterThroughReferral = async () => {
-    const referrerInstall = await AsyncStorage.getItem('referrerInstall');
-    if (referrerInstall === 'true') {
-      props.navigation.navigate('EarnedPoints');
-      AsyncStorage.removeItem('referrerInstall');
-    }
+    try {
+      const referrerInstall = await AsyncStorage.getItem('referrerInstall');
+      if (referrerInstall === 'true') {
+        const rewardStatus = await AsyncStorage.getItem('RefereeStatus');
+        if (rewardStatus === RewardStatus.ELIGIBLE_FOR_REWARD) {
+          props.navigation.navigate('EarnedPoints');
+          AsyncStorage.removeItem('RefereeStatus');
+        }
+        AsyncStorage.removeItem('referrerInstall');
+      }
+    } catch (e) {}
   };
 
   const cleverTapEventForAddMemberClick = () => {
