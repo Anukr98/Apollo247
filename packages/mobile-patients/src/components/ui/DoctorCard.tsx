@@ -13,6 +13,7 @@ import {
   HospitalPhrIcon,
   VideoActiveIcon,
   DoctorLanguage,
+  Tick,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   CommonBugFender,
@@ -364,6 +365,15 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 10, theme.colors.APP_YELLOW),
     marginTop: 2,
   },
+  cashbackText: {
+    ...theme.viewStyles.text('M', 10, theme.colors.APP_YELLOW),
+    marginLeft: 4,
+  },
+  tickIcon: {
+    height: 8,
+    width: 8,
+    marginStart: 4,
+  },
 });
 
 export interface DoctorCardProps extends NavigationScreenProps {
@@ -426,6 +436,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     isCircleDoctorOnSelectedConsultMode,
     physicalConsultSlashedPrice,
     physicalConsultDiscountedPrice,
+    cashbackEnabled,
+    cashbackAmount,
   } = circleDoctorDetails;
   const { availableModes, isPlatinumDoctor } = props;
   const { showCircleSubscribed, circleSubPlanId, circleSubscriptionId } = useShoppingCart();
@@ -523,16 +535,36 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     if (showCircleSubscribed) {
       return (
         <View style={{ marginTop: 5 }}>
-          <View style={styles.rowContainer}>
-            <Text style={styles.carePrice}>
-              {string.common.Rs}
-              {convertNumberToDecimal(circleDoctorFees)}
-            </Text>
-            <Text style={styles.careDiscountedPrice}>
-              {string.common.Rs}
-              {convertNumberToDecimal(circleDoctorSlashedPrice)}
-            </Text>
-          </View>
+          {!cashbackEnabled ? (
+            <View style={styles.rowContainer}>
+              <Text style={styles.carePrice}>
+                {string.common.Rs}
+                {convertNumberToDecimal(circleDoctorFees)}
+              </Text>
+              <Text style={styles.careDiscountedPrice}>
+                {string.common.Rs}
+                {convertNumberToDecimal(circleDoctorSlashedPrice)}
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.rowContainer}>
+              <View>
+                <Text style={styles.circleDoctorFeeText1}>You pay</Text>
+                <Text style={styles.circleDoctorFeeText2}>
+                  {string.common.Rs}
+                  {convertNumberToDecimal(circleDoctorFees)}
+                </Text>
+              </View>
+              <View style={styles.seperatorLine} />
+              <View>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Text style={styles.cashbackText}>CIRCLE CASHBACK</Text>
+                  <Tick style={styles.tickIcon} />
+                </View>
+                <Text style={styles.cashbackText}>{`Upto ${cashbackAmount}HC`}</Text>
+              </View>
+            </View>
+          )}
         </View>
       );
     }
@@ -764,7 +796,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       <View>
         {isCircleDoctorOnSelectedConsultMode &&
         circleDoctorDiscountedPrice > -1 &&
-        showCircleSubscribed ? (
+        showCircleSubscribed &&
+        !cashbackEnabled ? (
           <Text style={styles.doctorSlashedPriceText}>
             {string.circleDoctors.circleSavings.replace(
               '{amount}',
