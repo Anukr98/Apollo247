@@ -1223,7 +1223,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     isPharmacyPincodeServiceable,
     serverCartItems,
   } = useShoppingCart();
-  const cartItemsCount = cartItems.length + serverCartItems?.length;
+  const cartItemsCount = cartItems?.length + serverCartItems?.length;
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [previousPatient, setPreviousPatient] = useState<any>([]);
@@ -1284,7 +1284,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       if (
         !token ||
         token === '' ||
-        token.length == 0 ||
+        token?.length == 0 ||
         typeof token != 'string' ||
         typeof token == 'object'
       ) {
@@ -1601,7 +1601,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
-    if (upgradePlans.length) {
+    if (upgradePlans?.length) {
       setHdfcUpgradeUserSubscriptions && setHdfcUpgradeUserSubscriptions(upgradePlans);
     }
   }, [upgradePlans]);
@@ -2296,7 +2296,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                 });
               }
             });
-            if (corporatePlan.length) {
+            if (corporatePlan?.length) {
               AsyncStorage.setItem('isCorporateSubscribed', 'yes');
             } else {
               AsyncStorage.setItem('isCorporateSubscribed', 'no');
@@ -2349,7 +2349,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const setCircleSubscriptionData = (plan: any) => {
     const planSummary: CirclePlanSummary[] = [];
     const summary = plan?.plan_summary;
-    if (summary && summary.length) {
+    if (summary && summary?.length) {
       summary.forEach((value: any) => {
         const plan_summary: CirclePlanSummary = {
           price: value?.price,
@@ -2376,7 +2376,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
     const benefits = plan.benefits;
     const circleBenefits: PlanBenefits[] = [];
-    if (benefits && benefits.length) {
+    if (benefits && benefits?.length) {
       benefits.forEach((item: any) => {
         const ctaAction = item?.cta_action;
         const benefitCtaAction: BenefitCtaAction = {
@@ -2436,7 +2436,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       };
       const benefits = plan.benefits;
       const planBenefits: PlanBenefits[] = [];
-      if (benefits && benefits.length) {
+      if (benefits && benefits?.length) {
         benefits.forEach((item: any) => {
           const ctaAction = g(item, 'cta_action');
           if (g(ctaAction, 'meta', 'action') === string.common.CorporateVaccineBenefit) {
@@ -2823,7 +2823,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       const selectedCount = arraySelected.filter((item: any) => {
         return item.isActive === true;
       });
-      setNotificationCount && setNotificationCount(selectedCount.length);
+      setNotificationCount && setNotificationCount(selectedCount?.length);
     } catch (error) {}
   };
 
@@ -2848,7 +2848,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               const result = arraySelected.filter((obj: any) => {
                 return obj._id == el._id;
               });
-              if (result.length === 0) {
+              if (result?.length === 0) {
                 o.isActive = true;
               } else {
                 o.isActive = result[0].isActive;
@@ -2899,7 +2899,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             return item.isActive === true;
           });
 
-          setNotificationCount && setNotificationCount(selectedCount.length);
+          setNotificationCount && setNotificationCount(selectedCount?.length);
           setAllNotifications && setAllNotifications(filteredNotifications);
 
           AsyncStorage.setItem('allNotification', JSON.stringify(filteredNotifications));
@@ -3421,7 +3421,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       })
       .then((i) => {
         const listToAdd: string[] =
-          recentGlobalSearchList.length > 3
+          recentGlobalSearchList?.length > 3
             ? recentGlobalSearchList.slice(0, 3)
             : recentGlobalSearchList;
         setRecentGlobalSearchList && setRecentGlobalSearchList([{ text: search }, ...listToAdd]);
@@ -3790,7 +3790,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           ]}
           style={[styles.bottom2CardView, styles.offersCardsContainer]}
         >
-          {textForNotch.length > 1 ? (
+          {textForNotch?.length > 1 ? (
             <View
               style={[
                 styles.offersCardNotch,
@@ -3810,8 +3810,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                   ),
                 }}
               >
-                {textForNotch.length > 22
-                  ? textForNotch?.substring(textForNotch.length - 22, textForNotch.length)
+                {textForNotch?.length > 22
+                  ? textForNotch?.substring(textForNotch?.length - 22, textForNotch?.length)
                   : textForNotch}
               </Text>
             </View>
@@ -3958,8 +3958,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                     ),
                   }}
                 >
-                  {textForNotch.length > 36
-                    ? textForNotch?.substring(textForNotch.length - 36, textForNotch.length)
+                  {textForNotch?.length > 36
+                    ? textForNotch?.substring(textForNotch?.length - 36, textForNotch?.length)
                     : textForNotch}
                 </Text>
               </View>
@@ -4630,7 +4630,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           ]}
           title={
             item?.title == 'Book Vaccination Slot'
-              ? corporateSubscriptions == undefined || corporateSubscriptions.length == 0
+              ? corporateSubscriptions == undefined || corporateSubscriptions?.length == 0
                 ? 'Book Vaccination Slot'
                 : corporateSubscriptions?.length >= 0 && !!vaccinationCmsIdentifier
                 ? 'Book Vaccination Slot'
@@ -4940,10 +4940,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     const onPressCart = () => {
       postVaccineWidgetEvents(CleverTapEventName.MY_CART_CLICKED, 'Top bar');
       const route =
-        (serverCartItems.length && cartItems.length) ||
-        (!serverCartItems.length && !cartItems.length)
+        (serverCartItems?.length && cartItems?.length) ||
+        (!serverCartItems?.length && !cartItems.length)
           ? AppRoutes.MedAndTestCart
-          : serverCartItems.length
+          : serverCartItems?.length
           ? AppRoutes.ServerCart
           : AppRoutes.AddPatients;
       props.navigation.navigate(route);
@@ -5301,7 +5301,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
       let finalProducts: any[] = [];
 
-      if (res?.data?.products.length > 1) {
+      if (res?.data?.products?.length > 1) {
         finalProducts = [{ name: searchText }];
 
         medSearchResults.current = finalProducts;
@@ -5350,7 +5350,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const onSearchConsults = async (_searchText: string) => {
-    if (_searchText.length > 2) {
+    if (_searchText?.length > 2) {
       setSearchLoading(true);
 
       try {
@@ -5359,7 +5359,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         const doctors = res?.data?.getDoctorList?.doctors || [];
         const specialities = res?.data?.getDoctorList?.specialties || [];
 
-        if (doctors.length !== 0 || specialities.length !== 0) {
+        if (doctors?.length !== 0 || specialities?.length !== 0) {
           const finalDoctors = doctors.slice(0, 3);
           const finalSpecialities = specialities.slice(0, 1);
           finalProducts = [...finalDoctors, ...finalSpecialities];
@@ -5670,7 +5670,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             marginLeft: 14,
           }}
         >
-          {recentGlobalSearchList.length >= 1 ? heading : null}
+          {recentGlobalSearchList?.length >= 1 ? heading : null}
         </Text>
       </View>
     );
@@ -5822,7 +5822,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             renderItem={({ item, index }) => renderSearchItemDetails(item, index, key)}
           />
         </View>
-        {data.length === 0 ? null : (
+        {data?.length === 0 ? null : (
           <View style={styles.viewAllContainer}>
             <Text
               style={{
@@ -5896,7 +5896,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                     ...theme.viewStyles.text('R', 12, theme.colors.LIGHT_BLUE, 1, 14),
                   }}
                 >
-                  Total Tests - {item?.diagnostic_inclusions.length}
+                  Total Tests - {item?.diagnostic_inclusions?.length}
                 </Text>
               ) : key === MedicalRecordType.CONSULTATION ? (
                 <Text
@@ -5940,7 +5940,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     setIsSearchFocus(true);
     if (isValidSearch(value)) {
       setSearchText(value);
-      if (!(value && value.length > 2)) {
+      if (!(value && value?.length > 2)) {
         setSearchResults([]);
         return;
       }
@@ -5988,10 +5988,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               <View style={styles.viewName}>
                 {renderMenuOptions()}
 
-                {offersListCache.length > 0 && renderHeadings('Offers For You')}
+                {offersListCache?.length > 0 && renderHeadings('Offers For You')}
                 {/* Don't delete this*/}
                 {/* {offersListCache.length === 0 && offersListLoading && renderOffersForYouShimmer()} */}
-                {(offersListCache.length > 0 || !offersListLoading) && renderOffersForYou()}
+                {(offersListCache?.length > 0 || !offersListLoading) && renderOffersForYou()}
 
                 {isReferrerAvailable && renderReferralBanner()}
 
