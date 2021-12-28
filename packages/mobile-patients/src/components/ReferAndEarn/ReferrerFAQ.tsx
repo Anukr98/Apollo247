@@ -5,7 +5,7 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { FaqDownArrow, ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
-import { useReferralProgram } from '../ReferralProgramProvider';
+import { useReferralProgram } from '@aph/mobile-patients/src/components/ReferralProgramProvider';
 
 interface FAQType {
   id: number;

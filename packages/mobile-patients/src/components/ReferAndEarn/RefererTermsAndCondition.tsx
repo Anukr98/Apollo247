@@ -3,7 +3,7 @@ import { View, Text, StatusBar, StyleSheet, ScrollView } from 'react-native';
 import { FlatList, NavigationScreenProps, SafeAreaView } from 'react-navigation';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { useReferralProgram } from '../ReferralProgramProvider';
+import { useReferralProgram } from '@aph/mobile-patients/src/components/ReferralProgramProvider';
 
 interface TermsAndConditionItemType {
   id: number;
