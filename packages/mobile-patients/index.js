@@ -3,8 +3,7 @@ import 'react-native-gesture-handler';
 import { AppRegistry, YellowBox } from 'react-native';
 import { name as appName } from './app.json';
 import AppContainer from '@aph/mobile-patients/src/components/AppContainer';
-import { aphConsole, updateCallKitNotificationReceivedStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import messaging from '@react-native-firebase/messaging';
+import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 
 if (__DEV__) {
@@ -19,11 +18,6 @@ YellowBox.ignoreWarnings([
   'Module RNFetchBlob',
 ]);
 
-messaging().setBackgroundMessageHandler(async (notification) => {
-  if (notification.data?.type === "call_start") {
-    updateCallKitNotificationReceivedStatus(notification.data?.appointmentId);
-  }
-});
 
 console.ignoredYellowBox = ['Warning: Each', 'Warning: Failed'];
 console.disableYellowBox = true;

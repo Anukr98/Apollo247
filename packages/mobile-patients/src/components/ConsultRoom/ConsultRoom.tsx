@@ -116,7 +116,6 @@ import {
   getAllProHealthAppointments,
   getUserBannersList,
   saveTokenDevice,
-  updatePatientAppVersion,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   FirebaseEventName,
@@ -977,15 +976,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       getActiveProHealthAppointments(currentPatient); //to show the prohealth appointments
     }
   }
-  const updateAppVersion = (currentPatient: any) => {
-    if (currentPatient?.id) {
-      updatePatientAppVersion(client, currentPatient);
-    }
-  };
 
   useEffect(() => {
     checkCleverTapLoginStatus(currentPatient);
-    updateAppVersion(currentPatient);
   }, [currentPatient]);
 
   useEffect(() => {

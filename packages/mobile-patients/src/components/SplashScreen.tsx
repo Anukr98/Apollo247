@@ -45,7 +45,6 @@ import {
   navigateToHome,
   setCleverTapAppsFlyerCustID,
   clevertapEventForAppsflyerDeeplink,
-  updateCallKitNotificationReceivedStatus,
   checkUniversalURL,
   removeNullFromObj,
   filterAppLaunchSoruceAttributesByKey,
@@ -334,7 +333,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       // on receive voip push
       const payload = notification && notification.getData();
       if (payload && payload.appointmentId) {
-        updateCallKitNotificationReceivedStatus(payload.appointmentId);
         voipAppointmentId.current = notification.getData().appointmentId;
         voipPatientId.current = notification.getData().patientId;
         voipCallType.current = notification.getData().isVideo ? 'Video' : 'Audio';
