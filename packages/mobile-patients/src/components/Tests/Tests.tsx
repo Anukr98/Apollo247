@@ -2066,6 +2066,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     })
       .then((response) => {
         setLoading(true);
+        Platform.OS == 'ios' && setIsPrescriptionUpload(false);
         props.navigation.navigate(AppRoutes.PrescriptionCamera, {
           type: 'CAMERA_AND_GALLERY',
           responseData: formatResponse([response] as ImageCropPickerResponse[]),
@@ -2074,11 +2075,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
           title: 'Camera',
         });
       })
-      .catch((e: Error) => {});
+      .catch((e: Error) => {
+        Platform.OS == 'ios' && setIsPrescriptionUpload(false);
+      });
   };
 
   const openGallery = () => {
-    setIsPrescriptionUpload(false);
+    Platform.OS == 'android' && setIsPrescriptionUpload(false);
+
     ImagePicker.openPicker({
       cropping: true,
       hideBottomControls: true,
@@ -2098,6 +2102,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           return;
         }
         const uploadedImages = formatResponse(images);
+        Platform.OS == 'ios' && setIsPrescriptionUpload(false);
         props.navigation.navigate(AppRoutes.SubmittedPrescription, {
           type: 'Gallery',
           phyPrescriptionsProp: [...phyPrescriptionUploaded, ...uploadedImages],
@@ -2106,9 +2111,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
         });
       })
       .catch((e: Error) => {
+        Platform.OS == 'ios' && setIsPrescriptionUpload(false);
         CommonBugFender('Tests_onClickGallery', e);
       });
   };
+
   const getBase64 = (response: DocumentPickerResponse[]): Promise<string>[] => {
     return response.map(async ({ fileCopyUri: uri, name: fileName, type }) => {
       const isPdf = fileName.toLowerCase().endsWith('.pdf'); // TODO: check here if valid image by mime
@@ -3038,7 +3045,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   if (item.title == 'Choose from Gallery') {
                     setIsPrescriptionGallery(true);
                   } else if (item.title == 'Take a Picture') {
-                    setIsPrescriptionUpload(false);
+                    Platform.OS == 'android' && setIsPrescriptionUpload(false);
                     onClickTakePhoto();
                   } else {
                     setIsPrescriptionUpload(false);

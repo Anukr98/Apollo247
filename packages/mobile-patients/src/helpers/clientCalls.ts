@@ -61,6 +61,7 @@ import {
   GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
   DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS,
   GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
+  FETCH_BLOB_URL_WITH_PRISM,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -289,6 +290,7 @@ import { getDiagnosticPackageRecommendations, getDiagnosticPackageRecommendation
 import { getDiagnosticOrdersListByMobile, getDiagnosticOrdersListByMobileVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { getDiagnosticItemRecommendationsByPastOrders, getDiagnosticItemRecommendationsByPastOrdersVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticItemRecommendationsByPastOrders';
 import { findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsByItemIDsAndCityID';
+import { fetchBlobURLWithPRISMData, fetchBlobURLWithPRISMDataVariables } from '@aph/mobile-patients/src/graphql/types/fetchBlobURLWithPRISMData';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -1682,3 +1684,15 @@ export const getDiagnosticsByItemIdCityId = (
     fetchPolicy: 'no-cache',
   });
 };
+
+export const convertPrismUrlToBlob = (client:  ApolloClient<object>, patientId: string, prismUrl:string) => {
+  return client.mutate<fetchBlobURLWithPRISMData, fetchBlobURLWithPRISMDataVariables>({
+    mutation: FETCH_BLOB_URL_WITH_PRISM,
+    variables: {
+      patientId: patientId,
+      fileUrl: prismUrl
+    },
+    fetchPolicy: 'no-cache',
+  });
+
+}
