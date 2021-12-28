@@ -2259,7 +2259,7 @@ export const InitiateAppsFlyer = (
           setAppReferralData({
             af_channel: responseData.af_channel,
             af_referrer_customer_id: responseData.referrerId,
-            campaign: responseData.campaign,
+            campaign: responseData.campaignId,
             rewardId: responseData.rewardId,
             shortlink: responseData.shortlink,
             installTime: responseData.install_time

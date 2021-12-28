@@ -1194,7 +1194,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const [proActiveAppointments, setProHealthActiveAppointment] = useState([] as any);
   const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
   const { APP_ENV } = AppConfig;
-  const { refreeReward, setRefreeReward, setRewardId, setCampaignId } = useReferralProgram();
+  const {
+    refreeReward,
+    setRefreeReward,
+    setRewardId,
+    setCampaignId,
+    setCampaignName,
+  } = useReferralProgram();
   const [isReferrerAvailable, setReferrerAvailable] = useState<boolean>(false);
   const {
     setHdfcPlanName,
@@ -1428,7 +1434,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       });
       if (responseCampaign?.data?.getCampaignInfoByCampaignType?.id) {
         const campaignId = responseCampaign?.data?.getCampaignInfoByCampaignType?.id;
+        const campaignName = responseCampaign?.data?.getCampaignInfoByCampaignType?.campaignType;
         setCampaignId?.(campaignId);
+        setCampaignName?.(campaignName);
       }
       if (responseReward?.data?.getRewardInfoByRewardType?.id) {
         const rewardId = responseReward?.data?.getRewardInfoByRewardType?.id;

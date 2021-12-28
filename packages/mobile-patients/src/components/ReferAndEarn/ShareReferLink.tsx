@@ -100,9 +100,9 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
           rewardValue: data?.getReferralRewardDetails?.referee?.rewardValue,
           rewardRegisteration: data?.getReferralRewardDetails?.referee?.registrationDate,
           expirationData: getRequiredDateFormat(refreeRegisterationDate),
-          showHCSection:  data?.getReferralRewardDetails?.referee?.rewardEligibility && checkReferralExpirationDate(
-            data?.getReferralRewardDetails?.referee?.registrationDate
-          ),
+          showHCSection:
+            data?.getReferralRewardDetails?.referee?.rewardEligibility &&
+            checkReferralExpirationDate(data?.getReferralRewardDetails?.referee?.registrationDate),
         });
       }
     } catch (error) {
@@ -196,13 +196,14 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
     appsFlyer.generateInviteLink(
       {
         channel: 'gmail',
-        campaign: campaignId,
+        campaign: campaignName,
         customerID: g(currentPatient, 'id'),
         sub2: 'AppReferral',
         userParams: {
           rewardId: rewardId,
           linkToUse: 'ForReferrarInstall',
           referrerId: g(currentPatient, 'id'),
+          campaignId: campaignId,
         },
       },
       (link) => {
