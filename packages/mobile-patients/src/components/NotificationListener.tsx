@@ -30,7 +30,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { StyleSheet, Platform, View, TouchableOpacity, Text } from 'react-native';
 import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import { NavigationScreenProps } from 'react-navigation';
-import { DoctorType } from '../graphql/types/globalTypes';
+import { DoctorType, PrescriptionType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import AsyncStorage from '@react-native-community/async-storage';
 import KotlinBridge from '@aph/mobile-patients/src/KotlinBridge';
@@ -42,6 +42,7 @@ import {
   getMedicineOrderOMSDetailsWithAddressVariables,
 } from '../graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 const styles = StyleSheet.create({
   rescheduleTextStyles: {
@@ -105,9 +106,9 @@ export interface NotificationListenerProps extends NavigationScreenProps {}
 export const NotificationListener: React.FC<NotificationListenerProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { showAphAlert, hideAphAlert, setLoading, setMedFeedback } = useUIElements();
-  const { cartItems, setCartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
   const client = useApolloClient();
   const { setDoctorJoinedChat } = useAppCommonData();
+  const { setUserActionPayload } = useServerCart();
 
   const showMedOrderStatusAlert = (
     data:
@@ -647,65 +648,32 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                 }))
                 .filter((item) => item.sku);
 
+              setUserActionPayload?.({
+                medicineOrderCartLineItems: items,
+              });
+
               Promise.all(items.map((item) => getMedicineDetailsApi(item!.sku!)))
                 .then((result) => {
-                  const itemsToAdd = result
-                    .map(({ data: { productdp } }, index) => {
-                      const medicineDetails = (productdp && productdp[0]) || {};
-                      if (!medicineDetails.is_in_stock) return null;
-                      return {
-                        id: medicineDetails!.sku!,
-                        mou: medicineDetails.mou,
-                        name: medicineDetails!.name,
-                        price: medicineDetails!.price,
-                        specialPrice: medicineDetails.special_price
-                          ? typeof medicineDetails.special_price == 'string'
-                            ? parseInt(medicineDetails.special_price)
-                            : medicineDetails.special_price
-                          : undefined,
-                        quantity: items[index].qty || 1,
-                        prescriptionRequired: medicineDetails.is_prescription_required == '1',
-                        isMedicine: getIsMedicine(medicineDetails.type_id?.toLowerCase()) || '0',
-                        thumbnail: medicineDetails.thumbnail || medicineDetails.image,
-                        maxOrderQty: medicineDetails.MaxOrderQty,
-                        productType: medicineDetails.type_id,
-                      } as ShoppingCartItem;
-                    })
-                    .filter((item) => item) as ShoppingCartItem[];
-                  const itemsToAddSkus = itemsToAdd.map((i) => i.id);
-                  // :: CONFIRM HERE :: // Whether to replace cart or add to existing?
-                  const itemsToAddInCart = [
-                    ...itemsToAdd,
-                    ...cartItems.filter((item) => !itemsToAddSkus.includes(item.id!)),
-                  ];
-                  setCartItems!(itemsToAddInCart);
-
                   // Adding prescriptions
                   if (orderDetails!.prescriptionImageUrl) {
-                    const imageUrls = orderDetails!.prescriptionImageUrl
+                    const imageUrls = orderDetails?.prescriptionImageUrl
                       .split(',')
                       .map((item) => item.trim());
+                    const prismPrescriptionFileIds = orderDetails?.prismPrescriptionFileId
+                      ?.split(',')
+                      ?.map((item) => item.trim());
 
-                    const ePresToAdd = imageUrls.map(
-                      (item) =>
-                        ({
-                          id: item,
-                          date: moment(orderDetails!.medicineOrdersStatus![0]!.statusDate).format(
-                            'DD MMM YYYY'
-                          ),
-                          doctorName: '',
-                          forPatient: (currentPatient && currentPatient.firstName) || '',
-                          medicines: (orderDetails!.medicineOrderLineItems || [])
-                            .map((item) => item!.medicineName)
-                            .join(', '),
-                          uploadedUrl: item,
-                        } as EPrescription)
-                    );
-                    const ePresIds = ePresToAdd.map((i) => i!.uploadedUrl);
-                    setEPrescriptions!([
-                      ...ePrescriptions.filter((item) => !ePresIds.includes(item.uploadedUrl!)),
-                      ...ePresToAdd,
-                    ]);
+                    imageUrls?.forEach((url, index) => {
+                      setUserActionPayload?.({
+                        prescriptionDetails: {
+                          prescriptionImageUrl: url,
+                          prismPrescriptionFileId: prismPrescriptionFileIds?.[index],
+                          uhid: currentPatient?.uhid,
+                          appointmentId: orderDetails?.appointmentId,
+                        },
+                        prescriptionType: PrescriptionType.UPLOADED,
+                      });
+                    });
                   }
 
                   showAphAlert!({

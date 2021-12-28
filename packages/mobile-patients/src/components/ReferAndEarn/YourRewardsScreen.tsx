@@ -21,6 +21,7 @@ import {
   postCleverTapEvent,
   replaceVariableInString,
   updateUserProfileWithReferrInformation,
+  validateStringNotToUndefined,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -38,6 +39,7 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 type PendingUserList = {
   name: string;
   registrationDate: string;
+  rewardEligibility: boolean;
 };
 
 type ClaimedUserList = {
@@ -54,6 +56,7 @@ type RefreeInitialData = {
   rewardValue: string | null;
   rewardType: string | null;
   expirationDate: string | null;
+  rewardEligibility: boolean;
 };
 
 export interface YourRewardsScreenProps extends NavigationScreenProps {}
@@ -71,10 +74,11 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
     rewardValue: null,
     rewardType: null,
     expirationDate: null,
+    rewardEligibility: false,
   });
   const client = useApolloClient();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
-  const { referrerLink } = useReferralProgram();
+  const { referrerLink, referralGlobalData, yourRewardsScreenData } = useReferralProgram();
   const { pharmacyCircleAttributes } = useShoppingCart();
 
   const { navigation } = props;
@@ -87,7 +91,7 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
     const shareOptions = {
       title: string.referAndEarn.referalLink,
       url: referrerLink,
-      message: string.referAndEarn.shareLinkText,
+      message: referralGlobalData?.shareLinkMessage,
       failOnCancel: false,
       showAppsToView: true,
       social: Share.Social.WHATSAPP,
@@ -168,6 +172,7 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
           expirationDate: getExpirationDate(
             data?.getReferralRewardDetails?.referee?.registrationDate
           ),
+          rewardEligibility: data?.getReferralRewardDetails?.referee?.rewardEligibility,
         });
         setshowSpinner(false);
       }
@@ -178,35 +183,56 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
   const ClaimedCard = () => {
     return initialRefreeData.name != null ? (
       <View style={styles.healthCreditcontainer}>
-        <View style={styles.healthCreditLeftcontainer}>
-          <ReferCheckIcon />
-        </View>
-        <View>
-          <View style={styles.healthCreditRightInnercontainer}>
-            <Text style={styles.healthCreditrefreeName}>{initialRefreeData.name}</Text>
-            <Text style={styles.healthCreditexporationText}>
-              {initialRefreeData.expirationDate}
+        {!initialRefreeData.rewardEligibility ? (
+          <View style={styles.notAvailableClaimTextContainer}>
+            <Text>
+              <Text style={styles.notAvailableClaimBoldText}>
+                {validateStringNotToUndefined(
+                  yourRewardsScreenData?.claimedCard.notEligible.useYourFirstTnc
+                )}
+              </Text>
+              {validateStringNotToUndefined(
+                yourRewardsScreenData?.claimedCard.notEligible.firstThreeMedecineTransition
+              )}
             </Text>
           </View>
+        ) : (
+          <>
+            <View style={styles.healthCreditLeftcontainer}>
+              <ReferCheckIcon />
+            </View>
+            <View>
+              <View style={styles.healthCreditRightInnercontainer}>
+                <Text style={styles.healthCreditrefreeName}>{initialRefreeData.name}</Text>
+                <Text style={styles.healthCreditexporationText}>
+                  {initialRefreeData.expirationDate}
+                </Text>
+              </View>
 
-          <View style={styles.healthCreditflexRow}>
-            <View style={styles.healthCreditclaimedRightContaier}>
-              <Text style={styles.healthCreditsmallHeadingOne}>
-                {string.referAndEarn.youEarnedRefreePoints}
-              </Text>
-              <Text style={styles.healthCreditsmallHeadingTwo}>
-                {getRequiredDateFormat(initialRefreeData.registrationDate)}
-                {string.referAndEarn.firstTimeLogin}
-              </Text>
+              <View style={styles.healthCreditflexRow}>
+                <View style={styles.healthCreditclaimedRightContaier}>
+                  <Text style={styles.healthCreditsmallHeadingOne}>
+                    {validateStringNotToUndefined(
+                      yourRewardsScreenData?.claimedCard.eligible.youEarnedRefreePoints
+                    )}
+                  </Text>
+                  <Text style={styles.healthCreditsmallHeadingTwo}>
+                    {getRequiredDateFormat(initialRefreeData.registrationDate)}
+                    {validateStringNotToUndefined(
+                      yourRewardsScreenData?.claimedCard.eligible.firstTimeLogin
+                    )}
+                  </Text>
+                </View>
+                <View style={styles.healthCredittotalHC}>
+                  <Text style={styles.healthCreditHC}>
+                    {initialRefreeData.rewardValue}
+                    {initialRefreeData.rewardType}
+                  </Text>
+                </View>
+              </View>
             </View>
-            <View style={styles.healthCredittotalHC}>
-              <Text style={styles.healthCreditHC}>
-                {initialRefreeData.rewardValue}
-                {initialRefreeData.rewardType}
-              </Text>
-            </View>
-          </View>
-        </View>
+          </>
+        )}
       </View>
     ) : (
       <View />
@@ -257,9 +283,14 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
           <View style={styles.healthCreditflexRow}>
             <View style={{}}>
               <Text style={styles.healthCreditsmallHeadingOne}>
-                {replaceVariableInString(string.referAndEarn.signedUp, {
-                  signedUpDate: getRequiredDateFormat(item.registrationDate),
-                })}
+                {item.rewardEligibility
+                  ? replaceVariableInString(
+                      yourRewardsScreenData?.pendingCard.signedUpPurchasePending,
+                      {
+                        signedUpDate: getRequiredDateFormat(item.registrationDate),
+                      }
+                    )
+                  : yourRewardsScreenData?.pendingCard.notEligibleForRewardMaxLimitReadched}
               </Text>
             </View>
           </View>
@@ -272,15 +303,21 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
     return (
       <View style={styles.noReferralReward_container}>
         <View style={styles.NoReferralinnerContainer}>
-          <Text style={styles.NoReferralheading}>{string.referAndEarn.noReferralReward}</Text>
-          <Text style={styles.NoReferralsubHeading}>{string.referAndEarn.youHaveNotInvited}</Text>
+          <Text style={styles.NoReferralheading}>
+            {validateStringNotToUndefined(yourRewardsScreenData?.noReferralReward.mainHeading)}
+          </Text>
+          <Text style={styles.NoReferralsubHeading}>
+            {validateStringNotToUndefined(yourRewardsScreenData?.noReferralReward.subHeading)}
+          </Text>
           <TouchableOpacity
             onPress={() => {
               onWhatsAppShare();
             }}
             style={styles.NoReferralreferBtn}
           >
-            <Text style={styles.NoReferralbtnText}>{string.referAndEarn.referYourFriend}</Text>
+            <Text style={styles.NoReferralbtnText}>
+              {validateStringNotToUndefined(yourRewardsScreenData?.noReferralReward.buttonText)}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -327,7 +364,7 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
               selectedTab === 1 ? styles.selectedTabText : styles.unSelectedTabText,
             ]}
           >
-            {string.referAndEarn.claimed}
+            {validateStringNotToUndefined(yourRewardsScreenData?.tabBarMenuName.menuOne)}
           </Text>
           <View style={selectedTab === 1 ? styles.horizontalBackground : {}} />
         </TouchableOpacity>
@@ -338,7 +375,7 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
               selectedTab === 2 ? styles.selectedTabText : styles.unSelectedTabText,
             ]}
           >
-            {string.referAndEarn.pending}
+            {validateStringNotToUndefined(yourRewardsScreenData?.tabBarMenuName.menuTwo)}
           </Text>
           <View style={selectedTab === 2 ? styles.horizontalBackground : {}} />
         </TouchableOpacity>
@@ -350,9 +387,9 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
       <View style={styles.totalHcMainContainer}>
         <View style={styles.totalHCtexContainer}>
           <Text style={styles.totalHCtotalHC}>
-            {replaceVariableInString(string.referAndEarn.total, {
-              currencyType: rewardType,
-              earnedPoints: totalReward.toString(),
+            {replaceVariableInString(yourRewardsScreenData?.totalEarningHeading, {
+              currencyName: referralGlobalData?.currencyName || '',
+              earnedAmount: totalReward.toString() || '',
             })}
           </Text>
           <View style={styles.totalHCrefresh}>
@@ -452,6 +489,12 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.LIGHT_GRAY_2,
     borderRadius: 5,
     flexDirection: 'row',
+  },
+  notAvailableClaimTextContainer: {
+    padding: 5,
+  },
+  notAvailableClaimBoldText: {
+    fontWeight: 'bold',
   },
   healthCreditLeftcontainer: {
     marginRight: 10,

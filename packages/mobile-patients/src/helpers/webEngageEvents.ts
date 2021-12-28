@@ -1274,12 +1274,14 @@ export interface WebEngageEvents {
     'Item ID': string | number;
     'Item Price'?: number | string;
     'Circle user'?: string;
+    'Original Item ids'?: any;
+    'Section name'?: string;
   };
 
   [WebEngageEventName.DIAGNOSTIC_CART_VIEWED]: {
     'Page source': string;
     'Total items in cart': number;
-    'Cart Items': object[];
+    'Cart Items': any;
     'Circle user': 'Yes' | 'No';
     Pincode: string | number;
     city: string;
@@ -1344,6 +1346,7 @@ export interface WebEngageEvents {
     Source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE;
     'Section name'?: string;
     'Circle user': string;
+    'Original Item ids'?: any;
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order id': any;

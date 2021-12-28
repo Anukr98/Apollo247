@@ -101,6 +101,7 @@ import { useGetClientAuthToken } from '@aph/mobile-patients/src/components/Payme
 import { CredPay } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CredPay';
 import { Offers } from '@aph/mobile-patients/src/components/PaymentGateway/Components/Offers';
 import { OfferInfo } from '@aph/mobile-patients/src/components/PaymentGateway/Components/OfferInfo';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 const { HyperSdkReact } = NativeModules;
 
@@ -146,7 +147,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const { authToken, setauthToken, pharmacyUserType } = useAppCommonData();
-  const { grandTotal } = useShoppingCart();
+  const { grandTotal, serverCartAmount } = useShoppingCart();
   const [HCSelected, setHCSelected] = useState<boolean>(false);
   const [burnHc, setburnHc] = useState<number>(0);
   const storeCode =
@@ -181,6 +182,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     amount: amount,
     availableHc: healthCredits,
   };
+  const { deleteServerCart } = useServerCart();
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
     const eventListener = eventEmitter.addListener('HyperEvent', (resp) => {
@@ -209,6 +211,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', () => {
+      goBackToCart();
       return !HyperSdkReact.isNull() && HyperSdkReact.onBackPressed();
     });
     return () => BackHandler.removeEventListener('hardwareBackPress', () => null);
@@ -224,7 +227,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const updateAmount = () => {
-    const redeemableAmount = grandTotal;
+    const redeemableAmount = serverCartAmount?.estimatedAmount || 0;
     HCSelected
       ? healthCredits >= redeemableAmount
         ? (setburnHc(redeemableAmount), setAmount(Number(Decimal.sub(amount, redeemableAmount))))
@@ -830,7 +833,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         });
         break;
       case 'subscription':
-        const params = orderDetails?.circleParams;
+        let params = orderDetails?.circleParams;
+        params['paymentStatus'] = paymentStatus;
         goToConsultRoom(props.navigation, params);
         break;
       case 'vaccination':
@@ -872,13 +876,20 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     });
   };
 
+  const goBackToCart = () => {
+    if (businessLine != 'diagnostics') {
+      deleteServerCart(false, paymentId);
+    }
+    props.navigation.goBack();
+  };
+
   const renderHeader = () => {
     return (
       <Header
         container={styles.header}
         leftIcon={'backArrow'}
         title={`AMOUNT TO PAY : ₹ ${amount}`}
-        onPressLeftIcon={() => props.navigation.goBack()}
+        onPressLeftIcon={goBackToCart}
       />
     );
   };

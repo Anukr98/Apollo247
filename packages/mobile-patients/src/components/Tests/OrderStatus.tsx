@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   Dimensions,
   Platform,
-  Modal
+  Modal,
 } from 'react-native';
 import { NavigationScreenProps, SafeAreaView } from 'react-navigation';
 import {
@@ -36,7 +36,7 @@ import {
   getCleverTapCircleMemberValues,
   isEmptyObject,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -74,7 +74,10 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 import AsyncStorage from '@react-native-community/async-storage';
 import { PassportPaitentOverlay } from '@aph/mobile-patients/src/components/Tests/components/PassportPaitentOverlay';
-import { updatePassportDetails, updatePassportDetailsVariables } from '../../graphql/types/updatePassportDetails';
+import {
+  updatePassportDetails,
+  updatePassportDetailsVariables,
+} from '@aph/mobile-patients/src/graphql/types/updatePassportDetails';
 
 export interface OrderStatusProps extends NavigationScreenProps {}
 
@@ -91,6 +94,8 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const client = useApolloClient();
   const { setLoading, showAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
+  const { buildApolloClient, authToken } = useAuth();
+  const apolloClientWithAuth = buildApolloClient(authToken);
 
   const modifiedOrderDetails = props.navigation.getParam('isModify');
   const orderDetails = props.navigation.getParam('orderDetails');
@@ -114,7 +119,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const isModifyCod = modifiedOrderDetails && isCOD;
 
   const fetchOrderDetails = (orderId: string) =>
-    client.query<getDiagnosticOrderDetails, getDiagnosticOrderDetailsVariables>({
+    apolloClientWithAuth.query<getDiagnosticOrderDetails, getDiagnosticOrderDetailsVariables>({
       query: GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
       variables: { diagnosticOrderId: orderId },
       fetchPolicy: 'no-cache',
@@ -138,7 +143,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const [isSingleUhid, setIsSingleUhid] = useState<boolean>(false);
   const [showPassportModal, setShowPassportModal] = useState<boolean>(false);
   const [passportNo, setPassportNo] = useState<any>([]);
-  const [passportData, setPassportData] = useState<any>([])
+  const [passportData, setPassportData] = useState<any>([]);
   const [showMoreArray, setShowMoreArray] = useState([] as any);
   const [apiPrimaryOrderDetails, setApiPrimaryOrderDetails] = useState([] as any);
   const [primaryOrderId, setPrimaryOrderId] = useState<string>('');
@@ -870,7 +875,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
         </ScrollView>
         {showPassportModal && renderPassportPaitentView()}
       </SafeAreaView>
-       
+
       {backToHome()}
     </View>
   );
@@ -1128,7 +1133,7 @@ const styles = StyleSheet.create({
   },
   pickupView: {
     flexDirection: 'row',
-    backgroundColor: '#F3FFFF',
+    backgroundColor: colors.GREEN_BG,
     marginHorizontal: -20,
     padding: 16,
     paddingLeft: 20,

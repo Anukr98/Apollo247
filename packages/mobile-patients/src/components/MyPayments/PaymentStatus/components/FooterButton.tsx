@@ -138,17 +138,17 @@ const FooterButton: FC<FooterButtonProps> = (props) => {
         postGoToConsultRoomEvent(item);
         props.navigationProps.navigate(AppRoutes.Consult, {});
       } else {
-        props.navigationProps.navigate(AppRoutes.ConsultRoom, {});
+        props.navigationProps.navigate(AppRoutes.HomeScreen, {});
       }
     } else {
       if (status === FAILED) {
-        props.navigationProps.navigate(AppRoutes.MedicineCart, {});
+        props.navigationProps.navigate(AppRoutes.ServerCart, {});
       } else if (status === SUCCESS) {
         props.navigationProps.navigate(AppRoutes.OrderDetailsScene, {
           orderAutoId: orderID,
         });
       } else {
-        props.navigationProps.navigate(AppRoutes.ConsultRoom, {});
+        props.navigationProps.navigate(AppRoutes.HomeScreen, {});
       }
     }
   };

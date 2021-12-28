@@ -194,7 +194,7 @@ PODS:
   - nanopb/decode (1.30906.0)
   - nanopb/encode (1.30906.0)
   - OpenTok (2.21.2)
-  - opentok-react-native (0.17.2):
+  - opentok-react-native (0.18.0):
     - OpenTok
     - React
   - PromisesObjC (1.2.12)
@@ -406,8 +406,8 @@ PODS:
     - React
   - react-native-user-agent (2.1.0):
     - React
-  - react-native-webengage (1.2.8):
-    - React
+  - react-native-webengage (1.2.10):
+    - React-Core
     - WebEngage
   - react-native-webview (8.2.1):
     - React
@@ -505,8 +505,8 @@ PODS:
     - React-Core
   - RNSVG (12.1.1):
     - React
-  - RNVectorIcons (6.7.0):
-    - React
+  - RNVectorIcons (9.0.0):
+    - React-Core
   - RNVoipPushNotification (2.1.0):
     - React-Core
   - RSKImageCropper (3.0.2)
@@ -871,7 +871,7 @@ SPEC CHECKSUMS:
   lottie-react-native: 96361a9891cf651534ea35c4f85f33d4cf14ed13
   nanopb: 59317e09cf1f1a0af72f12af412d54edf52603fc
   OpenTok: 0060779ca05fca24242a10c8b9ee4982bcf7d795
-  opentok-react-native: 56e3213e14bcc5222bc2e3e244c3a3b6bb3758ac
+  opentok-react-native: d6a3cf709141009fbf4679f370f273440de6964a
   PromisesObjC: 3113f7f76903778cf4a0586bd1ab89329a0b7b97
   Protobuf: 3724efa50cb2846d7ccebc8691c574e85fd74471
   QBImagePickerController: d54cf93db6decf26baf6ed3472f336ef35cae022
@@ -902,7 +902,7 @@ SPEC CHECKSUMS:
   react-native-receive-sharing-intent: 648f1eb35ae70886a8733d6be949042aa5111ffb
   react-native-splash-screen: 200d11d188e2e78cea3ad319964f6142b6384865
   react-native-user-agent: 6ca9356042c87659876db9307109ebd653fd4429
-  react-native-webengage: d5c6eed417081e3146fe017058103917799d16cf
+  react-native-webengage: bc2390d176db9a4e4cfcd25a93b70d8c86c76695
   react-native-webview: d3cf75764f98fd433f1222f5a7ca8e355ada2a15
   React-RCTActionSheet: 94671eef55b01a93be735605822ef712d5ea208e
   React-RCTAnimation: 524ae33e73de9c0fe6501a7a4bda8e01d26499d9
@@ -934,7 +934,7 @@ SPEC CHECKSUMS:
   RNShare: 047d42214f875d731bde73a2b67418638af85ad9
   RNSound: 9253013eeaa051eab63d354fd4654f7aa67c82f0
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
-  RNVectorIcons: 368d6d8b8301224e5ffb6254191f4f8876c2be0d
+  RNVectorIcons: 4143ba35feebab8fdbe6bc43d1e776b393d47ac8
   RNVoipPushNotification: be6f70cac9d1fd73e020063093f635f64d97c9c6
   RSKImageCropper: 1ac71e9a82e3f41eea3eedfff8eacb0d3821c9ec
   Salvator: e388abcd1c8a526aff3e952ed94219bb4e12c85f
@@ -953,4 +953,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 87efab4164c5e50ec36bc7acad94300fbec013cc
 
-COCOAPODS: 1.10.1
+COCOAPODS: 1.11.2

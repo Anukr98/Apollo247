@@ -96,7 +96,9 @@ export const CovidScan: React.FC<CovidScanProps> = (props) => {
       <WebView
         ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}
         onLoadEnd={() => setLoading?.(false)}
-        source={{ uri }}
+        source={{
+          uri,
+        }}
         onNavigationStateChange={(data) => handleResponse(data, WebViewRef)}
         renderError={() => renderError(WebViewRef)}
       />

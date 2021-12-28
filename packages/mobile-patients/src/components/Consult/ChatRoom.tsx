@@ -236,6 +236,7 @@ import {
   createVonageSessionToken,
   createVonageSessionTokenVariables,
 } from '../../graphql/types/createVonageSessionToken';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 interface OpentokStreamObject {
   connection: {
@@ -1247,12 +1248,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     addMultipleCartItems: addMultipleTestCartItems,
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
   } = useDiagnosticsCart();
-  const {
-    setEPrescriptions,
-    addMultipleCartItems,
-    circleSubPlanId,
-    circleSubscriptionId,
-  } = useShoppingCart();
+  const { circleSubPlanId, circleSubscriptionId } = useShoppingCart();
+  const { uploadEPrescriptionsToServerCart } = useServerCart();
   const [name, setname] = useState<string>('');
   const [showRescheduleCancel, setShowRescheduleCancel] = useState<boolean>(false);
   const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
@@ -1591,7 +1588,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       | WebEngageEvents[WebEngageEventName.VIEW_PRESCRIPTION_IN_CONSULT_DETAILS]
       | WebEngageEvents[WebEngageEventName.PATIENT_JOINED_CONSULT]
       | WebEngageEvents[WebEngageEventName.PATIENT_ENDED_CONSULT] = {
-      'Doctor Name': g(data, 'doctorInfo', 'fullName')!,
+      'Doctor Name': g(data, 'doctorInfo', 'displayName')!,
       'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
       'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,
       'Doctor Category': g(data, 'doctorInfo', 'doctorType')!,
@@ -1674,7 +1671,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
       'Patient Gender': g(currentPatient, 'gender'),
-      'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName')!,
+      'Doctor Name': g(appointmentData, 'doctorInfo', 'displayName')!,
       'Doctor ID': doctorId,
       'Speciality name': g(appointmentData, 'doctorInfo', 'specialty', 'name')!,
       'Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id')!,
@@ -1781,7 +1778,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       const eventAttributes:
         | WebEngageEvents[WebEngageEventName.CHAT_WITH_DOCTOR]
         | WebEngageEvents[WebEngageEventName.PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT] = {
-        'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName')!,
+        'Doctor Name': g(appointmentData, 'doctorInfo', 'displayName')!,
         'Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id')!,
         'Speciality Name': g(appointmentData, 'doctorInfo', 'specialty', 'name')!,
         'Doctor Category': g(appointmentData, 'doctorInfo', 'doctorType')!,
@@ -1843,7 +1840,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       'Appointment Date time': moment(g(appointmentData, 'appointmentDateTime')).toDate(),
       'Appointment display ID': g(appointmentData, 'displayId')!,
       'Appointment ID': g(appointmentData, 'id')!,
-      'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName')!,
+      'Doctor Name': g(appointmentData, 'doctorInfo', 'displayName')!,
       'Speciality Name': g(appointmentData, 'doctorInfo', 'specialty', 'name')!,
       'Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id')!,
       'Doctor Type': g(appointmentData, 'doctorInfo', 'doctorType')!,
@@ -3299,7 +3296,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const postOpentokError = (errorName: string, errorData: any) => {
     const eventAttributes: CleverTapEvents[CleverTapEventName.OPENTOK_ERROR_RECEIVED] = {
       'Doctor ID': g(appointmentData, 'doctorInfo', 'id')!,
-      'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName'),
+      'Doctor Name': g(appointmentData, 'doctorInfo', 'displayName'),
       'Doctor Number': g(appointmentData, 'doctorInfo', 'mobileNumber'),
       'Doctor Type': g(appointmentData, 'doctorInfo', 'doctorType'),
       'Doctor Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id'),
@@ -3336,7 +3333,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const postOpentokEvent = (eventName: string, eventData: any) => {
     const eventAttributes: CleverTapEvents[CleverTapEventName.OPENTOK_EVENT_RECEIVED] = {
       'Doctor ID': g(appointmentData, 'doctorInfo', 'id')!,
-      'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName'),
+      'Doctor Name': g(appointmentData, 'doctorInfo', 'displayName'),
       'Doctor Number': g(appointmentData, 'doctorInfo', 'mobileNumber'),
       'Doctor Type': g(appointmentData, 'doctorInfo', 'doctorType'),
       'Doctor Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id'),
@@ -3382,7 +3379,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       | getPatinetAppointments_getPatinetAppointments_patinetAppointments = appointmentData
   ) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.CALL_ENDED] = {
-      'Doctor Name': g(data, 'doctorInfo', 'fullName')!,
+      'Doctor Name': g(data, 'doctorInfo', 'displayName')!,
       'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
       'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,
       'Consult Date Time': moment(g(data, 'appointmentDateTime')).toDate(),
@@ -4318,7 +4315,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             consultID: g(appointmentData, 'id')!,
             displayId: String(g(appointmentData, 'displayId')!),
             consultMode: ConsultMode.ONLINE,
-            doctorFullName: g(appointmentData, 'doctorInfo', 'fullName')!,
+            doctorFullName: g(appointmentData, 'doctorInfo', 'displayName')!,
             message,
             chatFormat: msgType,
             source: 'APP',
@@ -4642,31 +4639,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (isCartOrder) {
       try {
         setLoading(true);
-        const response: AxiosResponse<MedicineProductDetailsResponse>[] = await Promise.all(
-          medPrescription.map((item) => getMedicineDetailsApi(item?.id!))
-        );
-        const cartItems = response
-          .filter(({ data }) => {
-            const medicine = data?.productdp?.[0];
-            return medicine?.id && medicine?.sku;
-          })
-          .map(({ data }, index) => ({
-            ...formatToCartItem({ ...data?.productdp?.[0]!, image: '' }),
-            quantity: getPrescriptionItemQuantity(
-              medPrescription?.[index]?.medicineUnit,
-              medPrescription?.[index]?.medicineTimings,
-              medPrescription?.[index]?.medicineDosage,
-              medPrescription?.[index]?.medicineCustomDosage,
-              medPrescription?.[index]?.medicineConsumptionDurationInDays,
-              medPrescription?.[index]?.medicineConsumptionDurationUnit,
-              parseInt(data?.productdp?.[0]?.mou || '1', 10)
-            ),
-          }));
-        addMultipleCartItems?.(cartItems);
-        setEPrescriptions?.([presToAdd]);
+        let cartItemsToAdd: any[] = [];
+        medPrescription?.forEach((item) => {
+          cartItemsToAdd.push({
+            medicineSKU: item?.id,
+            quantity: 1,
+          });
+        });
+        uploadEPrescriptionsToServerCart([presToAdd], cartItemsToAdd);
         setLoading(false);
         postCleverTapUploadPrescriptionEvents('Consult Room', 'Cart');
-        props.navigation.push(AppRoutes.MedicineCart);
+        props.navigation.push(AppRoutes.ServerCart);
       } catch (error) {
         setLoading(false);
         showAphAlert?.({
@@ -4677,7 +4660,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
       return;
     }
-    setEPrescriptions?.([presToAdd]);
+    uploadEPrescriptionsToServerCart([presToAdd]);
     postCleverTapUploadPrescriptionEvents('Consult Room', 'Non-Cart');
     props.navigation.navigate(AppRoutes.UploadPrescription, {
       ePrescriptionsProp: [presToAdd],
@@ -5563,7 +5546,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       const mobileKey = Object.keys(metaData).find((key) => metaData[key] === el);
       if (mobileKey) {
         const eventAttributes = {
-          'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName')!,
+          'Doctor Name': g(appointmentData, 'doctorInfo', 'displayName')!,
           'Doctor Number': g(appointmentData, 'doctorInfo', 'mobileNumber')!,
           'Doctor ID': doctorId,
           'Display Speciality Name': g(appointmentData, 'doctorInfo', 'specialty', 'name')!,
@@ -5894,7 +5877,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <Text style={styles.externalMeetingLinkText}>
             {strings.externalMeetingLink.click_to_open.replace(
               'XYZ',
-              g(appointmentData, 'doctorInfo', 'fullName')
+              g(appointmentData, 'doctorInfo', 'displayName')
             )}
           </Text>
 
@@ -5920,7 +5903,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       Linking.openURL(rowData.url);
 
       postWebEngageEvent(WebEngageEventName.PATIENT_EXTERNAL_MEETING_LINK_CLICKED, {
-        'Doctor name': appointmentData?.doctorInfo?.fullName,
+        'Doctor name': appointmentData?.doctorInfo?.displayName,
         'Patient name': `${appointmentData?.patientInfo?.firstName} ${appointmentData?.patientInfo?.lastName}`,
         'Patient ID': appointmentData?.patientInfo?.id,
         'Doctor ID': appointmentData?.doctorInfo?.id,
@@ -6122,7 +6105,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         AsyncStorage.setItem('showSchduledPopup', 'true');
         const params = {
           Data: data?.data?.bookRescheduleAppointment?.appointmentDetails,
-          DoctorName: props.navigation.state.params?.data?.doctorInfo?.fullName,
+          DoctorName: props.navigation.state.params?.data?.doctorInfo?.displayName,
         };
         navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar, params);
       })
@@ -6322,7 +6305,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
       'Doctor ID': g(item, 'doctorId') || '',
-      'Doctor Name': g(item, 'doctorInfo', 'fullName') || '',
+      'Doctor Name': g(item, 'doctorInfo', 'displayName') || '',
       'Doctor Category': g(item, 'doctorInfo', 'doctorType'),
       'Doctor City': g(item, 'doctorInfo', 'city') || '',
       'Speciality ID': g(item, 'doctorInfo', 'specialty', 'id') || '',
@@ -6344,7 +6327,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
       'Doctor ID': g(item, 'doctorId') || undefined,
-      'Doctor name': g(item, 'doctorInfo', 'fullName') || undefined,
+      'Doctor name': g(item, 'doctorInfo', 'displayName') || undefined,
       'Doctor city': g(item, 'doctorInfo', 'city') || undefined,
       'Speciality ID': g(item, 'doctorInfo', 'specialty', 'id') || undefined,
       'Speciality name': g(item, 'doctorInfo', 'specialty', 'name') || undefined,
@@ -7348,7 +7331,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const eventAttributes:
       | WebEngageEvents[WebEngageEventName.CONSULT_FEEDBACK_GIVEN]
       | CleverTapEvents[CleverTapEventName.CONSULT_FEEDBACK_GIVEN] = {
-      'Doctor name': g(data, 'doctorInfo', 'fullName')!,
+      'Doctor Name': g(data, 'doctorInfo', 'displayName')!,
       'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
       'Speciality name': g(data, 'doctorInfo', 'specialty', 'name')!,
       'Doctor category': g(data, 'doctorInfo', 'doctorType')!,
@@ -7386,7 +7369,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       | WebEngageEvents[WebEngageEventName.CONTINUE_CONSULTATION_CLICKED]
       | WebEngageEvents[WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER]
       | WebEngageEvents[WebEngageEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER] = {
-      'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName')!,
+      'Doctor Name': g(appointmentData, 'doctorInfo', 'displayName')!,
       'Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id')!,
       'Speciality Name': g(appointmentData, 'doctorInfo', 'specialty', 'name')!,
       'Doctor Category': g(appointmentData, 'doctorInfo', 'doctorType')!,
