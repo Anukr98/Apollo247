@@ -1744,5 +1744,171 @@
         }
       ]
     }
+  },
+  "refAndEarn":{
+    "global":{
+      "refereeInitialsEarnAmount":"100",
+      "currency":"₹",
+      "currencyName":"HC",
+      "validUptoPurchase":"300",
+      "shareLinkMessage":"Save on medical bills like me!\nSign up on Apollo 247 app and get Flat ₹100 worth of health credits"
+    },
+    "referralMainBanner":{
+      "bannerTextLineOne":"Refer & Earn {currency}{initialEarnAmount}",
+      "bannerTextLineTwo":"Your friends get {currency}{initialEarnAmount} on signup",
+      "referralBannerImageURL":""
+    },
+    "shareReferrerLink":{
+      "banerTextLineOne":"Refer & Earn",
+      "bannerTextLineTwo":"{currency}{initialEarnAmount}",
+      "banerTextLineThree":"Your friend get {currency}{initialEarnAmount} on signup & you get {currency}{initialEarnAmount} on their first order.",
+      "referViaText":"Refer Via",
+      "howItWorks":{
+        "mainHeading": "How it works?",
+        "pointOne": "Invite your friend",
+        "pointTwo": "Friend receives {currency}{referShareAmount} on signup",
+        "pointThree": "You get {currency}{referShareAmount} on their first\ntransaction",
+        "pointThreeNote": "Not valid for order below {currency}{validUptoPurchase}*"
+      },
+      "termsAndCondition":"Terms and Condition",
+      "faqs":"FAQs",
+      "checkReward":"Check Rewards",
+      "redeemNow":"REDEEM NOW"
+    },
+    "yourRewards":{
+      "totalEarningHeading":"Earned {currencyName} : {earnedAmount}", 
+      "claimedCard":{
+        "eligible":{
+          "youEarnedRefreePoints":"You earned refree points on",
+          "firstTimeLogin":" first time Login."
+        },
+        "notEligible":{
+          "useYourFirstTnc":"Use code FIRST3 to get Flat 25% off ",
+          "firstThreeMedecineTransition":"on your first 3 medicine transactions."
+        }
+        
+      },
+      "pendingCard":{
+        "signedUpPurchasePending":"Signed up {signedUpDate}\nPurchase is Pending.",
+        "notEligibleForRewardMaxLimitReadched": "Not eligible for reward, Max limit reached. Read TnC"
+      },
+      "noReferralReward":{
+        "mainHeading":"No referral rewards",
+        "subHeading": "You have not invited your friends yet",
+        "buttonText":"Refer Your Friend"
+      },
+      "tabBarMenuName":{
+        "menuOne":"Claimed",
+        "menuTwo":"Pending"
+      }
+    },
+    "congratulationPage":{
+      "congratulations":"Congratulations!",
+      "yourFriendGiftYou": "Your friend gifted you",
+      "referrerAmountAndCurrencyName":"{earnedAmount} {currencyName}",
+      "willBeCreditSoon":"Will be credited in a few mins*",
+      "subjectedToTnC":"Subjected to TnC",
+      "redeemPoints": "Redeem Points",
+      "whyChooseApollo247": "Why choose Apollo 247?",
+      "deleiveryInHours": "Delivery in 2 hours",
+      "consultDoctorIn15Minutes": "Consult doctor in 15 mins",
+      "labTestAtHome": "Lab test at home",
+      "tncHeading":"Terms & Conditions",
+      "termsAndCondition":[{
+        "id":"1",
+        "data":"Max referrals allowed per person is 5 in a week, referrals above 5 will not be rewarded"
+      },
+    {
+        "id":"2",
+        "data":"New accounts created from a same device will not be rewarded"
+      }]
+    },
+    "refererTermsAndCondition": [
+      {
+        "id": 1,
+        "condition": "The Health Credits received from a referral can only be redeemed as discounts on services available on the Apollo 24|7 app."
+      },
+      {
+        "id": 2,
+        "condition": "Referrers will get 100 Health Credits only after the first medicine order is delivered to the referee and the return period has passed (i.e. 3 days). For first diagnostic bookings, once the report is generated the referrer will get 100 Health Credits."
+      },
+      {
+        "id": 3,
+        "condition": "Health Credits will be credited to the referrer’s account only if the referee’s minimum order value is INR 300 or above."
+      },
+      {
+        "id": 4,
+        "condition": "Health Credits will only be credited for the referee’s first pharmacy or diagnostic order on the Apollo 24|7 app. Referral rewards are not applicable for doctor consultations booked via the app."
+      },
+      {
+        "id": 5,
+        "condition": "If the person being referred is a pre-existing user of the Apollo247 app or website and has already availed at least one service through the Apollo247 app or website, they will not receive referral credits."
+      },
+      {
+        "id": 6,
+        "condition": "If a user receives multiple referral links, only the first link in chronological order will be counted for validation."
+      },
+      {
+        "id": 7,
+        "condition": "Apollo247 reserves the right to allocate different reward values to different users and different service categories."
+      },
+      {
+        "id": 8,
+        "condition": "Apollo247 reserves the right to declare any reward null at any point in time at its own discretion."
+      },
+      {
+        "id": 9,
+        "condition": "Apollo247 reserves the right to block usage of rewards or credits for certain users at its own discretion."
+      },
+      {
+        "id": 10,
+        "condition": "Apollo247 reserves the right to change the nature of the referral program and introduce other kinds of rewards and discounts for the sender and/or receiver."
+      },
+      {
+        "id": 11,
+        "condition": "Any rewards earned as part of this program are strictly non-transferable and shall be used by the same user on the same device ID."
+      },
+      {
+        "id": 12,
+        "condition": "Maximum number of referrals allowed by a user in a week is 5 and in a month is 20. Any other referral above this will not be counted and no signup reward will be credited to the referee."
+      }
+    ],
+    "refererFAQs": [
+      {
+        "id": 1,
+        "question": "Who is eligible to get a referral reward?",
+        "answer": "Who hasn't tried any Apollo247 service before either on Apollo 247 App or website."
+      },
+      {
+        "id": 2,
+        "question": "What is the value of 1HC ?",
+        "answer": "1 HC = 1 Rs"
+      },
+      {
+        "id": 3,
+        "question": "What will I earn by referring?",
+        "answer": "Fixed amount of ₹100 redeemable on all Apollo247 services. You can redeem your health credit on your order. The reward can change in the future, depending upon availability."
+      },
+      {
+        "id": 4,
+        "question": "Will these rewards have an expiry duration?",
+        "answer": "Yes. The reward will expire in 30 days. Apollo247 reserves the right to change the expiry date of upcoming rewards at any point in time at its discretion."
+      },
+      {
+        "id": 5,
+        "question": "How many health credits can you earn?",
+        "answer": "You can refer a maximum of 100 people and earn 10,000 health credits from referrals."
+      },
+      {
+        "id": 6,
+        "question": "I already have some health credits. Can I redeem both?",
+        "answer": "Yes you can redeem both in the same booking."
+      },
+      {
+        "id": 7,
+        "question": "Can I gift these rewards?",
+        "answer": "No. These rewards are non-transferable and can be only used by the referrer from his registered account."
+      }
+    ]
   }
 }
