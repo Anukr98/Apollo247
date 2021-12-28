@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StatusBar, StyleSheet, TouchableOpacity } from 'react-native';
-import { NavigationScreenProps, SafeAreaView, ScrollView } from 'react-navigation';
+import { FlatList, NavigationScreenProps, SafeAreaView, ScrollView } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -10,38 +10,112 @@ import {
   LabTestAtHomeIcon,
   TrophyIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import {
+  g,
+  getCleverTapCircleMemberValues,
+  getUserType,
+  postCleverTapEvent,
+  replaceVariableInString,
+  validateStringNotToUndefined,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import moment from 'moment';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { useReferralProgram } from '../ReferralProgramProvider';
 
 export interface EarnedPointsProps extends NavigationScreenProps {}
 
 export const EarnedPoints: React.FC<EarnedPointsProps> = (props) => {
   const { navigation } = props;
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+  const { pharmacyCircleAttributes } = useShoppingCart();
+  const { referralGlobalData, congratulationPageData } = useReferralProgram();
+
+  const getReferEarnCommonAttributes = () => {
+    return {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      User_Type: getUserType(allCurrentPatients),
+      'Circle Member':
+        getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+        undefined,
+      'Page name': 'Congratulations Page',
+    };
+  };
 
   const renderYourGifterReward = () => {
     return (
       <View style={styles.earnPointsMainContainer}>
-        <Text style={styles.earnPointmainHeading}>{string.referAndEarn.congratulation}</Text>
+        <Text style={styles.earnPointmainHeading}>
+          {validateStringNotToUndefined(congratulationPageData?.congratulations)}
+        </Text>
         <View style={styles.earnPointtrophyMainContainer}>
           <View style={styles.earnPointtrophy_container}>
             <TrophyIcon />
           </View>
         </View>
         <View style={styles.earnPointotherTextContainer}>
-          <Text style={styles.earnPointgiftedHeading}>{string.referAndEarn.yourFriendGiftYou}</Text>
+          <Text style={styles.earnPointgiftedHeading}>
+            {validateStringNotToUndefined(congratulationPageData?.yourFriendGiftYou)}
+          </Text>
           <Text style={styles.earnPointtotalGifted}>
-            {string.referAndEarn.referrHC} {string.referAndEarn.hc}
+            {replaceVariableInString(congratulationPageData?.referrerAmountAndCurrencyName, {
+              earnedAmount: referralGlobalData?.refereeInitialsEarnAmount || '',
+              currencyName: referralGlobalData?.currencyName || '',
+            })}
           </Text>
           <Text style={styles.earnPointtotalWillGetInSomeMinute}>
-            {string.referAndEarn.willBeCreditSoon}
+            {validateStringNotToUndefined(congratulationPageData?.willBeCreditSoon)}
           </Text>
+          <TouchableOpacity
+            onPress={() => {
+              const eventArributes = {
+                ...getReferEarnCommonAttributes(),
+                'Nav src': 'Congratulations Page',
+              };
+              postCleverTapEvent(CleverTapEventName.REFERRAL_TNC_FAQ_CLICKED, {
+                ...eventArributes,
+              });
+              navigation.navigate('RefererTermsAndCondition');
+            }}
+          >
+            <Text
+              style={[
+                styles.earnPointtotalWillGetInSomeMinute,
+                styles.earnPointtotalSubjectedToTnc,
+              ]}
+            >
+              {validateStringNotToUndefined(congratulationPageData?.subjectedToTnC)}
+            </Text>
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.earnPointreedemBtn}
             onPress={() => {
               navigation.navigate('MEDICINES');
             }}
           >
-            <Text style={styles.earnPointreedemBtnText}>{string.referAndEarn.reedeemPoints}</Text>
+            <Text style={styles.earnPointreedemBtnText}>
+              {validateStringNotToUndefined(congratulationPageData?.redeemPoints)}
+            </Text>
           </TouchableOpacity>
         </View>
+      </View>
+    );
+  };
+
+  const renderTnCData = (item: any) => {
+    return (
+      <View style={styles.earnPointTncContainer}>
+        <View style={styles.earnTncDot} />
+        <Text style={styles.earnTncText}>{item.data}</Text>
       </View>
     );
   };
@@ -50,33 +124,17 @@ export const EarnedPoints: React.FC<EarnedPointsProps> = (props) => {
     return (
       <View style={styles.earnPointwhyChooseApolloContainer}>
         <Text style={styles.earnPointWhyChooseUstitle}>
-          {string.referAndEarn.whyChooseApollo247}
+          {validateStringNotToUndefined(congratulationPageData?.tncHeading)}
         </Text>
         <View style={styles.earnPointWhyChooseUsimageTextContainer}>
-          <View style={styles.earnPointWhyChooseUsimageTextSubContainer}>
-            <View style={styles.earnPointWhyChooseUsimg_container}>
-              <FastDeliveryIcon />
-            </View>
-            <Text style={styles.earnPointWhyChooseUsimgTitle}>
-              {string.referAndEarn.deleiveryInHours}
-            </Text>
-          </View>
-          <View style={styles.earnPointWhyChooseUsimageTextSubContainer}>
-            <View style={styles.earnPointWhyChooseUsimg_container}>
-              <ConsultDoctorIcon />
-            </View>
-            <Text style={styles.earnPointWhyChooseUsimgTitle}>
-              {string.referAndEarn.consultDoctorIn15Minutes}
-            </Text>
-          </View>
-          <View style={styles.earnPointWhyChooseUsimageTextSubContainer}>
-            <View style={styles.earnPointWhyChooseUsimg_container}>
-              <LabTestAtHomeIcon />
-            </View>
-            <Text style={styles.earnPointWhyChooseUsimgTitle}>
-              {string.referAndEarn.labTestAtHome}
-            </Text>
-          </View>
+          <FlatList
+            data={congratulationPageData?.termsAndCondition || []}
+            renderItem={({ item }) => renderTnCData(item)}
+            keyExtractor={(item) => item.id.toString()}
+            style={{
+              paddingHorizontal: 30,
+            }}
+          />
         </View>
       </View>
     );
@@ -196,5 +254,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 25,
     flex: 1.9,
+  },
+  earnPointTncContainer: {
+    flexDirection: 'row',
+    marginBottom: 16,
+  },
+  earnTncDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: theme.colors.LIGHT_BLUE,
+    marginRight: 10,
+    marginTop: 10,
+  },
+  earnTncText: {
+    color: theme.colors.LIGHT_BLUE,
   },
 });

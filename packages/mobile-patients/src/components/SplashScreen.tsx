@@ -103,6 +103,7 @@ import CleverTap from 'clevertap-react-native';
 import { CleverTapEventName } from '../helpers/CleverTapEvents';
 import analytics from '@react-native-firebase/analytics';
 import appsFlyer from 'react-native-appsflyer';
+import { useReferralProgram } from './ReferralProgramProvider';
 
 (function() {
   /**
@@ -192,6 +193,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const CONST_SPLASH_LOADER = [string.splash.CAPSULE, string.splash.SYRINGE, string.splash.STETHO];
   const [selectedAnimationIndex, setSelectedAnimationIndex] = useState(0);
   const { currentPatient } = useAllCurrentPatients();
+  const {
+    setReferralGlobalData,
+    setReferralMainBanner,
+    setShareReferrerLinkData,
+    setYourRewardsScreenData,
+    setCongratulationPageData,
+    setRefererTermsAndConditionData,
+    setRefererFAQsData,
+  } = useReferralProgram();
 
   const { setPhrNotificationData } = useAppCommonData();
 
@@ -226,6 +236,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     });
     AppState.addEventListener('change', _handleAppStateChange);
     checkForVersionUpdate();
+    getAllReferrerDataOnInitialsLoad();
     getOffers();
 
     try {
@@ -1287,6 +1298,34 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Diagnostics_UploadPrescription',
       PROD: 'Diagnostics_UploadPrescription',
     },
+    REFERRER_GLOBAL_CONTENT: {
+      QA: 'QA_REFERRER_GLOBAL_CONTENT',
+      PROD: 'REFERRER_GLOBAL_CONTENT',
+    },
+    REFERRER_MAIN_BANNER_CONTENT: {
+      QA: 'QA_REFERRER_MAIN_BANNER_CONTENT',
+      PROD: 'REFERRER_MAIN_BANNER_CONTENT',
+    },
+    SHARE_REFERRER_LINK_CONENT: {
+      QA: 'QA_SHARE_REFERRER_LINK_CONENT',
+      PROD: 'SHARE_REFERRER_LINK_CONENT',
+    },
+    YOUR_REWARD_SCREEN_DATA_CONTENT: {
+      QA: 'QA_YOUR_REWARD_SCREEN_DATA_CONTENT',
+      PROD: 'YOUR_REWARD_SCREEN_DATA_CONTENT',
+    },
+    REFERRER_CONGRATULATIONS_PAGE: {
+      QA: 'QA_REFERRER_CONGRATULATIONS_PAGE',
+      PROD: 'REFERRER_CONGRATULATIONS_PAGE',
+    },
+    REFERRER_TERMS_AND_CONDITION_DATA: {
+      QA: 'QA_REFERRER_TERMS_AND_CONDITION_DATA',
+      PROD: 'REFERRER_TERMS_AND_CONDITION_DATA',
+    },
+    REFERRER_FAQS_DATA: {
+      QA: 'QA_REFERRER_FAQS_DATA',
+      PROD: 'REFERRER_FAQS_DATA',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1734,6 +1773,61 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     } catch (error) {
       CommonBugFender('SplashScreen - Error processing remote config', error);
     }
+  };
+
+  const getAllReferrerDataOnInitialsLoad = async () => {
+    const minimumFetchIntervalMillis = __DEV__ ? 0 : 0;
+    await remoteConfig().setConfigSettings({ minimumFetchIntervalMillis });
+    await remoteConfig().fetchAndActivate();
+    const config = remoteConfig();
+    const globalData = getRemoteConfigValue(
+      'REFERRER_GLOBAL_CONTENT',
+      (key) =>
+        (config.getString(key) && JSON.parse(config.getString(key))) || string.refAndEarn.global
+    );
+    setReferralGlobalData?.(globalData);
+    const mainBannerContent = getRemoteConfigValue(
+      'REFERRER_MAIN_BANNER_CONTENT',
+      (key) =>
+        (config.getString(key) && JSON.parse(config.getString(key))) ||
+        string.refAndEarn.referralMainBanner
+    );
+    setReferralMainBanner?.(mainBannerContent);
+    const shareReferrerLinkScreenContent = getRemoteConfigValue(
+      'SHARE_REFERRER_LINK_CONENT',
+      (key) =>
+        (config.getString(key) && JSON.parse(config.getString(key))) ||
+        string.refAndEarn.shareReferrerLink
+    );
+    setShareReferrerLinkData?.(shareReferrerLinkScreenContent);
+    const yourRewardScreenContent = getRemoteConfigValue(
+      'YOUR_REWARD_SCREEN_DATA_CONTENT',
+      (key) =>
+        (config.getString(key) && JSON.parse(config.getString(key))) ||
+        string.refAndEarn.yourRewards
+    );
+    setYourRewardsScreenData?.(yourRewardScreenContent);
+    const congratulationsScreenContent = getRemoteConfigValue(
+      'REFERRER_CONGRATULATIONS_PAGE',
+      (key) =>
+        (config.getString(key) && JSON.parse(config.getString(key))) ||
+        string.refAndEarn.congratulationPage
+    );
+    setCongratulationPageData?.(congratulationsScreenContent);
+    const termsAndConditonsScreenContent = getRemoteConfigValue(
+      'REFERRER_TERMS_AND_CONDITION_DATA',
+      (key) =>
+        (config.getString(key) && JSON.parse(config.getString(key))) ||
+        string.refAndEarn.refererTermsAndCondition
+    );
+    setRefererTermsAndConditionData?.(termsAndConditonsScreenContent);
+    const faqScreenContent = getRemoteConfigValue(
+      'REFERRER_FAQS_DATA',
+      (key) =>
+        (config.getString(key) && JSON.parse(config.getString(key))) ||
+        string.refAndEarn.refererFAQs
+    );
+    setRefererFAQsData?.(faqScreenContent);
   };
 
   const showUpdateAlert = (mandatory: boolean) => {
