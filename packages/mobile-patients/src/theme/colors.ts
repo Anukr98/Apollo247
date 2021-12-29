@@ -63,6 +63,7 @@ const Common = {
   DARK_GRAY: darkGray,
   BLACK_COLOR: black,
   DEFAULT_BACKGROUND_COLOR: '#f0f1ec',
+  LOGIN_BANNER_TEXT: "#00485D",
   INPUT_CURSOR_COLOR: app_green,
   APP_GREEN: app_green,
   DARK_BLUE: '#346CD9',
