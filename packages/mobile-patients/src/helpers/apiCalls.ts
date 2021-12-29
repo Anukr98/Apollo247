@@ -1410,7 +1410,6 @@ export const getDiagnosticListingWidget = (
 ): Promise<AxiosResponse<any>> => {
   const baseurl = config.DRUPAL_CONFIG[0];
   const getWidgets = `${baseurl}/${pageName}/${widgetName}`;
-  console.log({getWidgets})
   return Axios.get(getWidgets, {
     headers: {
       Authorization: config.DRUPAL_CONFIG[1],

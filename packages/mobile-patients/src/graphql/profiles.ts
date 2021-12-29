@@ -6847,3 +6847,17 @@ export const DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS = gql`
     }
   }
 `
+
+export const FETCH_BLOB_URL_WITH_PRISM = gql`
+  mutation fetchBlobURLWithPRISMData(
+    $patientId: ID!
+    $fileUrl: String!
+  ) {
+    fetchBlobURLWithPRISMData(
+      patientId: $patientId
+      fileUrl: $fileUrl
+    ) {
+      blobUrl
+    }
+  }
+`;
