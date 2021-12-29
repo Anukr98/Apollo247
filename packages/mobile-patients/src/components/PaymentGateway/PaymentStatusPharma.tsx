@@ -44,6 +44,7 @@ import {
   fireCirclePlanActivatedEvent,
 } from '@aph/mobile-patients/src/components/PaymentGateway/Events';
 import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 export interface PaymentStatusPharmaProps extends NavigationScreenProps {}
 
@@ -62,13 +63,15 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
     setCircleMembershipCharges,
     setIsCircleSubscription,
     pharmacyCircleAttributes,
-    cartItems,
+    serverCartItems,
     grandTotal,
     deliveryCharges,
     circleSubscriptionId,
     isCircleSubscription,
     circlePlanSelected,
+    consultProfile,
   } = useShoppingCart();
+  const { fetchServerCart } = useServerCart();
   const isSplitCart: boolean = orders?.length > 1 ? true : false;
   const { currentPatient } = useAllCurrentPatients();
   const { apisToCall, setSelectedPrescriptionType, pharmacyUserTypeAttribute } = useAppCommonData();
@@ -116,6 +119,7 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
       orderInfo?.planPurchaseDetails?.planPurchased,
       circlePlanSelected
     );
+    fetchServerCart();
   };
 
   const clearCart = () => {
@@ -142,7 +146,7 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
   const fireCleverTapOrderSuccessEvent = () => {
     postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, {
       ...cleverTapCheckoutEventAttributes,
-      'Cart items': cartItems?.length,
+      'Cart items': serverCartItems?.length,
     });
   };
 
@@ -220,7 +224,7 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
   };
 
   const renderFreeConsultCard = () => {
-    return <FreeConsult name={currentPatient?.firstName} />;
+    return <FreeConsult name={consultProfile?.firstName || currentPatient?.firstName} />;
   };
 
   const renderTabBar = () => {
