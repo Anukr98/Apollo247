@@ -48,7 +48,6 @@ import { CartTotalSection } from '@aph/mobile-patients/src/components/ServerCart
 import { ServerCartItemsList } from '@aph/mobile-patients/src/components/ServerCart/Components/ServerCartItemsList';
 import { CouponSection } from '@aph/mobile-patients/src/components/ServerCart/Components/CouponSection';
 import { ServerCartTatBottomContainer } from '@aph/mobile-patients/src/components/ServerCart/Components/ServerCartTatBottomContainer';
-import { CartSavings } from '@aph/mobile-patients/src/components/ServerCart/Components/CartSavings';
 import { UnServiceableMessage } from '@aph/mobile-patients/src/components/ServerCart/Components/UnServiceableMessag';
 import { CartCircleItem } from '@aph/mobile-patients/src/components/ServerCart/Components/CartCircleItem';
 import { CartPrescriptions } from '@aph/mobile-patients/src/components/ServerCart/Components/CartPrescriptions';
@@ -97,7 +96,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
     fetchProductSuggestions,
   } = useServerCart();
   const [loading, setLoading] = useState<boolean>(false);
-  const [showCouponImage, setShowCouponImage] = useState<boolean>(false);
+  const [showCouponImage, setShowCouponImage] = useState<boolean>(true);
   const { currentPatient } = useAllCurrentPatients();
 
   const circlePlanAddedToCart =
@@ -326,8 +325,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
         onPressRemove={onPressRemoveCoupon}
         movedFrom={'pharmacy'}
       />
-      {!!serverCartAmount && <CartTotalSection />}
-      <CartSavings />
+      {!!serverCartAmount && <CartTotalSection showTotalSavingsAndHCSection={true} />}
     </View>
   );
 
@@ -401,7 +399,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
       }}
     />
   );
-  console.log(props?.navigation?.state);
+
   const renderScreen = () => (
     <>
       {renderUnserviceableMessage()}
@@ -447,52 +445,5 @@ const styles = StyleSheet.create({
   amountHeaderText: {
     color: theme.colors.FILTER_CARD_LABEL,
     ...theme.fonts.IBMPlexSansBold(13),
-  },
-  circleApplyContainer: {
-    width: 20,
-    height: 20,
-    borderWidth: 2,
-    borderColor: '#00B38E',
-    borderRadius: 5,
-    marginTop: 9,
-    marginRight: 10,
-  },
-  applyText: {
-    ...theme.viewStyles.text('SB', 14, '#02475B', 1, 17),
-    paddingTop: 12,
-  },
-  useCircleText: {
-    ...theme.viewStyles.text('R', 12, '#02475B', 1, 17),
-    marginLeft: 25,
-  },
-  viewPlanContainer: {
-    ...theme.viewStyles.cardViewStyle,
-    marginTop: 10,
-    marginHorizontal: 13,
-    borderRadius: 5,
-    marginBottom: 0,
-    paddingHorizontal: 15,
-    paddingVertical: 9,
-    borderColor: '#00B38E',
-    borderWidth: 3,
-    borderStyle: 'dashed',
-  },
-  viewPlan: {
-    width: 22,
-    height: 22,
-    borderRadius: 5,
-    borderColor: '#00B38E',
-    borderWidth: 3,
-    marginRight: 10,
-    marginTop: 10,
-  },
-  viewText: {
-    ...theme.viewStyles.text('M', 14, '#02475B', 1, 17),
-    paddingTop: 12,
-    marginRight: 5,
-  },
-  viewSubText: {
-    ...theme.viewStyles.text('R', 13, '#02475B', 1, 20),
-    width: '50%',
   },
 });

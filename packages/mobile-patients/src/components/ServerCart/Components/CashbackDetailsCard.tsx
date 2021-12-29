@@ -5,36 +5,22 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 
 export interface CashbackDetailsProps {
   savingsClicked: boolean;
-  productDiscount?: number;
-  deliveryCharges?: number;
-  couponDiscount?: number;
-  circleCashback?: number;
-  couponCashback?: number;
   triangleAlignmentValue: number;
 }
 
 export const CashbackDetailsCard: React.FC<CashbackDetailsProps> = (props) => {
   const { savingsClicked, triangleAlignmentValue } = props;
-
   const { serverCartAmount, isCircleCart } = useShoppingCart();
 
   const cartSavings = serverCartAmount?.cartSavings || 0;
   const couponSavings = serverCartAmount?.couponSavings || 0;
   const deliveryCharges = serverCartAmount?.deliveryCharges || 0;
   const isDeliveryFree = serverCartAmount?.isDeliveryFree || 0;
-  const totalCashBack = serverCartAmount?.totalCashBack || 0;
   const couponCashBack = serverCartAmount?.couponCashBack || 0;
-  console.log(serverCartAmount);
   const circleMembershipCashback = isCircleCart
     ? serverCartAmount?.circleSavings?.membershipCashBack || 0
     : 0;
-  const circleDeliverySavings = isCircleCart
-    ? serverCartAmount?.circleSavings?.circleDelivery || 0
-    : 0;
-  const deliverySavings = isDeliveryFree || circleDeliverySavings > 0 ? deliveryCharges : 0;
-  const totalSavings =
-    cartSavings + couponSavings + deliverySavings + (isCircleCart ? totalCashBack : 0);
-  const totalCouldSaveByCircle = deliveryCharges + totalCashBack + cartSavings;
+  const healthCreditText = 'HCs will be credited after order delivery.';
 
   const inStyles = {
     triangle: {
@@ -74,8 +60,8 @@ export const CashbackDetailsCard: React.FC<CashbackDetailsProps> = (props) => {
         <Text numberOfLines={1} ellipsizeMode={'clip'} style={styles.textUnderline}>
           ---------------------------------------------------------------------------------------------------------------------------------------
         </Text>
-        <View style={{ paddingBottom: 8, paddingLeft: 16, flexWrap: 'wrap', flex: 1 }}>
-          <Text style={styles.healthCreditText}>HCs will be credited after order delivery. </Text>
+        <View style={styles.healthCreditContainer}>
+          <Text style={styles.healthCreditText}>{healthCreditText} </Text>
         </View>
       </View>
     );
@@ -119,29 +105,6 @@ export const CashbackDetailsCard: React.FC<CashbackDetailsProps> = (props) => {
           : null}
       </View>
       {renderHealthCreditsText()}
-      {/*show this below view if render health credits text is not supposed to be shown */}
-      {/* <View style={{ paddingBottom: 8 }}></View> */}
-      {/* <View style={{ margin: 2, flexWrap: 'wrap', flex: 1, flexDirection: 'row' }}>
-        <Text numberOfLines={1} ellipsizeMode={'clip'} style={styles.textUnderline}>
-          ---------------------------------------------------------------------------------------------------------------------------------------
-        </Text>
-        <View
-          style={{
-            paddingBottom: 8,
-            paddingLeft: 16,
-            // flexWrap: 'wrap',
-            // flex: 1,
-            backgroundColor: theme.colors.CLEAR,
-            // height: 30,
-            flexDirection: 'row',
-            // justifyContent: 'center',
-          }}
-        >
-          <Text style={[styles.healthCreditText, {}]}>
-            HCs will be credited after order delivery.{' '}
-          </Text>
-        </View>
-      </View> */}
       <View style={inStyles.triangle}></View>
       <View style={inStyles.triangle2}></View>
     </View>
@@ -151,43 +114,13 @@ export const CashbackDetailsCard: React.FC<CashbackDetailsProps> = (props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // justifyContent: 'center',
     borderWidth: 0.5,
     borderRadius: 5,
     borderColor: theme.colors.SHADE_OF_GRAY,
     paddingTop: 14,
     width: 250,
     marginBottom: 7,
-    // backgroundColor: '#00ff33',
     backgroundColor: theme.colors.HEX_WHITE,
-  },
-  triangle: {
-    width: 15,
-    height: 15,
-    position: 'absolute',
-    left: 70,
-    bottom: -14,
-    borderLeftWidth: 12,
-    borderLeftColor: theme.colors.CLEAR,
-    borderRightWidth: 12,
-    borderRightColor: theme.colors.CLEAR,
-    borderBottomWidth: 12,
-    borderBottomColor: theme.colors.SHADE_OF_GRAY,
-    transform: [{ rotate: '180deg' }],
-  },
-  triangle2: {
-    width: 15,
-    height: 15,
-    position: 'absolute',
-    bottom: -14,
-    left: 71,
-    borderLeftWidth: 11,
-    borderLeftColor: theme.colors.CLEAR,
-    borderRightWidth: 11,
-    borderRightColor: theme.colors.CLEAR,
-    borderBottomWidth: 11,
-    borderBottomColor: theme.colors.HEX_WHITE,
-    transform: [{ rotate: '180deg' }],
   },
   individualItem: {
     flexDirection: 'row',
@@ -207,6 +140,12 @@ const styles = StyleSheet.create({
   textUnderline: {
     color: theme.colors.SHADE_OF_GRAY,
     opacity: 0.3,
+  },
+  healthCreditContainer: {
+    paddingBottom: 8,
+    paddingLeft: 16,
+    flexWrap: 'wrap',
+    flex: 1,
   },
   healthCreditText: {
     ...theme.fonts.IBMPlexSansRegular(11),
