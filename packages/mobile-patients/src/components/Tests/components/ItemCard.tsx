@@ -171,7 +171,10 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
               {getMandatoryParameterCount > 0 || !!getInclusionCount ? (
                 <Text style={styles.parameterText}>
                   {getMandatoryParameterCount + nonInclusionTests?.length || getInclusionCount}{' '}
-                  {(getMandatoryParameterCount + nonInclusionTests?.length || getInclusionCount) == 1 ? 'test' : 'tests'}{' '}
+                  {(getMandatoryParameterCount + nonInclusionTests?.length || getInclusionCount) ==
+                  1
+                    ? 'test'
+                    : 'tests'}{' '}
                   included
                 </Text>
               ) : null}
@@ -487,7 +490,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
       mrpToDisplay, //mrp
       calculatePriceToShow(pricesForItem, packageCalculatedMrp)?.priceToShow, //actual selling price
       source,
-      item?.inclusionData == null || (!!inclusions && inclusions?.length < 1)
+      item?.inclusionData == null || (!!inclusions && inclusions?.length < 2)
         ? DIAGNOSTICS_ITEM_TYPE.TEST
         : DIAGNOSTICS_ITEM_TYPE.PACKAGE,
       recommedationDataSource

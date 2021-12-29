@@ -149,7 +149,7 @@ import {
   CleverTapEvents,
   DIAGNOSTICS_ITEM_TYPE,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
-import { PaymentInitiated } from '../../PaymentGateway/Events';
+import { PaymentInitiated } from '@aph/mobile-patients/src/components/PaymentGateway/Events';
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
