@@ -4286,7 +4286,9 @@ export const setLocationCodeFromApi = (pincode: string, setLocationCode: ((value
     getLocationCode(pincode)
     .then((response) => {
       const code = response?.data?.sr_code;
-      if (code && code !== locationCode) setLocationCode?.(code);
+      if (code && code !== locationCode) {
+        setLocationCode?.(code);
+      }
     })
     .catch((error) => {
       CommonBugFender('setLocationCodeFromApi_helperFunction', error);
