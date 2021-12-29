@@ -133,6 +133,7 @@ import {
   getAllProHealthAppointments,
   getUserBannersList,
   saveTokenDevice,
+  updatePatientAppVersion,
   getDiagnosticSearchResults,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
@@ -1389,9 +1390,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       getActiveProHealthAppointments(currentPatient); //to show the prohealth appointments
     }
   }
+  const updateAppVersion = (currentPatient: any) => {
+    if (currentPatient?.id) {
+      updatePatientAppVersion(client, currentPatient);
+    }
+  };
 
   useEffect(() => {
     checkCleverTapLoginStatus(currentPatient);
+    updateAppVersion(currentPatient);
   }, [currentPatient]);
 
   useEffect(() => {
