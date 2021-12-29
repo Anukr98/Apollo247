@@ -374,6 +374,7 @@ const styles = StyleSheet.create({
     width: 8,
     marginStart: 4,
   },
+  hcContainer: { flexDirection: 'row', alignItems: 'center' },
 });
 
 export interface DoctorCardProps extends NavigationScreenProps {
@@ -557,11 +558,11 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               </View>
               <View style={styles.seperatorLine} />
               <View>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Text style={styles.cashbackText}>CIRCLE CASHBACK</Text>
+                <View style={styles.hcContainer}>
+                  <Text style={styles.cashbackText}>{string.common.circleCashback}</Text>
                   <Tick style={styles.tickIcon} />
                 </View>
-                <Text style={styles.cashbackText}>{`Upto ${cashbackAmount}HC`}</Text>
+                <Text style={styles.cashbackText}>{`Upto ${cashbackAmount} HC`}</Text>
               </View>
             </View>
           )}
