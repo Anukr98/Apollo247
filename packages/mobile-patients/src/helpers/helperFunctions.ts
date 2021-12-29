@@ -4063,8 +4063,7 @@ export const updateCallKitNotificationReceivedStatus = (appointmentId: string) =
       },
       operationName: 'updateCallKitNotificationReceivedStatus',
     }),
-  })
-    .catch((e) => CommonBugFender('UpdateCallKitNotificationReceivedStatus_fail',e));
+  }).catch((e) => CommonBugFender('UpdateCallKitNotificationReceivedStatus_fail', e));
 };
 
 export const validateEmail = (value: string) => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value);
