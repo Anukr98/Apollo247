@@ -440,7 +440,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
                 }
                 return search;
               });
-              search(value);
+              search(value, cartLocationDetails?.pincode || '', locationCode, axdcCode);
             }
           }}
           onFocus={() => setSearchFocused(true)}
@@ -871,9 +871,14 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     );
   };
 
-  const onSearchMedicine = (_searchText: string) => {
+  const onSearchMedicine = (
+    _searchText: string,
+    pharmacyPincode: string,
+    locationCode: string,
+    axdcCode: string
+  ) => {
     setsearchSate('load');
-    getMedicineSearchSuggestionsApi(_searchText, axdcCode, pinCode, locationCode)
+    getMedicineSearchSuggestionsApi(_searchText, axdcCode, pharmacyPincode, locationCode)
       .then(({ data }) => {
         const products = data.products || [];
         setMedicineList(products);

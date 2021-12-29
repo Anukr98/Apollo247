@@ -246,7 +246,12 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     });
   };
 
-  const onSearchMedicine = (_searchText: string) => {
+  const onSearchMedicine = (
+    _searchText: string,
+    pharmacyPincode: string,
+    locationCode: string,
+    axdcCode: string
+  ) => {
     setsearchSate('load');
     getMedicineSearchSuggestionsApi(_searchText, axdcCode, pharmacyPincode, locationCode)
       .then(({ data }) => {
@@ -544,7 +549,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
                 }
                 return search;
               });
-              search(value);
+              search(value, cartLocationDetails?.pincode || '', locationCode, axdcCode);
             }
           }}
           _isSearchFocused={isSearchFocused}

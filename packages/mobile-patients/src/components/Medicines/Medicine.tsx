@@ -115,7 +115,6 @@ import {
   getIsMedicine,
   getAge,
   formatToCartItem,
-  setLocationCodeFromApi,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { USER_AGENT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
@@ -317,7 +316,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setAddToCartSource,
     cartCircleSubscriptionId,
     locationCode,
-    setLocationCode,
   } = useShoppingCart();
   const {
     setUserActionPayload,
@@ -831,7 +829,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             latitude: formattedLocation?.latitude,
             longitude: formattedLocation?.longitude,
           });
-          setLocationCodeFromApi(formattedLocation?.pincode, setLocationCode, locationCode);
           return;
         }
       }
@@ -854,7 +851,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           latitude: formattedLocation?.latitude,
           longitude: formattedLocation?.longitude,
         });
-        setLocationCodeFromApi(formattedLocation?.pincode, setLocationCode, locationCode);
       } else {
         checkLocation(addressList);
       }
@@ -890,7 +886,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         latitude: deliveryAddress?.latitude,
         longitude: deliveryAddress?.longitude,
       });
-      setLocationCodeFromApi(deliveryAddress?.zipcode || '', setLocationCode, locationCode);
       globalLoading!(false);
     } catch (error) {
       checkLocation(addresses);
@@ -924,7 +919,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               latitude: address?.latitude,
               longitude: address?.longitude,
             });
-            setLocationCodeFromApi(address?.zipcode || '', setLocationCode, locationCode);
           }}
           isAddressLoading={fetchAddressLoading}
           onPressEditAddress={(address) => {
@@ -1133,7 +1127,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             latitude: response?.latitude,
             longitude: response?.longitude,
           });
-          setLocationCodeFromApi(response?.pincode || '', setLocationCode, locationCode);
         }
         updateServiceability(response.pincode, 'autoDetect');
       })
@@ -1165,7 +1158,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               latitude: latLang?.lat,
               longitude: latLang?.lng,
             });
-            setLocationCodeFromApi(pincode || '', setLocationCode, locationCode);
             updateServiceability(pincode, 'pincode');
             globalLoading!(false);
           } else {
@@ -1959,7 +1951,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [isSearchFocused, setSearchFocused] = useState(false);
   const [medicineSearchLoading, setMedicineSearchLoading] = useState<boolean>(false);
 
-  const onSearchMedicine = (_searchText: string) => {
+  const onSearchMedicine = (
+    _searchText: string,
+    pharmacyPincode: string,
+    locationCode: string,
+    axdcCode: string
+  ) => {
     setMedicineSearchLoading(true);
     getMedicineSearchSuggestionsApi(_searchText, axdcCode, pharmacyPincode, locationCode)
       .then(({ data }) => {
@@ -2011,7 +2008,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   useEffect(() => {
-    debounce.current(searchText);
+    debounce.current(searchText, pharmacyPincode || '', locationCode, axdcCode);
   }, [searchText]);
 
   useEffect(() => {
@@ -2030,9 +2027,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   useEffect(() => {}, [showSuggestedQuantityNudge]);
 
-  const onSearch = (searchText: string) => {
+  const onSearch = (
+    searchText: string,
+    pharmacyPincode: string,
+    locationCode: string,
+    axdcCode: string
+  ) => {
     if (searchText.length >= 3) {
-      onSearchMedicine(searchText);
+      onSearchMedicine(searchText, pharmacyPincode || '', locationCode, axdcCode);
     } else {
       setMedicineList([]);
       setMedicineSearchLoading(false);

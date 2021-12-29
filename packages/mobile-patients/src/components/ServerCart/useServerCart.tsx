@@ -18,7 +18,10 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { formatAddressToLocation } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  formatAddressToLocation,
+  setLocationCodeFromApi,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { getProductsByCategoryApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { Helpers } from '@aph/mobile-patients/src/components/MedicineCartPrescription';
@@ -55,6 +58,8 @@ export const useServerCart = () => {
     pharmacyCircleAttributes,
     setTatDetailsForPrescriptionOptions,
     setCirclePlanSelected,
+    setLocationCode,
+    locationCode,
   } = useShoppingCart();
   const { axdcCode, pharmacyUserTypeAttribute } = useAppCommonData();
   const { setPharmacyLocation } = useAppCommonData();
@@ -199,6 +204,9 @@ export const useServerCart = () => {
         city: cartResponse?.city,
         state: cartResponse?.state,
       });
+      if (cartLocationDetails?.pincode !== cartResponse?.zipcode || !locationCode) {
+        setLocationCodeFromApi(cartResponse?.zipcode, setLocationCode, locationCode);
+      }
       setCartSubscriptionDetails?.(cartResponse?.subscriptionDetails);
       if (
         cartResponse?.subscriptionDetails?.currentSellingPrice &&
