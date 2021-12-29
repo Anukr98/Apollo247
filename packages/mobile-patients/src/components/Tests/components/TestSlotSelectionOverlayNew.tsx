@@ -95,6 +95,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
 
   const dt = moment(props.slotBooked!).format('YYYY-MM-DD') || null;
   const tm = moment(props.slotBooked!)?.format('hh:mm A') || null; //format changed from hh:mm
+  let monthHeading = `${moment().format('MMMM')} ${moment().format('YYYY')}`;
 
   const [selectedDate, setSelectedDate] = useState<string>(moment(date).format('DD') || '');
   const [isPrepaidSlot, setPrepaidSlot] = useState<boolean>(
@@ -114,6 +115,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   const [afternoonSlots, setAfternoonSlots] = useState([] as any);
   const [eveningSlots, setEveningSlots] = useState([] as any);
   const [diagnosticSlotDuration, setDiagnosticSlotDuration] = useState<number>(slotDuration);
+  const [monthHeader, setMonthHeader] = useState<string>(monthHeading || '');
 
   type UniqueSlotType = typeof uniqueSlots[0];
 
@@ -135,7 +137,6 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
         .format(),
     });
   }
-  let monthHeading = `${moment().format('MMMM')} ${moment().format('YYYY')}`;
 
   //use formatTestSlot when time is coming in 24hr.
   let dropDownOptions = uniqueSlots?.map((val) => ({
@@ -173,10 +174,10 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   }, [selectedDayTab]);
 
   const fetchSlots = async (updatedDate?: Date) => {
-    let dateToCheck = !!updatedDate
-      ? moment(updatedDate)?.format('YYYY-MM-DD')
-      : moment(date)?.format('YYYY-MM-DD');
+    const dateToUse = !!updatedDate ? updatedDate : date;
+    let dateToCheck = moment(dateToUse)?.format('YYYY-MM-DD');
     setSelectedDate(moment(dateToCheck).format('DD'));
+    setMonthHeader(`${moment(dateToCheck).format('MMMM')} ${moment(dateToCheck).format('YYYY')}`);
     setLoading?.(true);
     setShowSpinner(true);
     try {
@@ -495,7 +496,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
               padding: 10,
             }}
           >
-            {monthHeading}
+            {monthHeader}
           </Text>
           <View style={styles.dateArrayContainer}>
             {newDateArray?.map((item, index) => (
