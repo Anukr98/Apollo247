@@ -86,7 +86,6 @@ import {
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { findDiagnosticSettings } from '@aph/mobile-patients/src/graphql/types/findDiagnosticSettings';
 import {
-  CREATE_INTERNAL_ORDER,
   CREATE_USER_SUBSCRIPTION,
   FIND_DIAGNOSTIC_SETTINGS,
   GET_PLAN_DETAILS_BY_PLAN_ID,
@@ -123,10 +122,6 @@ import {
   saveModifyDiagnosticOrderVariables,
   saveModifyDiagnosticOrder_saveModifyDiagnosticOrder_attributes_conflictedItems,
 } from '@aph/mobile-patients/src/graphql/types/saveModifyDiagnosticOrder';
-import {
-  createOrderInternalVariables,
-  createOrderInternal,
-} from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
 import { TestPremiumSlotOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestPremiumSlotOverlay';
 import {
   SCREEN_NAMES,
@@ -195,7 +190,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     pinCode,
     ePrescriptions,
     diagnosticSlot,
-    setDiagnosticSlot,
     setHcCharges,
     hcCharges,
     cartSaving,
@@ -213,7 +207,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setDuplicateItemsArray,
     modifiedPatientCart,
     setModifiedPatientCart,
-    setPatientCartItems,
     phleboETA,
     removeDuplicatePatientCartItems,
     deliveryAddressCityId,
@@ -249,13 +242,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     hdfcSubscriptionId,
   } = useShoppingCart();
 
-  const {
-    diagnosticServiceabilityData,
-    hdfcStatus,
-    hdfcPlanId,
-    circleStatus,
-    circlePlanId,
-  } = useAppCommonData();
+  const { hdfcStatus, hdfcPlanId, circleStatus, circlePlanId } = useAppCommonData();
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { setauthToken } = useAppCommonData();
@@ -563,6 +550,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             const responseData = resp?.data?.response;
             const getCircleBenefits = responseData?.circleBenefits;
             const hasOnMrpTrue = responseData?.diagnostics?.filter((item: any) => item?.onMrp);
+            const isFreeHomeCollection = responseData?.diagnostics?.filter(
+              (item: any) => item?.freeHomeCollection
+            );
             /**
              * case for if user is claiming circle benefits, but coupon => circleBenefits as false
              */
@@ -581,6 +571,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
               );
             } else {
               const successMessage = responseData?.successMessage || '';
+              //if any sku has freeCollection as true => waive off
+              isFreeHomeCollection?.length > 0 && clearCollectionCharges();
               setCoupon?.({
                 ...responseData,
                 successMessage: successMessage,
@@ -631,6 +623,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         setCouponCircleBenefits?.(false);
       });
   };
+
   const initiateHyperSDK = async (cusId: any) => {
     try {
       const merchantId = AppConfig.Configuration.merchantId;
