@@ -215,7 +215,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     } else {
       callOrderLevelStatusApi(orderId);
       callOrderDetailsApi(orderId);
-      console.log({ selectedOrder });
       !!selectedOrder?.paymentOrderId &&
         isPrepaid &&
         callGetOrderInternal(selectedOrder?.paymentOrderId); //for getting the circle membership in case of prepaid
