@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   SafeAreaView,
   View,
   Text,
   FlatList,
-  Image as ImageNative,
+  Image,
   StyleSheet,
   TouchableOpacity,
+  Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { MedicineListingHeader } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingHeader';
@@ -21,10 +23,11 @@ import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/dee
 
 export interface BrandPagesProps
   extends NavigationScreenProps<{
-    movedFrom?: 'home';
+    movedFrom?: 'home' | 'deeplink';
     brandData?: BrandData[];
     category_id?: string;
     title?: string;
+    categoryName?: string; //required in case of deeplink for all products results as category id will not be present to pass as props to Medicine Listing
   }> {}
 
 export const BrandPages: React.FC<BrandPagesProps> = (props) => {
@@ -42,20 +45,119 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
     : '';
   menu?.splice(1, 0, 'All Products');
 
-  const imgHeight = 175;
   const movedFromBrandPages = true;
+  const win = Dimensions.get('window');
   const imageUrl = brandData?.[0]?.brandMobileBannerImg
     ? brandData?.[0]?.brandMobileBannerImg
     : brandData?.[0]?.brandMainBannerImg;
+  const categoryName = props.navigation.getParam('categoryName');
+  const categoryID = props.navigation.getParam('category_id');
+  const title = props.navigation.getParam('title');
   const [userAgent, setUserAgent] = useState('');
   const [selectedMenuItem, setSelectedMenuItem] = useState<number>(0);
   const [selectedMenuItemName, setSelectedMenuItemName] = useState<string>('Home');
-  const [categoryID, setCategoryID] = useState(props.navigation.getParam('category_id'));
-  const [title, setTitle] = useState(props.navigation.getParam('title'));
+  const [bannerImageHeightWidthData, setBannerImageHeightWidthData] = useState([]);
+  const [mainBannerImageData, setMainBannerImageData] = useState([]);
+  const [loading, setloading] = useState<boolean>(true);
 
   AsyncStorage.getItem(USER_AGENT).then((userAgent) => {
     setUserAgent(userAgent || '');
   });
+
+  useEffect(() => {
+    let mainBannerImageData = [];
+    Image.getSize(
+      imageUrl,
+      (width, height) => {
+        const ratio = win.width / width;
+        const product = height * ratio;
+        const obj = {
+          imgWidth: width,
+          imgHeight: height,
+          heightToBeSet: product,
+          imgUrl: imageUrl,
+        };
+        mainBannerImageData.push(obj);
+        setMainBannerImageData(mainBannerImageData);
+      },
+      () => {}
+    );
+    let bannerImageData = [];
+    brandData?.[0]?.brandBannersList.map((banner) => {
+      const url = banner?.brandBannerImgUrl;
+      Image.getSize(
+        url,
+        (width, height) => {
+          const ratio = win.width / width;
+          const product = height * ratio;
+          const obj = {
+            imgWidth: width,
+            imgHeight: height,
+            heightToBeSet: product,
+            imgUrl: url,
+          };
+          bannerImageData.push(obj);
+          setBannerImageHeightWidthData([bannerImageData]);
+        },
+        () => {}
+      );
+    });
+  }, []);
+
+  useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      let mainBannerImageData = [];
+      Image.getSize(
+        imageUrl,
+        (width, height) => {
+          const ratio = win.width / width;
+          const product = height * ratio;
+          const obj = {
+            imgWidth: width,
+            imgHeight: height,
+            heightToBeSet: product,
+            imgUrl: imageUrl,
+          };
+          mainBannerImageData.push(obj);
+          setMainBannerImageData(mainBannerImageData);
+        },
+        () => {}
+      );
+      let bannerImageData = [];
+      brandData?.[0]?.brandBannersList.map((banner) => {
+        const url = banner?.brandBannerImgUrl;
+        Image.getSize(
+          url,
+          (width, height) => {
+            const ratio = win.width / width;
+            const product = height * ratio;
+            const obj = {
+              imgWidth: width,
+              imgHeight: height,
+              heightToBeSet: product,
+              imgUrl: url,
+            };
+            bannerImageData.push(obj);
+            setBannerImageHeightWidthData([bannerImageData]);
+          },
+          () => {}
+        );
+      });
+    });
+    const didBlur = props.navigation.addListener('didBlur', (payload) => {
+      setBannerImageHeightWidthData([]);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      didBlur && didBlur.remove();
+    };
+  }, [props.navigation]);
+
+  useEffect(() => {
+    if (bannerImageHeightWidthData?.length > 0) {
+      setloading(false);
+    }
+  }, [bannerImageHeightWidthData]);
 
   const renderHeader = () => {
     return (
@@ -67,12 +169,14 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
     );
   };
 
-  const renderMainBanner = () => {
+  const renderMainBanner = (imgData: object) => {
     return (
       <TouchableOpacity activeOpacity={1}>
-        <ImageNative
-          resizeMode="stretch"
-          style={{ width: '100%', minHeight: imgHeight }}
+        <Image
+          style={{
+            width: win.width,
+            height: imgData?.heightToBeSet,
+          }}
           source={{
             uri: imageUrl,
             headers: {
@@ -121,7 +225,7 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
     }
   };
 
-  const renderOtherBanner = (imgUrl: string, item) => {
+  const renderOtherBanner = (imgUrl: string, item, imageData: object) => {
     return (
       <TouchableOpacity
         activeOpacity={1}
@@ -129,17 +233,21 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
           handleOnPressBanner(item?.brandRedirectionUrl);
         }}
       >
-        <ImageNative
-          resizeMode="stretch"
-          style={{ width: '100%', minHeight: imgHeight }}
-          source={{
-            uri: imgUrl,
-            headers: {
-              'User-Agent': userAgent,
-            },
-          }}
-          progressiveRenderingEnabled={true}
-        />
+        {!!imageData && (
+          <Image
+            style={{
+              width: win.width,
+              height: imageData?.heightToBeSet,
+            }}
+            source={{
+              uri: imgUrl,
+              headers: {
+                'User-Agent': userAgent,
+              },
+            }}
+            progressiveRenderingEnabled={true}
+          />
+        )}
       </TouchableOpacity>
     );
   };
@@ -177,6 +285,7 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
     setSelectedMenuItemName(item);
     if (item === 'Home' || item === 'All Products') {
       props.navigation.setParams({ category_id: categoryID || '' });
+      props.navigation.setParams({ categoryName: categoryName || '' });
       props.navigation.setParams({ title: title || 'Products' });
       props.navigation.setParams({ searchText: '' });
     } else {
@@ -236,49 +345,64 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
     }
   };
 
+  const renderLoading = () => {
+    return loading ? (
+      <ActivityIndicator color="green" size="large" style={{ paddingTop: 50 }} />
+    ) : null;
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {renderHeader()}
-      <ScrollView>
-        {imageUrl !== '' && renderMainBanner()}
-        <View style={styles.menuContainer}>
-          <FlatList
-            horizontal={true}
-            showsHorizontalScrollIndicator={false}
-            bounces={false}
-            keyExtractor={(_, index) => `${index}`}
-            data={menu}
-            renderItem={({ item, index }) => {
-              return renderMenuItems(item, index);
-            }}
-          />
-        </View>
-        {selectedMenuItemName === 'Home' && (
-          <FlatList
-            bounces={false}
-            keyExtractor={(_, index) => `${index}`}
-            data={brandData?.[0]?.brandBannersList}
-            renderItem={({ item, index }) => {
-              const imgUrl = item?.brandBannerImgUrl;
-              return renderOtherBanner(imgUrl, item);
-            }}
-          />
-        )}
-        {selectedMenuItemName === 'All Products' && (
-          <MedicineListing
-            navigation={props.navigation}
-            comingFromBrandPage={true}
-            currentBrandPageTab={selectedMenuItemName}
-          />
-        )}
-        {selectedMenuItemName !== 'Home' && selectedMenuItemName !== 'All Products' ? (
-          <MedicineListing
-            navigation={props.navigation}
-            comingFromBrandPage={true}
-            currentBrandPageTab={selectedMenuItemName}
-          />
-        ) : null}
-      </ScrollView>
+      {loading ? (
+        renderLoading()
+      ) : (
+        <ScrollView>
+          {imageUrl !== '' &&
+            mainBannerImageData?.length > 0 &&
+            renderMainBanner(mainBannerImageData[0])}
+          <View style={styles.menuContainer}>
+            <FlatList
+              horizontal={true}
+              showsHorizontalScrollIndicator={false}
+              bounces={false}
+              keyExtractor={(_, index) => `${index}`}
+              data={menu}
+              renderItem={({ item, index }) => {
+                return renderMenuItems(item, index);
+              }}
+            />
+          </View>
+          {selectedMenuItemName === 'Home' && bannerImageHeightWidthData?.length > 0 && (
+            <FlatList
+              bounces={false}
+              keyExtractor={(_, index) => `${index}`}
+              data={brandData?.[0]?.brandBannersList}
+              renderItem={({ item, index }) => {
+                const imgUrl = item?.brandBannerImgUrl;
+                const imageData = bannerImageHeightWidthData?.[0]?.find(
+                  (item) => item?.imgUrl === imgUrl
+                );
+                return !!imageData ? renderOtherBanner(imgUrl, item, imageData) : null;
+              }}
+            />
+          )}
+          {selectedMenuItemName === 'All Products' && (
+            <MedicineListing
+              navigation={props.navigation}
+              comingFromBrandPage={true}
+              currentBrandPageTab={selectedMenuItemName}
+            />
+          )}
+          {selectedMenuItemName !== 'Home' && selectedMenuItemName !== 'All Products' ? (
+            <MedicineListing
+              navigation={props.navigation}
+              comingFromBrandPage={true}
+              currentBrandPageTab={selectedMenuItemName}
+            />
+          ) : null}
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 };

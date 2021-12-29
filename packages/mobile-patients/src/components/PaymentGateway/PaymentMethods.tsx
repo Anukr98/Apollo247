@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
+  View,
   SafeAreaView,
   StyleSheet,
   NativeModules,
@@ -77,6 +78,7 @@ import {
   goToConsultRoom,
   getPaymentMethodsInfo,
   getIOSPackageName,
+  clearStackAndNavigate,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PaymentStatus,
@@ -101,6 +103,8 @@ import { useGetClientAuthToken } from '@aph/mobile-patients/src/components/Payme
 import { CredPay } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CredPay';
 import { Offers } from '@aph/mobile-patients/src/components/PaymentGateway/Components/Offers';
 import { OfferInfo } from '@aph/mobile-patients/src/components/PaymentGateway/Components/OfferInfo';
+import { PaymentAnimations } from '@aph/mobile-patients/src/components/PaymentGateway/Components/PaymentAnimations';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 const { HyperSdkReact } = NativeModules;
 
@@ -146,7 +150,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const { authToken, setauthToken, pharmacyUserType } = useAppCommonData();
-  const { grandTotal } = useShoppingCart();
+  const { grandTotal, serverCartAmount } = useShoppingCart();
   const [HCSelected, setHCSelected] = useState<boolean>(false);
   const [burnHc, setburnHc] = useState<number>(0);
   const storeCode =
@@ -171,6 +175,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [linkedWallets, setLinkedWallets] = useState<any>([]);
   const [createdWallet, setcreatedWallet] = useState<any>({});
   const [walletLinking, setWalletLinking] = useState<any>('AMAZONPAY');
+  const [showAnimation, setShowAnimation] = useState<boolean>(false);
+  const [paymentStatus, setpaymentStatus] = useState<string>('');
   const requestId = currentPatient?.id || customerId || 'apollo247';
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const defaultClevertapEventParams = {
@@ -181,6 +187,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     amount: amount,
     availableHc: healthCredits,
   };
+  const { deleteServerCart } = useServerCart();
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
     const eventListener = eventEmitter.addListener('HyperEvent', (resp) => {
@@ -209,6 +216,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', () => {
+      goBackToCart();
       return !HyperSdkReact.isNull() && HyperSdkReact.onBackPressed();
     });
     return () => BackHandler.removeEventListener('hardwareBackPress', () => null);
@@ -224,7 +232,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const updateAmount = () => {
-    const redeemableAmount = grandTotal;
+    const redeemableAmount = serverCartAmount?.estimatedAmount || 0;
     HCSelected
       ? healthCredits >= redeemableAmount
         ? (setburnHc(redeemableAmount), setAmount(Number(Decimal.sub(amount, redeemableAmount))))
@@ -293,7 +301,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const handleResponsePayload = (payload: any) => {
     const status = payload?.payload?.status;
     const action = payload?.payload?.action;
-
+    setpaymentStatus('');
     switch (action) {
       case 'getPaymentMethods':
         if (!payload?.error) {
@@ -311,7 +319,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         break;
       case 'upiTxn':
         let activityRes = payload?.payload?.otherInfo?.response?.dropoutInfo?.activityResponse;
-        activityRes = !!activityRes && activityRes != {} && JSON.parse(activityRes);
+        if (Platform.OS == 'android') {
+          activityRes = !!activityRes && activityRes != {} && JSON.parse(activityRes);
+        }
         activityRes?.Status == 'FAILURE' || activityRes?.Status == 'Failed'
           ? showTxnFailurePopUP()
           : status
@@ -341,15 +351,23 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     }
   };
 
+  useEffect(() => {
+    paymentStatus != '' && setShowAnimation(true);
+  }, [paymentStatus]);
+
   const handleTxnStatus = (status: string, payload: any) => {
+    const verticals = ['consult', 'diagnostics', 'pharma'];
     storeSDKresponse(payload);
     const errCode = payload?.payload?.otherInfo?.offers?.[0]?.errorCode;
     switch (status) {
       case 'CHARGED':
+        // setpaymentStatus('success');
         navigatetoOrderStatus(false, 'success', payload);
         break;
       case 'AUTHORIZING':
-        navigatetoOrderStatus(false, 'pending', payload);
+        verticals.includes(businessLine)
+          ? setpaymentStatus('pending')
+          : navigatetoOrderStatus(false, 'pending', payload);
         break;
       case 'PENDING_VBV':
         handlePaymentPending(payload?.errorCode, payload);
@@ -412,6 +430,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   const handlePaymentPending = (errorCode: string, payload: any) => {
     triggerUserPaymentAbortedEvent(errorCode);
+    const verticals = ['consult', 'diagnostics', 'pharma'];
     switch (errorCode) {
       case 'JP_002':
       case 'JP_005':
@@ -423,7 +442,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         break;
       case 'JP_006':
         // txn status is awaited
-        navigatetoOrderStatus(false, 'pending', payload);
+        verticals.includes(businessLine)
+          ? setpaymentStatus('pending')
+          : navigatetoOrderStatus(false, 'pending', payload);
         break;
       default:
         showTxnFailurePopUP();
@@ -439,7 +460,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     }
   };
 
-  const createJusPayOrder = (cod: boolean) => {
+  const createJusPayOrder = (cod: boolean, updateToCOD?: boolean) => {
     const orderInput = {
       payment_order_id: paymentId,
       health_credits_used: HCSelected ? burnHc : 0,
@@ -450,7 +471,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       return_url: AppConfig.Configuration.baseUrl,
     };
     return client.mutate({
-      mutation: !!authToken ? UPDATE_ORDER : CREATE_ORDER,
+      mutation: !!authToken || updateToCOD ? UPDATE_ORDER : CREATE_ORDER,
       variables: { order_input: orderInput },
       fetchPolicy: 'no-cache',
     });
@@ -678,13 +699,14 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       });
   }
 
-  async function onPressPayByCash() {
+  async function onPressPayByCash(updateToCOD?: boolean) {
+    hideAphAlert?.();
     triggerWebengege('Cash', 'COD', string.common.Cash);
     firePaymentInitiatedEvent('COD', 'COD', null, false, null, false, true);
     setisTxnProcessing(true);
     try {
       businessLine == 'diagnostics' && initiateOrderPayment();
-      const response = await createJusPayOrder(true);
+      const response = await createJusPayOrder(true, updateToCOD);
       const { data } = response;
       const status =
         data?.createOrderV2?.payment_status || data?.updateOrderDetails?.payment_status;
@@ -755,7 +777,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const onPressRetryBooking = () => {
     hideAphAlert?.();
     setHCSelected(false);
-    businessLine == 'diagnostics' && props.navigation.goBack();
   };
 
   const onPressContinue = async () => {
@@ -783,7 +804,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     setauthToken?.('');
     switch (businessLine) {
       case 'diagnostics':
-        props.navigation.navigate(AppRoutes.OrderStatus, {
+        props.navigation.navigate(AppRoutes.PaymentStatusDiag, {
           paymentId: paymentId,
           orderDetails: orderDetails,
           isCOD: isCOD,
@@ -793,15 +814,17 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           defaultClevertapEventParams: defaultClevertapEventParams,
           payload: payload,
           isCircleAddedToCart: isCircleAddedToCart,
+          amount: amount,
         });
         break;
       case 'consult':
-        props.navigation.navigate(AppRoutes.ConsultPaymentStatus, {
+        props.navigation.navigate(AppRoutes.PaymentStatusConsult, {
           orderDetails: orderDetails,
           paymentStatus: paymentStatus,
           paymentId: paymentId,
           defaultClevertapEventParams: defaultClevertapEventParams,
           payload: payload,
+          amount: amount,
         });
         break;
       case 'pharma':
@@ -818,10 +841,10 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
             `${orderDetails?.displayId}`,
             pharmacyUserType
           );
-        props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
+        props.navigation.navigate(AppRoutes.PaymentStatusPharma, {
           paymentStatus: paymentStatus,
-          price: amount,
-          transId: paymentId,
+          amount: amount,
+          paymentId: paymentId,
           orderDetails: orderDetails,
           checkoutEventAttributes: checkoutEventAttributes,
           cleverTapCheckoutEventAttributes,
@@ -830,7 +853,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         });
         break;
       case 'subscription':
-        const params = orderDetails?.circleParams;
+        let params = orderDetails?.circleParams;
+        params['paymentStatus'] = paymentStatus;
         goToConsultRoom(props.navigation, params);
         break;
       case 'vaccination':
@@ -872,13 +896,45 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     });
   };
 
+  const showPaymentAnimation = () => {
+    return !!showAnimation ? (
+      <PaymentAnimations
+        paymentId={paymentId}
+        paymentStatus={paymentStatus}
+        onPaymentFailure={() => {
+          setShowAnimation(false);
+          showTxnFailurePopUP();
+        }}
+        onPaymentSuccess={() => {
+          navigatetoOrderStatus(false, 'success');
+        }}
+        onTimeOut={() => {
+          clearStackAndNavigate(props.navigation, AppRoutes.PaymentFailed, {
+            orderDetails: orderDetails,
+            paymentId: paymentId,
+            businessLine: businessLine,
+            amount: amount,
+          });
+          setTimeout(() => setShowAnimation(false), 1000);
+        }}
+      />
+    ) : null;
+  };
+
+  const goBackToCart = () => {
+    if (businessLine != 'diagnostics') {
+      deleteServerCart(false, paymentId);
+    }
+    props.navigation.goBack();
+  };
+
   const renderHeader = () => {
     return (
       <Header
         container={styles.header}
         leftIcon={'backArrow'}
         title={`AMOUNT TO PAY : ₹ ${amount}`}
-        onPressLeftIcon={() => props.navigation.goBack()}
+        onPressLeftIcon={goBackToCart}
       />
     );
   };
@@ -1022,12 +1078,16 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     setisTxnProcessing(false);
     PaymentStatus('failure', businessLine, paymentId);
     showAphAlert?.({
-      unDismissable: businessLine == 'diagnostics' ? true : false,
+      unDismissable: false,
       removeTopIcon: true,
       children: invalidOffer ? (
         <InvalidOffer onPressContinue={() => onPressContinue()} errCode={errCode} />
       ) : (
-        <TxnFailed onPressRetry={onPressRetryBooking} />
+        <TxnFailed
+          onPressRetry={onPressRetryBooking}
+          businessLine={businessLine}
+          onPressCOD={() => onPressPayByCash(true)}
+        />
       ),
     });
   };
@@ -1038,20 +1098,24 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   return (
     <>
-      <SafeAreaView style={theme.viewStyles.container}>
-        {renderHeader()}
-        {!fetching ? (
-          <ScrollView contentContainerStyle={styles.container}>
-            {renderBookingInfo()}
-            {renderOffers()}
-            {showPaymentOptions()}
-            {renderSecureTag()}
-          </ScrollView>
-        ) : (
-          <Spinner />
-        )}
-        {isTxnProcessing && <Spinner />}
-      </SafeAreaView>
+      {!showAnimation ? (
+        <SafeAreaView style={theme.viewStyles.container}>
+          {renderHeader()}
+          {!fetching ? (
+            <ScrollView contentContainerStyle={styles.container}>
+              {renderBookingInfo()}
+              {renderOffers()}
+              {showPaymentOptions()}
+              {renderSecureTag()}
+            </ScrollView>
+          ) : (
+            <Spinner />
+          )}
+          {isTxnProcessing && <Spinner />}
+        </SafeAreaView>
+      ) : (
+        showPaymentAnimation()
+      )}
     </>
   );
 };

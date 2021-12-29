@@ -137,12 +137,15 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
 
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderPhlebotomists {
   __typename: "DiagnosticOrderPhlebotomists";
+  showPhleboDetails: boolean | null;
+  isPhleboChanged: boolean | null;
+  phleboDetailsETAText: string | null;
   phleboRating: number | null;
   phleboOTP: string | null;
   checkinDateTime: any | null;
   phleboTrackLink: string | null;
   diagnosticPhlebotomists: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderPhlebotomists_diagnosticPhlebotomists;
-  isPhleboETAElapsed: string | null;
+  isPhleboETAElapsed: boolean | null;
   phleboETAElapsedMessage: string | null;
 }
 

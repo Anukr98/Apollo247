@@ -163,7 +163,7 @@ export const ActivateCorporateMembership: React.FC<ActivateCorporateMembershipPr
                     index: 1,
                     key: null,
                     actions: [
-                      NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom }),
+                      NavigationActions.navigate({ routeName: AppRoutes.HomeScreen }),
                       NavigationActions.navigate({
                         routeName: AppRoutes.MembershipDetails,
                         params: {

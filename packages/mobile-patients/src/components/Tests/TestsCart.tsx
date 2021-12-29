@@ -679,7 +679,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         (address) => address?.id == deliveryAddressId
       );
       const pinCodeFromAddress = addresses?.[selectedAddressIndex]?.zipcode!;
+      const cityFromAddress = addresses?.[selectedAddressIndex]?.city;
       DiagnosticCartViewed(
+        sourceScreen,
         currentPatient,
         cartItems,
         couponDiscount,
@@ -691,7 +693,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         circlePlanValidity,
         circleSubscriptionId,
         isDiagnosticCircleSubscription,
-        pinCodeFromAddress
+        pinCodeFromAddress,
+        !!cityFromAddress ? cityFromAddress : '',
+        '',
+        false,
+        []
       );
     }
   }, [hcCharges, addresses]);
@@ -1361,7 +1367,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 const discountPrice = pricesForItem?.discountPrice!;
                 const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
                 const planToConsider = pricesForItem?.planToConsider;
-                const styleFreeItem = cartItems.map((i) => {
+                const styleFreeItem = cartItems?.map((i) => {
                   if (i?.id == item?.itemId.toString()) {
                     return i?.name;
                   }
@@ -2914,7 +2920,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         rateExcludingDiscount: number;
         groupPlan: string;
       }[] = [];
-      cartItems.map((items) => {
+      cartItems?.map((items) => {
         orderedTestArray.push({
           itemId: Number(items.id!),
           itemName: items.name,

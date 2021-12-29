@@ -17,7 +17,7 @@ import {
   CommonBugFender,
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { UPDATE_PATIENT, CREATE_ONE_APOLLO_USER } from '@aph/mobile-patients/src/graphql/profiles';
+import { UPDATE_PATIENT, CREATE_ONE_APOLLO_USER,INSERT_REFEREE_DATA_TO_REFERRER } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   Gender,
   Relation,
@@ -292,12 +292,46 @@ const SignUp: React.FC<SignUpProps> = (props) => {
     }
   }
 
+const updateRefereeDataInReferrerRecord = async ({
+    af_referrer_customer_id,
+    campaign,
+    rewardId,
+    shortlink,
+    installTime,
+  }: any) => {
+    const currentDate = new Date();
+    const installAppsflyerTime = installTime.split(' ');
+    try {
+      const response = await client.query({
+        query: INSERT_REFEREE_DATA_TO_REFERRER,
+        variables: {
+          referralDataInput: {
+            refereeId: currentPatient ? currentPatient.id : '',
+            referrerId: af_referrer_customer_id,
+            rewardId: rewardId,
+            campaignId: campaign,
+            deviceOS: Platform.OS == 'ios' ? 'IOS' : 'ANDROID',
+            installTime:
+              installAppsflyerTime[0] ||
+              `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate()}`,
+            eventName: 'Registration_Referrer',
+            shortLink: shortlink,
+          },
+        },
+        fetchPolicy: 'no-cache',
+      });
+      if (response?.data?.addReferralRecord?.rewardStatus) {
+        AsyncStorage.setItem('RefereeStatus', response?.data?.addReferralRecord?.rewardStatus);
+      }
+    } catch (e) {}
+  };
+
   const postAppsFlyerEventAppInstallViaReferral = async (data: any) => {
     const referralData: any = await AsyncStorage.getItem('app_referral_data');
     setRefereeFlagForNewRegisterUser(referralData !== null);
     onCleverTapUserLogin({ ...data?.updatePatient?.patient });
     if (referralData !== null) {
-      const { af_referrer_customer_id, campaign, rewardId, shortlink } = JSON.parse(referralData);
+      const { af_referrer_customer_id, campaign, rewardId, shortlink,installTime } = JSON.parse(referralData);
       const eventAttribute = {
         referrer_id: af_referrer_customer_id,
         referee_id: currentPatient ? currentPatient.id : '',
@@ -306,6 +340,13 @@ const SignUp: React.FC<SignUpProps> = (props) => {
         short_link: shortlink,
         device_os: Platform.OS == 'ios' ? 'IOS' : 'ANDROID',
       };
+      updateRefereeDataInReferrerRecord({
+        af_referrer_customer_id,
+        campaign,
+        rewardId,
+        shortlink,
+        installTime,
+      });
       postAppsFlyerEvent(AppsFlyerEventName.REGISTRATION_REFERRER, eventAttribute);
       AsyncStorage.removeItem('app_referral_data');
       AsyncStorage.setItem('referrerInstall', 'true');

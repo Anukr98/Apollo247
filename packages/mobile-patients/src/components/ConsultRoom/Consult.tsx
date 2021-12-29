@@ -656,7 +656,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       | WebEngageEvents[WebEngageEventName.CONSULT_CARD_CLICKED]
       | WebEngageEvents[WebEngageEventName.CONTINUE_CONSULT_CLICKED]
       | WebEngageEvents[WebEngageEventName.FILL_MEDICAL_DETAILS] = {
-      'Doctor Name': g(data, 'doctorInfo', 'fullName')!,
+      'Doctor Name': g(data, 'doctorInfo', 'displayName')!,
       'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
       'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,
       'Doctor Category': g(data, 'doctorInfo', 'doctorType')!,
@@ -683,7 +683,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       eventAttributes
     );
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_CARD_CLICKED] = {
-      doctorName: g(data, 'doctorInfo', 'fullName')!,
+      doctorName: g(data, 'doctorInfo', 'displayName')!,
       specialityId: g(data, 'doctorInfo', 'specialty', 'id')! || undefined,
       specialityName: g(data, 'doctorInfo', 'specialty', 'name')! || undefined,
       'Doctor Category': g(data, 'doctorInfo', 'doctorType')!,
@@ -702,9 +702,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       'Customer ID': g(currentPatient, 'id'),
     };
     postCleverTapEvent(
-      type == 'Card Click'
-        ? CleverTapEventName.CONSULT_CARD_CLICKED
-        : type == 'Continue Consult'
+      type == 'Continue Consult'
         ? CleverTapEventName.CONTINUE_CONSULT_CLICKED
         : CleverTapEventName.CONSULT_MEDICAL_DETAILS_FILLED,
       cleverTapEventAttributes
@@ -738,19 +736,25 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         ) || [];
       if (futureOnlineAppts.length && reload) {
         if (Platform.OS === 'ios') {
-          callPermissions();
+          callPermissions(() => {}, 'Appointment Screen', currentPatient);
         } else {
-          callPermissions(() => {
-            overlyCallPermissions(
-              futureOnlineAppts[0]?.patientName || '',
-              futureOnlineAppts[0]?.doctorInfo?.displayName || '',
-              showAphAlert,
-              hideAphAlert,
-              true,
-              () => {},
-              'Appointment Screen'
-            );
-          });
+          callPermissions(
+            () => {
+              overlyCallPermissions(
+                futureOnlineAppts[0]?.patientId === selectedPatient?.id
+                  ? selectedPatient
+                  : currentPatient,
+                futureOnlineAppts[0]?.doctorInfo?.displayName || '',
+                showAphAlert,
+                hideAphAlert,
+                true,
+                () => {},
+                'Appointment Screen'
+              );
+            },
+            'Appointment Screen',
+            currentPatient
+          );
         }
       }
       if (reload) {
@@ -803,7 +807,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const onViewPrescriptionClick = async (item: Appointment) => {
     const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
     const eventAttributes: CleverTapEvents[CleverTapEventName.VIEW_PRESCRIPTION_CLICKED_APPOINTMENT_CARD] = {
-      'Doctor Name': g(item, 'doctorInfo', 'fullName') || '',
+      'Doctor Name': g(item, 'doctorInfo', 'displayName') || '',
       'Doctor Phone Number': g(item, 'doctorInfo', 'mobileNumber') || '',
       'Doctor ID': g(item, 'doctorInfo', 'id') || '',
       'Doctor Speciality Name': g(item, 'doctorInfo', 'specialty', 'name') || '',
@@ -1022,7 +1026,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         patientUhid: g(currentPatient, 'uhid'),
         patientAge: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
         doctorId: g(item, 'doctorId') || undefined,
-        doctorName: g(item, 'doctorInfo', 'fullName') || undefined,
+        doctorName: g(item, 'doctorInfo', 'displayName') || undefined,
         doctorCategory: g(item, 'doctorInfo', 'doctorType') || undefined,
         doctorCity: g(item, 'doctorInfo', 'city') || undefined,
         specialityId: g(item, 'doctorInfo', 'specialty', 'id') || undefined,
@@ -1049,13 +1053,15 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           : WebEngageEventName.VIEW_DETAILS_PAST_APPOINTMENT,
         eventAttributesFollowUp
       );
-      const cleverTapEventAttributesFollowUp: CleverTapEvents[CleverTapEventName.CONSULT_BOOK_CTA_CLICKED] = {
+      let cleverTapEventAttributesFollowUp:
+        | CleverTapEvents[CleverTapEventName.CONSULT_BOOK_CTA_CLICKED]
+        | CleverTapEvents[CleverTapEventName.CONSULT_VIEW_DETAILS_ON_PAST_APPOINTMENT] = {
         'Customer ID': g(currentPatient, 'id'),
         patientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
         patientUhid: g(currentPatient, 'uhid'),
         patientAge: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
         doctorId: g(item, 'doctorId') || undefined,
-        doctorName: g(item, 'doctorInfo', 'fullName') || undefined,
+        doctorName: g(item, 'doctorInfo', 'displayName') || undefined,
         doctorCategory: g(item, 'doctorInfo', 'doctorType') || undefined,
         doctorCity: g(item, 'doctorInfo', 'city') || undefined,
         specialityId: g(item, 'doctorInfo', 'specialty', 'id') || undefined,
@@ -1074,14 +1080,38 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         isConsulted: getUserType(allCurrentPatients),
         patientGender: g(currentPatient, 'gender'),
       };
-      postCleverTapEvent(
+
+      const type =
         eventType === 'cancel'
           ? CleverTapEventName.CONSULT_BOOK_CTA_CLICKED
           : eventType === 'followup'
           ? CleverTapEventName.CONSULT_BOOK_CTA_CLICKED
-          : CleverTapEventName.CONSULT_VIEW_DETAILS_ON_PAST_APPOINTMENT,
-        cleverTapEventAttributesFollowUp
-      );
+          : CleverTapEventName.CONSULT_VIEW_DETAILS_ON_PAST_APPOINTMENT;
+      if (type === CleverTapEventName.CONSULT_VIEW_DETAILS_ON_PAST_APPOINTMENT) {
+        cleverTapEventAttributesFollowUp = {
+          'Customer ID': currentPatient?.id || '',
+          'Patient name': `${currentPatient?.firstName} ${currentPatient?.lastName}` || '',
+          'Patient UHID': currentPatient?.uhid || '',
+          'Patient age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
+          'Doctor ID': item?.doctorId || undefined,
+          'Doctor name': item?.doctorInfo?.fullName || undefined,
+          'Doctor category': item?.doctorInfo?.doctorType || undefined,
+          'Hospital city': item?.doctorInfo?.city || undefined,
+          'Speciality ID': item?.doctorInfo?.specialty?.id || undefined,
+          'Speciality name': item?.doctorInfo?.specialty?.name || undefined,
+          'Consult ID': item?.id || undefined,
+          'Appointment datetime': moment(item?.appointmentDateTime).toDate(),
+          'Consult mode':
+            g(item, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'ONLINE' : 'PHYSICAL',
+          'Is consultstarted': !!g(item, 'isConsultStarted'),
+          User_Type: getUserType(allCurrentPatients),
+          'Patient gender': currentPatient?.gender || '',
+          'Mobile number': currentPatient?.mobileNumber || '',
+          'Medicine prescription': item?.caseSheet?.[0]?.medicinePrescription || undefined,
+          'Diagnostic prescription': item?.caseSheet?.[0]?.diagnosticPrescription || undefined,
+        };
+      }
+      postCleverTapEvent(type, cleverTapEventAttributesFollowUp);
     };
 
     const renderTextConsultButton = () => {
@@ -1204,8 +1234,28 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       );
     };
 
+    const postGoToConsultRoomEvent = (item: any) => {
+      const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_GO_TO_CONSULT_ROOM_CLICKED] = {
+        'Patient name': `${currentPatient?.firstName} ${currentPatient?.lastName}` || '',
+        'Patient UHID': currentPatient?.uhid || '',
+        'Doctor name': item?.doctorInfo?.fullName || '',
+        'Speciality name': item?.doctorInfo?.specialty?.name || '',
+        'Doctor ID': item?.doctorId || '',
+        'Speciality ID': item?.doctorInfo?.specialty?.id || '',
+        'Patient gender': currentPatient?.gender || '',
+        'Patient age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
+        'Hospital name': item?.doctorInfo?.doctorHospital?.[0]?.facility?.name || '',
+        'Hospital city': item?.doctorInfo?.doctorHospital?.[0]?.facility?.city || '',
+        Source: 'Appointment Card',
+        'Appointment datetime': moment(item?.appointmentDateTime).toDate(),
+        'Display ID': item?.displayId,
+        'Consult mode': item?.appointmentType || '',
+      };
+      postCleverTapEvent(CleverTapEventName.CONSULT_GO_TO_CONSULT_ROOM_CLICKED, eventAttributes);
+    };
+
     const renderActiveUpcomingConsultButton = () => {
-      const onPressActiveUpcomingButtons = () => {
+      const onPressActiveUpcomingButtons = (textItem?: string) => {
         postConsultCardEvents(
           item.isConsultStarted ? 'Continue Consult' : 'Fill Medical Details',
           item
@@ -1213,6 +1263,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         CommonLogEvent(AppRoutes.Consult, 'Prepare for Consult clicked');
         if (item.doctorInfo && !pastAppointmentItem) {
           CommonLogEvent(AppRoutes.Consult, 'Chat Room Move clicked');
+          if (textItem && textItem === string.common.continueConsult) {
+            postGoToConsultRoomEvent(item);
+          }
           props.navigation.navigate(AppRoutes.ChatRoom, {
             data: item,
             callType: '',
@@ -1237,7 +1290,12 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             </TouchableOpacity>
           </View>
         );
-      } else
+      } else {
+        const textItem = item?.isSeniorConsultStarted
+          ? string.common.consultRoom
+          : item?.isConsultStarted || item?.isAutomatedQuestionsComplete
+          ? string.common.continueConsult
+          : string.common.prepareForConsult;
         return (
           <View>
             <Text style={styles.fillVitalsForConsult}>{getConsultationSubTexts()}</Text>
@@ -1245,19 +1303,14 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               <TouchableOpacity
                 activeOpacity={1}
                 style={styles.consultStartedBtn}
-                onPress={onPressActiveUpcomingButtons}
+                onPress={() => onPressActiveUpcomingButtons(textItem)}
               >
-                <Text style={styles.prepareForConsult}>
-                  {item?.isSeniorConsultStarted
-                    ? string.common.consultRoom
-                    : item?.isConsultStarted || item?.isAutomatedQuestionsComplete
-                    ? string.common.continueConsult
-                    : string.common.prepareForConsult}
-                </Text>
+                <Text style={styles.prepareForConsult}>{textItem}</Text>
               </TouchableOpacity>
             </View>
           </View>
         );
+      }
     };
 
     const renderPickAnotherButton = () => {
@@ -1400,8 +1453,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             item.status == STATUS.NO_SHOW ||
             item.status == STATUS.CALL_ABANDON ? (
               <View>
-                {(item?.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE
-                  && item?.status == STATUS.PENDING) ||
+                {(item?.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE &&
+                  item?.status == STATUS.PENDING) ||
                 item.status == STATUS.NO_SHOW ||
                 item.status == STATUS.CALL_ABANDON
                   ? renderPickAnotherButton()
@@ -1510,7 +1563,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       <TabHeader
         containerStyle={containerStyle}
         navigation={props.navigation}
-        screenAsSource={'Appointment Page'}
+        screenAsSource={'Appointment Section'}
       />
     );
   };

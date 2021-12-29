@@ -7,6 +7,7 @@ import { aphConsole, updateCallKitNotificationReceivedStatus } from '@aph/mobile
 import messaging from '@react-native-firebase/messaging';
 
 
+
 if (__DEV__) {
   import('./ReactotronConfig').then(() => aphConsole.log('Reactotron Configured'));
 }

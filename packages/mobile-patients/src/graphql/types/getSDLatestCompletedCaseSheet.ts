@@ -45,6 +45,12 @@ export interface getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_cas
   testInstruction: string | null;
 }
 
+export interface getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_radiologyPrescription {
+  __typename: "RadiologyPrescription";
+  servicename: string | null;
+  testInstruction: string | null;
+}
+
 export interface getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_medicinePrescription {
   __typename: "MedicinePrescription";
   id: string | null;
@@ -86,6 +92,7 @@ export interface getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_cas
   consultType: string | null;
   diagnosis: (getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_diagnosis | null)[] | null;
   diagnosticPrescription: (getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_diagnosticPrescription | null)[] | null;
+  radiologyPrescription: (getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_radiologyPrescription | null)[] | null;
   blobName: string | null;
   doctorId: string | null;
   followUp: boolean | null;

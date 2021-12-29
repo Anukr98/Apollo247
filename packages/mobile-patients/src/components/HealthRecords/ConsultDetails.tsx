@@ -70,6 +70,7 @@ import {
   postCleverTapPHR,
   postCleverTapEvent,
   getCleverTapCircleMemberValues,
+  removeObjectNullUndefinedProperties,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   CleverTapEventName,
@@ -132,6 +133,7 @@ import {
 } from '../../graphql/types/getDiagnosticSlotsCustomized';
 import DeviceInfo from 'react-native-device-info';
 import { postCleverTapUploadPrescriptionEvents } from '@aph/mobile-patients/src/components/UploadPrescription/Events';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -306,6 +308,13 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     paddingEnd: 10,
   },
+  testNotesItem: {
+    ...theme.viewStyles.text('R', 13, '#0087BA', 1, 15),
+    paddingLeft: 35,
+    paddingRight: 15,
+    paddingBottom: 20,
+    flex: 1,
+  },
 });
 
 export interface ConsultDetailsProps
@@ -369,6 +378,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
 
   const { pharmacyUserTypeAttribute } = useAppCommonData();
   const { pharmacyCircleAttributes, circleSubscriptionId } = useShoppingCart();
+  const { uploadEPrescriptionsToServerCart } = useServerCart();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -633,7 +643,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       | CleverTapEvents[CleverTapEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS]
       | CleverTapEvents[CleverTapEventName.DOWNLOAD_PRESCRIPTION] = {
       ...requireCasesheetDetails,
-      'Doctor Name': g(data, 'fullName')!,
+      'Doctor Name': g(data, 'displayName') || '',
       'Speciality ID': g(data, 'specialty', 'id')!,
       'Speciality Name': g(data, 'specialty', 'name')!,
       'Doctor Category': g(data, 'doctorType')!,
@@ -847,7 +857,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       </>
     );
   };
-  const { setEPrescriptions, addMultipleCartItems } = useShoppingCart();
   const {
     addMultipleCartItems: addMultipleTestCartItems,
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
@@ -1007,29 +1016,17 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     if (isCartOrder) {
       try {
         setLoading?.(true);
-        const response: AxiosResponse<MedicineProductDetailsResponse>[] = await Promise.all(
-          medPrescription.map((item) => getMedicineDetailsApi(item?.id!))
-        );
-        const cartItems = response
-          .filter(({ data }) => data?.productdp?.[0]?.id && data?.productdp?.[0]?.sku)
-          .map(({ data }, index) => ({
-            ...formatToCartItem({ ...data?.productdp?.[0]!, image: '' }),
-            quantity: getPrescriptionItemQuantity(
-              medPrescription?.[index]?.medicineUnit!,
-              medPrescription?.[index]?.medicineTimings!,
-              medPrescription?.[index]?.medicineDosage!,
-              medPrescription?.[index]?.medicineCustomDosage!,
-              medPrescription?.[index]?.medicineConsumptionDurationInDays!,
-              medPrescription?.[index]?.medicineConsumptionDurationUnit!,
-              parseInt(data?.productdp?.[0]?.mou || '1', 10)
-            ),
-          }));
-
-        addMultipleCartItems?.(cartItems);
-        setEPrescriptions?.([presToAdd]);
+        let cartItemsToAdd: any[] = [];
+        medPrescription?.forEach((value) => {
+          cartItemsToAdd.push({
+            medicineSKU: value?.id,
+            quantity: 1,
+          });
+        });
+        uploadEPrescriptionsToServerCart([presToAdd], cartItemsToAdd);
         setLoading?.(false);
         postCleverTapUploadPrescriptionEvents('Health Records', 'Cart');
-        props.navigation.push(AppRoutes.MedicineCart);
+        props.navigation.push(AppRoutes.ServerCart);
       } catch (error) {
         setLoading?.(false);
         showAphAlert?.({
@@ -1040,8 +1037,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       }
       return;
     }
-
-    setEPrescriptions?.([presToAdd]);
+    uploadEPrescriptionsToServerCart([presToAdd]);
     postCleverTapUploadPrescriptionEvents('Health Records', 'Non-Cart');
     props.navigation.navigate(AppRoutes.UploadPrescription, {
       ePrescriptionsProp: [presToAdd],
@@ -1200,6 +1196,18 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     ) : null;
   };
 
+  const postOrderMedsPHREvent = () => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_ORDER_PHR_MEDS] = {
+      ...caseSheetDetails,
+      ...removeObjectNullUndefinedProperties(currentPatient),
+    };
+    postCleverTapEvent(CleverTapEventName.CONSULT_ORDER_PHR_MEDS, eventAttributes);
+  };
+
+  const orderMedicinesHandler = () => {
+    postOrderMedsPHREvent();
+    onAddToCart();
+  };
   const renderPrescriptions = () => {
     return (
       <>
@@ -1236,7 +1244,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                     </>
                   );
               })}
-              <TouchableOpacity style={styles.tatContainer} onPress={onAddToCart}>
+              <TouchableOpacity style={styles.tatContainer} onPress={orderMedicinesHandler}>
                 {tatContent.length ? (
                   <View>
                     {priscTatText()}
@@ -1262,7 +1270,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     return (
       <>
         {renderHeadingView(
-          'Diagnosis',
+          'Diagnosis / Provisional Diagnosis',
           <PhrDiagnosisIcon style={{ width: 20, height: 20, marginRight: 12 }} />
         )}
         {caseSheetDetails?.diagnosis !== null ? (
@@ -1344,6 +1352,13 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     );
   };
 
+  const testNotesItem = (itemname: string, testInstruction: string) => (
+    <>
+      {renderListItem(itemname!, '')}
+      {testInstruction ? <Text style={styles.testNotesItem}>{testInstruction}</Text> : null}
+    </>
+  );
+
   const renderTestNotes = () => {
     const testTat = tatContent.length && tatContent.find((item) => item.isTest);
     return (
@@ -1352,46 +1367,36 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           'Tests',
           <LabTestIcon style={{ width: 20, height: 21.13, marginRight: 12 }} />
         )}
-        {caseSheetDetails?.diagnosticPrescription !== null ? (
+
+        {caseSheetDetails?.diagnosticPrescription !== null ||
+        caseSheetDetails?.radiologyPrescription != null ? (
           <View style={{ marginTop: 28 }}>
-            {caseSheetDetails?.diagnosticPrescription?.map((item, index, array) => {
-              return (
-                <>
-                  {renderListItem(item?.itemname!, '')}
-                  {item?.testInstruction ? (
-                    <Text
-                      style={{
-                        ...theme.viewStyles.text('R', 13, '#0087BA', 1, 15),
-                        paddingLeft: 35,
-                        paddingRight: 15,
-                        paddingBottom: 20,
-                        flex: 1,
-                      }}
-                    >
-                      {item?.testInstruction}
-                    </Text>
-                  ) : null}
-                </>
-              );
-            })}
-            <TouchableOpacity
-              style={styles.tatContainer}
-              onPress={() => {
-                postWEGEvent('test');
-                onAddTestsToCart();
-              }}
-            >
-              {tatContent.length ? (
-                <View>
-                  <Text style={styles.tatText}>{testTat['discount']}</Text>
-                  <Text style={styles.tatText}>{testTat['reportTime']}</Text>
-                </View>
-              ) : null}
-              <Text style={styles.quickActionButtons}>
-                {strings.health_records_home.order_test}
-              </Text>
-              <Text style={styles.slotText}>{strings.health_records_home.slot_filling}</Text>
-            </TouchableOpacity>
+            {caseSheetDetails?.diagnosticPrescription?.map((item, index, array) =>
+              testNotesItem(item?.itemname || '', item?.testInstruction || '')
+            )}
+            {caseSheetDetails?.radiologyPrescription?.map((item, index, array) =>
+              testNotesItem(item?.servicename || '', item?.testInstruction || '')
+            )}
+            {caseSheetDetails?.diagnosticPrescription?.length && (
+              <TouchableOpacity
+                style={styles.tatContainer}
+                onPress={() => {
+                  postWEGEvent('test');
+                  onAddTestsToCart();
+                }}
+              >
+                {tatContent.length ? (
+                  <View>
+                    <Text style={styles.tatText}>{testTat['discount']}</Text>
+                    <Text style={styles.tatText}>{testTat['reportTime']}</Text>
+                  </View>
+                ) : null}
+                <Text style={styles.quickActionButtons}>
+                  {strings.health_records_home.order_test}
+                </Text>
+                <Text style={styles.slotText}>{strings.health_records_home.slot_filling}</Text>
+              </TouchableOpacity>
+            )}
           </View>
         ) : (
           renderNoData('No Tests')
@@ -1404,12 +1409,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     if (caseSheetDetails!.doctorType !== 'JUNIOR' && g(caseSheetDetails, 'blobName')) {
       return (
         <View style={styles.bottomButtonContainer}>
-          <TouchableOpacity
-            style={styles.orderMedicinesButton}
-            onPress={() => {
-              onAddToCart();
-            }}
-          >
+          <TouchableOpacity style={styles.orderMedicinesButton} onPress={orderMedicinesHandler}>
             <Text style={styles.orderMedicineText}>ORDER MEDICINES NOW</Text>
           </TouchableOpacity>
         </View>

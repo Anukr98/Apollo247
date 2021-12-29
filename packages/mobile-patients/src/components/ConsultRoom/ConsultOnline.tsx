@@ -280,7 +280,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
       specialisation: g(props.doctor, 'specialty', 'name')!,
       'Doctor Experience': Number(g(props.doctor, 'experience')!),
       'Doctor ID': g(props.doctor, 'id')!,
-      'Doctor Name': g(props.doctor, 'fullName')!,
+      'Doctor Name': g(props.doctor, 'displayName')!,
       'Speciality ID': g(props.doctor, 'specialty', 'id')!,
       'Hospital Name': g(props.doctor, 'doctorHospital', '0' as any, 'facility', 'name')!,
       'Hospital City': g(props.doctor, 'doctorHospital', '0' as any, 'facility', 'city')!,
@@ -321,7 +321,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
       const eventAttributes:
         | WebEngageEvents[WebEngageEventName.NO_SLOTS_FOUND]
         | CleverTapEvents[CleverTapEventName.CONSULT_NO_SLOTS_FOUND] = {
-        'Doctor Name': g(data, 'fullName')!,
+        'Doctor Name': g(data, 'displayName')!,
         'Speciality ID': g(data, 'specialty', 'id')!,
         'Speciality Name': g(data, 'specialty', 'name')!,
         'Doctor Category': g(data, 'doctorType')!,

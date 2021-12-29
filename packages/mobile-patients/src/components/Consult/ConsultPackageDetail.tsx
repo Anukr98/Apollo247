@@ -192,6 +192,9 @@ export const ConsultPackageDetail: React.FC<ConsultPackageDetailProps> = (props)
     getConsultPackageDetailPrePurchase(planId)
       .then((response) => {
         if (response?.data?.Packagedata && response?.data?.Plandata) {
+          if (response?.data?.Plandata?.length == 1) {
+            setSeletectedPlanIndex(0);
+          }
           setPackageDetailData(response?.data);
         } else {
           showAphAlert?.({

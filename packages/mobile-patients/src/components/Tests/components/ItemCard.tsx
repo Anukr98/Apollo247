@@ -22,8 +22,6 @@ import {
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   getPricesForItem,
 } from '@aph/mobile-patients/src/utils/commonUtils';
-import { CircleHeading } from '@aph/mobile-patients/src/components/ui/CircleHeading';
-import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -36,7 +34,7 @@ import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 const screenWidth = Dimensions.get('window').width;
-const CARD_WIDTH = screenWidth > 350 ? screenWidth * 0.45 : screenWidth * 0.5;
+const CARD_WIDTH = screenWidth > 350 ? screenWidth * 0.44 : screenWidth * 0.5;
 const CARD_HEIGHT = 230; //210
 export interface ItemCardProps {
   onPress?: (item: any) => void;
@@ -58,6 +56,7 @@ export interface ItemCardProps {
   isPriceAvailable?: boolean;
   onPressAddToCartFromCart?: (item: any, addedItems: any) => void;
   onPressRemoveItemFromCart?: (item: any) => void;
+  recommedationDataSource?: string;
 }
 
 const ItemCard: React.FC<ItemCardProps> = (props) => {
@@ -81,6 +80,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     sourceScreen,
     onPressAddToCartFromCart,
     onPressRemoveItemFromCart,
+    recommedationDataSource,
   } = props;
   const { currentPatient } = useAllCurrentPatients();
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
@@ -109,14 +109,8 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
       const imageUrl = !!getItem?.itemImageUrl
         ? getItem?.itemImageUrl
         : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_ICON;
-      const name = getItem?.itemTitle;
+      const name = getItem?.itemTitle || getItem?.itemName;
       const inclusions = getItem?.inclusionData;
-
-      const promoteCircle = pricesForItem?.promoteCircle;
-      const promoteDiscount = pricesForItem?.promoteDiscount;
-      const circleDiscount = pricesForItem?.circleDiscount;
-      const specialDiscount = pricesForItem?.specialDiscount;
-      const discount = pricesForItem?.discount;
 
       const getMandatoryParamter =
         !!inclusions &&
@@ -124,6 +118,8 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
         inclusions?.map((inclusion: any) =>
           inclusion?.incObservationData?.filter((item: any) => item?.mandatoryValue === '1')
         );
+
+      const getInclusionCount = !!inclusions && inclusions?.length > 0 ? inclusions?.length : 1;
 
       const getMandatoryParameterCount =
         !!getMandatoryParamter &&
@@ -142,6 +138,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
           <View
             style={[
               styles.itemCardView,
+              { minHeight: isCircleSubscribed ? CARD_HEIGHT - 15 : CARD_HEIGHT },
               props?.isVertical ? {} : { marginLeft: item?.index == 0 ? 20 : 6 },
             ]}
           >
@@ -158,28 +155,24 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
                   />
                 )}
               </View>
-              {renderPercentageDiscount(
-                promoteCircle && isCircleSubscribed
-                  ? circleDiscount
-                  : promoteDiscount
-                  ? specialDiscount
-                  : discount
-              )}
             </View>
-            <View style={{ minHeight: isSmallDevice ? 40 : 35 }}>
+            <View style={{ minHeight: 40 }}>
               <Text style={styles.itemNameText} numberOfLines={2}>
                 {name}
               </Text>
             </View>
             <View style={{ minHeight: isSmallDevice ? 25 : 30 }}>
-              {getMandatoryParameterCount > 0 ? (
+              {getMandatoryParameterCount > 0 || !!getInclusionCount ? (
                 <Text style={styles.parameterText}>
-                  {getMandatoryParameterCount} {getMandatoryParameterCount == 1 ? 'test' : 'tests'}{' '}
+                  {getMandatoryParameterCount || getInclusionCount}{' '}
+                  {(getMandatoryParameterCount || getInclusionCount) == 1 ? 'test' : 'tests'}{' '}
                   included
                 </Text>
               ) : null}
             </View>
-            <Spearator style={styles.horizontalSeparator} />
+            <Spearator
+              style={[styles.horizontalSeparator, { marginTop: isCircleSubscribed ? '4%' : '4%' }]}
+            />
 
             {renderPricesView(pricesForItem, packageMrpForItem)}
             {renderAddToCart(isAddedToCart, getItem, pricesForItem, packageMrpForItem)}
@@ -190,73 +183,105 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     [cartItems, patientCartItems]
   );
 
-  const renderPercentageDiscount = (discount: string | number) => {
+  const renderCircleSubscribeTotalPercentageOff = (
+    discount: string | number,
+    totalDiscount: number
+  ) => {
     return (
       <>
-        {!!discount && discount > 0 ? (
+        {!!totalDiscount && totalDiscount > 0 ? (
           <View style={styles.percentageDiscountView}>
-            <Text style={styles.percentageDiscountText}>{Number(discount).toFixed(0)}% off</Text>
+            <Text style={styles.percentageDiscountText}>
+              {Number(totalDiscount).toFixed(0)}% off
+            </Text>
           </View>
         ) : null}
       </>
     );
   };
 
-  const renderPricesView = (pricesForItem: any, packageMrpForItem: any) => {
-    const promoteCircle = pricesForItem?.promoteCircle; //if circle discount is more
-    const promoteDiscount = pricesForItem?.promoteDiscount; // if special discount is more than others.
+  const renderPercentageDiscount = (
+    discount: string | number,
+    isOnlyCircle: boolean,
+    specialDiscount: number,
+    hasOtherDiscount: number,
+    totalDiscount: number
+  ) => {
+    const discountPrice =
+      specialDiscount > 0 ? specialDiscount : hasOtherDiscount > 0 ? hasOtherDiscount : 0;
+    const doubleDiscount = !!discount && discount > 0 && discountPrice > 0 && isOnlyCircle;
 
-    return pricesForItem || packageMrpForItem ? (
-      <View>
-        {promoteCircle || promoteDiscount ? (
-          renderAnyDiscountView(pricesForItem, packageMrpForItem)
+    return (
+      <>
+        {isCircleSubscribed && doubleDiscount ? (
+          renderCircleSubscribeTotalPercentageOff(discount, totalDiscount)
         ) : (
-          <View style={{ height: 20 }}></View>
+          <>
+            {!!discount && discount > 0 ? (
+              <View style={styles.percentageDiscountView}>
+                {discountPrice > 0 && (
+                  <Text style={styles.percentageDiscountText}>
+                    {Number(discountPrice).toFixed(0)}% off {isOnlyCircle && '+ '}
+                  </Text>
+                )}
+                {isOnlyCircle && (
+                  <View style={styles.percentageDiscountView}>
+                    <CircleLogo style={styles.circleLogoIcon} />
+                    <Text style={styles.percentageDiscountText}>
+                      {Number(discount).toFixed(0)}% off
+                    </Text>
+                  </View>
+                )}
+              </View>
+            ) : null}
+          </>
         )}
-        {renderMainPriceView(pricesForItem, packageMrpForItem)}
-      </View>
+      </>
+    );
+  };
+
+  const renderPricesView = (pricesForItem: any, packageMrpForItem: any) => {
+    return pricesForItem || packageMrpForItem ? (
+      <View>{renderMainPriceView(pricesForItem, packageMrpForItem)}</View>
     ) : (
       renderItemPriceShimmer()
     );
   };
 
   const renderAnyDiscountView = (pricesForItem: any, packageMrpForItem: any) => {
-    const circleSpecialPrice = pricesForItem?.circleSpecialPrice!;
     const promoteDiscount = pricesForItem?.promoteDiscount;
     const promoteCircle = pricesForItem?.promoteCircle;
     const circleDiscountSaving = pricesForItem?.circleDiscountDiffPrice;
     const specialDiscountSaving = pricesForItem?.specialDiscountDiffPrice;
+    const nonCircleDiscountSaving = pricesForItem?.discountDiffPrice;
 
     return (
       <View>
         {isCircleSubscribed && circleDiscountSaving > 0 && !promoteDiscount ? (
           <View style={styles.flexRow}>
-            <CircleLogo style={styles.circleLogoIcon} />
             {renderSavingView(
-              'Savings',
+              'savings',
               circleDiscountSaving,
-              { marginHorizontal: '3%' },
+              { marginHorizontal: '5%' },
               styles.savingTextStyle
             )}
           </View>
         ) : promoteDiscount && specialDiscountSaving > 0 && !promoteCircle ? (
           <View style={styles.flexRow}>
-            <SpecialDiscountText isImage={true} text={'TEST 247'} />
             {renderSavingView(
-              'Savings',
+              'savings',
               specialDiscountSaving,
-              { marginHorizontal: '3%' },
+              { marginHorizontal: '5%' },
               styles.savingTextStyle
             )}
           </View>
-        ) : circleDiscountSaving > 0 ? (
+        ) : nonCircleDiscountSaving > 0 ? (
           <View style={styles.flexRow}>
-            <CircleHeading isSubscribed={false} />
             {renderSavingView(
-              '',
-              circleSpecialPrice,
-              { marginHorizontal: isSmallDevice ? '1.5%' : '2.5%', alignSelf: 'center' },
-              [styles.nonCirclePriceText]
+              'save',
+              nonCircleDiscountSaving,
+              { marginHorizontal: '7%' },
+              styles.savingTextStyle
             )}
           </View>
         ) : null}
@@ -280,6 +305,15 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     );
   };
 
+  const renderFallBackHeight = () => {
+    return !isCircleSubscribed ? <View style={{ height: 18 }} /> : null;
+  };
+
+  //38 for circle
+  const renderSlashedPriceFallBackHeight = () => {
+    return <View style={{ height: 23 }} />;
+  };
+
   const renderMainPriceView = (pricesForItem: any, packageMrpForItem: any) => {
     const promoteCircle = pricesForItem?.promoteCircle;
     const promoteDiscount = pricesForItem?.promoteDiscount;
@@ -287,6 +321,11 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     const price = pricesForItem?.price!;
     const circleSpecialPrice = pricesForItem?.circleSpecialPrice!;
     const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
+
+    const circleDiscount = pricesForItem?.circleDiscount;
+    const specialDiscount = pricesForItem?.specialDiscount;
+    const discount = pricesForItem?.discount;
+    const totalDiscount = pricesForItem?.totalDiscount;
 
     //1. circle sub + promote circle -> circleSpecialPrice
     //2. circle sub + discount -> dicount Price
@@ -314,21 +353,75 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
       !!packageMrpForItem && packageMrpForItem > price ? packageMrpForItem : price;
     //1. circle sub + promote -> packageMrp/price
     //2. non-circle + circle -> no slashing
+    const hasSlashedPrice =
+      (!isCircleSubscribed && promoteCircle && priceToShow == slashedPrice) ||
+      priceToShow == slashedPrice
+        ? null
+        : slashedPrice;
+    const hasCirclePrice = promoteCircle && !promoteDiscount && priceToShow != circleSpecialPrice;
+
     return (
-      <View style={{ flexDirection: 'row', marginVertical: priceToShow ? '5%' : '1%' }}>
-        {priceToShow ? (
-          <Text style={styles.mainPriceText}>
-            {`${string.common.Rs}${convertNumberToDecimal(priceToShow)}`}
-          </Text>
+      <View style={{ height: 40 }}>
+        {/** show circle price for non-circle user */}
+        {!isCircleSubscribed && hasCirclePrice ? (
+          <View style={styles.centerRow}>
+            <CircleLogo style={[styles.circleLogoIcon, { height: 18 }]} />
+            <Text style={styles.circlePriceText}>
+              Price {string.common.Rs}
+              {circleSpecialPrice}
+            </Text>
+          </View>
         ) : (
-          renderItemPriceShimmer()
+          renderFallBackHeight()
         )}
-        {(!isCircleSubscribed && promoteCircle && priceToShow == slashedPrice) ||
-        priceToShow == slashedPrice ? null : slashedPrice ? (
-          <Text style={styles.slashedPriceText}>
-            {`${string.common.Rs}${convertNumberToDecimal(slashedPrice)}`}
-          </Text>
-        ) : null}
+        {/** packageCalMrp/mrp*/}
+        <View style={{ flexDirection: 'row' }}>
+          {hasSlashedPrice ? (
+            <View style={styles.slashedPriceView}>
+              <Text style={styles.slashedPriceText}>
+                MRP{' '}
+                <Text style={{ textDecorationLine: 'line-through' }}>
+                  {string.common.Rs}
+                  {`${convertNumberToDecimal(slashedPrice)}`}
+                </Text>
+              </Text>
+            </View>
+          ) : (
+            renderSlashedPriceFallBackHeight()
+          )}
+          {/**percentage dicount (main price discount + circle discount separately) */}
+          <View style={{ marginHorizontal: 4, justifyContent: 'center' }}>
+            {renderPercentageDiscount(
+              promoteCircle && isCircleSubscribed
+                ? circleDiscount
+                : promoteDiscount
+                ? specialDiscount
+                : discount,
+              promoteCircle && isCircleSubscribed ? true : false,
+              promoteDiscount && specialDiscount > 0 ? specialDiscount : 0,
+              discount > 0 ? discount : 0,
+              totalDiscount > 0 ? totalDiscount : 0
+            )}
+          </View>
+        </View>
+        {/** effective price + total savings */}
+        <View
+          style={{
+            flexDirection: 'row',
+            marginVertical: hasSlashedPrice ? '1%' : '0%',
+          }}
+        >
+          {priceToShow ? (
+            <Text style={styles.mainPriceText}>
+              {`${string.common.Rs}${convertNumberToDecimal(priceToShow)}`}
+            </Text>
+          ) : (
+            renderItemPriceShimmer()
+          )}
+          {promoteCircle || promoteDiscount
+            ? renderAnyDiscountView(pricesForItem, packageMrpForItem)
+            : null}
+        </View>
       </View>
     );
   };
@@ -348,24 +441,36 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
         ? string.diagnosticCategoryTitle.item
         : data?.[0]?.diagnosticWidgetType
       : data?.diagnosticWidgetType?.toLowerCase();
+    const inclusions =
+      !!item?.inclusionData && item.inclusionData.map((item: any) => Number(item?.incItemId));
 
+    const originalItemIds =
+      sourceScreen === AppRoutes.CartPage && Array.isArray(cartItems)
+        ? cartItems?.map((item) => {
+            return item?.id;
+          })
+        : null;
     DiagnosticAddToCartEvent(
-      item?.itemTitle,
+      item?.itemTitle || item?.itemName,
       `${item?.itemId}`,
       mrpToDisplay,
       discountToDisplay,
       source,
-      widgetType === string.diagnosticCategoryTitle.categoryGrid ||
-        widgetType == string.diagnosticCategoryTitle.category
+      recommedationDataSource
+        ? recommedationDataSource
+        : widgetType === string.diagnosticCategoryTitle.categoryGrid ||
+          widgetType == string.diagnosticCategoryTitle.category
         ? 'Category page'
         : data?.diagnosticWidgetTitle,
       currentPatient,
-      isDiagnosticCircleSubscription
+      isDiagnosticCircleSubscription,
+      originalItemIds
     );
+
     const addedItems = {
       id: `${item?.itemId}`,
       mou: 1,
-      name: item?.itemTitle!,
+      name: item?.itemTitle! || item?.itemName,
       price: price,
       specialPrice: specialPrice! | price,
       circlePrice: circlePrice,
@@ -376,7 +481,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
       collectionMethod: TEST_COLLECTION_TYPE.HC,
       groupPlan: planToConsider?.groupPlan,
       packageMrp: packageCalculatedMrp,
-      inclusions: [Number(item?.itemId)], // since it's a test
+      inclusions: item?.inclusionData == null ? [Number(item?.itemId)] : inclusions,
       isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
     };
     if (sourceScreen === AppRoutes.CartPage) {
@@ -423,9 +528,10 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     const mrpToDisplay = pricesForItem?.mrpToDisplay;
     const widgetTitle = data?.diagnosticWidgetTitle;
     const widgetType = data?.diagnosticWidgetType;
+    const inclusions =
+      !!item?.inclusionData && item?.inclusionData?.map((item: any) => Number(item?.incItemId));
 
-    postHomePageWidgetClicked(item?.itemTitle!, `${item?.itemId}`, widgetTitle);
-
+    postHomePageWidgetClicked(item?.itemTitle! || item?.itemName, `${item?.itemId}`, widgetTitle);
     if (sourceScreen == AppRoutes.TestDetails) {
       navigation.replace(AppRoutes.TestDetails, {
         itemId: item?.itemId,
@@ -438,7 +544,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
           discountPrice: discountPrice,
           discountSpecialPrice: discountSpecialPrice,
           ItemID: `${item?.itemId}`,
-          ItemName: item?.itemTitle!,
+          ItemName: item?.itemTitle! || item?.itemName,
           collectionType: TEST_COLLECTION_TYPE.HC,
           packageMrp: packageCalculatedMrp,
           mrpToDisplay: mrpToDisplay,
@@ -448,7 +554,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
               ? 'Category page'
               : source,
           type: data?.diagnosticWidgetType,
-          inclusions: [Number(item?.itemId)],
+          inclusions: item?.inclusionData == null ? [Number(item?.itemId)] : inclusions,
         } as TestPackageForDetails,
       });
     } else {
@@ -464,7 +570,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
           discountPrice: discountPrice,
           discountSpecialPrice: discountSpecialPrice,
           ItemID: `${item?.itemId}`,
-          ItemName: item?.itemTitle!,
+          ItemName: item?.itemTitle! || item?.itemName,
           collectionType: TEST_COLLECTION_TYPE.HC,
           packageMrp: packageCalculatedMrp,
           mrpToDisplay: mrpToDisplay,
@@ -474,7 +580,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
               ? 'Category page'
               : source,
           type: data?.diagnosticWidgetType,
-          inclusions: [Number(item?.itemId)],
+          inclusions: item?.inclusionData == null ? [Number(item?.itemId)] : inclusions,
         } as TestPackageForDetails,
       });
     }
@@ -495,7 +601,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
         style={[
           styles.addToCartText,
           {
-            ...theme.viewStyles.text('B', isSmallDevice ? 13 : 14, '#fc9916', 1, 24),
+            ...theme.viewStyles.text('B', isSmallDevice ? 13 : 14, colors.APP_YELLOW, 1, 20),
             width: isAlreadyPartOfOrder ? '80%' : '70%',
           },
         ]}
@@ -571,6 +677,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
             ? {
                 alignSelf: actualItemsToShow?.length > 1 ? 'center' : 'flex-start',
                 marginLeft: '1.5%',
+                flex: 1,
               }
             : {}
         }
@@ -605,7 +712,8 @@ const styles = StyleSheet.create({
   itemCardView: {
     ...theme.viewStyles.card(12, 0),
     elevation: 10,
-    height: CARD_HEIGHT,
+    maxHeight: CARD_HEIGHT,
+    minHeight: CARD_HEIGHT,
     width: CARD_WIDTH,
     marginHorizontal: 4,
     marginRight: 10,
@@ -614,9 +722,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   imagePlaceholderStyle: { backgroundColor: '#f7f8f5', opacity: 0.5, borderRadius: 5 },
-  imageStyle: { height: 40, width: 40, marginBottom: 8 },
+  imageStyle: { height: 27, width: 27, marginBottom: 8 },
   itemNameText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 15 : 16, theme.colors.SHERPA_BLUE, 1, 20),
+    ...theme.viewStyles.text('SB', isSmallDevice ? 15 : 16, theme.colors.SHERPA_BLUE, 1, 20),
     textAlign: 'left',
   },
   parameterText: {
@@ -624,7 +732,7 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     marginTop: '5%',
   },
-  horizontalSeparator: { marginBottom: 7.5, marginTop: '6%' },
+  horizontalSeparator: { marginBottom: 7.5, marginTop: '4%' },
   flexRow: {
     flexDirection: 'row',
   },
@@ -634,8 +742,7 @@ const styles = StyleSheet.create({
   },
   imageIcon: { height: 40, width: 40 },
   savingTextStyle: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 10.5 : 11, theme.colors.APP_GREEN),
-    lineHeight: 18,
+    ...theme.viewStyles.text('M', isSmallDevice ? 10.5 : 11, theme.colors.SHERPA_BLUE, 0.6, 18),
     textAlign: 'center',
     alignSelf: 'center',
   },
@@ -647,21 +754,17 @@ const styles = StyleSheet.create({
   },
   mainPriceText: {
     ...theme.viewStyles.text('SB', isSmallDevice ? 15 : 16, theme.colors.SHERPA_BLUE),
-    lineHeight: 21,
+    lineHeight: 18,
     textAlign: 'left',
     alignSelf: 'flex-start',
   },
   slashedPriceText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE),
-    lineHeight: 21,
+    ...theme.viewStyles.text('SB', isSmallDevice ? 12.5 : 13.5, colors.SHERPA_BLUE, 0.6, 21),
     textAlign: 'center',
-    opacity: 0.5,
-    textDecorationLine: 'line-through',
-    marginHorizontal: '5%',
   },
   circleLogoIcon: {
-    height: 20,
-    width: isSmallDevice ? 32 : 36,
+    height: 15,
+    width: isSmallDevice ? 26 : 28,
     resizeMode: 'contain',
   },
   addToCartText: {
@@ -680,17 +783,26 @@ const styles = StyleSheet.create({
     elevation: 0,
   },
   percentageDiscountView: {
-    backgroundColor: colors.DISCOUNT_LIGHT_BLUE,
-    borderWidth: 1,
-    borderRadius: 12,
-    borderColor: colors.DISCOUNT_BLUE_COLOR,
-    height: 30,
-    width: 50,
-    justifyContent: 'center',
+    flexDirection: 'row',
     alignItems: 'center',
   },
   percentageDiscountText: {
-    ...theme.viewStyles.text('M', 10, colors.DISCOUNT_BLUE_COLOR, 1, 12),
+    ...theme.viewStyles.text('B', 10, colors.DISCOUNT_GREEN, 1, 13),
     textAlign: 'center',
   },
+  priceView: {
+    flexDirection: 'row',
+    marginVertical: '2%',
+    height: 45,
+  },
+  slashedPriceView: {
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+  },
+  circlePriceText: {
+    marginHorizontal: 4,
+    ...theme.viewStyles.text('M', isSmallDevice ? 11 : 12, theme.colors.SHERPA_BLUE, 0.8, 16),
+    textAlign: 'center',
+  },
+  centerRow: { flexDirection: 'row', alignItems: 'center' },
 });

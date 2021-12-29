@@ -42,27 +42,25 @@ export function postwebEngageProceedToPayEvent(
   isPrescriptionUploaded?: boolean
 ) {
   const {
-    cartTotal,
-    cartItems,
-    deliveryCharges,
-    grandTotal,
-    uploadPrescriptionRequired,
+    serverCartAmount,
+    serverCartItems,
+    isCartPrescriptionRequired,
     pinCode,
     storeId,
     stores: storesFromContext,
-    coupon
+    cartCoupon
   } = shoppingCart;
   const selectedStore =
     (storeId && storesFromContext.find((item) => item.storeid == storeId)) || undefined;
-  const numberOfOutOfStockItems = cartItems.filter((medicine) => medicine.isInStock === false)
+  const numberOfOutOfStockItems = serverCartItems?.filter((medicine) => medicine.isInStock === false)
     .length;
 
   const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PROCEED_TO_PAY_CLICKED] = {
-    'Total items in cart': cartItems.length,
-    'Sub Total': cartTotal,
-    'Delivery charge': deliveryCharges,
-    'Net after discount': grandTotal,
-    'Prescription Needed?': uploadPrescriptionRequired ? true : false,
+    'Total items in cart': serverCartItems?.length,
+    'Sub Total': serverCartAmount?.cartTotal,
+    'Delivery charge': serverCartAmount?.isDeliveryFree ? 0 : serverCartAmount?.deliveryCharges,
+    'Net after discount': serverCartAmount?.estimatedAmount,
+    'Prescription Needed?': isCartPrescriptionRequired ? true : false,
     'Mode of Delivery': !isStorePickup ? 'Home' : 'Pickup',
     'Delivery Date Time': !isStorePickup && moment(deliveryTime).isValid ? deliveryTime : undefined, // Optional (only if Home)
     'Pin Code': pinCode,
@@ -78,11 +76,11 @@ export function postwebEngageProceedToPayEvent(
     ...splitCartDetails,
   };
   const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_PROCEED_TO_PAY_CLICKED] = {
-    'Total items in cart': cartItems.length,
-    'Sub Total': cartTotal,
-    'Shipping Charges': deliveryCharges,
-    'Net after discount': grandTotal,
-    'Prescription Required?': uploadPrescriptionRequired ? 'Yes' : 'No',
+    'Total items in cart': serverCartItems?.length,
+    'Sub Total': serverCartAmount?.cartTotal,
+    'Shipping Charges': serverCartAmount?.isDeliveryFree ? 0 : serverCartAmount?.deliveryCharges,
+    'Net after discount': serverCartAmount?.estimatedAmount,
+    'Prescription Required?': isCartPrescriptionRequired ? 'Yes' : 'No',
     'Mode of Delivery': !isStorePickup ? 'Home' : 'Pickup',
     'Delivery Date Time': !isStorePickup && moment(deliveryTime).isValid ? deliveryTime||undefined : undefined, // Optional (only if Home)
     'Pincode': pinCode,
@@ -92,8 +90,8 @@ export function postwebEngageProceedToPayEvent(
     'Prescription Option selected': !!isPrescriptionUploaded
       ? 'Prescription Upload'
       : 'Not Applicable',
-    'Delivery charge': deliveryCharges,
-    'Coupon Applied': coupon?.coupon || undefined,
+    'Delivery charge': serverCartAmount?.isDeliveryFree ? 0 : serverCartAmount?.deliveryCharges,
+    'Coupon Applied': (cartCoupon?.coupon && cartCoupon?.valid) || undefined,
     'User Type': pharmacyUserTypeAttribute?.User_Type || undefined,
     'Circle Member': getCleverTapCircleMemberValues(pharmacyCircleEvent?.['Circle Membership Added']!)||undefined,
     'Circle Membership Value':pharmacyCircleEvent?.['Circle Membership Value'] || undefined,
@@ -116,23 +114,25 @@ export function PharmacyCartViewedEvent(
   pharmacyUserTypeAttribute: PharmacyUserTypeEvent
 ) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CART_VIEWED] = {
-    'Total items in cart': shoppingCart.cartItems.length,
-    'Sub Total': shoppingCart.cartTotal,
-    'Delivery charge': shoppingCart.deliveryCharges,
+    'Total items in cart': shoppingCart.serverCartItems?.length,
+    'Sub Total': shoppingCart.serverCartAmount?.cartTotal,
+    'Delivery charge': shoppingCart.serverCartAmount?.isDeliveryFree ? 0 : shoppingCart.serverCartAmount?.deliveryCharges,
     'Total Discount': Number(
-      (shoppingCart.couponDiscount + shoppingCart.productDiscount).toFixed(2)
+      (
+        shoppingCart?.serverCartAmount?.couponSavings || 0 + 
+        shoppingCart?.serverCartAmount?.cartSavings || 0).toFixed(2)
     ),
-    'Net after discount': shoppingCart.grandTotal,
-    'Prescription Needed?': shoppingCart.uploadPrescriptionRequired,
-    'Cart Items': shoppingCart.cartItems.map(
+    'Net after discount': shoppingCart.serverCartAmount?.estimatedAmount,
+    'Prescription Needed?': shoppingCart.isCartPrescriptionRequired,
+    'Cart Items': shoppingCart.serverCartItems?.map(
       (item) =>
         ({
           id: item.id,
           name: item.name,
           quantity: item.quantity,
           price: item.price,
-          specialPrice: item.specialPrice,
-        } as ShoppingCartItem)
+          specialPrice: item.sellingPrice,
+        })
     ),
     'Service Area': 'Pharmacy',
     'Customer ID': id,
@@ -141,31 +141,33 @@ export function PharmacyCartViewedEvent(
   };
 
   let revenue = 0
-  shoppingCart?.cartItems?.forEach(item => {
-    revenue+=(item?.quantity * (item?.specialPrice ? item?.specialPrice : item?.price))
+  shoppingCart?.serverCartItems?.forEach(item => {
+    revenue+=(item?.quantity * (item?.sellingPrice ? item?.sellingPrice : item?.price))
   })
   const appsFlyerEvents = {
-    'Total items in cart': shoppingCart?.cartItems?.length,
-    'Sub Total': shoppingCart?.cartTotal,
-    'Delivery charge': shoppingCart?.deliveryCharges,
+    'Total items in cart': shoppingCart?.serverCartItems?.length,
+    'Sub Total': shoppingCart?.serverCartAmount?.cartTotal,
+    'Delivery charge': shoppingCart.serverCartAmount?.isDeliveryFree ? 0 : shoppingCart.serverCartAmount?.deliveryCharges,
     'Total Discount': Number(
-      (shoppingCart?.couponDiscount + shoppingCart?.productDiscount).toFixed(2)
+      (
+        shoppingCart?.serverCartAmount?.couponSavings || 0 + 
+        shoppingCart?.serverCartAmount?.cartSavings || 0).toFixed(2)
     ),
-    'Net after discount': shoppingCart?.grandTotal,
-    'Prescription Needed?': shoppingCart?.uploadPrescriptionRequired,
-    'Cart Items': shoppingCart?.cartItems?.map(
+    'Net after discount': shoppingCart?.serverCartAmount?.estimatedAmount,
+    'Prescription Needed?': shoppingCart?.isCartPrescriptionRequired,
+    'Cart Items': shoppingCart?.serverCartItems?.map(
       (item) =>
         ({
           af_content_id: item?.id,
           af_content: item?.name,
           quantity: item?.quantity,
           price: item?.price,
-          af_price: item?.specialPrice,
+          af_price: item?.sellingPrice,
         })
     ),
-    "af_content_id": shoppingCart?.cartItems?.map(item => `${item?.id}`),
-    "af_quantity": shoppingCart?.cartItems?.map(item => item?.quantity),
-    "af_price": shoppingCart?.cartItems?.map(item => item?.specialPrice ? item?.specialPrice : item?.price),
+    "af_content_id": shoppingCart?.serverCartItems?.map(item => `${item?.id}`),
+    "af_quantity": shoppingCart?.serverCartItems?.map(item => item?.quantity),
+    "af_price": shoppingCart?.serverCartItems?.map(item => item?.sellingPrice ? item?.sellingPrice : item?.price),
     "af_revenue": revenue,
     "af_currency": "INR",
     'Service Area': 'Pharmacy',
@@ -177,23 +179,25 @@ export function PharmacyCartViewedEvent(
   
 
   const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CART_VIEWED] = {
-    'Total items in cart': shoppingCart?.cartItems?.length,
-    'Sub total': shoppingCart?.cartTotal,
-    'Shipping charges': shoppingCart?.deliveryCharges,
+    'Total items in cart': shoppingCart?.serverCartItems?.length,
+    'Sub total': shoppingCart?.serverCartAmount?.cartTotal || 0,
+    'Shipping charges': shoppingCart.serverCartAmount?.isDeliveryFree ? 0 : shoppingCart.serverCartAmount?.deliveryCharges,
     'Total discount': Number(
-      (shoppingCart?.couponDiscount + shoppingCart?.productDiscount)?.toFixed(2)
+      (
+        (shoppingCart?.serverCartAmount?.couponSavings || 0) + 
+        (shoppingCart?.serverCartAmount?.cartSavings || 0)).toFixed(2)
     ),
-    'Order value': shoppingCart?.grandTotal,
-    'Prescription required': shoppingCart?.uploadPrescriptionRequired?'Yes':'No',
-    'Cart items': shoppingCart?.cartItems?.map(
+    'Order value': shoppingCart?.serverCartAmount?.estimatedAmount || 0,
+    'Prescription required': shoppingCart?.isCartPrescriptionRequired?'Yes':'No',
+    'Cart items': shoppingCart?.serverCartItems?.map(
       (item) =>
         ({
           id: item?.id,
           name: item?.name,
           quantity: item?.quantity,
           price: item?.price,
-          specialPrice: item?.specialPrice,
-        } as ShoppingCartItem)
+          specialPrice: item?.sellingPrice,
+        })
     ) || undefined,
     'Service area': 'Pharmacy',
     'Customer ID': id,
@@ -201,43 +205,47 @@ export function PharmacyCartViewedEvent(
     'Circle member': getCleverTapCircleMemberValues(pharmacyCircleEvent?.['Circle Membership Added']!)||undefined,
     'Circle membership value':pharmacyCircleEvent?.['Circle Membership Value']||undefined
   };
-  if (shoppingCart.coupon) {
-    eventAttributes['Coupon code used'] = shoppingCart.coupon.coupon;
-    cleverTapEventAttributes['Coupon code used'] = shoppingCart?.coupon?.coupon||undefined;
+  if (shoppingCart?.cartCoupon?.valid) {
+    eventAttributes['Coupon code used'] = shoppingCart?.cartCoupon?.coupon;
+    cleverTapEventAttributes['Coupon code used'] = shoppingCart?.cartCoupon?.coupon||undefined;
   }
   postWebEngageEvent(WebEngageEventName.PHARMACY_CART_VIEWED, eventAttributes);
   postCleverTapEvent(CleverTapEventName.PHARMACY_CART_VIEWED,cleverTapEventAttributes);
   postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CART_VIEWED, appsFlyerEvents);
 
   const firebaseAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_CART_VIEWED] = {
-    TotalItemsInCart: shoppingCart.cartItems.length,
-    SubTotal: shoppingCart.cartTotal,
-    Deliverycharge: shoppingCart.deliveryCharges,
-    TotalDiscount: Number((shoppingCart.couponDiscount + shoppingCart.productDiscount).toFixed(2)),
-    NetAfterDiscount: shoppingCart.grandTotal,
-    PrescriptionNeeded: shoppingCart.uploadPrescriptionRequired,
-    CartItems: shoppingCart.cartItems.map(
+    TotalItemsInCart: shoppingCart.serverCartItems?.length,
+    SubTotal: shoppingCart.serverCartAmount?.cartTotal,
+    Deliverycharge: shoppingCart.serverCartAmount?.isDeliveryFree ? 0 : shoppingCart.serverCartAmount?.deliveryCharges,
+    TotalDiscount: Number(
+      (
+        shoppingCart?.serverCartAmount?.couponSavings || 0 + 
+        shoppingCart?.serverCartAmount?.cartSavings || 0).toFixed(2)
+    ),
+    NetAfterDiscount: shoppingCart.serverCartAmount?.estimatedAmount,
+    PrescriptionNeeded: shoppingCart.isCartPrescriptionRequired,
+    CartItems: shoppingCart.serverCartItems?.map(
       (item) =>
         ({
           id: item.id,
           name: item.name,
           quantity: item.quantity,
           price: item.price,
-          specialPrice: item.specialPrice,
-        } as ShoppingCartItem)
+          specialPrice: item.sellingPrice,
+        })
     ),
     ServiceArea: 'Pharmacy',
     CustomerID: id,
     ...pharmacyCircleEvent,
   };
 
-  if (shoppingCart.coupon) {
-    firebaseAttributes['CouponCodeUsed'] = shoppingCart.coupon.coupon;
+  if (shoppingCart?.cartCoupon?.valid) {
+    firebaseAttributes['CouponCodeUsed'] = shoppingCart?.cartCoupon?.coupon;
   }
   postFirebaseEvent(FirebaseEventName.PHARMACY_CART_VIEWED, firebaseAttributes);
 }
 
-export function PricemismatchEvent(cartItem: ShoppingCartItem, id: string, storeItemPrice: number, previousCartPrice: number) {
+export function PricemismatchEvent(cartItem: any, id: string, storeItemPrice: number, previousCartPrice: number) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.SKU_PRICE_MISMATCH]|CleverTapEvents[CleverTapEventName.PHARMACY_CART_SKU_PRICE_MISMATCH] = {
     'Mobile number': id,
     'SKU ID': cartItem.id,
@@ -251,21 +259,21 @@ export function PricemismatchEvent(cartItem: ShoppingCartItem, id: string, store
 }
 
 export function postTatResponseFailureEvent(
-  cartItems: ShoppingCartItem[],
+  serverCartItems: ShoppingCartItem[],
   pincode: string,
   error: object
 ) {
-  const lookUp = cartItems.map((item) => ({ sku: item.id, qty: item.quantity }));
+  const lookUp = serverCartItems?.map((item) => ({ sku: item.id, qty: item.quantity }));
   const eventAttributes: WebEngageEvents[WebEngageEventName.TAT_API_FAILURE] = {
     pincode,
     lookUp,
     error,
-    'Cart Items': JSON.stringify(cartItems),
+    'Cart Items': JSON.stringify(serverCartItems),
   };
   postWebEngageEvent(WebEngageEventName.TAT_API_FAILURE, eventAttributes);
 }
 
-export function postwebEngageProductRemovedEvent(cartItem: ShoppingCartItem, id: string) {
+export function postwebEngageProductRemovedEvent(cartItem: any, id: string) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.ITEMS_REMOVED_FROM_CART]|CleverTapEvents[CleverTapEventName.PHARMACY_ITEMS_REMOVED_FROM_CART] = {
     'Customer ID': id,
     'No of items': cartItem.quantity,
@@ -279,7 +287,7 @@ export function postwebEngageProductRemovedEvent(cartItem: ShoppingCartItem, id:
     af_content: cartItem?.name,
     af_content_type: "Cart Page",
     af_currency: "INR",
-    af_price: cartItem?.specialPrice
+    af_price: cartItem?.sellingPrice
   }
   postCleverTapEvent(CleverTapEventName.PHARMACY_ITEMS_REMOVED_FROM_CART,eventAttributes);
   postWebEngageEvent(WebEngageEventName.ITEMS_REMOVED_FROM_CART, eventAttributes);

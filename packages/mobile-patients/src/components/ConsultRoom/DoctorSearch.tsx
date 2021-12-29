@@ -50,6 +50,7 @@ import {
   postCleverTapEvent,
   postConsultSearchCleverTapEvent,
   postConsultPastSearchSpecialityClicked,
+  getAge,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -77,7 +78,7 @@ import {
   Platform,
   ImageBackground,
 } from 'react-native';
-import { NavigationParams, NavigationScreenProps, ScrollView } from 'react-navigation';
+import { NavigationEvents, NavigationScreenProps, ScrollView } from 'react-navigation';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import _ from 'lodash';
 import { getDoctorList } from '@aph/mobile-patients/src/graphql/types/getDoctorList';
@@ -547,6 +548,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const { circlePlanSelected, circleSubscriptionId, circleSubPlanId } = useShoppingCart();
   const [oneTapPlanTitle, setOneTapPlanTitle] = useState<string>();
   const consultTypeCta = props.navigation?.getParam('consultTypeCta') || '';
+  const scrollCount = useRef<number>(0);
 
   useEffect(() => {
     if (!currentPatient) {
@@ -1057,6 +1059,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                       : pkg?.benefits?.[0]?.attribute_type?.used,
                   validTill: pkg.subscriptionEndDate,
                   banner: pkg?.post_purchase_background_image_url,
+                  subscriptionId: pkg?.subscription_id,
                 });
               }
             });
@@ -1354,7 +1357,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                   postConsultPastSearchSpecialityClicked(
                     currentPatient,
                     allCurrentPatients,
-                    rowData
+                    rowData,
+                    { circleSubscriptionId: circleSubscriptionId, circleSubPlanId: circleSubPlanId }
                   );
                   onClickSearch(
                     rowData?.typeId,
@@ -1377,7 +1381,11 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                       postConsultPastSearchSpecialityClicked(
                         currentPatient,
                         allCurrentPatients,
-                        rowData
+                        rowData,
+                        {
+                          circleSubscriptionId: circleSubscriptionId,
+                          circleSubPlanId: circleSubPlanId,
+                        }
                       );
                       onClickSearch(
                         rowData?.typeId,
@@ -1850,11 +1858,13 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       | CleverTapEvents[CleverTapEventName.SYMPTOM_TRACKER_CLICKED_ON_SPECIALITY_SCREEN] = {
       'Patient UHID': g(currentPatient, 'uhid'),
       'Patient ID': g(currentPatient, 'id'),
-      'Patient Name': g(currentPatient, 'firstName'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
-      'Date of Birth': g(currentPatient, 'dateOfBirth'),
-      Email: g(currentPatient, 'emailAddress'),
+      'Patient name': g(currentPatient, 'firstName'),
+      'Mobile number': g(currentPatient, 'mobileNumber'),
       Relation: g(currentPatient, 'relation'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
     };
     postWebEngageEvent(
       WebEngageEventName.SYMPTOM_TRACKER_CLICKED_ON_SPECIALITY_SCREEN,
@@ -1976,7 +1986,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       'Hospital name': 'NA',
     };
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_CLICKED] = {
-      DoctorName: doctorDetails.fullName!,
+      DoctorName: doctorDetails?.displayName,
       Source: source,
       DoctorID: doctorDetails.id,
       SpecialityID: g(doctorDetails, 'specialty', 'id')!,
@@ -2256,6 +2266,22 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     );
   };
 
+  const postScrollScreenEvent = () => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.SCREEN_SCROLLED] = {
+      User_Type: getUserType(allCurrentPatients),
+      'Patient Name': currentPatient?.firstName,
+      'Patient UHID': currentPatient?.uhid,
+      'Patient age': getAge(currentPatient?.dateOfBirth),
+      'Circle Member': circleSubscriptionId ? 'True' : 'False',
+      'Customer ID': currentPatient?.id,
+      'Patient gender': currentPatient?.gender,
+      'Mobile number': currentPatient?.mobileNumber,
+      'Page name': 'Consult page',
+      'Nav src': '',
+      Scrolls: scrollCount.current,
+    };
+    postCleverTapEvent(CleverTapEventName.SCREEN_SCROLLED, eventAttributes);
+  };
   const renderPackages = () => {
     return (
       <View>
@@ -2329,6 +2355,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         onPress={() => {
           props.navigation.navigate(AppRoutes.ConsultPackagePostPurchase, {
             planId: pkg?.packageId,
+            subscriptionId: pkg?.subscriptionId,
             onSubscriptionCancelled: () => {
               props.navigation.goBack();
             },
@@ -2391,6 +2418,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
+      <NavigationEvents
+        onDidFocus={() => {
+          scrollCount.current = 0;
+        }}
+        onDidBlur={postScrollScreenEvent}
+      />
       <SafeAreaView
         style={{
           flex: 1,
@@ -2407,6 +2440,13 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             <>
               <ScrollView
                 style={{ flex: 1 }}
+                scrollEventThrottle={0}
+                onScroll={(event) => {
+                  //increments only for down scroll
+                  const currentOffset = event.nativeEvent.contentOffset?.y;
+                  currentOffset > (this.offset || 0) && (scrollCount.current += 1);
+                  this.offset = currentOffset;
+                }}
                 keyboardDismissMode="on-drag"
                 onScrollBeginDrag={Keyboard.dismiss}
               >
