@@ -44,10 +44,10 @@ export const HotSellersSection: React.FC<HotSellersProps> = (props) => {
   const movedFrom = 'Special Offers';
 
   const renderItem = (imgUrl: string, item) => {
-    const specialPrice = item.special_price ? true : false;
+    const specialPrice = item?.special_price ? true : false;
     const fallbackImage = `https://newassets.apollo247.com/images/ic_placeholder_circle.png`;
     const imagePathPresent = imgUrl.match(/\.(jpeg|jpg|gif|png|webp)$/) != null;
-    const discount = Math.round(getDiscountPercentage(item.price, item.special_price));
+    const discount = Math.round(getDiscountPercentage(item?.price, item?.special_price));
 
     return (
       <View style={styles.hotSellersContainer}>
@@ -165,7 +165,7 @@ export const HotSellersSection: React.FC<HotSellersProps> = (props) => {
   };
 
   const getItemQuantity = (id: string) => {
-    const foundItem = serverCartItems?.find((item) => item.sku == id);
+    const foundItem = serverCartItems?.find((item) => item?.sku == id);
     return foundItem ? foundItem.quantity : 0;
   };
 

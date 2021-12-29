@@ -71,7 +71,7 @@ export interface saveCart_saveCart_data_medicineOrderCartLineItems {
   price: number | null;
   sellingPrice: number | null;
   mou: string | null;
-  couponDiscountPrice: string | null;
+  couponDiscountPrice: number | null;
   thumbnail: string | null;
   isExpress: string | null;
   isPrescriptionRequired: string | null;
@@ -88,6 +88,8 @@ export interface saveCart_saveCart_data_medicineOrderCartLineItems {
   isShippable: boolean | null;
   freeProduct: boolean | null;
   shipmentNo: number | null;
+  tatCity: string | null;
+  storeType: string | null;
 }
 
 export interface saveCart_saveCart_data {

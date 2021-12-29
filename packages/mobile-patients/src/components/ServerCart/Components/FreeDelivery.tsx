@@ -26,7 +26,7 @@ export const FreeDelivery: React.FC<FreeDeliveryProps> = (props) => {
   const amountToPay = cartTotal - couponSavings - cartSavings;
 
   function showCard() {
-    return serverCartItems.length > 0 && !serverCartAmount?.isDeliveryFree;
+    return serverCartItems?.length > 0 && !serverCartAmount?.isDeliveryFree;
   }
 
   function getToAdd() {

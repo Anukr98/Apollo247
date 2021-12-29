@@ -36,7 +36,7 @@ export interface DealsByBrandsProps extends NavigationScreenProps<{}> {
 }
 
 export const DealsByBrandsSection: React.FC<DealsByBrandsProps> = (props) => {
-  const brandsData = props.brandsData;
+  const brandsData = props?.brandsData;
   const brandsResult = brandsData.sort((a, b) => a?.position?.localeCompare(b?.position));
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedBrandID, setSelectedBrandID] = useState<Number>(brandsResult[0]?.id);
@@ -49,13 +49,8 @@ export const DealsByBrandsSection: React.FC<DealsByBrandsProps> = (props) => {
   const defaultMinDiscount = '1';
   const defaultMaxDiscount = '100';
   const [itemsLoading, setItemsLoading] = useState<{ [key: string]: boolean }>({});
-  const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
-  const {
-    serverCartItems,
-    pharmacyCircleAttributes,
-    asyncPincode,
-    setAddToCartSource,
-  } = useShoppingCart();
+  const { locationDetails, pharmacyLocation } = useAppCommonData();
+  const { serverCartItems, asyncPincode, setAddToCartSource } = useShoppingCart();
   const { setUserActionPayload } = useServerCart();
   const pharmacyPincode =
     asyncPincode?.pincode || pharmacyLocation?.pincode || locationDetails?.pincode;
@@ -101,7 +96,7 @@ export const DealsByBrandsSection: React.FC<DealsByBrandsProps> = (props) => {
     const promotionalMessage = item?.promotional_message;
     const { id, url_key } = item;
     const discountValueArray = item?.discount.split('-');
-    const discountPresent = discountValueArray.length === 2;
+    const discountPresent = discountValueArray?.length === 2;
 
     return (
       <View style={styles.categoryContainer}>
@@ -295,7 +290,7 @@ export const DealsByBrandsSection: React.FC<DealsByBrandsProps> = (props) => {
           return renderItem(imgUrl, item);
         }}
       />
-      {productData && productData.length > 0 && (
+      {productData && productData?.length > 0 && (
         <FlatList
           bounces={false}
           keyExtractor={(_, index) => `${index}`}

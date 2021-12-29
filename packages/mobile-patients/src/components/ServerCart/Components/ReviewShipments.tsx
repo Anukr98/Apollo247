@@ -17,7 +17,8 @@ export const ReviewShipments: React.FC<ReviewShipmentsProps> = (props) => {
   }, []);
 
   const renderCartItemsHeader = (index: any, items: any) => {
-    const itemsCount = items.length == 0 || items.length > 10 ? items.length : `0${items.length}`;
+    const itemsCount =
+      items?.length == 0 || items?.length > 10 ? items?.length : `0${items?.length}`;
     return isSplitCart ? (
       <View style={styles.cartItemsHeader}>
         <Text style={styles.cartItemsHeaderText}>SHIPMENT {index + 1}</Text>

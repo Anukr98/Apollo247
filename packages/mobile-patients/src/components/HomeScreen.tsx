@@ -1041,7 +1041,14 @@ const styles = StyleSheet.create({
   mOffersTitle: {
     marginHorizontal: 10,
     marginTop: 28,
+    paddingBottom: 4,
     marginBottom: 'auto',
+  },
+  mOffersCouponContainer: {
+    flexDirection: 'row',
+    marginVertical: 4,
+    justifyContent: 'space-between',
+    width: '100%',
   },
 });
 
@@ -1201,6 +1208,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     pinCode,
     isPharmacyPincodeServiceable,
     serverCartItems,
+    locationCode,
   } = useShoppingCart();
   const cartItemsCount = cartItems.length + serverCartItems?.length;
 
@@ -1224,6 +1232,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const [showHdfcConnectPopup, setShowHdfcConnectPopup] = useState<boolean>(false);
   const [bannerLoading, setBannerLoading] = useState<boolean>(false);
   let circleActivated = props.navigation.getParam('circleActivated');
+  let circlePurchaseStatus = props.navigation.getParam('paymentStatus');
   const circleActivatedRef = useRef<boolean>(circleActivated);
   const [referAndEarnPrice, setReferAndEarnPrice] = useState('100');
   const scrollCount = useRef<number>(0);
@@ -3770,8 +3779,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               styles.mOffersTitle,
             ]}
           >
-            {item?.title?.text?.length > 36
-              ? item?.title?.text?.substring(0, 36)
+            {item?.title?.text?.length > 60
+              ? item?.title?.text?.substring(0, 60)
               : item?.title?.text}
           </Text>
 
@@ -3779,7 +3788,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             style={{
               ...theme.viewStyles.text('M', 14, offerDesignTemplate?.subtitle_text_color, 1, 18),
               marginHorizontal: 10,
-              marginTop: 4,
               marginBottom: 'auto',
             }}
           >
@@ -3788,14 +3796,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               : item?.subtitle?.text}
           </Text>
           {item?.is_active ? (
-            <View
-              style={{
-                flexDirection: 'row',
-                marginVertical: 6,
-                justifyContent: 'space-between',
-                width: '100%',
-              }}
-            >
+            <View style={styles.mOffersCouponContainer}>
               <View style={styles.offersCardCoupon}>
                 <Text
                   style={{
@@ -4071,7 +4072,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             getUserBanners();
             circleActivatedRef.current = false;
           }}
-          circleActivated={circleActivatedRef.current}
+          circleActivated={circleActivatedRef.current && circlePurchaseStatus === 'success'}
           circlePlanValidity={circlePlanValidity}
           from={string.banner_context.HOME}
           source={string.banner_context.HOME}
@@ -4893,10 +4894,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     const onPressCart = () => {
       postVaccineWidgetEvents(CleverTapEventName.MY_CART_CLICKED, 'Top bar');
       const route =
-        (serverCartItems.length && cartItems.length) ||
-        (!serverCartItems.length && !cartItems.length)
+        (serverCartItems?.length && cartItems.length) ||
+        (!serverCartItems?.length && !cartItems.length)
           ? AppRoutes.MedAndTestCart
-          : serverCartItems.length
+          : serverCartItems?.length
           ? AppRoutes.ServerCart
           : AppRoutes.AddPatients;
       props.navigation.navigate(route);
@@ -5249,7 +5250,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         sortBy,
         selectedFilters,
         axdcCode,
-        pinCode
+        pinCode,
+        locationCode
       );
 
       let finalProducts: any[] = [];
@@ -5356,7 +5358,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     setSearchResults(newState);
   };
 
-  const postSearchInputEvent = (status: 'Success' | 'Fail', request: string, input?: string) => {
+  const postSearchInputEvent = (
+    status: 'Success' | 'Fail',
+    request: 'Pharma' | 'Diagnostic' | 'Consult',
+    input?: string
+  ) => {
     const eventAttributes: CleverTapEvents[CleverTapEventName.HOMEPAGE_SEARCH_BAR_QUERY_INPUT] = {
       User_Type: getUserType(allCurrentPatients),
       'Patient Name': currentPatient?.firstName,
@@ -5391,135 +5397,45 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     postCleverTapEvent(CleverTapEventName.SCREEN_SCROLLED, eventAttributes);
   };
 
-  //Polyfill for allsettled
-  Promise.allSettled = function(promises) {
-    let mappedPromises = promises.map((p) => {
-      return p
-        .then((value) => {
-          return {
-            status: 'fulfilled',
-            value,
-          };
-        })
-        .catch((reason) => {
-          return {
-            status: 'rejected',
-            reason,
-          };
-        });
-    });
-    return Promise.all(mappedPromises);
-  };
-
   const onSearchExecute = async (_searchText: string) => {
     setSearchLoading(true);
     setSearchResults([]);
+    onSearchTests(_searchText)
+      .then(() => {
+        Keyboard.dismiss();
+        postSearchInputEvent('Success', 'Diagnostic', _searchText);
+      })
+      .catch((e) => {
+        Keyboard.dismiss();
+        postSearchInputEvent('Fail', 'Diagnostic', _searchText);
+        CommonBugFender('HomeScreen_ConsultRoom_onSearchTests', e);
+      });
 
-    // search api requests using promised.allfulfilled
-    getSearchResults(_searchText);
+    onSearchMedicines(_searchText, null, {}, [])
+      .then(() => {
+        postSearchInputEvent('Success', 'Pharma', _searchText);
+      })
+      .catch((e) => {
+        Keyboard.dismiss();
+        postSearchInputEvent('Fail', 'Pharma', _searchText);
+        CommonBugFender('HomeScreen_ConsultRoom_onSearchMedicinesFunction', e);
+      });
+
+    onSearchConsults(_searchText)
+      .then(() => {
+        Keyboard.dismiss();
+        postSearchInputEvent('Success', 'Consult', _searchText);
+      })
+      .catch((e) => {
+        Keyboard.dismiss();
+        postSearchInputEvent('Fail', 'Consult', _searchText);
+        CommonBugFender('HomeScreen_ConsultRoom_onSearchConsultsFunction', e);
+      });
 
     const save = _.debounce(saveRecentSearchTerm, 500);
     try {
       save(_searchText);
     } catch (e) {}
-  };
-
-  const getSearchResults = (_searchText: string) => {
-    const cityId =
-      locationForDiagnostics?.cityId != ''
-        ? locationForDiagnostics?.cityId
-        : !!diagnosticServiceabilityData && diagnosticServiceabilityData?.city != ''
-        ? diagnosticServiceabilityData?.cityId
-        : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID;
-
-    testSearchResults.current = [];
-    medSearchResults.current = [];
-    Promise.allSettled([
-      getDiagnosticSearchResults(client, _searchText, Number(cityId), 5),
-      searchMedicineApi(_searchText, 1, null, {}, axdcCode, pinCode),
-      getDoctorList(_searchText),
-    ])
-      .then((results) => {
-        let testResponse, medicineResponse, consultResponse;
-        [testResponse, medicineResponse, consultResponse] = results;
-        let successRequests = [],
-          failedRequests = [];
-        if (testResponse?.status == 'fulfilled') {
-          successRequests.push('Diagnostic');
-          let finalProducts = [];
-
-          if (testResponse?.value?.data?.searchDiagnosticItem) {
-            const products = testResponse?.value?.data?.searchDiagnosticItem?.data || [];
-
-            finalProducts = products.slice(0, 3);
-
-            testSearchResults.current = finalProducts;
-          } else {
-            testSearchResults.current = [];
-          }
-          updateSearchResultList(MedicalRecordType.TEST_REPORT, testSearchResults.current);
-        } else {
-          failedRequests.push('Diagnostic');
-          CommonBugFender('HomeScreen_ConsultRoom_onSearchTests', testResponse?.reason);
-          updateSearchResultList(MedicalRecordType.TEST_REPORT, []);
-        }
-
-        if (medicineResponse?.status == 'fulfilled') {
-          successRequests.push('Pharmacy');
-          let finalProducts: any[] = [];
-
-          if (medicineResponse?.value?.data?.products.length > 1) {
-            finalProducts = [{ name: _searchText }];
-
-            medSearchResults.current = finalProducts;
-          } else {
-            medSearchResults.current = [];
-          }
-
-          updateSearchResultList(MedicalRecordType.MEDICATION, finalProducts);
-        } else {
-          failedRequests.push('Pharmacy');
-          updateSearchResultList(MedicalRecordType.MEDICATION, []);
-          CommonBugFender(
-            'HomeScreen_ConsultRoom_onSearchMedicinesFunction',
-            medicineResponse?.reason
-          );
-        }
-
-        if (consultResponse?.status == 'fulfilled') {
-          successRequests.push('Consult');
-          let finalProducts: any[] = [];
-          const doctors = consultResponse?.value?.data?.getDoctorList?.doctors || [];
-          const specialities = consultResponse?.value?.data?.getDoctorList?.specialties || [];
-
-          if (doctors.length !== 0 || specialities.length !== 0) {
-            const finalDoctors = doctors.slice(0, 3);
-            const finalSpecialities = specialities.slice(0, 1);
-            finalProducts = [...finalDoctors, ...finalSpecialities];
-
-            consultSearchResults.current = finalProducts;
-          } else {
-            consultSearchResults.current = [];
-          }
-
-          updateSearchResultList(MedicalRecordType.CONSULTATION, consultSearchResults.current);
-        } else {
-          failedRequests.push('Consult');
-          updateSearchResultList(MedicalRecordType.CONSULTATION, []);
-          CommonBugFender(
-            'HomeScreen_ConsultRoom_onSearchConsultsFunction',
-            consultResponse?.reason
-          );
-        }
-        successRequests?.length > 0 &&
-          postSearchInputEvent('Success', successRequests?.join(', '), _searchText);
-        failedRequests?.length > 0 &&
-          postSearchInputEvent('Fail', failedRequests?.join(', '), _searchText);
-      })
-      .finally(() => {
-        Keyboard.dismiss();
-        setSearchLoading(false);
-      });
   };
 
   interface searchHeaders {
@@ -5719,7 +5635,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           onPress={() => {
             postHomeCleverTapEvent(
               CleverTapEventName.RECENT_SEARCH_CLICKED_UNDER_SEARCH_BAR,
-              'Search bar'
+              'Search bar',
+              { keyword: item?.text }
             );
             onSearchTextChange(item.text);
           }}
@@ -5790,29 +5707,27 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     //pdp disabled for now ->props.navigation.navigate(AppRoutes.ProductDetailPage, nav_props)
     switch (key) {
       case MedicalRecordType.MEDICATION:
-        postHomeCleverTapEvent(
-          CleverTapEventName.OPTION_FROM_MEDICINE_CLICKED_ON_SEARCH_BAR_PAGE,
-          'Search bar',
-          { Keyword: searchText }
-        );
+        postHomeCleverTapEvent(CleverTapEventName.OPTION_FROM_SEARCH_BAR_CLICKED, 'Search bar', {
+          Keyword: searchText,
+          Vertical: 'Pharmacy',
+        });
         props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
         break;
       case MedicalRecordType.TEST_REPORT:
-        postHomeCleverTapEvent(
-          CleverTapEventName.OPTION_FROM_DIAGNOSTIC_CLICKED_ON_SEARCH_BAR_PAGE,
-          'Search bar',
-          { 'Test Name': data?.testName }
-        );
+        postHomeCleverTapEvent(CleverTapEventName.OPTION_FROM_SEARCH_BAR_CLICKED, 'Search bar', {
+          'Test Name': data?.testName,
+          Vertical: 'Diagnostic',
+        });
         pdp
           ? props.navigation.navigate(AppRoutes.TestDetails, nav_props)
           : props.navigation.navigate(AppRoutes.SearchTestScene, { searchText: searchText });
         break;
       case MedicalRecordType.CONSULTATION:
-        postHomeCleverTapEvent(
-          CleverTapEventName.OPTION_FROM_CONSULT_CLICKED_ON_SEARCH_BAR_PAGE,
-          'Search bar',
-          { 'Doctor Name': data?.doctorName, Speciality: data?.speciality }
-        );
+        postHomeCleverTapEvent(CleverTapEventName.OPTION_FROM_SEARCH_BAR_CLICKED, 'Search bar', {
+          'Doctor Name': data?.doctorName,
+          Speciality: data?.speciality,
+          Vertical: 'Consult',
+        });
         pdp
           ? props.navigation.navigate(AppRoutes.DoctorDetails, nav_props)
           : props.navigation.navigate(AppRoutes.DoctorSearchListing, nav_props);
@@ -6028,10 +5943,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               <View style={styles.viewName}>
                 {renderMenuOptions()}
 
-                {!offersListLoading && offersList.length === 0
-                  ? null
-                  : renderHeadings('Offers For You')}
-                {offersListCache.length === 0 && offersListLoading && renderOffersForYouShimmer()}
+                {offersListCache.length > 0 && renderHeadings('Offers For You')}
+                {/* Don't delete this*/}
+                {/* {offersListCache.length === 0 && offersListLoading && renderOffersForYouShimmer()} */}
                 {(offersListCache.length > 0 || !offersListLoading) && renderOffersForYou()}
 
                 {isReferrerAvailable && renderReferralBanner()}

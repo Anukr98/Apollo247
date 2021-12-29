@@ -171,7 +171,7 @@ export enum CleverTapEventName {
   PHARMACY_CHRONIC_UPSELL_NUDGE = 'Chronic Upsell Nudge',
   PHARMACY_SEARCH_SUCCESS = 'Pharmacy Search Success',
   PHARMACY_CART_REVIEW_ORDER_PAGE_VIEWED = 'Pharmacy Cart Review Order Page Viewed',
-  PHARMACY_DONT_HAVE_PRESCRIPTION = "Pharmacy don't have prescription",
+  PHARMACY_DONT_HAVE_PRESCRIPTION = "Pharmacy does not have prescription",
   PHARMACY_CART_ITEM_QUANTITY_CHANGED = 'Pharmacy cart item quantity changed',
   PHARMACY_CART_ADD_ITEMS_CLICKED = 'Pharmacy cart add items clicked',
   PHARMACY_CART_CHANGE_ADDRESS_CLICKED = 'Pharmacy cart change address clicked',
@@ -249,6 +249,7 @@ export enum CleverTapEventName {
   CONSULT_PACKAGE_PROCEED_TO_PAY_CLICKED = 'Consult package proceed to pay clicked',
   CONSULT_PACKAGE_PAY_BUTTON_CLICKED = 'Consult package pay button clicked',
   CONSULT_PACKAGE_BOOK_CONSULT_CLICKED = 'Consult package book consult clicked',
+  CONSULT_PACKAGE_BOOK_ONE_TAP_CLICKED = 'Consult package book one tap clicked',
 
   // Network Test
   PRE_CALL_TEST = 'Pre Call Test Completed',
@@ -354,9 +355,7 @@ export enum CleverTapEventName {
   OFFERS_CTA_CLICKED = 'Homepage Offers For You Clicked',
   RECENT_SEARCH_CLICKED_UNDER_SEARCH_BAR = 'Recent search clicked under search bar',
   SEARCH_SUGGESTION_CLICKED_UNDER_SEARCH_BAR = 'Search suggestion clicked under search bar',
-  OPTION_FROM_MEDICINE_CLICKED_ON_SEARCH_BAR_PAGE = 'A option from medicine clicked on search bar page',
-  OPTION_FROM_DIAGNOSTIC_CLICKED_ON_SEARCH_BAR_PAGE = 'A option from diagnostic clicked on search bar page',
-  OPTION_FROM_CONSULT_CLICKED_ON_SEARCH_BAR_PAGE = 'A option from consult clicked on search bar page',
+  OPTION_FROM_SEARCH_BAR_CLICKED = 'Option from search bar clicked',
   VIEW_ALL_SEARCH_RESULT_CLICKED = 'When someone clicks on veiw all search result',
   HOMEPAGE_SEARCH_BAR_QUERY_INPUT = 'Homepage Search Bar Query Input',
   SCREEN_SCROLLED = 'Screen Scrolled',
@@ -1475,10 +1474,7 @@ export interface CleverTapEvents {
     'Split Cart'?: YesOrNo;
     'Coupon Applied'?: string;
     'Prescription Option selected'?: PrescriptionOptions;
-    Shipment_1_Value?: number; // amount after discount
-    Shipment_2_Value?: number;
-    Shipment_1_Items?: number; // number of items
-    Shipment_2_Items?: number;
+    Shipment: object[];
   };
   [CleverTapEventName.PHARMACY_PAYMENT_INITIATED]: {
     paymentMode: string;
@@ -1643,10 +1639,6 @@ export interface CleverTapEvents {
 
   [CleverTapEventName.PHARMACY_CART_REVIEW_ORDER_PAGE_VIEWED]: {
     Pincode: string;
-    TAT_1_Hour: string;
-    TAT_1_Day: number;
-    TAT_2_Hour?: string;
-    TAT_2_Day?: number;
     Shipping_Charges: number;
     Amount_To_Pay: number;
     Prescription_Required: YesOrNo;
@@ -1656,6 +1648,7 @@ export interface CleverTapEvents {
     Circle_Membership_Value?: number;
     User_Type: string;
     User_Mobile_Number: string;
+    Shipment: object[];
   };
 
   // ********** Diagnostic Events *******
@@ -2343,14 +2336,7 @@ export interface CleverTapEvents {
     'User type'?: PharmaUserStatus;
     'Split cart': YesOrNo;
     'Cart items': string;
-    'Shipment1 TAT'?: Date;
-    'Shipment2 TAT'?: Date;
-    'Shipment1 value'?: number; // amount after discount
-    'Shipment2 value'?: number;
-    'Shipment1 items'?: number; // number of items
-    'Shipment2 items'?: number;
-    'Shipment1 site type'?: SiteType;
-    'Shipment2 site yype'?: SiteType;
+    Shipment?: object[];
   };
 
   [CleverTapEventName.PHARMACY_CART_ADDRESS_SELECTED_FAILURE]: {

@@ -27,6 +27,7 @@ import {
   PaymentStatus,
   OrderCreate,
   OrderVerticals,
+  PlanPurchaseType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -64,6 +65,7 @@ import {
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 interface props extends NavigationScreenProps {
   visible: boolean;
   closeModal: ((planActivated?: boolean) => void) | null;
@@ -95,6 +97,7 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
     Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
+  const { isRenew } = useAppCommonData();
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
   const defaultPlanSellingPrice = defaultCirclePlan?.currentSellingPrice;
   planActivated.current = circlePaymentDone ? true : planActivated.current;
@@ -226,6 +229,9 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
               HC_used: defaultPlanSellingPrice,
             },
             transaction_date_time: new Date().toISOString(),
+            source_meta_data: {
+              purchase_type: isRenew ? PlanPurchaseType.renew : PlanPurchaseType.first_time,
+            },
           },
         },
         fetchPolicy: 'no-cache',

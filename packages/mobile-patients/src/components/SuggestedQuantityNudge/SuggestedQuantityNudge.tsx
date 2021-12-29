@@ -13,6 +13,8 @@ import {
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
+import { CartInputData } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 export interface SuggestedQuantityNudgeProps {
   suggested_qty: string | null;
@@ -38,9 +40,10 @@ export const SuggestedQuantityNudge: React.FC<SuggestedQuantityNudgeProps> = (pr
   } = props;
 
   const { pharmacyCircleAttributes } = useShoppingCart();
-  const { setUserActionPayload } = useServerCart();
+  const { saveServerCart } = useServerCart();
 
   const { serverCartItems } = useShoppingCart();
+  const { currentPatient } = useAllCurrentPatients();
   const [selectedQuantity, setSelectedQuantity] = useState<number>(+suggested_qty);
   const title = 'Recommended for monthly purchase';
   const mainText = 'It is recommended that you to buy ';
@@ -152,14 +155,18 @@ export const SuggestedQuantityNudge: React.FC<SuggestedQuantityNudgeProps> = (pr
                       const itemAddedFromNudge = serverCartItems?.find(
                         ({ sku }) => sku?.toUpperCase() === sku?.toUpperCase()
                       );
-                      setUserActionPayload?.({
-                        medicineOrderCartLineItems: [
-                          {
-                            medicineSKU: sku,
-                            quantity: 1,
-                          },
-                        ],
-                      });
+                      const cartInputData: CartInputData = {
+                        ...{
+                          medicineOrderCartLineItems: [
+                            {
+                              medicineSKU: sku,
+                              quantity: selectedQuantity,
+                            },
+                          ],
+                        },
+                        patientId: currentPatient?.id,
+                      };
+                      saveServerCart(cartInputData);
                       setCurrentProductQuantityInCart(selectedQuantity);
 
                       const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART] = {

@@ -24,6 +24,8 @@ export interface OrderCancelComponentProps {
   setSelectedReasonBucket: (
     bucketItem: getMedicineOrderCancelReasonsV2_getMedicineOrderCancelReasonsV2_cancellationReasonBuckets[]
   ) => void;
+  setClick?: (click: string) => void;
+  setSubheading?: (heading: string) => void;
 }
 
 export const OrderCancelComponent: React.FC<OrderCancelComponentProps> = (props) => {
@@ -43,6 +45,8 @@ export const OrderCancelComponent: React.FC<OrderCancelComponentProps> = (props)
     newCancellationReasonsBucket,
     selectedReasonBucket,
     setSelectedReasonBucket,
+    setClick,
+    setSubheading,
   } = props;
 
   const [isReasonSelected, setIsReasonSelected] = useState<boolean>(false);
@@ -271,13 +275,17 @@ export const OrderCancelComponent: React.FC<OrderCancelComponentProps> = (props)
           setSelectedReasonBucket([]);
           setSelectedReason('');
           setSelectedSubReason('');
+          setClick && setClick('');
+          setSubheading && setSubheading('');
         }}
       >
         <View style={styles.container}>
           <View style={{ justifyContent: 'flex-end', flex: 1 }}>
             <View style={styles.bottomSheetStyle}>
-              {content()}
-              {bottomButton()}
+              <TouchableOpacity onPress={() => {}}>
+                {content()}
+                {bottomButton()}
+              </TouchableOpacity>
             </View>
           </View>
         </View>

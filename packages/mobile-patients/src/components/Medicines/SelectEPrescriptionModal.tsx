@@ -95,13 +95,14 @@ const styles = StyleSheet.create({
     width: 250,
     height: 340,
     alignSelf: 'center',
+    marginBottom: 50,
   },
   selectButtonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     position: 'absolute',
     bottom: 10,
-    width: '108%',
+    width: 260,
   },
   selectButton: {
     ...theme.viewStyles.cardViewStyle,

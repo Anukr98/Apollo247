@@ -284,6 +284,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setBannerData,
     bannerData,
     pharmacyUserType,
+    setIsRenew,
   } = useAppCommonData();
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const {
@@ -314,6 +315,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setNewAddressAdded,
     setAddToCartSource,
     cartCircleSubscriptionId,
+    locationCode,
   } = useShoppingCart();
   const {
     setUserActionPayload,
@@ -335,6 +337,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [buyAgainLoading, setBuyAgainLoading] = useState<boolean>(true);
   const [showCirclePopup, setShowCirclePopup] = useState<boolean>(false);
   const [pageLoading, setPageLoading] = useState<boolean>(false);
+  const [searchItemLoading, setSearchItemLoading] = useState<{ [key: string]: boolean }>({});
+  const [searchItemAdded, setSearchItemAdded] = useState<string>('');
 
   const [recommendedProducts, setRecommendedProducts] = useState<MedicineProduct[]>([]);
   const [data, setData] = useState<MedicinePageAPiResponse | null>(medicinePageAPiResponse);
@@ -941,6 +945,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             hideAphAlert!();
             showAccessAccessLocationPopup(addressList, true);
           }}
+          source={'pharmacy'}
+          selectedCartAddress={cartAddressId}
         />
       ) : (
         <PincodeInput
@@ -1071,7 +1077,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             } as MedicineProduct)
         );
       if (formattedRecommendedProducts?.length >= 5) {
-        setRecommendedProducts(formattedRecommendedProducts);
+        setRecommendedProducts(formattedRecommendedProducts?.slice(0, 9));
 
         cache.set('recomended_product', formattedRecommendedProducts);
 
@@ -1718,19 +1724,21 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
 
       if (data) {
-        if (data?.APOLLO?.[0]._id) {
-          AsyncStorage.setItem('circleSubscriptionId', data?.APOLLO?.[0]._id);
-          setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
+        const circleData = data?.APOLLO?.[0];
+        if (circleData._id) {
+          AsyncStorage.setItem('circleSubscriptionId', circleData._id);
+          setCircleSubscriptionId && setCircleSubscriptionId(circleData._id);
           setIsCircleSubscription && setIsCircleSubscription(true);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
           const planValidity = {
-            startDate: data?.APOLLO?.[0]?.start_date,
-            endDate: data?.APOLLO?.[0]?.end_date,
-            plan_id: data?.APOLLO?.[0]?.plan_id,
-            source_identifier: data?.APOLLO?.[0]?.source_meta_data?.source_identifier,
+            startDate: circleData?.start_date,
+            endDate: circleData?.end_date,
+            plan_id: circleData?.plan_id,
+            source_identifier: circleData?.source_meta_data?.source_identifier,
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
-          if (data?.APOLLO?.[0]?.status === 'disabled') {
+          setIsRenew && setIsRenew(!!circleData?.renewNow);
+          if (circleData?.status === 'disabled') {
             setIsCircleExpired && setIsCircleExpired(true);
             setNonCircleValues();
           } else {
@@ -1941,12 +1949,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [searchText, setSearchText] = useState<string>('');
   const [medicineList, setMedicineList] = useState<(MedicineProduct | SearchSuggestion)[]>([]);
   const [isSearchFocused, setSearchFocused] = useState(false);
-  const [itemsLoading, setItemsLoading] = useState<{ [key: string]: boolean }>({});
   const [medicineSearchLoading, setMedicineSearchLoading] = useState<boolean>(false);
 
-  const onSearchMedicine = (_searchText: string) => {
+  const onSearchMedicine = (
+    _searchText: string,
+    pharmacyPincode: string,
+    locationCode: string,
+    axdcCode: string
+  ) => {
     setMedicineSearchLoading(true);
-    getMedicineSearchSuggestionsApi(_searchText, axdcCode, pharmacyPincode)
+    getMedicineSearchSuggestionsApi(_searchText, axdcCode, pharmacyPincode, locationCode)
       .then(({ data }) => {
         const products = data.products || [];
         const queries = data.queries || [];
@@ -1996,7 +2008,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   useEffect(() => {
-    debounce.current(searchText);
+    debounce.current(searchText, pharmacyPincode || '', locationCode, axdcCode);
   }, [searchText]);
 
   useEffect(() => {
@@ -2015,9 +2027,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   useEffect(() => {}, [showSuggestedQuantityNudge]);
 
-  const onSearch = (searchText: string) => {
+  const onSearch = (
+    searchText: string,
+    pharmacyPincode: string,
+    locationCode: string,
+    axdcCode: string
+  ) => {
     if (searchText.length >= 3) {
-      onSearchMedicine(searchText);
+      onSearchMedicine(searchText, pharmacyPincode || '', locationCode, axdcCode);
     } else {
       setMedicineList([]);
       setMedicineSearchLoading(false);
@@ -2104,13 +2121,21 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const client = useApolloClient();
 
+  useEffect(() => {
+    if (!serverCartLoading && searchItemAdded) {
+      setSearchItemLoading({ ...searchItemLoading, [searchItemAdded]: false });
+      setSearchItemAdded('');
+    }
+  }, [serverCartLoading]);
+
   const onAddCartItem = (
     item: MedicineProduct,
     comingFromSearch: boolean,
     cleverTapSearchSuccessEventAttributes: object
   ) => {
     const { sku, category_id } = item;
-    setItemsLoading({ ...itemsLoading, [sku]: true });
+    setSearchItemAdded(sku);
+    setSearchItemLoading({ ...searchItemLoading, [sku]: true });
     addPharmaItemToCart(
       formatToCartItem(item),
       pharmacyPincode,
@@ -2121,7 +2146,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       !!isPharmacyPincodeServiceable,
       { source: 'Pharmacy Partial Search', categoryId: category_id },
       JSON.stringify(serverCartItems),
-      () => setItemsLoading({ ...itemsLoading, [sku]: false }),
+      () => {},
       pharmacyCircleAttributes!,
       () => {},
       comingFromSearch,
@@ -2256,6 +2281,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           onNotifyMeClick(item?.name);
         }}
         onPressAdd={() => {
+          setSearchItemAdded(item?.sku);
+          setSearchItemLoading({ ...searchItemLoading, [item?.sku]: true });
           const q = getItemQuantity(item?.sku);
           if (q == getMaxQtyForMedicineItem(item?.MaxOrderQty)) return;
           setCurrentProductQuantityInCart(q + 1);
@@ -2269,6 +2296,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           });
         }}
         onPressSubstract={() => {
+          setSearchItemAdded(item?.sku);
+          setSearchItemLoading({ ...searchItemLoading, [item?.sku]: true });
           const q = getItemQuantity(item?.sku);
           setCurrentProductQuantityInCart(q - 1);
           setUserActionPayload?.({
@@ -2282,12 +2311,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         }}
         quantity={getItemQuantity(item?.sku)}
         data={item}
-        loading={itemsLoading[item?.sku]}
+        loading={searchItemLoading[item?.sku]}
         showSeparator={index !== medicineList?.length - 1}
         style={{
           marginHorizontal: 20,
           paddingBottom: index == medicineList?.length - 1 ? 20 : 0,
         }}
+        disableAction={searchItemAdded ? true : false}
       />
     );
   };
@@ -2305,7 +2335,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           showsVerticalScrollIndicator={true}
           style={styles.searchResults}
           data={medicineList}
-          extraData={itemsLoading}
+          extraData={searchItemLoading}
           renderItem={renderSearchSuggestionItemView}
         />
         <View style={styles.searchContainer}>
@@ -2419,7 +2449,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           const products = g(data, section_key, 'products');
           const isCategoriesType = g(data, section_key, '0', 'title');
           const filteredProducts = products
-            ? products.filter((product: MedicineProduct) => isProductInStock(product))
+            ? products.filter((product: MedicineProduct) => isProductInStock(product))?.slice(0, 9)
             : null;
 
           return filteredProducts
@@ -2585,6 +2615,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         onDidBlur={postScrollScreenEvent}
       />
       <SafeAreaView style={{ ...viewStyles.container }}>
+        <View style={{ backgroundColor: 'white' }}>
+          {renderTopView()}
+          {renderSearchInput()}
+          {renderSearchResults()}
+        </View>
         <KeyboardAwareScrollView
           ref={scrollViewRef}
           bounces={false}
@@ -2606,14 +2641,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               );
           }}
         >
-          <View style={{ backgroundColor: 'white' }}>
-            {renderTopView()}
-            {renderSearchInput()}
-            {renderSearchResults()}
-          </View>
-
           {pageLoading ? renderMedicinesShimmer() : null}
-
           <View style={{ flex: 1, paddingBottom: !!serverCartItems?.length ? 80 : 0 }}>
             {renderSections()}
             {renderOverlay()}

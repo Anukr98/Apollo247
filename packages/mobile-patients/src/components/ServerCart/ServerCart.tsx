@@ -85,6 +85,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
     pharmacyCircleAttributes,
     serverCartErrorMessage,
     setServerCartErrorMessage,
+    isSplitCart,
   } = useShoppingCart();
   const shoppingCart = useShoppingCart();
   const { pharmacyUserTypeAttribute } = useAppCommonData();
@@ -110,6 +111,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
     if (!addresses?.length) fetchAddress();
     if (!cartSuggestedProducts?.length) fetchProductSuggestions();
     firePharmacyCartViewedEvent();
+    fireAddressSelectedEvent(selectedAddress)
   }, []);
 
   useEffect(() => {
@@ -174,6 +176,21 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
       }, 3000);
     }
   }, [showCouponImage]);
+
+  const fireAddressSelectedEvent = async (selectedAddress: any) => {
+    if(selectedAddress) {
+      const eventAttributes = {
+        address: formatAddress(selectedAddress),
+        'Circle membership added': pharmacyCircleAttributes?.['Circle Membership Added'],
+        'Circle membership value': pharmacyCircleAttributes?.['Circle Membership Value'] ? pharmacyCircleAttributes?.['Circle Membership Value'] : 0,
+        "Split Cart": isSplitCart ? "Yes" : "No",
+        Pincode: selectedAddress?.zipcode,
+        'User Type': await AsyncStorage.getItem('PharmacyUserType'),
+        'TAT': cartTat
+      }
+      postCleverTapEvent(CleverTapEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS, eventAttributes)
+    }
+  }
 
   const showUnServiceableItemsAlert = (
     unserviceableCartItems: saveCart_saveCart_data_medicineOrderCartLineItems[]
@@ -265,6 +282,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
             hideAphAlert!();
           }}
           onPressSelectAddress={(address) => {
+            fireAddressSelectedEvent(address)
             setUserActionPayload?.({
               patientAddressId: address.id,
               zipcode: address.zipcode,

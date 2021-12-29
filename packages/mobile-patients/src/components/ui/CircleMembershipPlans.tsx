@@ -63,6 +63,7 @@ import {
   OrderVerticals,
   PLAN_ID,
   PLAN,
+  PlanPurchaseType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import moment from 'moment';
@@ -163,7 +164,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     circleMembershipCharges,
     setCircleSubPlanId,
     circleSubscriptionId,
-    cartItems,
+    serverCartItems,
     circlePlanValidity,
   } = useShoppingCart();
   const totalCashBack = serverCartAmount?.totalCashBack?.toFixed(2) || cartTotalCashback || 0;
@@ -469,6 +470,9 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
           HC_used: 0,
         },
         transaction_date_time: new Date().toISOString(),
+        source_meta_data: {
+          purchase_type: isRenew ? PlanPurchaseType.renew : PlanPurchaseType.first_time,
+        },
       },
     };
     return client.mutate<CreateUserSubscription, CreateUserSubscriptionVariables>({
@@ -915,7 +919,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
             '{price}',
             circlePlanSelected?.currentSellingPrice
           )
-      : !cartItems?.length
+      : !serverCartItems?.length
       ? !circlePlanSelected
         ? string.circleDoctors.upgrade
         : string.circleDoctors.upgradeWithPrice.replace(
@@ -982,7 +986,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
               }
             }
           } else if (from === string.banner_context.PHARMACY_HOME) {
-            if (!cartItems?.length) {
+            if (!serverCartItems?.length) {
               closeModal?.();
               props.navigation.navigate(AppRoutes.SubscriptionCart, { circleEventSource });
             } else {

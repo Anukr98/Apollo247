@@ -833,7 +833,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         });
         break;
       case 'subscription':
-        const params = orderDetails?.circleParams;
+        let params = orderDetails?.circleParams;
+        params['paymentStatus'] = paymentStatus;
         goToConsultRoom(props.navigation, params);
         break;
       case 'vaccination':

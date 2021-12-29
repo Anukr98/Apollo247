@@ -1516,7 +1516,8 @@
     "packageDetail": "PACKAGE DETAIL",
     "prodeedToPay": "PROCEED TO PAY",
     "cancelSubscription": "CANCEL SUBSCRIPTION",
-    "cancellationPolicy": "CANCELLATION POLICY"
+    "cancellationPolicy": "CANCELLATION POLICY",
+    "bookOneTap": "Book One Tap Now"
   },
   "consultPackages": {
     "infoTitle": "How does it work?",
@@ -1536,8 +1537,8 @@
     "patientSelectionGuide": "Make sure to add valid patient details, it will be reflected on Prescription and Invoice",
     "oneTapConsultation": "ONE TAP CONSULTATION",
     "myPackages": "MY PACKAGES",
-    "morePackagesForYour":"More Packages For You",
-    "packagesAndPlans":"Packages & Plans",
+    "morePackagesForYour": "More Packages For You",
+    "packagesAndPlans": "Packages & Plans",
     "bookedConsult": "Consultations Booked",
     "validTill": "Valid Till",
     "doctorBookingInfo": "Your doctor will be available at the earliest!",
@@ -1547,10 +1548,10 @@
     "consultConfirmation": "CONSULTATION CONFIRMATION",
     "orderId": "Order ID : ",
     "viewALL": "VIEW ALL",
-    "consultNow":"CONSULT NOW",
-    "paymentPendingBooking":"Please wait while we proccess your payment. You can book consultation from specilaty screen later."
+    "consultNow": "CONSULT NOW",
+    "paymentPendingBooking": "Please wait while we proccess your payment. You can book consultation from specilaty screen later."
   },
-    "askApollo": {
+  "askApollo": {
     "mobileNumber": "Mobile Number",
     "emailId": "Email ID",
     "patientName": "Patient Name",
@@ -1566,7 +1567,7 @@
     "referAndEarn": "Refer & Earn",
     "referAndEarnLine2": "Your friends get ₹100 on signup",
     "earnNow": "Earn Now",
-    "willBeCreditSoon":"Will be credited in a few mins*",
+    "willBeCreditSoon": "Will be credited in a few mins*",
     "yourFriendGot": "Your friend get ₹100 on signup & you get ₹100 on their first order.",
     "onSignUp": "on signup &",
     "youGet": "You get",
@@ -1577,7 +1578,7 @@
     "friendReceiveRs": "Friend receives ₹{referShareAmount} on signup",
     "youReceive": "You get ₹{referShareAmount} on their first\ntransaction",
     "notValidForOrder": "Not valid for order below ₹{validRuppes}*",
-    "onceOrderGetDelivered":"once order get delivered",
+    "onceOrderGetDelivered": "once order get delivered",
     "termsAndCondition": "Terms and Condition",
     "FAQs": "FAQs",
     "checkRewards": "Check Rewards",

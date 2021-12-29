@@ -33,9 +33,9 @@ export const SpecialOffersScreen: React.FC<SpecialOffersScreenProps> = (props) =
   const [loading, setLoading] = useState<boolean>(true);
   const { showAphAlert } = useUIElements();
   const [widgetOrderData, setWidgetOrderData] = useState<SpecialOfferWidgetsData[]>([]);
-  const [categoryData, setCategoryData] = useState<SpecialOffersCategoryApiResponse>();
+  const [categoryData, setCategoryData] = useState<SpecialOffersCategoryApiResponse[]>();
   const [offersData, setOffersData] = useState<SpecialOffersCouponsApiResponse>();
-  const [brandsData, setBrandsData] = useState<SpecialOffersBrandsApiResponse>();
+  const [brandsData, setBrandsData] = useState<SpecialOffersBrandsApiResponse[]>();
   const totalResponsesGenerated = [1, 1, 0, 0, 0];
   const [widgetArray, setWidgetArray] = useState([
     'Carousel Banner',
@@ -53,12 +53,12 @@ export const SpecialOffersScreen: React.FC<SpecialOffersScreenProps> = (props) =
   }, []);
 
   useEffect(() => {
-    if (widgetOrderData) {
+    if (widgetOrderData?.length) {
       const widget = [...widgetOrderData];
-      const newArr = widget.sort((a, b) => a?.widgetRank?.localeCompare(b.widgetRank));
-      const widgetArrayOrder = newArr.map((ele) => {
-        if (+ele.widgetRank > 0) {
-          return ele.widgetTitle;
+      const newArr = widget?.sort((a, b) => a?.widgetRank?.localeCompare(b?.widgetRank));
+      const widgetArrayOrder = newArr?.map((ele) => {
+        if (+ele?.widgetRank > 0) {
+          return ele?.widgetTitle;
         }
       });
       setWidgetArray(widgetArrayOrder);
@@ -68,7 +68,7 @@ export const SpecialOffersScreen: React.FC<SpecialOffersScreenProps> = (props) =
   const fetchCouponsData = async () => {
     try {
       const offersResponse = await getSpecialOffersPageCoupons();
-      setOffersData(offersResponse.data);
+      setOffersData(offersResponse?.data);
       totalResponsesGenerated[2] = 1;
     } catch (e) {
       totalResponsesGenerated[2] = 1;
@@ -77,7 +77,7 @@ export const SpecialOffersScreen: React.FC<SpecialOffersScreenProps> = (props) =
         description: "We're sorry! Unable to fetch products right now, please try later.",
       });
     }
-    if (totalResponsesGenerated.every((val, i, arr) => val === arr[0])) {
+    if (totalResponsesGenerated?.every((val, i, arr) => val === arr?.[0])) {
       setLoading(false);
     }
   };
@@ -85,7 +85,7 @@ export const SpecialOffersScreen: React.FC<SpecialOffersScreenProps> = (props) =
   const fetchCategoryData = async () => {
     try {
       const categoryResponse = await getSpecialOffersPageCategory();
-      setCategoryData(categoryResponse.data);
+      if (categoryResponse?.data) setCategoryData(categoryResponse?.data);
       totalResponsesGenerated[3] = 1;
     } catch (e) {
       totalResponsesGenerated[3] = 1;
@@ -94,7 +94,7 @@ export const SpecialOffersScreen: React.FC<SpecialOffersScreenProps> = (props) =
         description: "We're sorry! Unable to fetch products right now, please try later.",
       });
     }
-    if (totalResponsesGenerated.every((val, i, arr) => val === arr[0])) {
+    if (totalResponsesGenerated?.every((val, i, arr) => val === arr?.[0])) {
       setLoading(false);
     }
   };
@@ -102,7 +102,7 @@ export const SpecialOffersScreen: React.FC<SpecialOffersScreenProps> = (props) =
   const fetchBrandsData = async () => {
     try {
       const brandResponse = await getSpecialOffersPageBrands();
-      setBrandsData(brandResponse.data);
+      if (brandResponse?.data) setBrandsData(brandResponse?.data);
       totalResponsesGenerated[4] = 1;
     } catch (e) {
       totalResponsesGenerated[4] = 1;
@@ -111,7 +111,7 @@ export const SpecialOffersScreen: React.FC<SpecialOffersScreenProps> = (props) =
         description: "We're sorry! Unable to fetch products right now, please try later.",
       });
     }
-    if (totalResponsesGenerated.every((val, i, arr) => val === arr[0])) {
+    if (totalResponsesGenerated?.every((val, i, arr) => val === arr?.[0])) {
       setLoading(false);
     }
   };
@@ -142,23 +142,25 @@ export const SpecialOffersScreen: React.FC<SpecialOffersScreenProps> = (props) =
         renderSpecialOffersPageShimmer()
       ) : (
         <ScrollView>
-          {widgetArray.map((widget) => {
+          {widgetArray?.map((widget) => {
             switch (widget) {
               case 'Carousel Banner':
                 {
-                  return medicineHomeBannerData ? (
+                  return !!medicineHomeBannerData?.length ? (
                     <BannerSection navigation={props.navigation} />
                   ) : null;
                 }
                 break;
               case 'Offers':
                 {
-                  return offersData ? <CouponsSection offersdata={offersData.response} /> : null;
+                  return !!offersData?.response?.length ? (
+                    <CouponsSection offersdata={offersData?.response} />
+                  ) : null;
                 }
                 break;
               case 'Deals by Category':
                 {
-                  return categoryData ? (
+                  return !!categoryData?.length ? (
                     <DealsByCategorySection
                       categoryData={categoryData}
                       navigation={props.navigation}
@@ -168,14 +170,14 @@ export const SpecialOffersScreen: React.FC<SpecialOffersScreenProps> = (props) =
                 break;
               case 'Top Deals on Brands':
                 {
-                  return brandsData ? (
+                  return !!brandsData?.length ? (
                     <DealsByBrandsSection brandsData={brandsData} navigation={props.navigation} />
                   ) : null;
                 }
                 break;
               case 'Offers for you':
                 {
-                  return medicineHotSellersData ? (
+                  return !!medicineHotSellersData?.length ? (
                     <HotSellersSection navigation={props.navigation} />
                   ) : null;
                 }

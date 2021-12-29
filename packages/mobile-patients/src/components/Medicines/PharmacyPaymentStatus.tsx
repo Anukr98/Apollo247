@@ -111,6 +111,7 @@ import { PrescriptionInfoView } from '@aph/mobile-patients/src/components/Medici
 import { ReferralBanner } from '@aph/mobile-patients/src/components/ui/ReferralBanner';
 import { useReferralProgram } from '@aph/mobile-patients/src/components/ReferralProgramProvider';
 import remoteConfig from '@react-native-firebase/remote-config';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 enum SUBSTITUTION_RESPONSE {
   OK = 'OK',
@@ -135,6 +136,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     consultProfile,
     serverCartAmount,
   } = useShoppingCart();
+  const { fetchServerCart } = useServerCart();
   const grandTotal = serverCartAmount?.cartTotal;
   const cartTotalCashback = serverCartAmount?.totalCashBack;
   const deliveryCharges = serverCartAmount?.isDeliveryFree ? 0 : serverCartAmount?.deliveryCharges;
@@ -252,6 +254,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         fireCirclePlanActivatedEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
         fireCirclePurchaseEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
         appReviewAndRating();
+        fetchServerCart();
       })
       .catch((error) => {
         setLoading(false);

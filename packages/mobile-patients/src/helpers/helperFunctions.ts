@@ -15,6 +15,7 @@ import {
   getDiagnosticDoctorPrescriptionResults,
   autoCompletePlaceSearch,
   pinCodeServiceabilityApi247,
+  getLocationCode,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -4278,5 +4279,42 @@ export const shareDocument = async (
     CommonBugFender('shareDocument_helperFunction', error);
   }
   return viewReportOrderId;
+};
+
+export const setLocationCodeFromApi = (pincode: string, setLocationCode: ((value: string) => void) | null, locationCode: string) => {
+  if (pincode) {
+    getLocationCode(pincode)
+    .then((response) => {
+      const code = response?.data?.sr_code;
+      if (code && code !== locationCode) {
+        setLocationCode?.(code);
+      }
+    })
+    .catch((error) => {
+      CommonBugFender('setLocationCodeFromApi_helperFunction', error);
+    })
+  }
+}
+
+export const getShipmentAndTatInfo = (shipments) => {
+  return shipments.map((shipment) => {
+    const { tat, estimatedAmount, items } = shipment;
+    const tatDate = tat ? tat : null;
+    const tatDayDifference = tatDate
+      ? moment(tatDate).diff(new Date(), 'd')
+      : null;
+    const tatHourDifference = tatDate
+      ? moment(tatDate).format('hh:mm a')
+      : null;
+
+    const skuIds = items.map(({ sku }) => sku).join(" , ");
+    return {
+      tatDayDifference,
+      tatHourDifference,
+      estimatedAmount,
+      skuIds,
+      tat,
+    };
+  });
 };
 
