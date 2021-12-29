@@ -896,8 +896,6 @@ export const CashbackIcon: React.FC<IconProps> = (props) => (
   />
 );
 
-
-
 export const ToggleOn: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ height: 32, width: 32 }}
@@ -2772,5 +2770,21 @@ export const OffersIconGreen: React.FC<IconProps> = (props) => (
     size="sm"
     {...props}
     source={require('@aph/mobile-patients/src/components/ui/icons/offersIconGreen.webp')}
+  />
+);
+
+export const PriceTagIcon: React.FC<IconProps> = (props) => (
+  <Image
+    style={[props.style]}
+    source={require('@aph/mobile-patients/src/images/signUp/price-tag.webp')}
+    {...props}
+  />
+);
+
+export const CalendarIcon: React.FC<IconProps> = (props) => (
+  <Image
+    style={[props.style]}
+    source={require('@aph/mobile-patients/src/images/signUp/calendarIcon.webp')}
+    {...props}
   />
 );

@@ -427,7 +427,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
             <BackArrow />
           </TouchableOpacity>
           <TextInputComponent
-            label={'Full Name'}
+            label={'First Name'}
             placeholder={'First Name'}
             onChangeText={(text: string) => _setFirstName(text)}
             value={firstName}
