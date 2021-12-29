@@ -851,7 +851,7 @@ const ConfigurationQA2 = {
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
-  WEB_URL_PREFIX : "https://qaapi.apollo247.com"
+  WEB_URL_PREFIX : "https://qapatients.apollo247.com"
 };
 
 // QA3
