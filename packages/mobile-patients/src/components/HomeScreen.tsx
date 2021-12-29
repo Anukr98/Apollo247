@@ -5780,7 +5780,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           Speciality: data?.speciality,
           Vertical: 'Consult',
         });
-        pdp
+        !nav_props?.isSpeciality
           ? props.navigation.navigate(AppRoutes.DoctorDetails, nav_props)
           : props.navigation.navigate(AppRoutes.DoctorSearchListing, nav_props);
         break;
@@ -5864,11 +5864,21 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             urlKey: item?.url_key,
           }
         : key === MedicalRecordType.CONSULTATION
-        ? {
-            specialities: [item?.specialtydisplayName],
-            MoveDoctor: 'MoveDoctor',
-            doctorId: item?.id,
-          }
+        ? item?.__typename == 'Specialty'
+          ? {
+              isSpeciality: true,
+              callSaveSearch: 'false',
+              consultTypeCta: '',
+              isOnlineConsultMode: true,
+              sortBy: 'Availability',
+              specialityId: item?.id,
+              specialityName: item?.specialtydisplayName,
+            }
+          : {
+              specialities: [item?.specialtydisplayName],
+              MoveDoctor: 'MoveDoctor',
+              doctorId: item?.id,
+            }
         : {};
     const data = {
       testName: item?.diagnostic_item_name,
