@@ -4064,8 +4064,6 @@ export const updateCallKitNotificationReceivedStatus = (appointmentId: string) =
       operationName: 'updateCallKitNotificationReceivedStatus',
     }),
   })
-    .then((res) => res.json())
-    .then((result) => {})
     .catch((e) => CommonBugFender('UpdateCallKitNotificationReceivedStatus_fail',e));
 };
 
