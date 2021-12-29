@@ -630,10 +630,6 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     );
   };
 
-  if (props.orderId == 8775) {
-    console.log({ props });
-  }
-
   return (
     <TouchableOpacity
       activeOpacity={1}

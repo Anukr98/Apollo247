@@ -33,6 +33,8 @@ import {
   DIAGNOSTIC_PINCODE_SOURCE_TYPE,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientObj } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
+import { AppConfig, AppEnv } from '@aph/mobile-patients/src/strings/AppConfig';
+const { APP_ENV } = AppConfig;
 
 function createPatientAttributes(currentPatient: any) {
   const patientAttributes = {
@@ -1196,6 +1198,11 @@ export async function DiagnosticOrderPlaced(
       'Patient Age': verticalAttributes?.patientAge,
       'No of patients': JSON.stringify(verticalAttributes?.patientName)?.length,
     };
-    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ORDER_PLACED, cleverTapEventAttributes);
+    postCleverTapEvent(
+      APP_ENV === AppEnv.PROD
+        ? CleverTapEventName.DIAGNOSTIC_ORDER_PLACED
+        : CleverTapEventName.DIAGNOSTIC_ORDER_PLACED_QA,
+      cleverTapEventAttributes
+    );
   } catch (error) {}
 }

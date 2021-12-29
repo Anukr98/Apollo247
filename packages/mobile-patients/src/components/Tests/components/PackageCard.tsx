@@ -459,7 +459,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
       mrpToDisplay, //mrp
       calculatePriceToShow(pricesForItem, packageCalculatedMrp)?.priceToShow, //actual selling price
       source,
-      item?.inclusionData == null || (!!inclusions && inclusions?.length < 1)
+      item?.inclusionData == null || (!!inclusions && inclusions?.length < 2)
         ? DIAGNOSTICS_ITEM_TYPE.TEST
         : DIAGNOSTICS_ITEM_TYPE.PACKAGE,
       widgetType === string.diagnosticCategoryTitle.categoryGrid ||
@@ -531,6 +531,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
       navigation.replace(AppRoutes.TestDetails, {
         itemId: item?.itemId,
         comingFrom: sourceScreen,
+        widgetTitle: widgetTitle,
         testDetails: ({
           Rate: price,
           specialPrice: specialPrice! || price,
@@ -552,6 +553,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
       navigation.navigate(AppRoutes.TestDetails, {
         itemId: item?.itemId,
         comingFrom: sourceScreen,
+        widgetTitle: widgetTitle,
         testDetails: {
           Rate: price,
           specialPrice: specialPrice! || price,

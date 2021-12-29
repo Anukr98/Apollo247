@@ -845,6 +845,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           ? packageRecommendations > 2
             ? 'Recommendations'
             : 'You can also order'
+          : !!widgetTitle
+          ? widgetTitle
           : ''
       );
     }
@@ -1578,19 +1580,14 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         ? testInfo?.inclusions
         : [Number(testInfo?.inclusions)];
     const priceToShow = calculatePriceToShow();
-
     DiagnosticAddToCartEvent(
       cmsTestDetails?.diagnosticItemName || testInfo?.itemName,
       itemId!,
       mrpToDisplay, //mrp
       priceToShow, //actual price
       DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS,
-      testInclusions < 1 ? DIAGNOSTICS_ITEM_TYPE.TEST : DIAGNOSTICS_ITEM_TYPE.PACKAGE,
-      originalItemIds
-        ? packageRecommendations > 2
-          ? 'Recommendations'
-          : 'You can also order'
-        : '',
+      testInclusions?.length < 2 ? DIAGNOSTICS_ITEM_TYPE.TEST : DIAGNOSTICS_ITEM_TYPE.PACKAGE,
+      '',
       currentPatient,
       isDiagnosticCircleSubscription,
       originalItemIds

@@ -37,7 +37,6 @@ export function PaymentInitiated(
   verticalSpecificEventAttributes?: any
 ) {
   try {
-    console.log({ verticalSpecificEventAttributes });
     const eventAttributes: CleverTapEvents[CleverTapEventName.DIAGNOSTIC_PAYMENT_INITIATED] = {
       'Order Amount': grandTotal,
       LOB: LOB,

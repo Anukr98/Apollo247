@@ -82,7 +82,7 @@ import { searchDiagnosticItem_searchDiagnosticItem_data } from '@aph/mobile-pati
 import { DiagnosticsSearchResultItem } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticSearchResultItem';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { DIAGNOSTICS_ITEM_TYPE } from '../../helpers/CleverTapEvents';
+import { DIAGNOSTICS_ITEM_TYPE } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 type searchResults = searchDiagnosticItem_searchDiagnosticItem_data;
 
