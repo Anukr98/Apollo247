@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
   },
   infoIcon: {
-    marginLeft: 7,
+    marginLeft: 4,
     width: 10,
     height: 10,
     marginRight: 2,
@@ -584,13 +584,15 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             onPress={() => openCircleWebView()}
             activeOpacity={1}
           >
-            <Text style={styles.circleDoctorFeeText3}>{string.circleDoctors.circleMemberPays}</Text>
+            <Text style={styles.circleDoctorFeeText3}>
+              {cashbackEnabled ? string.common.circleCashback : string.common.circleDiscount}
+            </Text>
             <View style={styles.rowContainer}>
               <Text style={styles.circleDoctorFeeText4}>
-                {string.common.Rs}
-                {convertNumberToDecimal(circleDoctorSlashedPrice)}
+                {cashbackEnabled
+                  ? `Upto ${cashbackAmount} HC`
+                  : string.common.Rs + convertNumberToDecimal(circleDoctorDiscountedPrice)}
               </Text>
-
               <InfoBlue style={styles.infoIcon} />
               <Text style={styles.circleDoctorFeeText5}>{string.circleDoctors.upgradeNow}</Text>
             </View>
