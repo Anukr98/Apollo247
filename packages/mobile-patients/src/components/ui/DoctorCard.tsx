@@ -1001,60 +1001,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         postCleverTapEvent(CleverTapEventName.DOCTOR_CONNECT_CARD_CLICK, eventAttributes);
       }
     } catch (error) {}
-    try {
-      const eventAttributes:
-        | WebEngageEvents[WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK]
-        | CleverTapEvents[CleverTapEventName.DOCTOR_CARD_CONSULT_CLICK] = {
-        'Patient Name': currentPatient.firstName,
-        'Doctor ID': rowData.id,
-        'Speciality ID': rowData?.specialty?.id,
-        'Doctor Speciality': rowData?.specialty?.name,
-        'Doctor Experience': Number(rowData?.experience),
-        'Hospital Name': rowData?.doctorHospital?.[0]?.facility?.name,
-        'Hospital City': rowData?.doctorHospital?.[0]?.facility?.city,
-        'Availability Minutes': getTimeDiff(rowData?.slot),
-        Source: 'List',
-        'Patient UHID': currentPatient?.uhid,
-        Relation: currentPatient?.relation,
-        'Patient Age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
-        'Patient Gender': currentPatient?.gender,
-        'Customer ID': currentPatient?.id,
-      };
-      if (props.rowId) {
-        eventAttributes['Rank'] = props.rowId;
-      }
-      postWebEngageEvent(WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK, eventAttributes);
-      postCleverTapEvent(CleverTapEventName.DOCTOR_CARD_CONSULT_CLICK, eventAttributes);
-      const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED] = {
-        'Patient name': currentPatient.firstName,
-        'Doctor ID': rowData.id,
-        'Speciality ID': rowData?.specialty?.id,
-        'Speciality name': rowData?.specialty?.name,
-        Experience: Number(rowData?.experience),
-        'Doctor hospital': rowData?.doctorHospital?.[0]?.facility?.name,
-        'Doctor city': rowData?.doctorHospital?.[0]?.facility?.city,
-        'Available in mins': getTimeDiff(rowData?.slot),
-        Source: 'Doctor card doctor listing screen',
-        'Patient UHID': currentPatient.uhid,
-        Relation: currentPatient?.relation,
-        'Patient age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
-        'Patient gender': currentPatient.gender,
-        'Customer ID': currentPatient.id,
-        User_Type: getUserType(allCurrentPatients),
-        rank: props.rowId || undefined,
-        'Online consult fee':
-          Number(rowData?.onlineConsultationFees) || Number(rowData?.fee) || undefined,
-        'Physical consult fee':
-          Number(rowData?.physicalConsultationFees) || Number(rowData?.fee) || undefined,
-        'Mobile number': currentPatient?.mobileNumber || '',
-        'Circle Member': !!circleSubscriptionId,
-        'Circle Plan type': circleSubPlanId,
-      };
-      postCleverTapEvent(
-        CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED,
-        cleverTapEventAttributes
-      );
-    } catch (error) {}
     props.onPress ? props.onPress(rowData?.id, onlineConsult) : navigateToDetails(rowData?.id);
   };
 
