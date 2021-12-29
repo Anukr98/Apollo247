@@ -158,6 +158,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     !!diagnosticLocation && !isEmptyObject(diagnosticLocation)
       ? diagnosticLocation
       : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_LOCATION;
+  const minorAgeRestrictionRemovalItemIds = AppConfig.Configuration.DIAGNOSTICS_COVID_ITEM_IDS;
 
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
@@ -733,7 +734,11 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   function _onPressPatient(patient: any, index: number) {
     const isInvalidUser = checkPatientAge(patient);
     const hasEmptyValues = checkEmptyPatientValues(patient, index);
-    if (isInvalidUser) {
+    const hasValidItemIdForRestrictionRemoval = cartItems?.find((cartItem) =>
+      minorAgeRestrictionRemovalItemIds?.includes(Number(cartItem?.id))
+    );
+    console.log({ hasValidItemIdForRestrictionRemoval });
+    if (isInvalidUser && !!hasValidItemIdForRestrictionRemoval) {
       renderBelowAgePopUp();
     } else if (hasEmptyValues) {
       setShowPatientDetailsOverlay(true);
@@ -900,13 +905,16 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
       isPresent && isPresent?.cartItems?.filter((item) => item?.isSelected);
 
     const showGreenBg = !!patientSelectedItems && patientSelectedItems?.length > 0;
+    const isMinorAge = checkPatientAge(item);
 
     const itemViewStyle = [
       styles.patientItemViewStyle,
       index === 0 && { marginTop: 12 },
+      isMinorAge && { backgroundColor: 'rgb(252,252,251)' },
       showGreenBg && { backgroundColor: APP_GREEN },
     ];
 
+    const minorAgeTextOpacity = isMinorAge && { opacity: 0.6 };
     return (
       <View
         style={[
@@ -921,21 +929,44 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
           style={itemViewStyle}
           onPress={() => _onPressPatient(item, index)}
         >
-          <Text style={[styles.patientNameTextStyle, showGreenBg && { color: WHITE }]}>
-            {patientSalutation} {patientName}
-          </Text>
-          <Text style={[styles.genderAgeTextStyle, showGreenBg && { color: WHITE }]}>
-            {genderAgeText}
-          </Text>
-          <View style={styles.arrowIconView}>
-            {!showGreenBg ? (
-              <MinusPatientCircleIcon style={[styles.arrowStyle]} />
-            ) : (
-              <AddPatientCircleIcon style={[styles.arrowStyle]} />
-            )}
+          <View style={{ flexDirection: 'row' }}>
+            <Text
+              style={[
+                styles.patientNameTextStyle,
+                minorAgeTextOpacity,
+                showGreenBg && { color: WHITE },
+              ]}
+            >
+              {patientSalutation} {patientName}
+            </Text>
+            <Text
+              style={[
+                styles.genderAgeTextStyle,
+                minorAgeTextOpacity,
+                showGreenBg && { color: WHITE },
+              ]}
+            >
+              {genderAgeText}
+            </Text>
+            <View style={styles.arrowIconView}>
+              {!showGreenBg ? (
+                <MinusPatientCircleIcon style={[styles.arrowStyle]} />
+              ) : (
+                <AddPatientCircleIcon style={[styles.arrowStyle]} />
+              )}
+            </View>
           </View>
+          {isMinorAge ? renderMinorPatientText() : null}
         </TouchableOpacity>
         {renderCartItems(item)}
+      </View>
+    );
+  };
+
+  const renderMinorPatientText = () => {
+    return (
+      <View style={styles.minorAgeTextView}>
+        <Text style={styles.minorAgeText}>{string.diagnosticsCartPage.minorAgeTestText}</Text>
       </View>
     );
   };
@@ -1143,7 +1174,6 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   patientItemViewStyle: {
-    flexDirection: 'row',
     flex: 1,
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -1229,4 +1259,8 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   mainContainerView: { marginVertical: 16, flex: 1, padding: 10 },
+  minorAgeText: {
+    ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 1, 16),
+  },
+  minorAgeTextView: { marginTop: 4, marginBottom: 4 },
 });

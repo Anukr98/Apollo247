@@ -781,7 +781,8 @@
     "cartSavings": "Cart Savings",
     "additionalAmount": "Additional amount that needs to be paid",
     "totalCharges": "Total charges",
-    "reviewPagePolicyText":"As an add-on service, you would receive recommendations for relevant tests or packages from our lab personnel"
+    "reviewPagePolicyText":"As an add-on service, you would receive recommendations for relevant tests or packages from our lab personnel",
+    "minorAgeTestText": "We allow only RTPCR bookings for children less than 10 years old"
   },
   "orders": {
     "urOrders": "MY ORDERS",
