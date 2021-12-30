@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import {
   aphConsole,
+  checkPatientAge,
   extractPatientDetails,
   formatAddress,
   formatAddressForApi,
@@ -70,7 +71,6 @@ import {
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   CALL_TO_ORDER_CTA_PAGE_ID,
-  DiagnosticLineItem,
   REPORT_TAT_SOURCE,
   TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -113,7 +113,6 @@ import ItemCard from '@aph/mobile-patients/src/components/Tests/components/ItemC
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 
 type Address = savePatientAddress_savePatientAddress_patientAddress;
-type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
 
 enum SOURCE {
   ADD = 'add',
@@ -947,7 +946,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         });
         const { data } = response;
         const patientAddress = data?.makeAdressAsDefault?.patientAddress;
-        const updatedAddresses = addresses.map((item) => ({
+        const updatedAddresses = addresses?.map((item) => ({
           ...item,
           defaultAddress: patientAddress?.id == item.id ? patientAddress?.defaultAddress : false,
         }));
@@ -1585,6 +1584,16 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   };
 
   const renderMainView = () => {
+    //if minor age patient is there in cart, then don't show recommendations
+    const minorPatientCheckInCart = !!isCartPresent
+      ? isCartPresent?.map((pItem) => {
+          const getPatientDetails = allCurrentPatients?.find(
+            (patient: any) => pItem?.patientId == patient?.id
+          );
+          return checkPatientAge(getPatientDetails);
+        })
+      : [false];
+    const isAllMinorPatients = !minorPatientCheckInCart?.includes(false);
     const shouldShowRecommendations = isModifyFlow
       ? modifiedPatientCart?.length == 0 || modifiedPatientCart?.[0]?.cartItems?.length == 0
       : patientCartItems?.length === 0 || isCartPresent?.length == 0;
@@ -1596,7 +1605,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       <View style={{ margin: 16 }}>
         {renderAddTestOption()}
         {!!isCartEmpty && !isCartEmpty ? renderEmptyCart() : renderCartItems()}
-        {!shouldShowRecommendations
+        {isAllMinorPatients
+          ? null
+          : !shouldShowRecommendations
           ? !!recommedationData && recommedationData?.length > 0
             ? renderCartWidgets()
             : !!alsoAddListData && alsoAddListData?.length > 0 && !hasPackageSKU

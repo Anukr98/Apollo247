@@ -5,14 +5,8 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { GET_PHLEBO_DETAILS } from '@aph/mobile-patients/src/graphql/profiles';
 import {
-  GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
-  GET_PHLEBO_DETAILS,
-  GET_RESCHEDULE_AND_CANCELLATION_REASONS,
-} from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  getDiagnosticOrdersListByMobile,
-  getDiagnosticOrdersListByMobileVariables,
   getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList,
   getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems,
   getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus,
@@ -97,6 +91,8 @@ import {
   diagnosticGetCustomizedSlotsV2,
   diagnosticRescheduleOrder,
   diagnosticsOrderListByParentId,
+  getDiagnosticReasons,
+  getDiagnosticsOrder,
   getPatientPrismMedicalRecordsApi,
   switchDiagnosticOrderPatientId,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
@@ -111,8 +107,6 @@ import {
   getOrderPhleboDetailsBulkVariables,
 } from '@aph/mobile-patients/src/graphql/types/getOrderPhleboDetailsBulk';
 import {
-  getRescheduleAndCancellationReasons,
-  getRescheduleAndCancellationReasonsVariables,
   getRescheduleAndCancellationReasons_getRescheduleAndCancellationReasons,
   getRescheduleAndCancellationReasons_getRescheduleAndCancellationReasons_cancellationReasonsv2,
 } from '@aph/mobile-patients/src/graphql/types/getRescheduleAndCancellationReasons';
@@ -294,20 +288,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
     try {
       setLoading?.(true);
-      client
-        .query<getDiagnosticOrdersListByMobile, getDiagnosticOrdersListByMobileVariables>({
-          query: GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
-          context: {
-            sourceHeaders,
-          },
-          variables: {
-            mobileNumber: currentPatient && currentPatient.mobileNumber,
-            paginated: true,
-            limit: 10,
-            offset: currentOffset,
-          },
-          fetchPolicy: 'no-cache',
-        })
+      getDiagnosticsOrder(client, currentPatient?.mobileNumber, 10, currentOffset)
         .then((data) => {
           const ordersList = data?.data?.getDiagnosticOrdersListByMobile?.ordersList || [];
           const requestedCancelReason =
@@ -347,15 +328,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const getReasons = async (item: any) => {
     let selectedOrderTime = item?.slotDateTimeInUTC;
     try {
-      client
-        .query<getRescheduleAndCancellationReasons, getRescheduleAndCancellationReasonsVariables>({
-          query: GET_RESCHEDULE_AND_CANCELLATION_REASONS,
-          context: {
-            sourceHeaders,
-          },
-          variables: { appointmentDateTimeInUTC: selectedOrderTime },
-          fetchPolicy: 'no-cache',
-        })
+      getDiagnosticReasons(client, selectedOrderTime)
         .then((data) => {
           const reasonList =
             (data?.data
@@ -523,37 +496,32 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       });
   };
 
-  const fetchTestReportResult = useCallback(
-    (order: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList) => {
-      setLoading?.(true);
-      const getVisitId = order?.visitNo;
-      getPatientPrismMedicalRecordsApi(
-        client,
-        !!order?.patientId ? order?.patientId : currentPatient?.id,
-        [MedicalRecordType.TEST_REPORT],
-        'Diagnostics'
-      )
-        .then((data: any) => {
-          const labResultsData = data?.getPatientPrismMedicalRecords_V3?.labResults?.response;
-          let resultForVisitNo = labResultsData?.find(
-            (item: any) => item?.identifier == getVisitId
-          );
-          setLoading?.(false);
-          !!resultForVisitNo
-            ? props.navigation.navigate(AppRoutes.HealthRecordDetails, {
-                data: resultForVisitNo,
-                labResults: true,
-              })
-            : renderReportError(string.diagnostics.responseUnavailableForReport);
-        })
-        .catch((error) => {
-          CommonBugFender('YourOrdersTests_fetchTestReportsData', error);
-          currentPatient && handleGraphQlError(error);
-        })
-        .finally(() => setLoading?.(false));
-    },
-    []
-  );
+  const fetchTestReportResult = useCallback((order: orderList) => {
+    setLoading?.(true);
+    const getVisitId = order?.visitNo;
+    getPatientPrismMedicalRecordsApi(
+      client,
+      !!order?.patientId ? order?.patientId : currentPatient?.id,
+      [MedicalRecordType.TEST_REPORT],
+      'Diagnostics'
+    )
+      .then((data: any) => {
+        const labResultsData = data?.getPatientPrismMedicalRecords_V3?.labResults?.response;
+        let resultForVisitNo = labResultsData?.find((item: any) => item?.identifier == getVisitId);
+        setLoading?.(false);
+        !!resultForVisitNo
+          ? props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+              data: resultForVisitNo,
+              labResults: true,
+            })
+          : renderReportError(string.diagnostics.responseUnavailableForReport);
+      })
+      .catch((error) => {
+        CommonBugFender('YourOrdersTests_fetchTestReportsData', error);
+        currentPatient && handleGraphQlError(error);
+      })
+      .finally(() => setLoading?.(false));
+  }, []);
 
   const renderReportError = (message: string) => {
     showAphAlert?.({
@@ -613,7 +581,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     try {
       const dt = moment(selectedOrder?.slotDateTimeInUTC)?.format('YYYY-MM-DD') || null;
       const tm = moment(selectedOrder?.slotDateTimeInUTC)?.format('hh:mm A') || null; //format changed from hh:mm
-      const timeToCompare = !!tm && moment(tm, 'hh:mm A')?.format('HH:mm');
 
       var getAddressObject = {
         addressLine1: selectedOrder?.patientAddressObj?.addressLine1!,
@@ -862,7 +829,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         setRescheduleSource('');
       })
       .catch((error) => {
-        console.log({ error });
         aphConsole.log({ error });
         setSelectCancelReason('');
         setCancelReasonComment('');
@@ -1454,7 +1420,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     getSlots();
   }
 
-  function _onPressRescheduleNow() {
+  function _onPressRescheduleNow(source: string) {
     if (isMultiUhid && source == 'cancelReschedule') {
       callMultiUhidApi(string.diagnosticsOrders.cancel);
     } else {
@@ -1690,6 +1656,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               : 'Ms.'
             : ''
         }
+        patientDetails={!!order?.patientObj ? order?.patientObj : null}
         showEditIcon={showEditProfileOption}
         showAddTest={showEditProfileOption}
         ordersData={order?.diagnosticOrderLineItems!}
@@ -2150,20 +2117,39 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     refetchOrders();
   }
 
+  function updatePatientSwitchChecks(selectedOrder: orderList) {
+    /* if rtpcr is present in order (only) + irrespective of age => can switch to any user except itself
+     * if rtpcr is present in order (...+ rtpcr) + user >=10 => cannot switch to any user -> exisitng flow
+     */
+    const orderItems = selectedOrder?.diagnosticOrderLineItems;
+    const hasRtpcrInOrder = orderItems?.find((diagItems) =>
+      AppConfig.Configuration.DIAGNOSTICS_COVID_ITEM_IDS.includes(Number(diagItems?.itemId))
+    );
+    if (!!hasRtpcrInOrder && orderItems?.length == 1) {
+      return true;
+    }
+    return false;
+  }
+
+  function _onPressDoneSwitchUhid(selectedPatient: any, removeMinorAge: boolean) {
+    if (removeMinorAge || !checkPatientAge(selectedPatient)) {
+      setPatientListSelectedPatient(selectedPatient);
+      _changeSelectedPatient(selectedPatient);
+    }
+  }
+
   const renderPatientsListOverlay = () => {
     const orderPatient = allCurrentPatients?.find(
       (item: any) => item?.id === selectedOrder?.patientId
     );
+    const updatePatientCheck = updatePatientSwitchChecks(selectedOrder!);
     return (
       <PatientListOverlay
         showCloseIcon={true}
         onCloseIconPress={() => _onPressClosePatientListOverlay()}
         onPressClose={() => _onPressClosePatientListOverlay()}
         onPressDone={(_selectedPatient: any) => {
-          if (!checkPatientAge(_selectedPatient)) {
-            setPatientListSelectedPatient(_selectedPatient);
-            _changeSelectedPatient(_selectedPatient);
-          }
+          _onPressDoneSwitchUhid(_selectedPatient, updatePatientCheck);
         }}
         onPressAddNewProfile={() => {
           setShowPatientListOverlay(false);
@@ -2187,6 +2173,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         responseMessage={switchPatientResponse}
         onCloseError={() => setSwitchPatientResponse('')}
         refetchResult={() => _afterSuccess()}
+        removeAllSwitchRestrictions={updatePatientCheck}
       />
     );
   };

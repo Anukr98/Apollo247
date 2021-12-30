@@ -288,6 +288,7 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
               : 'Ms.'
             : ''
         }
+        patientDetails={!!order?.patientObj ? order?.patientObj : null}
         showAddTest={false}
         ordersData={order?.diagnosticOrderLineItems!}
         showPretesting={false}
