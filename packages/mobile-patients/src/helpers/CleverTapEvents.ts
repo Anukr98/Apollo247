@@ -224,6 +224,7 @@ export enum CleverTapEventName {
   PAYMENT_INITIATED = 'Payment Initiated',
   DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic payment initiated',
   DIAGNOSTIC_ORDER_PLACED = 'Diagnostic order placed',
+  DIAGNOSTIC_ORDER_PLACED_QA = 'Diagnostic order placed - qa',
   DIAGNOSTIC_TRACK_ORDER_VIEWED = 'Diagnostic track order viewed',
   DIAGNOSTIC_ORDER_RESCHEDULE = 'Diagnostic order rescheduled',
   DIAGNOSTIC_FEEDBACK_GIVEN = 'Diagnostic feedback submitted',
@@ -999,6 +1000,28 @@ interface LoginOtpAttributes {
   'Page Name': string;
   value?: YesOrNo;
 }
+
+interface DiagnosticOrderPlacedAttributes{
+  'Order id': any;
+  Pincode: string | number;
+  'Order amount': number; 
+  'Payment Mode'?: 'Cash' | 'Prepaid'; 
+  'Circle discount'?: number;
+  'Appointment Date'?: string;
+  'Appointment time'?: string;
+  'Item Id': any;
+  'Item Name': any,
+  'Item Type': DIAGNOSTICS_ITEM_TYPE;
+  'Item Price': number | string;
+  'Total items in order': number;
+  'Payment type'?: string; 
+  'Circle user': 'Yes' | 'No';
+  'No of patients': number;
+  'Patient Name': any;
+  'Patient Age': any;
+  'Patient Gender': any;
+  'Patient Uhid': any;
+}
 export interface CleverTapEvents {
   // ********** AppEvents ********** \\
 
@@ -1662,27 +1685,8 @@ export interface CleverTapEvents {
     'Circle user'?: string;
   };
   [CleverTapEventName.DIAGNOSTIC_ADD_TO_CART]: DiagnosticAddToCart;
-  [CleverTapEventName.DIAGNOSTIC_ORDER_PLACED]: {
-      'Order id': any;
-      Pincode: string | number;
-      'Order amount': number; // Optional
-      'Payment Mode'?: 'Cash' | 'Prepaid'; // Optional
-      'Circle discount'?: number;
-      'Appointment Date'?: string;
-      'Appointment time'?: string;
-      'Item Id': any;
-      'Item Name': any,
-      'Item Type': DIAGNOSTICS_ITEM_TYPE;
-      'Item Price': number | string;
-      'Total items in order': number;
-      'Payment type'?: string; //for prepaid
-      'Circle user': 'Yes' | 'No';
-      'No of patients': number;
-      'Patient Name': any;
-      'Patient Age': any;
-      'Patient Gender': any;
-      'Patient Uhid': any;
-  };
+  [CleverTapEventName.DIAGNOSTIC_ORDER_PLACED]: DiagnosticOrderPlacedAttributes;
+  [CleverTapEventName.DIAGNOSTIC_ORDER_PLACED_QA]: DiagnosticOrderPlacedAttributes;
   [CleverTapEventName.PAYMENT_INITIATED]: {
     Amount: number;
     LOB: string;
