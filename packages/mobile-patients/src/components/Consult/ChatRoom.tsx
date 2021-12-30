@@ -6487,12 +6487,35 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             title={string.vaccineBooking.proceed}
             style={styles.proceedBtn}
             titleTextStyle={theme.viewStyles.text('SB', 12, theme.colors.WHITE)}
-            onPress={() => setStartAssessment(true)}
+            onPress={() => {
+              setStartAssessment(true);
+              chatInitializedEvent();
+            }}
           />
         </View>
       </View>
     );
   };
+  const chatInitializedEvent = () => {
+    let eventAttributes = {
+      'Appointment Date Time': moment(g(appointmentData, 'appointmentDateTime')).toDate(),
+      'Event date-time': new Date(),
+      'Display ID': appointmentData?.displayId || '',
+      'Consult Mode': appointmentData?.appointmentType || '',
+      'Doctor Category': appointmentData?.doctorInfo?.doctorType || '',
+      'Doctor Name': appointmentData?.doctorInfo?.displayName || '',
+      'Hospital City': appointmentData?.doctorInfo?.doctorHospital?.[0]?.facility?.city || '',
+      'Hospital Name ': appointmentData?.doctorInfo?.doctorHospital?.[0]?.facility?.name || '',
+      Relation: appointmentData?.patientInfo?.relation || '',
+      'Specialty ID': appointmentData?.doctorInfo?.specialty?.id || '',
+      'Specialty Name': appointmentData?.doctorInfo?.specialty?.name || '',
+      'Doctor Id': appointmentData?.doctorInfo?.id || '',
+      platForm: Platform.OS,
+    };
+
+    postCleverTapEvent(CleverTapEventName.VITAL_QUESTION_ASSESSMENT_STARTED, eventAttributes);
+  };
+
   const renderChatView = () => {
     return (
       <View style={{ width: width, height: heightList, marginTop: 0, flex: 1 }}>
