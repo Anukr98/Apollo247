@@ -56,6 +56,12 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'ios' ? 0 : 3,
     color: theme.colors.SHERPA_BLUE,
   },
+  inputErrorMsg: {
+    fontSize: PixelRatio.getFontScale() * 10,
+    color: theme.colors.REMOVE_RED,
+    fontWeight: '400',
+    marginTop: 5,
+  },
 });
 
 export interface FloatingLabelInputComponentProps {
@@ -107,10 +113,10 @@ export const FloatingLabelInputComponent: React.FC<FloatingLabelInputComponentPr
           props.inputStyle,
           {
             borderBottomColor: props.inputError
-              ? '#E31E24'
+              ? theme.colors.REMOVE_RED
               : inputFocusWhileTying
-              ? '#00B38E'
-              : '#02475b',
+              ? theme.colors.APP_GREEN
+              : theme.colors.LIGHT_BLUE,
             borderBottomWidth: inputFocusWhileTying ? 2 : 1,
             fontSize: PixelRatio.getFontScale() * 16,
             paddingLeft: 11,
@@ -185,7 +191,11 @@ export const FloatingLabelInputComponent: React.FC<FloatingLabelInputComponentPr
                 fontSize: !inputFocus
                   ? PixelRatio.getFontScale() * 14
                   : PixelRatio.getFontScale() * 10,
-                color: props.inputError ? '#E31E24' : inputFocusWhileTying ? '#00B38E' : '#02475b',
+                color: props.inputError
+                  ? theme.colors.REMOVE_RED
+                  : inputFocusWhileTying
+                  ? theme.colors.APP_GREEN
+                  : theme.colors.LIGHT_BLUE,
                 fontWeight: '400',
               },
             ]}
@@ -204,18 +214,7 @@ export const FloatingLabelInputComponent: React.FC<FloatingLabelInputComponentPr
         renderTextInput()
       )}
       {props.icon && <View style={styles.iconStyle}>{props.icon}</View>}
-      {props.inputError && (
-        <Text
-          style={{
-            fontSize: PixelRatio.getFontScale() * 10,
-            color: '#E31E24',
-            fontWeight: '400',
-            marginTop: 5,
-          }}
-        >
-          {props.errorMsg}
-        </Text>
-      )}
+      {props.inputError && <Text style={styles.inputErrorMsg}>{props.errorMsg}</Text>}
     </View>
   );
 };

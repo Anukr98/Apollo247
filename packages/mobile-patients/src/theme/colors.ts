@@ -169,7 +169,7 @@ const Common = {
   GREEN_BG: "#F3FFFF",
   LIGHT_REFERRER_AQUA_ONE: "#85e2dc",
   LIGHT_REFERRER_AQUA_TWO: "#FFFCFF",
-  BLUE_REFERRER_BORDER: "#74b9ed"
+  BLUE_REFERRER_BORDER: "#74b9ed",
 };
 
 const Header = {
@@ -237,6 +237,12 @@ const StatusColors = {
   REFUND: lightPaleRed,
 };
 
+const SignupColors = {
+  GRADIENT_LIGHT_YELLOW_ONE: '#F3ECD9',
+  GRADIENT_LIGHT_YELLOW_TWO: '#FFE8AD',
+  RED_BROWN: '#A15D59'
+}
+
 export const colors = {
   ...Buttons,
   ...Card,
@@ -249,4 +255,5 @@ export const colors = {
   ...TabBar,
   ...Capsule,
   ...StatusColors,
+  ...SignupColors
 };

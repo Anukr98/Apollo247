@@ -20,11 +20,7 @@ import {
   CommonBugFender,
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import {
-  UPDATE_PATIENT,
-  CREATE_ONE_APOLLO_USER,
-  INSERT_REFEREE_DATA_TO_REFERRER,
-} from '@aph/mobile-patients/src/graphql/profiles';
+import { UPDATE_PATIENT, CREATE_ONE_APOLLO_USER } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   Gender,
   Relation,
@@ -104,6 +100,8 @@ import { LinearGradientComponent } from '../ui/LinearGradientComponent';
 import { MaterialMenu } from '../ui/MaterialMenu';
 import { FloatingLabelInputComponent } from '../ui/FloatingLabeInputComponent';
 
+const { width, height } = Dimensions.get('window');
+
 type genderOptions = {
   name: string;
 };
@@ -175,6 +173,7 @@ export const SignUpNew: React.FC<SignUpProps> = (props) => {
   const [date, setDate] = useState<string>('');
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
   const [firstName, setFirstName] = useState<string>('');
+  const [genderNotSelectError, setGenderNotSelectError] = useState({ error: false, errorMsg: '' });
   const [lastName, setLastName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [emailValidation, setEmailValidation] = useState<boolean>(false);
@@ -189,6 +188,8 @@ export const SignUpNew: React.FC<SignUpProps> = (props) => {
   const [whatsAppOptIn, setWhatsAppOptIn] = useState<boolean>(false);
   const isOneTimeUpdate = useRef<boolean>(false);
   const [relation, setRelation] = useState<RelationArray>();
+  const client = useApolloClient();
+  const [isSignupEventFired, setSignupEventFired] = useState(false);
 
   const keyboardVerticalOffset = Platform.OS === 'android' ? { keyboardVerticalOffset: 20 } : {};
 
@@ -227,84 +228,16 @@ export const SignUpNew: React.FC<SignUpProps> = (props) => {
     }
   };
 
-  const renderOfferCrousel = () => {
-    return (
-      <Carousel
-        data={[1, 2, 3, 4]}
-        renderItem={({ item }) => (
-          <LinearGradientComponent
-            startOffset={{ x: 0, y: 1 }}
-            endOffset={{ x: 1, y: 0 }}
-            colors={['#F3ECD9', '#FFE8AD']}
-            style={{
-              borderColor: theme.colors.LIGHT_GRAY_2,
-              borderWidth: 1,
-              borderRadius: 5,
-            }}
-          >
-            <View
-              style={{
-                flexDirection: 'row',
-              }}
-            >
-              <View
-                style={{
-                  flex: 0.15,
-                  alignItems: 'center',
-                }}
-              >
-                <PriceTagIcon
-                  style={{
-                    width: 30,
-                    height: 40,
-                  }}
-                />
-              </View>
-              <View
-                style={{
-                  paddingVertical: 12,
-                  alignItems: 'center',
-                  flex: 0.9,
-                }}
-              >
-                <Text
-                  style={{
-                    color: '#A15D59',
-                    fontSize: 17,
-                    fontWeight: 'bold',
-                  }}
-                >
-                  Flat 25% off + ₹100 cashback
-                </Text>
-                <Text
-                  style={{
-                    color: '#A15D59',
-                    fontSize: 12,
-                  }}
-                >
-                  On first medicine order
-                </Text>
-              </View>
-            </View>
-          </LinearGradientComponent>
-        )}
-        sliderWidth={Dimensions.get('window').width}
-        itemWidth={Dimensions.get('window').width - 70}
-      />
-    );
-  };
+  useEffect(() => {
+    const isValidReferralCode = /^[a-zA-Z]{4}[0-9]{4}$/.test(referral);
+    setValidReferral(isValidReferralCode);
+  }, [referral]);
 
-  const renderReferral = () => {
-    return (
-      <FloatingLabelInputComponent
-        maxLength={25}
-        label={'Do You Have A Referral Code? (Optional)'}
-        value={referral}
-        onChangeText={(text) => setReferral(text)}
-        icon={referral.length > 0 ? <WhiteTickIcon /> : null}
-      />
-    );
-  };
+  useEffect(() => {
+    checkPatientData();
+    getDeviceCountAPICall();
+    getPrefillReferralCode();
+  }, []);
 
   useEffect(() => {
     if (gender.toLowerCase() == Gender.MALE.toLowerCase()) {
@@ -396,22 +329,260 @@ export const SignUpNew: React.FC<SignUpProps> = (props) => {
     }
   }, [gender]);
 
+  useEffect(() => {
+    AsyncStorage.setItem('signUp', 'true');
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      try {
+        if (patient) {
+          props.navigation.goBack();
+        } else {
+          if (backPressCount === 1) {
+            BackHandler.exitApp();
+          } else {
+            backPressCount++;
+          }
+        }
+        return true;
+      } catch (e) {
+        CommonBugFender('Sign_up_backpressed', e);
+      }
+    });
+    return function cleanup() {
+      backHandler.remove();
+    };
+  }, []);
+
+  const _postWebEngageEvent = () => {
+    if (isSignupEventFired) {
+      return;
+    }
+    try {
+      const eventAttributes: WebEngageEvents[WebEngageEventName.REGISTRATION_DONE] = {
+        'Customer ID': currentPatient ? currentPatient.id : '',
+        'Customer First Name': firstName.trim(),
+        'Customer Last Name': lastName.trim(),
+        'Date of Birth': currentPatient?.dateOfBirth || Moment(date, 'DD/MM/YYYY').toDate(),
+        Gender:
+          gender === 'Female'
+            ? Gender['FEMALE']
+            : gender === 'Male'
+            ? Gender['MALE']
+            : Gender['OTHER'],
+        Email: email.trim(),
+        'Mobile Number': currentPatient?.mobileNumber,
+      };
+      const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.REGISTRATION_DONE] = {
+        'Customer ID': currentPatient ? currentPatient.id : '',
+        'Full Name': firstName?.trim() + ' ' + lastName?.trim(),
+        DOB: currentPatient?.dateOfBirth || Moment(date, 'DD/MM/YYYY').toDate(),
+        Gender:
+          gender === 'Female'
+            ? Gender['FEMALE']
+            : gender === 'Male'
+            ? Gender['MALE']
+            : Gender['OTHER'],
+        'Email ID': email?.trim(),
+        'Mobile Number': currentPatient?.mobileNumber,
+        'Nav src': 'App login screen',
+        'Page Name': 'Signup Screen',
+      };
+      if (referral) {
+        // only send if referral has a value
+        eventAttributes['Referral Code'] = referral;
+        cleverTapEventAttributes['Referral Code'] = referral;
+      }
+
+      const eventFirebaseAttributes: FirebaseEvents[FirebaseEventName.SIGN_UP] = {
+        Customer_ID: currentPatient ? currentPatient.id : '',
+        Customer_First_Name: firstName.trim(),
+        Customer_Last_Name: lastName.trim(),
+        Date_of_Birth: Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
+        Gender:
+          gender === 'Female'
+            ? Gender['FEMALE']
+            : gender === 'Male'
+            ? Gender['MALE']
+            : Gender['OTHER'],
+        Email: email.trim(),
+      };
+      if (referral) {
+        // only send if referral has a value
+        eventFirebaseAttributes['Referral_Code'] = referral;
+        postWEGReferralCodeEvent(referral);
+      }
+
+      postWebEngageEvent(WebEngageEventName.REGISTRATION_DONE, eventAttributes);
+      postCleverTapEvent(CleverTapEventName.REGISTRATION_DONE, cleverTapEventAttributes);
+      const appsflyereventAttributes: any = {
+        af_customer_user_id: currentPatient ? currentPatient.id : '',
+      };
+      if (referral) {
+        // only send if referral has a value
+        appsflyereventAttributes['referral code'] = referral;
+      }
+      postAppsFlyerEvent(AppsFlyerEventName.REGISTRATION_DONE, appsflyereventAttributes);
+      postFirebaseEvent(FirebaseEventName.SIGN_UP, eventFirebaseAttributes);
+      setSignupEventFired(true);
+    } catch (error) {}
+  };
+
+  const handleOpenURLs = async () => {
+    try {
+      deferredDeepLinkRedirectionData(props.navigation, async () => {
+        const event: any = await AsyncStorage.getItem('deeplink');
+        const data: any = handleOpenURL(event);
+        const { routeName, id, isCall, timeout, mediaSource } = data;
+        pushTheView(
+          props.navigation,
+          routeName,
+          id ? id : undefined,
+          isCall,
+          undefined,
+          undefined,
+          mediaSource
+        );
+      });
+    } catch (error) {}
+  };
+
+  async function createOneApolloUser(patientId: string) {
+    setoneApolloRegistrationCalled(true);
+    if (!oneApolloRegistrationCalled) {
+      try {
+        const response = await client.mutate<createOneApolloUser, createOneApolloUserVariables>({
+          mutation: CREATE_ONE_APOLLO_USER,
+          variables: { patientId: patientId },
+        });
+      } catch (error) {
+        CommonBugFender('oneApollo Registration', error);
+      }
+    }
+  }
+
+  const postAppsFlyerEventAppInstallViaReferral = async (data: any) => {
+    const referralData: any = await AsyncStorage.getItem('app_referral_data');
+    setRefereeFlagForNewRegisterUser(referralData !== null);
+    onCleverTapUserLogin({ ...data?.updatePatient?.patient });
+    if (referralData !== null) {
+      const { af_referrer_customer_id, campaign, rewardId, shortlink } = JSON.parse(referralData);
+      const eventAttribute = {
+        referrer_id: af_referrer_customer_id,
+        referee_id: currentPatient ? currentPatient.id : '',
+        campaign_id: campaign,
+        reward_id: rewardId,
+        short_link: shortlink,
+        device_os: Platform.OS == 'ios' ? 'IOS' : 'ANDROID',
+      };
+      postAppsFlyerEvent(AppsFlyerEventName.REGISTRATION_REFERRER, eventAttribute);
+      AsyncStorage.removeItem('app_referral_data');
+      AsyncStorage.setItem('referrerInstall', 'true');
+    }
+    handleOpenURLs();
+  };
+
+  const getDeviceCountAPICall = async () => {
+    const uniqueId = await DeviceInfo.getUniqueId();
+    setDeviceToken(uniqueId);
+
+    getDeviceTokenCount(client, uniqueId.trim())
+      .then(({ data }: any) => {
+        if (parseInt(data.data.getDeviceCodeCount.deviceCount, 10) < 2) {
+          setShowReferralCode(true);
+        } else {
+          setShowReferralCode(false);
+          setReferral('');
+        }
+      })
+      .catch((e) => {});
+  };
+
+  const getPrefillReferralCode = async () => {
+    const deeplinkReferalCode: any = await AsyncStorage.getItem('deeplinkReferalCode');
+
+    if (deeplinkReferalCode !== null && deeplinkReferalCode !== undefined) {
+      setReferral(deeplinkReferalCode);
+    }
+  };
+
+  const checkPatientData = async () => {
+    const storedPatient = await AsyncStorage.getItem(LOGIN_PROFILE);
+    const parsedPatient = storedPatient && JSON.parse(storedPatient);
+    if (!isOneTimeUpdate.current && (patient || parsedPatient)) {
+      isOneTimeUpdate.current = true;
+      setFirstName(patient?.firstName || parsedPatient?.firstName);
+      setLastName(patient?.lastName || parsedPatient?.lastName);
+      const email = patient?.emailAddress || parsedPatient?.emailAddress;
+      const trimmedValue = (email || '').trim();
+      setEmail(trimmedValue);
+      setEmailValidation(isSatisfyEmailRegex(trimmedValue));
+      const patientGender = patient?.gender || parsedPatient?.gender || '';
+      patientGender?.toUpperCase() !== Gender.OTHER?.toUpperCase() &&
+        setGender(_.capitalize(patientGender));
+      if (patient?.dateOfBirth || parsedPatient?.dateOfBirth) {
+        const formatDate = Moment(patient?.dateOfBirth || parsedPatient?.dateOfBirth).format(
+          'DD/MM/YYYY'
+        );
+        setDate(formatDate);
+      }
+    }
+  };
+
+  const renderOfferCrousel = () => {
+    return (
+      <Carousel
+        data={[1, 2, 3, 4]}
+        renderItem={({ item }) => (
+          <LinearGradientComponent
+            startOffset={{ x: 0, y: 1 }}
+            endOffset={{ x: 1, y: 0 }}
+            colors={[
+              theme.colors.GRADIENT_LIGHT_YELLOW_ONE,
+              theme.colors.GRADIENT_LIGHT_YELLOW_TWO,
+            ]}
+            style={styles.offserCrouselGradientContainer}
+          >
+            <View style={styles.offerCrouselMainContainer}>
+              <View style={styles.offerCrouselPriceTagContainer}>
+                <PriceTagIcon style={styles.priceTag} />
+              </View>
+              <View style={styles.offerDescriptionContainer}>
+                <Text style={styles.offersFirstLine}>Flat 25% off + ₹100 cashback</Text>
+                <Text style={styles.offersSecondLine}>On first medicine order</Text>
+              </View>
+            </View>
+          </LinearGradientComponent>
+        )}
+        sliderWidth={Dimensions.get('window').width}
+        itemWidth={Dimensions.get('window').width - 70}
+      />
+    );
+  };
+
+  const renderReferral = () => {
+    return (
+      <FloatingLabelInputComponent
+        maxLength={25}
+        label={'Do You Have A Referral Code? (Optional)'}
+        value={referral}
+        onChangeText={(text) => setReferral(text)}
+        icon={referral.length > 0 ? <WhiteTickIcon /> : null}
+      />
+    );
+  };
+
   const renderRelation = () => {
     const relationsData = selectedGenderRelationArray.map((i) => {
       return { key: i.key, value: i.title };
     });
-    const { width, height } = Dimensions.get('window');
+
     return (
       <MaterialMenu
         options={relationsData}
         selectedText={relation && relation.key.toString()}
-        menuContainerStyle={{ alignItems: 'flex-end', marginLeft: width / 2 - 95 }}
-        itemContainer={{ height: 44.8, marginHorizontal: 12, width: width / 2 }}
-        itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b'), paddingHorizontal: 0 }}
-        selectedTextStyle={{
-          ...theme.viewStyles.text('M', 16, '#00b38e'),
-          alignSelf: 'flex-start',
-        }}
+        menuContainerStyle={styles.materialMenuContainer}
+        itemContainer={styles.materialItemContainer}
+        itemTextStyle={styles.materialItemText}
+        selectedTextStyle={styles.materialSelcetedItemText}
         bottomPadding={{ paddingBottom: 20 }}
         onPress={(selectedRelation) =>
           setRelation({
@@ -420,44 +591,301 @@ export const SignUpNew: React.FC<SignUpProps> = (props) => {
           })
         }
       >
-        <View style={[styles.placeholderViewStyle, { flexDirection: 'row', paddingTop: 20 }]}>
+        <View
+          style={[
+            styles.placeholderViewStyle,
+            styles.relationInputContainer,
+            { flexDirection: 'row', paddingTop: 20 },
+          ]}
+        >
           <Text
             style={[
+              styles.relationInputLabel,
               {
-                ...theme.fonts.IBMPlexSansMedium(18),
-                marginBottom: 10,
-                marginLeft: 5,
-                fontWeight: '600',
-                paddingLeft: 11,
-                color: '#02475b',
                 fontSize:
                   relation !== undefined
                     ? PixelRatio.getFontScale() * 11
                     : PixelRatio.getFontScale() * 14,
-                position: 'absolute',
+
                 top: relation !== undefined ? 0 : 20,
               },
             ]}
           >
-            Profile Created For
+            Profile Created For *
           </Text>
-          <Text
-            style={{
-              ...theme.fonts.IBMPlexSansMedium(18),
-              color: '#02475b',
-              marginBottom: 10,
-              fontSize: 14,
-              marginLeft: 15,
-              fontWeight: '600',
-            }}
-          >
-            {relation !== undefined && relation.title}
-          </Text>
-          <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
+          <Text style={styles.relationInput}>{relation !== undefined && relation.title}</Text>
+          <View style={[styles.relationDropdownCaret]}>
             <DropdownGreen />
           </View>
         </View>
       </MaterialMenu>
+    );
+  };
+
+  const renderStickyHeader = () => {
+    return (
+      <View style={styles.stickyHeaderMainContainer}>
+        <ApolloLogo />
+        <View style={styles.stickyHeaderTextContainer}>
+          <Text style={styles.stickyHeaderMainHeading}>Create Profile</Text>
+          <Text style={styles.stickyHeaderSubHeading}>
+            You are a step away from unlocking exclusive offers!
+          </Text>
+        </View>
+        <View style={styles.stickyHeaderOfferContain}>{renderOfferCrousel()}</View>
+      </View>
+    );
+  };
+
+  const renderFormAllInputs = () => {
+    return (
+      <View style={styles.formContainer}>
+        <FloatingLabelInputComponent
+          label={'First Name *'}
+          onChangeText={(text: string) => _setFirstName(text)}
+          value={firstName}
+          textInputprops={{
+            maxLength: 50,
+          }}
+        />
+        <FloatingLabelInputComponent
+          label={'Last Name *'}
+          onChangeText={(text: string) => _setlastName(text)}
+          value={lastName}
+          textInputprops={{
+            maxLength: 50,
+          }}
+        />
+        <TouchableOpacity
+          activeOpacity={1}
+          style={styles.datePickerContainer}
+          onPress={() => {
+            CommonLogEvent(AppRoutes.SignUp, 'Date picker display');
+
+            Keyboard.dismiss();
+            setIsDateTimePickerVisible(true);
+          }}
+        >
+          <Text
+            style={[
+              styles.dateOfBirthTextLabel,
+              {
+                fontSize: date !== '' ? 11 : 14,
+                top: date !== '' ? -18 : 0,
+              },
+            ]}
+          >
+            Date Of Birth (DD/MM/YY) *
+          </Text>
+          <Text style={styles.dateOfBirth}>{date}</Text>
+          <CalendarIcon />
+        </TouchableOpacity>
+        <DatePicker
+          date={
+            date
+              ? moment(date, 'DD/MM/YYYY').toDate()
+              : moment()
+                  .subtract(25, 'years')
+                  .toDate()
+          }
+          isDateTimePickerVisible={isDateTimePickerVisible}
+          handleDatePicked={(date) => {
+            setIsDateTimePickerVisible(false);
+            const formatDate = Moment(date).format('DD/MM/YYYY');
+            setDate(formatDate);
+            Keyboard.dismiss();
+          }}
+          hideDateTimePicker={() => {
+            setIsDateTimePickerVisible(false);
+            Keyboard.dismiss();
+          }}
+        />
+        <View style={styles.selectGenderContainer}>
+          {GenderOptions.map((option) => (
+            <TouchableOpacity
+              style={[
+                styles.genderButtonContainer,
+                {
+                  borderColor: genderNotSelectError.error
+                    ? theme.colors.REMOVE_RED
+                    : theme.colors.GREEN,
+                  backgroundColor: gender === option.name ? theme.colors.GREEN : theme.colors.WHITE,
+                },
+              ]}
+              onPress={() => {
+                setGenderNotSelectError({
+                  error: false,
+                  errorMsg: '',
+                });
+                CommonLogEvent(AppRoutes.SignUp, 'set gender clicked'), setGender(option.name);
+              }}
+            >
+              <Text
+                style={[
+                  styles.genderButtonText,
+                  {
+                    color: genderNotSelectError.error
+                      ? theme.colors.REMOVE_RED
+                      : gender === option.name
+                      ? theme.colors.WHITE
+                      : theme.colors.GREEN,
+                  },
+                ]}
+              >
+                {option.name}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+        {genderNotSelectError.error && (
+          <Text style={styles.genderErrorMsgText}>{genderNotSelectError.errorMsg} *</Text>
+        )}
+        <View style={styles.relationContainer}>{renderRelation()}</View>
+        <FloatingLabelInputComponent
+          label={'Email (Optional)'}
+          onChangeText={(text: string) => _setEmail(text)}
+          value={email}
+          autoCapitalize="none"
+          textInputprops={{
+            maxLength: 50,
+          }}
+        />
+
+        {showReferralCode && renderReferral()}
+      </View>
+    );
+  };
+
+  const renderStickySaveButton = () => {
+    return (
+      <StickyBottomComponent position={false}>
+        <Mutation<updatePatient, updatePatientVariables> mutation={UPDATE_PATIENT}>
+          {(mutate, { loading, data, error }) => (
+            <Button
+              title={'SAVE'}
+              style={styles.stickySubmitButton}
+              titleTextStyle={styles.stickySubmitButtonTitle}
+              disabled={!firstName || !lastName || !date || !relation}
+              onPress={async () => {
+                Keyboard.dismiss();
+                CommonLogEvent(AppRoutes.SignUp, 'Sign button clicked');
+                let validationMessage = '';
+                let trimReferral = referral;
+                if (!(firstName && isSatisfyingNameRegex(firstName.trim()))) {
+                  validationMessage = 'Enter valid first name';
+                } else if (!(lastName && isSatisfyingNameRegex(lastName.trim()))) {
+                  validationMessage = 'Enter valid last name';
+                } else if (!date) {
+                  validationMessage = 'Enter valid date of birth';
+                } else if (email) {
+                  if (!emailValidation) {
+                    validationMessage = 'Enter valid email';
+                  }
+                } else if (!gender) {
+                  validationMessage = 'Please select gender';
+                  setGenderNotSelectError({
+                    error: true,
+                    errorMsg: 'Please select gender',
+                  });
+                } else if (referral !== '') {
+                  trimReferral = trimReferral.trim();
+                }
+                if (validationMessage) {
+                  if (validationMessage != 'Please select gender') {
+                    Alert.alert('Error', validationMessage);
+                  }
+                } else {
+                  setGenderNotSelectError({
+                    error: false,
+                    errorMsg: '',
+                  });
+                  setVerifyingPhoneNumber(true);
+                  const formatDate = Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD');
+
+                  const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
+                  const item = JSON.parse(retrievedItem || 'null');
+
+                  const callByPrism: any = await AsyncStorage.getItem('callByPrism');
+                  let allPatients;
+
+                  if (callByPrism === 'true') {
+                    allPatients =
+                      item && item.data && item.data.getCurrentPatients
+                        ? item.data.getCurrentPatients.patients
+                        : null;
+                  } else {
+                    allPatients =
+                      item && item.data && item.data.getPatientByMobileNumber
+                        ? item.data.getPatientByMobileNumber.patients
+                        : null;
+                  }
+
+                  const mePatient = allPatients
+                    ? allPatients.find((patient: any) => patient.relation === Relation.ME) ||
+                      allPatients[0]
+                    : null;
+
+                  const patientsDetails: UpdatePatientInput = {
+                    id: mePatient.id,
+                    // whatsAppOptIn: whatsAppOptIn,  It will use in future, but right now this is not working So I just commented it
+                    mobileNumber: mePatient.mobileNumber,
+                    firstName: firstName.trim(),
+                    lastName: lastName.trim(),
+                    relation: relation == undefined ? Relation.ME : relation.key,
+                    gender:
+                      gender === 'Female'
+                        ? Gender['FEMALE']
+                        : gender === 'Male'
+                        ? Gender['MALE']
+                        : Gender['OTHER'], //gender.toUpperCase(),
+                    uhid: '',
+                    dateOfBirth: formatDate,
+                    emailAddress: email.trim(),
+                    referralCode: trimReferral ? trimReferral : null,
+                    deviceCode: deviceToken,
+                  };
+                  mutate({
+                    variables: {
+                      patientInput: patientsDetails,
+                    },
+                  });
+                }
+              }}
+            >
+              {data
+                ? (getPatientApiCall(),
+                  _postWebEngageEvent(),
+                  AsyncStorage.setItem('userLoggedIn', 'true'),
+                  AsyncStorage.setItem('signUp', 'false'),
+                  AsyncStorage.setItem('gotIt', patient ? 'true' : 'false'),
+                  createOneApolloUser(data?.updatePatient?.patient?.id!),
+                  postAppsFlyerEventAppInstallViaReferral(data))
+                : null}
+              {error
+                ? (signOut(),
+                  AsyncStorage.setItem('userLoggedIn', 'false'),
+                  AsyncStorage.setItem('multiSignUp', 'false'),
+                  AsyncStorage.setItem('signUp', 'false'),
+                  CommonLogEvent(AppRoutes.SignUp, 'Error going back to login'),
+                  setTimeout(() => {
+                    setVerifyingPhoneNumber(false),
+                      props.navigation.dispatch(
+                        StackActions.reset({
+                          index: 0,
+                          key: null,
+                          actions: [
+                            NavigationActions.navigate({
+                              routeName: AppRoutes.Login,
+                            }),
+                          ],
+                        })
+                      );
+                  }, 0))
+                : null}
+            </Button>
+          )}
+        </Mutation>
+      </StickyBottomComponent>
     );
   };
 
@@ -469,305 +897,14 @@ export const SignUpNew: React.FC<SignUpProps> = (props) => {
           style={{ flex: 1 }}
           {...keyboardVerticalOffset}
         >
-          <View
-            style={{
-              alignItems: 'center',
-              paddingTop: 40,
-              borderBottomWidth: 1,
-              borderBottomColor: theme.colors.LIGHT_GRAY_3,
-            }}
-          >
-            <ApolloLogo />
-            <View
-              style={{
-                alignItems: 'center',
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 20,
-                  fontWeight: 'bold',
-                  color: theme.colors.LIGHT_BLUE,
-                }}
-              >
-                Create Profile
-              </Text>
-              <Text
-                style={{
-                  fontSize: 11,
-                  color: theme.colors.LIGHT_BLUE,
-                }}
-              >
-                You are a step away from unlocking exclusive offers!
-              </Text>
-            </View>
-            <View
-              style={{
-                height: 100,
-                paddingTop: 10,
-              }}
-            >
-              {renderOfferCrousel()}
-            </View>
-          </View>
+          {renderStickyHeader()}
           <ScrollView
             style={styles.container} //extraScrollHeight={50}
             bounces={false}
           >
-            <View
-              style={{
-                paddingHorizontal: 30,
-              }}
-            >
-              <FloatingLabelInputComponent
-                label={'First Name'}
-                onChangeText={(text: string) => _setFirstName(text)}
-                value={firstName}
-                textInputprops={{
-                  maxLength: 50,
-                }}
-              />
-              <FloatingLabelInputComponent
-                label={'Last Name'}
-                onChangeText={(text: string) => _setlastName(text)}
-                value={lastName}
-                textInputprops={{
-                  maxLength: 50,
-                }}
-                labelStyle={{
-                  fontSize: PixelRatio.getFontScale() * 14,
-                  color: '#02475b',
-                  fontWeight: '500',
-                }}
-                inputStyle={{
-                  borderBottomColor: '#02475B',
-                  borderBottomWidth: 1,
-                }}
-              />
-              <TouchableOpacity
-                activeOpacity={1}
-                style={{
-                  borderBottomWidth: 1,
-                  borderBottomColor: '#02475b',
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  marginTop: 20,
-                }}
-                onPress={() => {
-                  CommonLogEvent(AppRoutes.SignUp, 'Date picker display');
-
-                  Keyboard.dismiss();
-                  setIsDateTimePickerVisible(true);
-                }}
-              >
-                <Text
-                  style={{
-                    ...theme.fonts.IBMPlexSansMedium(18),
-                    color: '#02475b',
-                    fontSize: date !== '' ? 11 : 14,
-                    marginLeft: 10,
-                    fontWeight: '600',
-                    position: 'absolute',
-                    top: date !== '' ? -18 : 0,
-                  }}
-                >
-                  Date Of Birth (DD/MM/YY)
-                </Text>
-                <Text
-                  style={{
-                    ...theme.fonts.IBMPlexSansMedium(18),
-                    color: '#02475b',
-                    marginBottom: 10,
-                    fontSize: 14,
-                    marginLeft: 10,
-                    fontWeight: '600',
-                  }}
-                >
-                  {date}
-                </Text>
-                <CalendarIcon />
-              </TouchableOpacity>
-              <DatePicker
-                date={
-                  date
-                    ? moment(date, 'DD/MM/YYYY').toDate()
-                    : moment()
-                        .subtract(25, 'years')
-                        .toDate()
-                }
-                isDateTimePickerVisible={isDateTimePickerVisible}
-                handleDatePicked={(date) => {
-                  setIsDateTimePickerVisible(false);
-                  const formatDate = Moment(date).format('DD/MM/YYYY');
-                  setDate(formatDate);
-                  Keyboard.dismiss();
-                }}
-                hideDateTimePicker={() => {
-                  setIsDateTimePickerVisible(false);
-                  Keyboard.dismiss();
-                }}
-              />
-              <View
-                style={{
-                  flexDirection: 'row',
-                  paddingTop: 20,
-                  justifyContent: 'space-between',
-                }}
-              >
-                {GenderOptions.map((option) => (
-                  <TouchableOpacity
-                    style={{
-                      ...theme.fonts.IBMPlexSansMedium(18),
-                      borderColor: theme.colors.GREEN,
-                      borderWidth: 1,
-                      paddingVertical: 8,
-                      paddingHorizontal: 28,
-                      borderRadius: 10,
-                      backgroundColor: gender === option.name ? theme.colors.GREEN : '#fff',
-                    }}
-                    onPress={() => {
-                      CommonLogEvent(AppRoutes.SignUp, 'set gender clicked'),
-                        setGender(option.name);
-                    }}
-                  >
-                    <Text
-                      style={{
-                        ...theme.fonts.IBMPlexSansMedium(18),
-                        fontSize: 12,
-                        color: gender === option.name ? '#fff' : theme.colors.GREEN,
-                        fontWeight: '800',
-                      }}
-                    >
-                      {option.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-              <View style={{ marginTop: 10, marginBottom: 10 }}>{renderRelation()}</View>
-              <FloatingLabelInputComponent
-                label={'Email (Optional)'}
-                onChangeText={(text: string) => _setEmail(text)}
-                value={email}
-                autoCapitalize="none"
-                textInputprops={{
-                  maxLength: 50,
-                }}
-              />
-
-              {renderReferral()}
-            </View>
+            {renderFormAllInputs()}
           </ScrollView>
-          <StickyBottomComponent position={false}>
-            <Mutation<updatePatient, updatePatientVariables> mutation={UPDATE_PATIENT}>
-              {(mutate, { loading, data, error }) => (
-                <Button
-                  title={'SAVE'}
-                  style={{ width: '100%', borderRadius: 0 }}
-                  titleTextStyle={{
-                    fontSize: 15,
-                  }}
-                  disabled={!firstName || !lastName || !date || !gender}
-                  onPress={async () => {
-                    Keyboard.dismiss();
-                    CommonLogEvent(AppRoutes.SignUp, 'Sign button clicked');
-                    let validationMessage = '';
-                    let trimReferral = referral;
-                    if (!(firstName && isSatisfyingNameRegex(firstName.trim()))) {
-                      validationMessage = 'Enter valid first name';
-                    } else if (!(lastName && isSatisfyingNameRegex(lastName.trim()))) {
-                      validationMessage = 'Enter valid last name';
-                    } else if (!date) {
-                      validationMessage = 'Enter valid date of birth';
-                    } else if (email) {
-                      if (!emailValidation) {
-                        validationMessage = 'Enter valid email';
-                      }
-                    } else if (!gender) {
-                      validationMessage = 'Please select gender';
-                    } else if (referral !== '') {
-                      trimReferral = trimReferral.trim();
-                    }
-                    if (validationMessage) {
-                      Alert.alert('Error', validationMessage);
-                    } else {
-                      setVerifyingPhoneNumber(true);
-                      const formatDate = Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD');
-
-                      const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
-                      const item = JSON.parse(retrievedItem || 'null');
-
-                      const callByPrism: any = await AsyncStorage.getItem('callByPrism');
-                      let allPatients;
-
-                      if (callByPrism === 'true') {
-                        allPatients =
-                          item && item.data && item.data.getCurrentPatients
-                            ? item.data.getCurrentPatients.patients
-                            : null;
-                      } else {
-                        allPatients =
-                          item && item.data && item.data.getPatientByMobileNumber
-                            ? item.data.getPatientByMobileNumber.patients
-                            : null;
-                      }
-
-                      const mePatient = allPatients
-                        ? allPatients.find((patient: any) => patient.relation === Relation.ME) ||
-                          allPatients[0]
-                        : null;
-
-                      const patientsDetails: UpdatePatientInput = {
-                        id: mePatient.id,
-                        // whatsAppOptIn: whatsAppOptIn,  It will use in future, but right now this is not working So I just commented it
-                        // mobileNumber: mePatient.mobileNumber,
-                        // firstName: firstName.trim(),
-                        // lastName: lastName.trim(),
-                        // relation: Relation.ME,
-                        // gender:
-                        //   gender === 'Female'
-                        //     ? Gender['FEMALE']
-                        //     : gender === 'Male'
-                        //     ? Gender['MALE']
-                        //     : Gender['OTHER'], //gender.toUpperCase(),
-                        // uhid: '',
-                        // dateOfBirth: formatDate,
-                        // emailAddress: email.trim(),
-                        // referralCode: trimReferral ? trimReferral : null,
-                        // deviceCode: deviceToken,
-                      };
-                      mutate({
-                        variables: {
-                          patientInput: patientsDetails,
-                        },
-                      });
-                    }
-                  }}
-                >
-                  {error
-                    ? (signOut(),
-                      AsyncStorage.setItem('userLoggedIn', 'false'),
-                      AsyncStorage.setItem('multiSignUp', 'false'),
-                      AsyncStorage.setItem('signUp', 'false'),
-                      CommonLogEvent(AppRoutes.SignUp, 'Error going back to login'),
-                      setTimeout(() => {
-                        setVerifyingPhoneNumber(false),
-                          props.navigation.dispatch(
-                            StackActions.reset({
-                              index: 0,
-                              key: null,
-                              actions: [
-                                NavigationActions.navigate({
-                                  routeName: AppRoutes.Login,
-                                }),
-                              ],
-                            })
-                          );
-                      }, 0))
-                    : null}
-                </Button>
-              )}
-            </Mutation>
-          </StickyBottomComponent>
+          {renderStickySaveButton()}
         </KeyboardAvoidingView>
       </SafeAreaView>
       {verifyingPhoneNumber ? <Spinner /> : null}
@@ -789,13 +926,146 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     paddingTop: 0,
     paddingBottom: 0,
-    borderColor: '#02475b',
+    borderColor: theme.colors.LIGHT_BLUE,
   },
   placeholderTextStyle: {
-    color: '#01475b',
+    color: theme.colors.ASTRONAUT_BLUE,
     ...theme.fonts.IBMPlexSansMedium(18),
   },
   placeholderStyle: {
     color: theme.colors.placeholderTextColor,
   },
+  dateOfBirthTextLabel: {
+    ...theme.fonts.IBMPlexSansMedium(18),
+    color: theme.colors.LIGHT_BLUE,
+    marginLeft: 10,
+    fontWeight: '600',
+    position: 'absolute',
+  },
+  dateOfBirth: {
+    ...theme.fonts.IBMPlexSansMedium(18),
+    color: theme.colors.LIGHT_BLUE,
+    marginBottom: 10,
+    fontSize: 14,
+    marginLeft: 10,
+    fontWeight: '600',
+  },
+  offserCrouselGradientContainer: {
+    borderColor: theme.colors.LIGHT_GRAY_2,
+    borderWidth: 1,
+    borderRadius: 5,
+  },
+  offerCrouselMainContainer: {
+    flexDirection: 'row',
+  },
+  offerCrouselPriceTagContainer: {
+    flex: 0.15,
+    alignItems: 'center',
+  },
+  priceTag: {
+    width: 30,
+    height: 40,
+  },
+  offerDescriptionContainer: {
+    paddingVertical: 12,
+    alignItems: 'center',
+    flex: 0.9,
+  },
+  offersFirstLine: {
+    color: theme.colors.RED_BROWN,
+    fontSize: 17,
+    fontWeight: 'bold',
+  },
+  offersSecondLine: {
+    color: theme.colors.RED_BROWN,
+    fontSize: 12,
+  },
+  materialMenuContainer: { alignItems: 'flex-end', marginLeft: width / 2 - 95 },
+  materialItemContainer: { height: 44.8, marginHorizontal: 12, width: width / 2 },
+  materialItemText: {
+    ...theme.viewStyles.text('M', 16, theme.colors.ASTRONAUT_BLUE),
+    paddingHorizontal: 0,
+  },
+  materialSelcetedItemText: {
+    ...theme.viewStyles.text('M', 16, theme.colors.APP_GREEN),
+    alignSelf: 'flex-start',
+  },
+  relationInputLabel: {
+    ...theme.fonts.IBMPlexSansMedium(18),
+    marginBottom: 10,
+    marginLeft: 5,
+    fontWeight: '600',
+    paddingLeft: 11,
+    color: theme.colors.LIGHT_BLUE,
+    position: 'absolute',
+  },
+  relationInput: {
+    ...theme.fonts.IBMPlexSansMedium(18),
+    color: theme.colors.LIGHT_BLUE,
+    marginBottom: 10,
+    fontSize: 14,
+    marginLeft: 15,
+    fontWeight: '600',
+  },
+  stickyHeaderMainContainer: {
+    alignItems: 'center',
+    paddingTop: 40,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.LIGHT_GRAY_3,
+  },
+  stickyHeaderTextContainer: {
+    alignItems: 'center',
+  },
+  stickyHeaderMainHeading: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: theme.colors.LIGHT_BLUE,
+  },
+  stickyHeaderSubHeading: {
+    fontSize: 11,
+    color: theme.colors.LIGHT_BLUE,
+  },
+  stickyHeaderOfferContain: {
+    height: 100,
+    paddingTop: 10,
+  },
+  formContainer: {
+    paddingHorizontal: 30,
+  },
+  datePickerContainer: {
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.LIGHT_BLUE,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+  },
+  selectGenderContainer: {
+    flexDirection: 'row',
+    paddingTop: 20,
+    justifyContent: 'space-between',
+  },
+  genderButtonContainer: {
+    ...theme.fonts.IBMPlexSansMedium(18),
+    borderWidth: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 28,
+    borderRadius: 10,
+  },
+  genderButtonText: {
+    ...theme.fonts.IBMPlexSansMedium(18),
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  genderErrorMsgText: {
+    color: theme.colors.REMOVE_RED,
+    fontSize: PixelRatio.getFontScale() * 11,
+    marginTop: 5,
+  },
+  relationContainer: { marginTop: 10, marginBottom: 10 },
+  stickySubmitButton: { width: '100%', borderRadius: 0 },
+  stickySubmitButtonTitle: {
+    fontSize: 15,
+  },
+  relationInputContainer: { flexDirection: 'row', paddingTop: 20 },
+  relationDropdownCaret: { flex: 1, alignItems: 'flex-end' },
 });
