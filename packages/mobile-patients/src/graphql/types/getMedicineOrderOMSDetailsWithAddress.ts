@@ -3,11 +3,20 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { MEDICINE_ORDER_TYPE, MEDICINE_DELIVERY_TYPE, MEDICINE_ORDER_STATUS, MEDICINE_ORDER_PAYMENT_TYPE, PAYMENT_METHODS_REVERSE, REFUND_STATUS } from "./globalTypes";
+import { CANCELLATION_TIME, MEDICINE_ORDER_TYPE, MEDICINE_DELIVERY_TYPE, MEDICINE_ORDER_STATUS, MEDICINE_ORDER_PAYMENT_TYPE, PAYMENT_METHODS_REVERSE, REFUND_STATUS } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getMedicineOrderOMSDetailsWithAddress
 // ====================================================
+
+export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_orderCancellationAllowedDetails {
+  __typename: "CancellationAllowedResult";
+  cancellationTime: CANCELLATION_TIME | null;
+  cancellationAllowed: boolean | null;
+  message: string | null;
+  cancellationRequestRaised: boolean | null;
+  cancellationRequestRejected: boolean | null;
+}
 
 export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_consultInfo {
   __typename: "ConsultInfo";
@@ -53,6 +62,7 @@ export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetail
   healthCreditsRedemptionRequest: getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderPayments_healthCreditsRedemptionRequest | null;
   paymentMode: PAYMENT_METHODS_REVERSE | null;
   refundAmount: number | null;
+  paymentMethod: string | null;
 }
 
 export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderRefunds {
@@ -143,6 +153,13 @@ export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetail
   zipcode: string | null;
 }
 
+export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_amountBreakUp {
+  __typename: "AmountBreakup";
+  totalCashBack: number | null;
+  circleCashback: number | null;
+  couponCashback: number | null;
+}
+
 export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails {
   __typename: "MedicineOrdersOMS";
   id: string;
@@ -179,24 +196,13 @@ export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetail
   medicineOrderShipments: (getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderShipments | null)[] | null;
   patient: getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_patient | null;
   medicineOrderAddress: getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderAddress | null;
-}
-
-export enum CANCELLATION_TIME {
-  POST_BILLING = 'POST_BILLING',
-  PRE_BILLING = 'PRE_BILLING',
-}
-export interface CancellationAllowedResult {
-  cancellationTime: CANCELLATION_TIME;
-  cancellationAllowed: boolean;
-  message?: string;
-  cancellationRequestRaised?: boolean;
-  cancellationRequestRejected?: boolean;
+  amountBreakUp: getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_amountBreakUp | null;
 }
 
 export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress {
   __typename: "MedicineOrderOMSDetailsResult";
-  tatBreached: Boolean;
-  orderCancellationAllowedDetails: CancellationAllowedResult;
+  tatBreached: boolean | null;
+  orderCancellationAllowedDetails: getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_orderCancellationAllowedDetails | null;
   medicineOrderDetails: getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails | null;
 }
 
