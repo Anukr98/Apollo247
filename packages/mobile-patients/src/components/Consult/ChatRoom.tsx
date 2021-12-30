@@ -6486,8 +6486,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           style={{
             marginBottom: 100,
             zIndex: 1001,
-            backgroundColor:
-              !isCallReconnecting.current || unstable ? theme.colors.RED : theme.colors.BLACK_COLOR,
+            backgroundColor: unstable ? theme.colors.RED : theme.colors.BLACK_COLOR,
           }}
           visible={snackbarState}
           onDismiss={() => {
