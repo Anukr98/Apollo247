@@ -87,6 +87,8 @@ export interface FloatingLabelInputComponentProps {
   autoFocus?: boolean;
   onSubmitEditing?: TextInputProps['onSubmitEditing'];
   secureTextEntry?: boolean;
+  inputError?: boolean;
+  errorMsg?: string;
 }
 
 export const FloatingLabelInputComponent: React.FC<FloatingLabelInputComponentProps> = (props) => {
@@ -104,7 +106,11 @@ export const FloatingLabelInputComponent: React.FC<FloatingLabelInputComponentPr
           styles.textInputStyle,
           props.inputStyle,
           {
-            borderBottomColor: inputFocusWhileTying ? '#00B38E' : '#02475b',
+            borderBottomColor: props.inputError
+              ? '#E31E24'
+              : inputFocusWhileTying
+              ? '#00B38E'
+              : '#02475b',
             borderBottomWidth: inputFocusWhileTying ? 2 : 1,
             fontSize: PixelRatio.getFontScale() * 16,
             paddingLeft: 11,
@@ -179,7 +185,7 @@ export const FloatingLabelInputComponent: React.FC<FloatingLabelInputComponentPr
                 fontSize: !inputFocus
                   ? PixelRatio.getFontScale() * 14
                   : PixelRatio.getFontScale() * 10,
-                color: inputFocusWhileTying ? '#00B38E' : '#02475b',
+                color: props.inputError ? '#E31E24' : inputFocusWhileTying ? '#00B38E' : '#02475b',
                 fontWeight: '400',
               },
             ]}
@@ -198,6 +204,18 @@ export const FloatingLabelInputComponent: React.FC<FloatingLabelInputComponentPr
         renderTextInput()
       )}
       {props.icon && <View style={styles.iconStyle}>{props.icon}</View>}
+      {props.inputError && (
+        <Text
+          style={{
+            fontSize: PixelRatio.getFontScale() * 10,
+            color: '#E31E24',
+            fontWeight: '400',
+            marginTop: 5,
+          }}
+        >
+          {props.errorMsg}
+        </Text>
+      )}
     </View>
   );
 };

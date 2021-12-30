@@ -43,6 +43,7 @@ import {
   postCleverTapEvent,
   deferredDeepLinkRedirectionData,
   setRefereeFlagForNewRegisterUser,
+  getRelations,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   ProductPageViewedSource,
@@ -107,6 +108,11 @@ type genderOptions = {
   name: string;
 };
 
+type RelationArray = {
+  key: Relation;
+  title: string;
+};
+
 const GenderOptions: genderOptions[] = [
   {
     name: 'Male',
@@ -119,12 +125,51 @@ const GenderOptions: genderOptions[] = [
   },
 ];
 
+const relationArray1: RelationArray[] = [
+  { key: Relation.ME, title: 'Self' },
+  {
+    key: Relation.FATHER,
+    title: 'Father',
+  },
+  {
+    key: Relation.MOTHER,
+    title: 'Mother',
+  },
+  {
+    key: Relation.HUSBAND,
+    title: 'Husband',
+  },
+  {
+    key: Relation.WIFE,
+    title: 'Wife',
+  },
+  {
+    key: Relation.BROTHER,
+    title: 'Brother',
+  },
+  {
+    key: Relation.SISTER,
+    title: 'Sister',
+  },
+  {
+    key: Relation.COUSIN,
+    title: 'Cousin',
+  },
+  {
+    key: Relation.OTHER,
+    title: 'Other',
+  },
+];
+
 let backPressCount = 0;
 
 export interface SignUpProps extends NavigationScreenProps {
   patient?: getPatientByMobileNumber_getPatientByMobileNumber_patients;
 }
 export const SignUpNew: React.FC<SignUpProps> = (props) => {
+  const [selectedGenderRelationArray, setSelectedGenderRelationArray] = useState<RelationArray[]>(
+    getRelations() || relationArray1
+  );
   const patient = props.navigation.getParam('patient');
   const [gender, setGender] = useState<string>('');
   const [date, setDate] = useState<string>('');
@@ -143,6 +188,7 @@ export const SignUpNew: React.FC<SignUpProps> = (props) => {
   const [oneApolloRegistrationCalled, setoneApolloRegistrationCalled] = useState<boolean>(false);
   const [whatsAppOptIn, setWhatsAppOptIn] = useState<boolean>(false);
   const isOneTimeUpdate = useRef<boolean>(false);
+  const [relation, setRelation] = useState<RelationArray>();
 
   const keyboardVerticalOffset = Platform.OS === 'android' ? { keyboardVerticalOffset: 20 } : {};
 
@@ -260,55 +306,105 @@ export const SignUpNew: React.FC<SignUpProps> = (props) => {
     );
   };
 
+  useEffect(() => {
+    if (gender.toLowerCase() == Gender.MALE.toLowerCase()) {
+      setRelation(undefined);
+      const maleRelationArray: RelationArray[] = [
+        { key: Relation.ME, title: 'Self' },
+        {
+          key: Relation.FATHER,
+          title: 'Father',
+        },
+        {
+          key: Relation.SON,
+          title: 'Son',
+        },
+        {
+          key: Relation.HUSBAND,
+          title: 'Husband',
+        },
+        {
+          key: Relation.BROTHER,
+          title: 'Brother',
+        },
+        {
+          key: Relation.SISTER,
+          title: 'Sister',
+        },
+        {
+          key: Relation.GRANDFATHER,
+          title: 'Grandfather',
+        },
+        {
+          key: Relation.GRANDSON,
+          title: 'Grandson',
+        },
+        {
+          key: Relation.COUSIN,
+          title: 'Cousin',
+        },
+        {
+          key: Relation.OTHER,
+          title: 'Other',
+        },
+      ];
+      setSelectedGenderRelationArray(maleRelationArray);
+    } else if (gender.toLowerCase() == Gender.FEMALE.toLowerCase()) {
+      setRelation(undefined);
+      const femaleRelationArray: RelationArray[] = [
+        { key: Relation.ME, title: 'Self' },
+        {
+          key: Relation.MOTHER,
+          title: 'Mother',
+        },
+        {
+          key: Relation.DAUGHTER,
+          title: 'Daughter',
+        },
+        {
+          key: Relation.WIFE,
+          title: 'Wife',
+        },
+        {
+          key: Relation.BROTHER,
+          title: 'Brother',
+        },
+        {
+          key: Relation.SISTER,
+          title: 'Sister',
+        },
+        {
+          key: Relation.GRANDMOTHER,
+          title: 'Grandmother',
+        },
+        {
+          key: Relation.GRANDDAUGHTER,
+          title: 'Granddaughter',
+        },
+        {
+          key: Relation.COUSIN,
+          title: 'Cousin',
+        },
+        {
+          key: Relation.OTHER,
+          title: 'Other',
+        },
+      ];
+      setSelectedGenderRelationArray(femaleRelationArray);
+    } else {
+      setSelectedGenderRelationArray(relationArray1);
+    }
+  }, [gender]);
+
   const renderRelation = () => {
-    const selectedGenderRelationArray = [
-      { key: Relation.ME, title: 'Self' },
-      {
-        key: Relation.FATHER,
-        title: 'Father',
-      },
-      {
-        key: Relation.SON,
-        title: 'Son',
-      },
-      {
-        key: Relation.HUSBAND,
-        title: 'Husband',
-      },
-      {
-        key: Relation.BROTHER,
-        title: 'Brother',
-      },
-      {
-        key: Relation.SISTER,
-        title: 'Sister',
-      },
-      {
-        key: Relation.GRANDFATHER,
-        title: 'Grandfather',
-      },
-      {
-        key: Relation.GRANDSON,
-        title: 'Grandson',
-      },
-      {
-        key: Relation.COUSIN,
-        title: 'Cousin',
-      },
-      {
-        key: Relation.OTHER,
-        title: 'Other',
-      },
-    ];
     const relationsData = selectedGenderRelationArray.map((i) => {
       return { key: i.key, value: i.title };
     });
     const { width, height } = Dimensions.get('window');
-    const relation = { title: '' };
     return (
       <MaterialMenu
         options={relationsData}
-        selectedText={''}
+        selectedText={relation && relation.key.toString()}
         menuContainerStyle={{ alignItems: 'flex-end', marginLeft: width / 2 - 95 }}
         itemContainer={{ height: 44.8, marginHorizontal: 12, width: width / 2 }}
         itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b'), paddingHorizontal: 0 }}
@@ -317,26 +413,48 @@ export const SignUpNew: React.FC<SignUpProps> = (props) => {
           alignSelf: 'flex-start',
         }}
         bottomPadding={{ paddingBottom: 20 }}
-        onPress={(selectedRelation) => {}}
+        onPress={(selectedRelation) =>
+          setRelation({
+            key: selectedRelation.key as Relation,
+            title: selectedRelation.value.toString(),
+          })
+        }
       >
-        <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-          <View style={styles.placeholderViewStyle}>
-            <Text
-              style={[
-                {
-                  color: theme.colors.LIGHT_BLUE,
-                  fontSize: 13,
-                  marginBottom: 10,
-                  marginLeft: 10,
-                  fontWeight: '600',
-                },
-              ]}
-            >
-              Profile Created For
-            </Text>
-            <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
-              <DropdownGreen />
-            </View>
+        <View style={[styles.placeholderViewStyle, { flexDirection: 'row', paddingTop: 20 }]}>
+          <Text
+            style={[
+              {
+                ...theme.fonts.IBMPlexSansMedium(18),
+                marginBottom: 10,
+                marginLeft: 5,
+                fontWeight: '600',
+                paddingLeft: 11,
+                color: '#02475b',
+                fontSize:
+                  relation !== undefined
+                    ? PixelRatio.getFontScale() * 11
+                    : PixelRatio.getFontScale() * 14,
+                position: 'absolute',
+                top: relation !== undefined ? 0 : 20,
+              },
+            ]}
+          >
+            Profile Created For
+          </Text>
+          <Text
+            style={{
+              ...theme.fonts.IBMPlexSansMedium(18),
+              color: '#02475b',
+              marginBottom: 10,
+              fontSize: 14,
+              marginLeft: 15,
+              fontWeight: '600',
+            }}
+          >
+            {relation !== undefined && relation.title}
+          </Text>
+          <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
+            <DropdownGreen />
           </View>
         </View>
       </MaterialMenu>
@@ -525,17 +643,12 @@ export const SignUpNew: React.FC<SignUpProps> = (props) => {
                   </TouchableOpacity>
                 ))}
               </View>
-              <View
-                style={{
-                  marginTop: 25,
-                }}
-              >
-                {renderRelation()}
-              </View>
+              <View style={{ marginTop: 10, marginBottom: 10 }}>{renderRelation()}</View>
               <FloatingLabelInputComponent
                 label={'Email (Optional)'}
-                onChangeText={(text: string) => {}}
-                value={firstName}
+                onChangeText={(text: string) => _setEmail(text)}
+                value={email}
+                autoCapitalize="none"
                 textInputprops={{
                   maxLength: 50,
                 }}
@@ -673,10 +786,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     width: '100%',
-    borderBottomWidth: 2,
+    borderBottomWidth: 1,
     paddingTop: 0,
-    paddingBottom: 3,
-    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
+    paddingBottom: 0,
+    borderColor: '#02475b',
   },
   placeholderTextStyle: {
     color: '#01475b',
