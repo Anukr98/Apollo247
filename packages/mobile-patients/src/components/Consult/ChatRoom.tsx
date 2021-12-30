@@ -3184,7 +3184,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         callEndWebengageEvent('Network');
         setTimeout(() => {
           setSnackbarState(true);
-          setHandlerMessage('Check the network connection.');
+          setHandlerMessage('Call disconnected due to bad network.');
         }, 2050);
       } else {
         setSnackBar();
