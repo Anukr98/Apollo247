@@ -15,6 +15,8 @@ export interface getDiagnosticItemRecommendations_getDiagnosticItemRecommendatio
 
 export interface getDiagnosticItemRecommendations_getDiagnosticItemRecommendations_itemsData_diagnosticInclusions {
   __typename: "DiagnosticInclusions";
+  name: string;
+  itemId: number;
   observations: (getDiagnosticItemRecommendations_getDiagnosticItemRecommendations_itemsData_diagnosticInclusions_observations | null)[] | null;
 }
 

@@ -1677,6 +1677,22 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       frequentlyBroughtRecommendations?.length > 0
         ? getWidgetTitle?.frequentlyBrought
         : getWidgetTitle?.topBookedTests;
+    const dataToShow = frequentlyBroughtRecommendations?.length > 0
+    ? frequentlyBroughtRecommendations
+    : topBookedTests
+
+    const inclusionIdArray: any[] = [];
+    const inclusionIds =
+      !!testInfo &&
+      !!testInfo?.inclusions?.length &&
+      testInfo?.inclusions?.map((_item: any) => {
+        inclusionIdArray?.push(_item);
+      });
+    const dataToRender = dataToShow?.filter((item: any) => {
+      if (item?.itemId != itemId || !inclusionIdArray?.includes(item?.itemId)) {
+        return item;
+      }
+    });
     return (
       <>
         {frequentlyBroughtShimmer ? (
@@ -1689,17 +1705,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               style={{ borderBottomWidth: 0, borderColor: 'transparent' }}
             />
             <ItemCard
-              diagnosticWidgetData={
-                frequentlyBroughtRecommendations?.length > 0
-                  ? frequentlyBroughtRecommendations
-                  : topBookedTests
-              }
+              diagnosticWidgetData={dataToRender}
               onPressRemoveItemFromCart={(item) => {}}
-              data={
-                frequentlyBroughtRecommendations?.length > 0
-                  ? frequentlyBroughtRecommendations
-                  : topBookedTests
-              }
+              data={dataToRender}
               isCircleSubscribed={isDiagnosticCircleSubscription}
               isServiceable={true}
               isVertical={false}
