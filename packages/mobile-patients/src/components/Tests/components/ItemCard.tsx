@@ -112,7 +112,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
       const imageUrl = getItem?.itemImageUrl;
 
       const name = getItem?.itemTitle || getItem?.itemName;
-      const inclusions = getItem?.inclusionData;
+      const inclusions = getItem?.inclusionData || getItem?.diagnosticInclusions;
 
       const getMandatoryParamter =
         !!inclusions &&
