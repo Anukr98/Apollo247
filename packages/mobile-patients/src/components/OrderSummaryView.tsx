@@ -198,7 +198,8 @@ export interface OrderSummaryViewProps {
   isTest?: boolean;
   addressData?: string;
   onBillChangesClick?: () => void;
-  cashbackDetails?: getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_amountBreakUp;
+  cashbackDetails?: getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_amountBreakUp | null;
+  orderStatus?: MEDICINE_ORDER_STATUS | null;
 }
 
 export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
@@ -206,6 +207,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
   addressData,
   onBillChangesClick,
   cashbackDetails,
+  orderStatus,
 }) => {
   const medicineOrderLineItems = orderDetails.medicineOrderLineItems || [];
   const medicineOrderShipments = orderDetails.medicineOrderShipments || [];
@@ -561,7 +563,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             cashback of{' '}
             <Text style={styles.highlightedCashBackText}>
               {string.common.Rs}
-              {convertNumberToDecimal(orderDetails?.totalCashBack!)} earned{' '}
+              {convertNumberToDecimal(cashbackDetails?.circleCashback!)} earned{' '}
             </Text>
             on your order
           </Text>
@@ -775,7 +777,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             : medicineOrderLineItems?.map((item) => renderMedicineRow(item!))}
         </View>
 
-        {orderDetails?.totalCashBack! > 0 && renderCircleSaving()}
+        {cashbackDetails?.circleCashback! > 0 && renderCircleSaving()}
         {orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER ||
         (orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION &&
           orderBilledAndPacked) ? (
@@ -1074,7 +1076,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             </Text>
           </TouchableOpacity>
         ) : null}
-        {true ? (
+        {cashbackDetails?.totalCashBack ? (
           <View style={styles.creditsEarnedContainer}>
             {showCashbackCard && renderCashbackDetailsCard()}
             <View style={styles.iconContainer}>
