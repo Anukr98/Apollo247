@@ -1196,7 +1196,7 @@ export async function DiagnosticOrderPlaced(
       'Patient Uhid': verticalAttributes?.patientUhid,
       'Patient Gender': verticalAttributes?.patientGender,
       'Patient Age': verticalAttributes?.patientAge,
-      'No of patients': JSON.stringify(verticalAttributes?.patientName)?.length,
+      'No of patients': eventAttributes?.['Order id']?.length,
     };
     postCleverTapEvent(
       APP_ENV === AppEnv.PROD

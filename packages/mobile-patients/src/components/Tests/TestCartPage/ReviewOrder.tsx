@@ -84,10 +84,8 @@ import {
   initiateSDK,
   terminateSDK,
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
-import { findDiagnosticSettings } from '@aph/mobile-patients/src/graphql/types/findDiagnosticSettings';
 import {
   CREATE_USER_SUBSCRIPTION,
-  FIND_DIAGNOSTIC_SETTINGS,
   GET_PLAN_DETAILS_BY_PLAN_ID,
   MODIFY_DIAGNOSTIC_ORDERS,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -95,6 +93,7 @@ import {
   createInternalOrder,
   diagnosticGetPhleboCharges,
   diagnosticSaveBookHcCollectionV2,
+  getDiagnosticSettings,
   getReportTAT,
   processDiagnosticsCODOrderV2,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
@@ -729,13 +728,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
   const fetchFindDiagnosticSettings = async () => {
     try {
-      const response = await client.query<findDiagnosticSettings>({
-        query: FIND_DIAGNOSTIC_SETTINGS,
-        variables: {
-          phleboETAInMinutes: 0,
-        },
-        fetchPolicy: 'no-cache',
-      });
+      const response = await getDiagnosticSettings(client, 0);
       const phleboMin = response?.data?.findDiagnosticSettings?.phleboETAInMinutes || 45;
       setPhleboMin(phleboMin);
     } catch (error) {

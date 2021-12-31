@@ -785,7 +785,8 @@
     "availableHCText": "Available Health Credits :",
     "HcDisclaimer":"Use Health Credits at Payments Checkout",
     "healthCredits": "Health Credits",
-    "redemmedTxt": "(Redeemed)"
+    "redemmedTxt": "(Redeemed)",
+    "minorAgeTestText": "We allow only RTPCR bookings for children less than 10 years old"
   },
   "orders": {
     "urOrders": "MY ORDERS",

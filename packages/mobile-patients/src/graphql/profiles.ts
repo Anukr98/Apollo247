@@ -6424,6 +6424,8 @@ export const GET_DIAGNOSTICS_RECOMMENDATIONS = gql`
         itemId
         itemName
         diagnosticInclusions{
+          itemId
+          name
           observations{
             observationName
             mandatoryValue
