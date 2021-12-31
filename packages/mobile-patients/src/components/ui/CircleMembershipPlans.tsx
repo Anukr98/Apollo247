@@ -167,7 +167,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     serverCartItems,
     circlePlanValidity,
   } = useShoppingCart();
-  const totalCashBack = serverCartAmount?.totalCashBack?.toFixed(2) || cartTotalCashback || 0;
+  const circleCashback = serverCartAmount?.circleSavings?.membershipCashBack?.toFixed(2) || 0;
   const { setUserActionPayload } = useServerCart();
   const {
     setIsDiagnosticCircleSubscription,
@@ -788,7 +788,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
           </Text>
           <Text
             style={theme.viewStyles.text('R', 13, '#02475B', 1, 20)}
-          >{` of ₹${totalCashBack} on this order`}</Text>
+          >{` of ₹${circleCashback} on this order`}</Text>
         </View>
         <View style={{ flexDirection: 'row' }}>
           <BlueTick style={styles.blueTickIcon} />
