@@ -1591,6 +1591,11 @@ export const DIAGNOSTIC_SUB_STATUS_TO_SHOW = [
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
 ];
 
+export const ELIGIBLE_HC_VERTICALS = [
+  'pharma',
+  'diagnostics'
+]
+
 export const TestsNewFeedbackData = {
   options: [
     'Wrong Report recieved',
