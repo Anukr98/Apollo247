@@ -48,14 +48,13 @@ export const ReferralBanner: React.FC<ReferralBannerProps> = (props) => {
     <TouchableOpacity
       style={styles.referEarnMainContainer}
       onPress={() => {
-        // const eventArributes = {
-        //   ...getReferEarnCommonAttributes(),
-        // };
-        // postCleverTapEvent(CleverTapEventName.REFER_EARN_CTA_CLICKED, {
-        //   ...eventArributes,
-        // });
-        // props.redirectOnShareReferrer();
-        props.navigation.navigate('SignUpNew');
+        const eventArributes = {
+          ...getReferEarnCommonAttributes(),
+        };
+        postCleverTapEvent(CleverTapEventName.REFER_EARN_CTA_CLICKED, {
+          ...eventArributes,
+        });
+        props.redirectOnShareReferrer();
       }}
     >
       <View style={styles.referEarnImageContainer}>

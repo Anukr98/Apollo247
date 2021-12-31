@@ -170,7 +170,6 @@ import { CouponScreen } from '@aph/mobile-patients/src/components/Tests/TestCart
 import { InformativeContent } from '@aph/mobile-patients/src/components/HealthRecords/InformationContent';
 import { ServerCart } from '@aph/mobile-patients/src/components/ServerCart/ServerCart';
 import { ReviewCart } from '@aph/mobile-patients/src/components/ServerCart/ReviewCart';
-import { SignUpNew } from './SignUpNew/SignupNew';
 
 export enum AppRoutes {
   Login = 'Login',
@@ -332,7 +331,6 @@ export enum AppRoutes {
   InformativeContent = 'InformativeContent',
   ServerCart = 'ServerCart',
   ReviewCart = 'ReviewCart',
-  SignUpNew = 'SignUpNew',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -849,9 +847,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ReviewCart]: {
     screen: ReviewCart,
-  },
-  [AppRoutes.SignUpNew]: {
-    screen: SignUpNew,
   },
 };
 
