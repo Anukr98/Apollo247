@@ -252,7 +252,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
       const eventAttributes:
         | WebEngageEvents[WebEngageEventName.NO_SLOTS_FOUND]
         | CleverTapEvents[CleverTapEventName.CONSULT_NO_SLOTS_FOUND] = {
-        'Doctor Name': g(data, 'fullName')!,
+        'Doctor Name': g(data, 'displayName')!,
         'Speciality ID': g(data, 'specialty', 'id')!,
         'Speciality Name': g(data, 'specialty', 'name')!,
         'Doctor Category': g(data, 'doctorType')!,
@@ -321,7 +321,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
                         }}
                       >
                         {`${
-                          props.doctor ? props.doctor!.fullName : ''
+                          props.doctor ? props.doctor?.displayName : ''
                         } is not available in the ${selectedtiming.toLowerCase()} slot :(`}
                       </Text>
                     );

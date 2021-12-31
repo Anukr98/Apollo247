@@ -362,7 +362,7 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
       | WebEngageEvents[WebEngageEventName.CONSULT_CARD_CLICKED]
       | WebEngageEvents[WebEngageEventName.CONTINUE_CONSULT_CLICKED]
       | WebEngageEvents[WebEngageEventName.FILL_MEDICAL_DETAILS] = {
-      'Doctor Name': g(data, 'doctorInfo', 'fullName')!,
+      'Doctor Name': g(data, 'doctorInfo', 'displayName')!,
       'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
       'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,
       'Doctor Category': g(data, 'doctorInfo', 'doctorType')!,
