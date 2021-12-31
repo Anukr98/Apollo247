@@ -215,6 +215,7 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
   };
 
   const renderTotalSavingsAndHealthCredits = () => {
+    const totalCashbackToBeDisplayed = circleMembershipCashback + couponCashBack;
     return estimatedAmount >= 0 ? (
       <View style={styles.savingsAndCreditsContainer}>
         <View style={{ flexDirection: 'row', alignSelf: 'baseline' }}>
@@ -296,7 +297,7 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
                     setHCTextWidth(layout.width);
                   }}
                 >
-                  {totalCashBack} HC
+                  {totalCashbackToBeDisplayed} HC
                 </Text>
                 <Text
                   numberOfLines={1}
