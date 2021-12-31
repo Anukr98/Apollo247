@@ -32,12 +32,12 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
   const circleDeliverySavings = isCircleCart
     ? serverCartAmount?.circleSavings?.circleDelivery || 0
     : 0;
-  const circleMembershipCashback = isCircleCart
+  const circleMembershipCashback = cartSubscriptionDetails?.subscriptionApplied
     ? serverCartAmount?.circleSavings?.membershipCashBack || 0
     : 0;
   const deliverySavings = isDeliveryFree || circleDeliverySavings > 0 ? deliveryCharges : 0;
   const totalSavings =
-    cartSavings + couponSavings + deliverySavings + (isCircleCart ? totalCashBack : 0) || 0;
+    cartSavings + couponSavings + deliverySavings + couponCashBack + circleMembershipCashback;
   const isHealthCreditsAvailable = healthCredits ? true : false;
   const savingsAfterUsingHC =
     isHealthCreditsAvailable && estimatedAmount
@@ -65,7 +65,7 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
     return cartTotal ? (
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <Text style={styles.text}>Cart total</Text>
-        {afterSavingsCartTotal >= 0 ? (
+        {afterSavingsCartTotal ? (
           <View style={{ flexDirection: 'row' }}>
             <Text style={styles.strikedThroughText}>
               {string.common.Rs}
@@ -140,7 +140,7 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
   };
 
   const renderToPay = () => {
-    return estimatedAmount >= 0 ? (
+    return estimatedAmount ? (
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <Text style={styles.toPay}>To Pay</Text>
         <Text style={styles.toPay}>
@@ -297,7 +297,7 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
                     setHCTextWidth(layout.width);
                   }}
                 >
-                  {totalCashbackToBeDisplayed} HC
+                  {totalCashbackToBeDisplayed.toFixed(2)} HC
                 </Text>
                 <Text
                   numberOfLines={1}
