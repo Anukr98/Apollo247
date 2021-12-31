@@ -9,7 +9,7 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 import string from '@aph/mobile-patients/src/strings/strings.json';
 
 export interface CartTotalSectionProps {
-  showTotalSavingsAndHCSection: boolean;
+  showTotalSavingsAndHCSection?: boolean;
 }
 
 export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
