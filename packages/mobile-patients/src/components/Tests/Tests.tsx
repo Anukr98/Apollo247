@@ -39,7 +39,6 @@ import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
   GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
-  GET_PATIENT_ADDRESS_LIST,
   GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
   SET_DEFAULT_ADDRESS,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -117,6 +116,7 @@ import {
 import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
 import {
   diagnosticServiceability,
+  fetchPatientAddressList,
   getDiagnosticClosedOrders,
   getDiagnosticExpressSlots,
   getDiagnosticOpenOrders,
@@ -147,10 +147,6 @@ import {
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import ItemCard from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
 import PackageCard from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
-import {
-  getPatientAddressList,
-  getPatientAddressListVariables,
-} from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   AppConfig,
@@ -1005,11 +1001,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }
       }
       setFetchAddressLoading?.(true);
-      const response = await client.query<getPatientAddressList, getPatientAddressListVariables>({
-        query: GET_PATIENT_ADDRESS_LIST,
-        variables: { patientId: currentPatient?.id },
-        fetchPolicy: 'no-cache',
-      });
+      const response = await fetchPatientAddressList(client, currentPatient?.id);
       const addressList = (response?.data?.getPatientAddressList?.addressList as Address[]) || [];
       setAddresses?.(addressList);
       setTestAddress?.(addressList);

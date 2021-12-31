@@ -4340,3 +4340,7 @@ export const calculateDiagnosticCartItems = (
   }
   return selectedCartItems;
 };
+
+export const isRtpcrInCart = (cartItems: DiagnosticsCartItem[]) =>{
+  return !!cartItems?.find((cartItem) =>  AppConfig.Configuration.DIAGNOSTICS_COVID_ITEM_IDS?.includes(Number(cartItem?.id)))
+}

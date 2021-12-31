@@ -47,6 +47,7 @@ interface PatientListOverlayProps {
   responseMessage?: string | boolean;
   onCloseError?: () => void;
   refetchResult?: () => void;
+  removeAllSwitchRestrictions?: boolean;
 }
 
 export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => {
@@ -60,6 +61,7 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
     titleStyle,
     responseMessage,
     refetchResult,
+    removeAllSwitchRestrictions,
   } = props;
   const { allCurrentPatients } = useAllCurrentPatients();
   const [selectedPatient, setSelectedPatient] = useState<any>(patientSelected);
@@ -84,7 +86,7 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
     const patientName = `${customStyle ? patientSalutation || '' : ''} ${item?.firstName ||
       ''} ${item?.lastName || ''}`;
     const genderAgeText = `${item?.gender || ''}, ${
-      item?.dateOfBirth ? getAge(item?.dateOfBirth) || '' : ''
+      item?.dateOfBirth ? getAge(item?.dateOfBirth) : ''
     }`;
 
     const showGreenBg = selectedPatient?.id === item?.id;
@@ -92,7 +94,10 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
     const itemViewStyle = [
       customStyle ? styles.patientItemViewCustomStyle : styles.patientItemViewStyle,
       (index === 0 || customStyle) && { marginTop: 12 },
-      isMinorAge
+
+      removeAllSwitchRestrictions
+        ? showGreenBg && { backgroundColor: APP_GREEN, borderColor: 'transparent' }
+        : isMinorAge
         ? styles.disabledStyle
         : showGreenBg && { backgroundColor: APP_GREEN, borderColor: 'transparent' },
     ];
@@ -101,21 +106,29 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
         activeOpacity={1}
         style={itemViewStyle}
         onPress={() => {
-          isMinorAge ? {} : setSelectedPatient(item);
+          removeAllSwitchRestrictions
+            ? setSelectedPatient(item)
+            : isMinorAge
+            ? {}
+            : setSelectedPatient(item);
         }}
       >
         <Text
           style={[
             styles.patientNameTextStyle,
             customStyle && { width: '69%', color: SHERPA_BLUE },
-            isMinorAge ? styles.disabledText : showGreenBg && { color: WHITE },
+            removeAllSwitchRestrictions
+              ? showGreenBg && { color: WHITE }
+              : isMinorAge
+              ? styles.disabledText
+              : showGreenBg && { color: WHITE },
           ]}
         >
           {patientName}
         </Text>
         {customStyle ? (
           <View style={styles.rowStyle}>
-            {renderGenderAge(isMinorAge, showGreenBg, genderAgeText)}
+            {renderGenderAge(isMinorAge, showGreenBg, genderAgeText, removeAllSwitchRestrictions!)}
             {showGreenBg ? (
               <AddPatientCircleIcon style={styles.checkedIconStyle} />
             ) : (
@@ -123,7 +136,7 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
             )}
           </View>
         ) : (
-          renderGenderAge(isMinorAge, showGreenBg, genderAgeText)
+          renderGenderAge(isMinorAge, showGreenBg, genderAgeText, removeAllSwitchRestrictions!)
         )}
       </TouchableOpacity>
     );
@@ -132,14 +145,19 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
   const renderGenderAge = (
     isPatientDisabled: boolean,
     showGreenBg: boolean,
-    genderAgeText: string
+    genderAgeText: string,
+    revertDisabled: boolean
   ) => {
     return (
       <Text
         style={[
           styles.genderAgeTextStyle,
           customStyle && { color: SHERPA_BLUE },
-          isPatientDisabled ? styles.disabledText : showGreenBg && { color: WHITE },
+          revertDisabled
+            ? showGreenBg && { color: WHITE }
+            : isPatientDisabled
+            ? styles.disabledText
+            : showGreenBg && { color: WHITE },
         ]}
       >
         {genderAgeText}
