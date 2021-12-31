@@ -312,7 +312,9 @@
     "otp_placeholder": "Please enter OTP to access all Apollo service in an app!",
     "otp_resent_on_call": "OTP resent on call",
     "otp_resent_on_sms": "OTP resent on SMS",
-    "otp_not_received": "Didn't get OTP?"
+    "otp_not_received": "Didn't get OTP?",
+    "number_auto_detected": "Number auto detected from your SIM 1",
+    "manual_number_input": "ENTER NUMBER MANUALLY"
   },
   "home": {
     "hi": "hi",

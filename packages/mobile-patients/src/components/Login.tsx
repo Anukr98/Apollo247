@@ -132,6 +132,9 @@ export const Login: React.FC<LoginProps> = (props) => {
   const [error, setError] = useState<string>('')
   const [focusAnim] = useState(new Animated.Value(0))
   const [paginationSpace] = useState(new Animated.Value(30))
+  const [autoDetectedNumber, setAutoDetectedNumber] = useState<string>('')
+  const formRef = useRef()
+
   const isAndroid = Platform.OS === 'android';
   const client = useApolloClient();
   const [openFillerView, setOpenFillerView] = useState<boolean>(false);
@@ -151,10 +154,7 @@ export const Login: React.FC<LoginProps> = (props) => {
       color: theme.colors.INPUT_TEXT,
       paddingRight: 6,
       letterSpacing: 0.5,
-      // lineHeight: 28,
-      // paddingTop: Platform.OS === 'ios' ? 0 : 6,
       paddingBottom: Platform.OS === 'ios' ? 5 : 3,
-      // backgroundColor: 'red',
       width: "30%",
       textAlign: 'right'
     },
@@ -164,38 +164,25 @@ export const Login: React.FC<LoginProps> = (props) => {
       width: '85%',
       alignSelf: 'center',
       borderBottomWidth: 2,
-      // marginTop: '2%'
     },
     inputStyle: {
       ...theme.fonts.IBMPlexSansMedium(16),
       width: "100%",
-      // backgroundColor: 'red', 
       color: theme.colors.INPUT_TEXT,
-      // paddingLeft: 32,
-      // backgroundColor:'red',
-      // paddingBottom: 4,
-      // backgroundColor: 'red',
-      // borderBottomWidth: 1,
       height: 40,
       textAlign: 'center',
       
     },
     inputValidView: {
-      // borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
-      // borderBottomWidth: 2,
       flexDirection: 'row',
       alignItems: 'center',
       width: '100%',
-      // backgroundColor: 'blue',
       justifyContent: 'center',
     },
     inputView: {
-      // borderBottomColor: theme.colors.INPUT_BORDER_FAILURE,
-      // borderBottomWidth: 2,
       flexDirection: 'row',
       alignItems: 'center',
       width: '100%',
-      // backgroundColor: 'green',
       justifyContent: 'center'
     },
     bottomDescription: {
@@ -298,12 +285,28 @@ export const Login: React.FC<LoginProps> = (props) => {
         12,
         colors.INPUT_FAILURE_TEXT
       )
+    },
+    useNumberButton: {
+      backgroundColor: colors.ORANGE_ENABLED,
+      width: '90%',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: 40,
+      borderRadius: 7
+    },
+    useNumberButtonText: {
+      ...theme.viewStyles.text(
+        'B',
+        16,
+        colors.WHITE
+      )
     }
   });
 
   useEffect(() => {
     isAndroid && initializeTruecaller();
     isAndroid && truecallerEventListeners();
+    isAndroid && renderNumberPopup()
     const eventAttributes: WebEngageEvents[WebEngageEventName.MOBILE_ENTRY] = {};
     postWebEngageEvent(WebEngageEventName.MOBILE_ENTRY, eventAttributes);
     postFirebaseEvent(FirebaseEventName.MOBILE_ENTRY, eventAttributes);
@@ -328,30 +331,41 @@ export const Login: React.FC<LoginProps> = (props) => {
 
   const test = async () => {
     if(Platform.OS === 'android') {
-      // Permissions.check('callPhone').then(async res => {
-      //   if(res === 'authorized') {
-          await DeviceInfo.getPhoneNumber().then(phone => {
-            console.log(phone, 'in if')
-          }).catch(err => console.log('error in reading',err))
-        // }
-        // else {
-        //   Permissions.request('callPhone').then(async res => {
-        //     if(res === 'authorized') {
-        //       await DeviceInfo.getPhoneNumber().then(phone => {
-        //         console.log(phone, 'in else')
-        //       })
-        //     }
-        //   })
-        // }
-      // })
-      // Permissions.request('callPhone').then(async res => {
-      //   if(res === 'authorized' || res === 'restricted') {
-      //     console.log('inside')
-      //     await DeviceInfo.getPhoneNumber().then(res => {
-      //       console.log(res)
-      //     }).catch(err => console.log(err))
-      //   }
-      // })
+      Permissions.check('callPhone')
+      .then(async res => {
+        if(res === 'authorized') {
+          await DeviceInfo.getPhoneNumber()
+          .then(phone => {
+            setAutoDetectedNumber(phone?.toString())
+          })
+          .catch(err => {})
+        }
+        else {
+          Permissions.request('callPhone')
+          .then(async res => {
+            if(res === 'authorized') {
+              await DeviceInfo.getPhoneNumber()
+              .then(phone => {
+                setAutoDetectedNumber(phone?.toString())
+              })
+              .catch(err => {})
+            }
+          })
+        }
+      })
+    }
+  }
+
+  const renderNumberPopup = async () => {
+    try {
+      if(!phoneNumber) {
+        const phone = await SmsRetriever.requestPhoneNumber()
+        validateAndSetPhoneNumber(phone?.slice(3))
+        onBlur()
+      }
+    }
+    catch(err) {
+      console.log(JSON.stringify(err))
     }
   }
 
@@ -899,17 +913,6 @@ export const Login: React.FC<LoginProps> = (props) => {
   };
 
   const onFocus = async () => {
-    try {
-      if(!phoneNumber) {
-        const phone = await SmsRetriever.requestPhoneNumber()
-        console.log(phone)
-        validateAndSetPhoneNumber(phone?.slice(3))
-        onBlur()
-      }
-    }
-    catch(err) {
-      console.log(JSON.stringify(err))
-    }
     setIsFocused(true)
     Animated.timing(
       focusAnim,
@@ -942,6 +945,78 @@ export const Login: React.FC<LoginProps> = (props) => {
       }
     ).start()
   }
+  const switchAndroidForm = () => {
+    console.log(formRef?.current)
+    formRef?.current?.scrollTo({
+      x: width,
+      animated: true
+    })
+  }
+
+  const renderAutodetectedForm = () => <View>
+    <View style={{ alignItems: 'center', marginBottom: 30 }}>
+      <Text style={theme.viewStyles.text('R', 13, colors.SLATE_GRAY)}>{string.login.number_auto_detected}</Text>
+    </View>
+    <View style={{ alignItems: 'center' }}>
+      <TouchableOpacity style={styles.useNumberButton}>
+        <Text style={styles.useNumberButtonText}>USE {autoDetectedNumber}</Text>
+      </TouchableOpacity>
+      <View style={{ marginVertical: 12 }}>
+        <Text style={theme.viewStyles.text('M', 14, colors.LIGHT_BLUE)}>OR</Text>
+      </View>
+      <TouchableOpacity
+        style={[
+          styles.useNumberButton,
+          {
+            backgroundColor: colors.WHITE,
+            borderColor: colors.ORANGE_ENABLED,
+            borderWidth: 1
+          }
+        ]}
+        onPress={switchAndroidForm}
+        >
+        <Text
+          style={theme.viewStyles.text('M', 16, colors.ORANGE_ENABLED)}
+        >
+          {string.login.manual_number_input}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+
+  const renderManualForm = () => <>
+    <View style={{ alignItems: 'center', opacity: (error || phoneNumber.length) ? 1 : 0 }}>
+      <Text style={theme.viewStyles.text('R', 12, colors.LIGHT_BLUE)}>Registered mobile number</Text>
+    </View>
+    <Animated.View
+      style={[
+        styles.inputContainer,
+        {
+          borderBottomColor: !isFocused ? colors.CARD_HEADER : (phoneNumberIsValid || phoneNumber == '') ? theme.colors.INPUT_BORDER_SUCCESS : theme.colors.INPUT_BORDER_FAILURE,
+          marginTop: paginationSpace
+        }
+      ]}>
+      <TextInput
+        style={styles.inputStyle}
+        keyboardType="numeric"
+        maxLength={10}
+        value={phoneNumber}
+        onChangeText={(value: string) => validateAndSetPhoneNumber(value)}
+        placeholder='Enter mobile number (10 digits)'
+        onFocus={onFocus}
+        onBlur={onBlur}
+        onSubmitEditing={onClickOkay}
+      />
+    </Animated.View>
+    <Animated.View style={[styles.submitButtonContainer,{  marginTop: "6%" }]}>
+      <TouchableOpacity
+        style={styles.submitButton}
+        onPress={onClickOkay}
+      >
+        <Text style={[theme.fonts.IBMPlexSansBold(12), { color: colors.WHITE, letterSpacing: 1 }]}>{string.common.continue}</Text>
+      </TouchableOpacity>
+    </Animated.View>
+  </>
 
   return (
     <Animated.View style={{ flex: 1, backgroundColor: "#e5e5e5",}}>
@@ -955,41 +1030,31 @@ export const Login: React.FC<LoginProps> = (props) => {
 
             <Animated.View style={{ height: paginationSpace }} />
 
-            <View>
-              <Animated.View style={{ alignItems: 'center', marginBottom: paginationSpace }}>
-                <Text style={[theme.fonts.IBMPlexSansSemiBold(16), { color: colors.CARD_HEADER }]}>
-                  {string.login.signin_signup}
-                </Text>
-              </Animated.View>
-              {
-                error ? <View style={{ alignItems: 'center', marginVertical: 5 }}>
-                  <Text style={styles.errorText}>{error}</Text>
-                </View> : null
-              }
-              <View style={{ alignItems: 'center', marginBottom: 5 }}><Text style={theme.viewStyles.text('R', 12, colors.LIGHT_BLUE)}>Enter mobile number</Text></View>
-              <View style={[styles.inputContainer, { borderBottomColor: !isFocused ? colors.CARD_HEADER : (phoneNumberIsValid || phoneNumber == '') ? theme.colors.INPUT_BORDER_SUCCESS : theme.colors.INPUT_BORDER_FAILURE }]}>
-                <TextInput
-                  style={styles.inputStyle}
-                  keyboardType="numeric"
-                  maxLength={10}
-                  value={phoneNumber}
-                  onChangeText={(value: string) => validateAndSetPhoneNumber(value)}
-                  placeholder='Enter mobile number (10 digits)'
-                  onFocus={onFocus}
-                  onBlur={onBlur}
-                  // onSubmitEditing={() => phoneNumber.length === 10 && onClickOkay()}
-                  onSubmitEditing={onClickOkay}
-                />
+            <Animated.View style={{ alignItems: 'center', marginBottom: autoDetectedNumber === 'unknown' ? 8 : paginationSpace }}>
+              <Text style={[theme.fonts.IBMPlexSansSemiBold(18), { color: colors.CARD_HEADER }]}>
+                {string.login.signin_signup}
+              </Text>
+            </Animated.View>
+            {
+              error ? <View style={{ alignItems: 'center', marginTop: 5, marginBottom: 7 }}>
+                <Text style={styles.errorText}>{error}</Text>
+              </View> : null
+            }
+
+            <View style={{ flex: 1 }}>
+              <ScrollView
+                horizontal
+                scrollEnabled={false}
+                ref={formRef}
+                showsHorizontalScrollIndicator={false}
+              >
+              <View style={{ width }}>
+                {renderAutodetectedForm()}
               </View>
-              <Animated.View style={[styles.submitButtonContainer,{  marginTop: "6%" }]}>
-                <TouchableOpacity
-                  style={[styles.submitButton]}
-                  // disabled={!(phoneNumberIsValid && isTandCSelected)}
-                  onPress={onClickOkay}
-                >
-                  <Text style={[theme.fonts.IBMPlexSansBold(12), { color: colors.WHITE, letterSpacing: 1 }]}>{string.common.continue}</Text>
-                </TouchableOpacity>
-              </Animated.View>
+              <View style={{ width }}>
+                {renderManualForm()}
+              </View>
+              </ScrollView>
             </View>
           </LinearGradient>
         </ScrollView>
@@ -1019,86 +1084,6 @@ export const Login: React.FC<LoginProps> = (props) => {
                 {string.login.ofApollo247}
               </Text>
         </View>
-          
-
-        {/* { borderBottomColor: isFocused ? colors.CONSULT_SUCCESS_TEXT : colors.CARD_HEADER } */}
-
-        {/* <LoginCard
-          cardContainer={{ marginTop: 0, paddingBottom: 12 }}
-          description={string.login.please_enter_no}
-          buttonIcon={
-            phoneNumberIsValid &&
-            phoneNumber.replace(/^0+/, '').length === 10 &&
-            isTandCSelected ? (
-              <ArrowYellow size="md_l" />
-            ) : (
-              <ArrowDisabled size="md_l" />
-            )
-          }
-          onClickButton={onClickOkay}
-          disableButton={phoneNumberIsValid && phoneNumber.length === 10  && isTandCSelected? false : true}
-        >
-          <View style={{ flexDirection: 'row', paddingHorizontal: 16 }}>
-            <View
-              style={[
-                {
-                  paddingTop: Platform.OS === 'ios' ? 22 : 15,
-                },
-                phoneNumber == '' || phoneNumberIsValid ? styles.inputValidView : styles.inputView,
-              ]}
-            >
-              <Text style={styles.inputTextStyle}>{string.login.numberPrefix}</Text>
-              <TextInput
-                style={styles.inputStyle}
-                keyboardType="numeric"
-                maxLength={10}
-                value={phoneNumber}
-                onChangeText={(value) => validateAndSetPhoneNumber(value)}
-              />
-            </View>
-          </View>
-          <Text
-            style={
-              phoneNumber == '' || phoneNumberIsValid
-                ? styles.bottomValidDescription
-                : styles.bottomDescription
-            }
-          >
-            {phoneNumber == '' || phoneNumberIsValid
-              ? string.login.otp_sent_to
-              : string.login.wrong_number}
-          </Text>
-          <View style={{ flexDirection: 'row', marginLeft: 5 }}>
-            <CheckBox
-              checked={isTandCSelected}
-              onPress={() => setTandC(!isTandCSelected)}
-              checkedIcon={<CheckBoxFilled  style={styles.checkBoxStyle} />}
-              uncheckedIcon={<CheckBoxEmpty style={styles.checkBoxStyle} />}
-              containerStyle={styles.checkBoxContainer}
-            />
-            <Text
-              style={{
-                color: '#02475b',
-                marginEnd: 45,
-                ...fonts.IBMPlexSansMedium(10),
-              }}
-            >
-              {string.login.bySigningUp}{' '}
-              <Text style={styles.hyperlink} onPress={() => openWebViewTandC()}>
-                {string.login.termsAndCondition}
-              </Text>{' '}
-              {string.login.and}{' '}
-              <Text style={styles.hyperlink} onPress={() => openWebViewPrivacyPolicy()}>
-                {string.login.privacyPolicy}
-              </Text>{' '}
-              {string.login.ofApollo247}
-            </Text>
-          </View>
-        </LoginCard> */}
-        {/* <ScrollView>
-          {enableTrueCaller && isAndroid && renderTruecallerButton()}
-          <LandingDataView />
-        </ScrollView> */}
       </SafeAreaView>
       {showSpinner ? <Spinner /> : null}
       {openFillerView && <FetchingDetails />}

@@ -49,13 +49,13 @@ export const LoginCarousel: React.FC<Props> = ({ focused }) => {
     const [slideIndex, setSlideIndex] = useState(0)
     const { width, height } = Dimensions.get('window')
     let ImageHeight = height * 0.25;
-    const translateX = -width*.08
+    const translateX = -width*.09
 
     const renderLoginCarousel = ({ item }: { item: Data }) => {
         return <View>
             <Image source={item?.image} resizeMode='contain' style={{ aspectRatio: 16/7, transform: [{ translateX }], height: ImageHeight }} />
             <View style={{ alignItems: 'center', marginTop: 40 }}>
-                <Text style={styles.imageTitle}>{'Medicine delivery in 2 hours*'}</Text>
+                <Text style={styles.imageTitle}>{item?.text}</Text>
             </View>
         </View>
     }
@@ -65,7 +65,7 @@ export const LoginCarousel: React.FC<Props> = ({ focused }) => {
         styles.sliderDots,
         {
             backgroundColor: active
-            ? colors.LOGIN_CAROUSEL_ACTIVE_DOT
+            ? colors.TURQUOISE_LIGHT_BLUE
             : colors.CAROUSEL_INACTIVE_DOT,
         },
         ]}
@@ -98,7 +98,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         alignSelf: 'center',
     },
-
     sliderDots: {
         height: 2,
         borderRadius: 60,
