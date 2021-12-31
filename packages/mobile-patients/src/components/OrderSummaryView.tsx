@@ -8,7 +8,7 @@ import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import {
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails,
@@ -21,6 +21,8 @@ import { PaymentModes } from '@aph/mobile-patients/src/strings/strings.json';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { CashbackDetailsCard } from '@aph/mobile-patients/src/components/ServerCart/Components/CashbackDetailsCard';
+import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_amountBreakUp } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetailsWithAddress';
 
 const styles = StyleSheet.create({
   horizontalline: {
@@ -150,6 +152,45 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 13, '#00B38E'),
     marginHorizontal: 5,
   },
+  creditsEarnedContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 0.5,
+    borderBottomWidth: 0.5,
+    borderColor: 'rgba(2, 71, 91, 0.2)',
+  },
+  hcText: {
+    ...theme.fonts.IBMPlexSansRegular(11),
+    fontWeight: '500',
+    lineHeight: 16,
+    color: theme.colors.SHADE_OF_GRAY,
+  },
+  hcEarned: {
+    ...theme.fonts.IBMPlexSansBold(13),
+    fontWeight: '600',
+    lineHeight: 17,
+    color: theme.colors.PACIFIC_BLUE,
+  },
+  textUnderline: {
+    color: theme.colors.LIGHT_BLUE,
+    top: -7,
+    opacity: 0.2,
+  },
+  cashbackDetailsCardContainer: {
+    zIndex: 1,
+    position: 'absolute',
+    bottom: 50,
+  },
+  iconStyle: {
+    height: 32,
+    width: 41,
+  },
+  iconContainer: {
+    paddingRight: 8,
+    paddingTop: 7,
+  },
 });
 
 export interface OrderSummaryViewProps {
@@ -157,12 +198,16 @@ export interface OrderSummaryViewProps {
   isTest?: boolean;
   addressData?: string;
   onBillChangesClick?: () => void;
+  cashbackDetails?: getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_amountBreakUp | null;
+  orderStatus?: MEDICINE_ORDER_STATUS | null;
 }
 
 export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
   orderDetails,
   addressData,
   onBillChangesClick,
+  cashbackDetails,
+  orderStatus,
 }) => {
   const medicineOrderLineItems = orderDetails.medicineOrderLineItems || [];
   const medicineOrderShipments = orderDetails.medicineOrderShipments || [];
@@ -207,6 +252,10 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
     'itemDetails'
   );
   const [itemDetails, setItemDetails] = useState(item_details ? JSON.parse(item_details) : []);
+
+  const hcTextRef = useRef<Text>(null);
+  const [hcTextWidth, setHCTextWidth] = useState<number>(0);
+  const [showCashbackCard, setShowCashbackCard] = useState<boolean>(false);
 
   useEffect(() => {
     if (itemDetails?.length) {
@@ -514,13 +563,25 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             cashback of{' '}
             <Text style={styles.highlightedCashBackText}>
               {string.common.Rs}
-              {convertNumberToDecimal(orderDetails?.totalCashBack!)} earned{' '}
+              {convertNumberToDecimal(cashbackDetails?.circleCashback!)} earned{' '}
             </Text>
             on your order
           </Text>
         </View>
       </View>
     );
+  };
+
+  const renderCashbackDetailsCard = () => {
+    return showCashbackCard ? (
+      <View style={styles.cashbackDetailsCardContainer}>
+        <CashbackDetailsCard
+          savingsClicked={false}
+          triangleAlignmentValue={100}
+          cashbackDetails={cashbackDetails}
+        />
+      </View>
+    ) : null;
   };
 
   const isStorePickup = orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP;
@@ -716,7 +777,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             : medicineOrderLineItems?.map((item) => renderMedicineRow(item!))}
         </View>
 
-        {orderDetails?.totalCashBack! > 0 && renderCircleSaving()}
+        {cashbackDetails?.circleCashback! > 0 && renderCircleSaving()}
         {orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER ||
         (orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION &&
           orderBilledAndPacked) ? (
@@ -1014,6 +1075,44 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
               {'to see the changes in your bill.'}
             </Text>
           </TouchableOpacity>
+        ) : null}
+        {cashbackDetails?.totalCashBack ? (
+          <View style={styles.creditsEarnedContainer}>
+            {showCashbackCard && renderCashbackDetailsCard()}
+            <View style={styles.iconContainer}>
+              <OneApollo style={styles.iconStyle} />
+            </View>
+            <View style={{ paddingTop: 5 }}>
+              <View style={{ marginBottom: 2 }}>
+                <Text style={styles.hcText}>Credits (HC) earned:</Text>
+              </View>
+              <View style={{ alignItems: 'baseline' }}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setShowCashbackCard(!showCashbackCard);
+                  }}
+                >
+                  <Text
+                    style={styles.hcEarned}
+                    ref={hcTextRef}
+                    onLayout={(event) => {
+                      const layout = event.nativeEvent.layout;
+                      setHCTextWidth(layout.width);
+                    }}
+                  >
+                    {cashbackDetails?.totalCashBack?.toFixed(2)} HC
+                  </Text>
+                  <Text
+                    numberOfLines={1}
+                    ellipsizeMode={'clip'}
+                    style={[styles.textUnderline, { width: hcTextWidth }]}
+                  >
+                    ----------------------------------
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
         ) : null}
       </View>
     </View>

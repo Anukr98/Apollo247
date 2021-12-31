@@ -45,7 +45,7 @@ export const ServerCartItemsList: React.FC<ServerCartItemsListProps> = (props) =
       </View>
     );
   };
-  
+
   const postUpdateQuantityEvent = async (sku, name, isPrescriptionRequired, price, sellingPrice, unit) => {
     try {
       const pincode = addresses.find(item => item?.id === cartAddressId)?.zipcode
