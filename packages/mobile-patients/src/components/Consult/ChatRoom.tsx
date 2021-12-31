@@ -2799,17 +2799,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           CommonBugFender('ChatRoom_addToConsultQueueWithAutomatedQuestions', e);
         })
         .finally(() => startJoinTimer(0));
-    } else {
-      addToConsultQueue(client, appointmentData.id)
-        .then(({ data }: any) => {
-          // jdCount = parseInt(data.data.addToConsultQueue.totalJuniorDoctorsOnline, 10);
-          isJdAllowed = data.data.addToConsultQueue.isJdAllowed;
-          jdAssigned = data.data.addToConsultQueue.isJdAssigned;
-        })
-        .catch((e) => {
-          CommonBugFender('ChatRoom_addToConsultQueue', e);
-        })
-        .finally(() => startJoinTimer(0));
     }
   };
 
