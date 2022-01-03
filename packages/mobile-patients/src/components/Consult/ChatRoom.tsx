@@ -1200,12 +1200,13 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderTopLeftRadius: 0,
     borderWidth: 1.5,
-    borderColor: theme.colors.PORCELAIN_GRAY,
     paddingHorizontal: 16,
     paddingTop: 14,
     paddingBottom: 22,
     marginTop: 40,
     marginEnd: 30,
+    borderColor: theme.colors.CHAT_TILE_BG,
+    backgroundColor: theme.colors.CHAT_TILE_BG,
   },
   symptomValue: {
     ...theme.viewStyles.text('R', 14, theme.colors.LIGHT_BLUE, 1, 16),
@@ -1216,6 +1217,12 @@ const styles = StyleSheet.create({
     paddingBottom: 6,
   },
   symParentText: { paddingStart: 14, paddingVertical: 4 },
+  assessmentText: {
+    ...theme.viewStyles.text('M', 15, theme.colors.WHITE, 1, 16),
+    width: 250,
+    marginBottom: 16,
+  },
+  assessmentParentView: { flexDirection: 'row', marginBottom: 60, marginStart: 54 },
 });
 
 const urlRegEx = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG)/;
@@ -6477,11 +6484,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
   const renderStartAssessment = () => {
     return (
-      <View style={{ flexDirection: 'row', marginBottom: 60 }}>
-        <MedicalAssessment style={styles.assessmentIcon} />
+      <View style={styles.assessmentParentView}>
         <View style={styles.startAssessmentView}>
           <Text
-            style={{ width: 250 }}
+            style={styles.assessmentText}
           >{`Hi, We request you to fill the following medical assessment, before ${appointmentData?.doctorInfo.displayName} speaks with you.`}</Text>
           <Button
             title={string.vaccineBooking.proceed}
