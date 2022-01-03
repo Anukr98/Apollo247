@@ -2178,6 +2178,7 @@ export enum APPOINTMENT_STATUS {
 export enum DOSE_NUMBER {
   FIRST = 'FIRST',
   SECOND = 'SECOND',
+  BOOSTER_DOSE = 'BOOSTER_DOSE'
 }
 /** * payment type for appointment */
 export enum PAYMENT_TYPE {

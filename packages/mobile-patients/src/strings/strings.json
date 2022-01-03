@@ -1438,6 +1438,7 @@
     "select_vaccine_dose": "Choose vaccination dose number",
     "title_dose_1": "Dose 1",
     "title_dose_2": "Dose 2",
+    "title_dose_booster": "Booster Dose",
     "select_vaccine_type_opt": "Select Vaccine type (Optional)",
     "vaccine_type": "Vaccine type",
     "title_no_booking": "NO BOOKINGS",
@@ -1513,6 +1514,7 @@
     "success_generate_pdf": "Successfully generated vaccination booking PDF ",
     "success_generate_invoice_pdf": "Successfully generated vaccination invoice.",
     "dose_2_alert": "Please make sure that the difference between 1st and 2nd dose is as per Govt. guidelines. If difference in 2nd dose is less than Govt. guideline, you will not be given 2nd dose.",
+    "dose_booster_alert":"Please make sure that the difference between 2nd and Booster dose is as per Govt. guidelines. If the difference in Booster dose is less than Govt. guideline, you will not be given Booster dose.",
     "verify_title": "VERIFY",
     "submit_title": "SUBMIT "
   },

@@ -1171,6 +1171,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'Vacc_City_Rule_QA',
       PROD: 'Vacc_City_Rule_Prod',
     },
+    Vacc_Show_Booster: {
+      QA: 'Vacc_Show_Booster_QA',
+      PROD: 'Vacc_Show_Booster_Prod',
+    },
     Enable_Diagnostics_COD: {
       QA: 'QA_Enable_Diagnostics_COD',
       PROD: 'Enable_Diagnostics_COD',
@@ -1526,6 +1530,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       setAppConfig('Pharmacy_Packaging_Charges', 'PACKAGING_CHARGES', (key) =>
         config.getNumber(key)
       );
+
+      setAppConfig('Vacc_Show_Booster', 'Vacc_Show_Booster', (key) => config.getBoolean(key));
 
       setAppConfig('Doctor_Partner_Text', 'DOCTOR_PARTNER_TEXT', (key) => config.getString(key));
 

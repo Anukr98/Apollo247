@@ -1436,8 +1436,8 @@ export const GET_SD_LATEST_COMPLETED_CASESHEET_DETAILS = gql`
           itemname
           testInstruction
         }
-        radiologyPrescription{
-          servicename,
+        radiologyPrescription {
+          servicename
           testInstruction
         }
         blobName
@@ -5989,8 +5989,20 @@ export const GET_ALL_VACCINATION_APPOINTMENTS = gql`
 `;
 
 export const GET_VACCINATION_SITES = gql`
-  query getResourcesList($city: String!, $vaccine_type: VACCINE_TYPE, $is_retail: Boolean) {
-    getResourcesList(city: $city, vaccine_type: $vaccine_type, is_retail: $is_retail) {
+  query getResourcesList(
+    $city: String!
+    $vaccine_type: VACCINE_TYPE
+    $is_retail: Boolean
+    $patient_id: String!
+    $dose_number: DOSE_NUMBER
+  ) {
+    getResourcesList(
+      city: $city
+      vaccine_type: $vaccine_type
+      is_retail: $is_retail
+      patient_id: $patient_id
+      dose_number: $dose_number
+    ) {
       code
       success
       message
@@ -6081,12 +6093,16 @@ export const GET_VACCINATION_SLOTS = gql`
     $session_date: Date
     $vaccine_type: VACCINE_TYPE
     $is_retail: Boolean
+    $patient_id: String!
+    $dose_number: DOSE_NUMBER
   ) {
     getResourcesSessionAvailableByDate(
       resource_id: $resource_id
       session_date: $session_date
       vaccine_type: $vaccine_type
       is_retail: $is_retail
+      patient_id: $patient_id
+      dose_number: $dose_number
     ) {
       code
       success
@@ -7255,8 +7271,8 @@ export const DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS = gql`
   }
 `;
 export const INSERT_REFEREE_DATA_TO_REFERRER = gql`
-  mutation addReferralRecord($referralDataInput:createReferralInput!){
-    addReferralRecord(referralInput:$referralDataInput){
+  mutation addReferralRecord($referralDataInput: createReferralInput!) {
+    addReferralRecord(referralInput: $referralDataInput) {
       id
       rewardStatus
     }

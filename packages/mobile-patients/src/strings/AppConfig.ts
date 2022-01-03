@@ -248,6 +248,7 @@ const appStaticVariables = {
   Cancel_Threshold_Pre_Vaccination: 12, //hrs
   Enable_Diagnostics_COD: true,
   Enable_Diagnostics_Cancellation_Policy: false,
+  Vacc_Show_Booster: false,
   Diagnostics_Cancel_Policy_Text_Msg:
     'For a full refund, you must cancel at least 6 hours before the appointment time. Cancellations made within 6 hours of appointment time will incur a fee of up to ₹ 200.',
   RTPCR_Google_Form:
@@ -316,7 +317,7 @@ const appStaticVariables = {
       ctaText: 'Call to Order',
     },
   },
-  DIAGNOSTICS_PHLEBO_CALL_NUMBER:'08046807674',
+  DIAGNOSTICS_PHLEBO_CALL_NUMBER: '08046807674',
   DIAGNOSTICS_COVID_ITEM_IDS: [2446],
   FREE_CONSULT_MESSAGE: {
     prescriptionMessage: 'Get a FREE Consultation by our expert doctor within the next 30 mins.',
@@ -343,35 +344,35 @@ const appStaticVariables = {
     iconVisibility: true,
     whatsappNumber: '4048218743',
   },
-  RADIOLOGY_URL : "/radiology?source=Homepage%20Banner",
-  DIAGNOSTICS_CERTIFICATE_IMAGE_ARRAY : [
+  RADIOLOGY_URL: '/radiology?source=Homepage%20Banner',
+  DIAGNOSTICS_CERTIFICATE_IMAGE_ARRAY: [
     require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
     require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_2.webp'),
     require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_3.webp'),
     require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_4.webp'),
-  ],  
-  DIAGNOSTICS_WHY_BOOK_US_IMAGE_ARRAY :[
+  ],
+  DIAGNOSTICS_WHY_BOOK_US_IMAGE_ARRAY: [
     { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_0.webp') },
     { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_1.webp') },
     { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_2.webp') },
     { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_3.webp') },
   ],
-  DIAGNOSTICS_ENABLE_UPLOAD_PRESCRIPTION_VIA_WHATSAPP : false,
-  DIAGNOSTICS_UPLOAD_PRESCRIPTION : [
+  DIAGNOSTICS_ENABLE_UPLOAD_PRESCRIPTION_VIA_WHATSAPP: false,
+  DIAGNOSTICS_UPLOAD_PRESCRIPTION: [
     {
-      "isWhatsappEnabled": false,
-      "uploadPrescriptionText": string.diagnostics.prescriptionHeading,
-      "CTA": string.common.upload
+      isWhatsappEnabled: false,
+      uploadPrescriptionText: string.diagnostics.prescriptionHeading,
+      CTA: string.common.upload,
     },
     {
-      "isWhatsappEnabled": true,
-      "uploadPrescriptionText": string.diagnostics.prescriptionHeading,
-      "CTA":  string.common.upload,
-      "textMessage":string.diagnostics.uploadPrescriptionWhatsapp.message,
-      "phoneNumber": string.diagnostics.uploadPrescriptionWhatsapp.whatsappPhoneNumber
-    }
+      isWhatsappEnabled: true,
+      uploadPrescriptionText: string.diagnostics.prescriptionHeading,
+      CTA: string.common.upload,
+      textMessage: string.diagnostics.uploadPrescriptionWhatsapp.message,
+      phoneNumber: string.diagnostics.uploadPrescriptionWhatsapp.whatsappPhoneNumber,
+    },
   ],
-}
+};
 
 const DEV_top_specialties = [
   {
@@ -727,7 +728,7 @@ const ConfigurationDev = {
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
-  WEB_URL_PREFIX : "https://aph-staging-web-patients.apollo247.com"
+  WEB_URL_PREFIX: 'https://aph-staging-web-patients.apollo247.com',
 };
 
 // QA
@@ -790,7 +791,7 @@ const ConfigurationQA = {
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
-  WEB_URL_PREFIX : "https://aph-staging-web-patients.apollo247.com"
+  WEB_URL_PREFIX: 'https://aph-staging-web-patients.apollo247.com',
 };
 
 // QA2
@@ -851,7 +852,7 @@ const ConfigurationQA2 = {
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
-  WEB_URL_PREFIX : "https://qapatients.apollo247.com"
+  WEB_URL_PREFIX: 'https://qapatients.apollo247.com',
 };
 
 // QA3
@@ -913,7 +914,7 @@ const ConfigurationQA3 = {
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
-  WEB_URL_PREFIX : "https://qathreepatients.apollo247.com"
+  WEB_URL_PREFIX: 'https://qathreepatients.apollo247.com',
 };
 
 const ConfigurationQA5 = {
@@ -976,7 +977,7 @@ const ConfigurationQA5 = {
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
-  WEB_URL_PREFIX : "https://qa5patients.apollo247.com"
+  WEB_URL_PREFIX: 'https://qa5patients.apollo247.com',
 };
 
 const ConfigurationQA6 = {
@@ -1038,7 +1039,7 @@ const ConfigurationQA6 = {
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
-  WEB_URL_PREFIX : "https://qa6patients.apollo247.com"
+  WEB_URL_PREFIX: 'https://qa6patients.apollo247.com',
 };
 
 // VAPT
@@ -1100,7 +1101,7 @@ const ConfigurationVAPT = {
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
-  WEB_URL_PREFIX : "https://stagingpatients.apollo247.com"
+  WEB_URL_PREFIX: 'https://stagingpatients.apollo247.com',
 };
 //Production
 const ConfigurationProd = {
@@ -1160,7 +1161,7 @@ const ConfigurationProd = {
   PROHEALTH_BANNER_IMAGE: 'https://newassets.apollo247.com/images/banners/ProHealthAppLanding.jpg',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
-  WEB_URL_PREFIX : "https://apollo247.com"
+  WEB_URL_PREFIX: 'https://apollo247.com',
 };
 
 //PERFORMANCE
@@ -1223,7 +1224,7 @@ const ConfigurationPERFORM = {
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
-  WEB_URL_PREFIX : "https://perfpatients.apollo247.com"
+  WEB_URL_PREFIX: 'https://perfpatients.apollo247.com',
 };
 
 //DevelopmentReplica
@@ -1286,7 +1287,7 @@ const ConfigurationDevReplica = {
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
-  WEB_URL_PREFIX : "https://devpatients.apollo247.com"
+  WEB_URL_PREFIX: 'https://devpatients.apollo247.com',
 };
 
 const Configuration =
