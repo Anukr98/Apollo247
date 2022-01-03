@@ -1474,7 +1474,7 @@ export interface CleverTapEvents {
     'Split Cart'?: YesOrNo;
     'Coupon Applied'?: string;
     'Prescription Option selected'?: PrescriptionOptions;
-    Shipment: object[];
+    Shipment?: string;
   };
   [CleverTapEventName.PHARMACY_PAYMENT_INITIATED]: {
     paymentMode: string;
@@ -1648,7 +1648,7 @@ export interface CleverTapEvents {
     Circle_Membership_Value?: number;
     User_Type: string;
     User_Mobile_Number: string;
-    Shipment: object[];
+    Shipment?: string;
   };
 
   // ********** Diagnostic Events *******
@@ -2336,7 +2336,7 @@ export interface CleverTapEvents {
     'User type'?: PharmaUserStatus;
     'Split cart': YesOrNo;
     'Cart items': string;
-    Shipment?: object[];
+    Shipment?: string;
   };
 
   [CleverTapEventName.PHARMACY_CART_ADDRESS_SELECTED_FAILURE]: {

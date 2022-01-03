@@ -141,7 +141,7 @@ export const reviewCartPageViewClevertapEvent = (
       Circle_Membership_Value: circleMembershipValue,
       User_Type: userType,
       User_Mobile_Number: mobileNumber,
-      Shipment: shipmentInfo,
+      Shipment: JSON.stringify(shipmentInfo) || '',
     };
     postCleverTapEvent(CleverTapEventName.PHARMACY_CART_REVIEW_ORDER_PAGE_VIEWED, eventAttributes);
   } catch (e) {}

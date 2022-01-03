@@ -74,7 +74,7 @@ export function postwebEngageProceedToPayEvent(
     'Cart Items': itemsInCart,
     ...pharmacyUserTypeAttribute,
     ...pharmacyCircleEvent,
-    Shipment: shipmentInfo,
+    Shipment: JSON.stringify(shipmentInfo) || '',
   };
   const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_PROCEED_TO_PAY_CLICKED] = {
     'Total items in cart': serverCartItems?.length,
@@ -96,7 +96,7 @@ export function postwebEngageProceedToPayEvent(
     'User Type': pharmacyUserTypeAttribute?.User_Type || undefined,
     'Circle Member': getCleverTapCircleMemberValues(pharmacyCircleEvent?.['Circle Membership Added']!)||undefined,
     'Circle Membership Value':pharmacyCircleEvent?.['Circle Membership Value'] || undefined,
-    Shipment: shipmentInfo,
+    Shipment: JSON.stringify(shipmentInfo) || '',
   };
   if (selectedStore) {
     eventAttributes['Store Id'] = selectedStore.storeid;
