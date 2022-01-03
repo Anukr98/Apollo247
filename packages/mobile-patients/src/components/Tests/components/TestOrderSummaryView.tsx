@@ -737,10 +737,13 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
         <View style={styles.orderSummaryView}>
           {renderPrices(
             txtToShow,
-            !!getOffersResponse ? getTotalEffectivePrice! : orderDetails?.totalPrice,
+            !!getOffersResponse && getOffersResponse?.length > 0
+              ? getTotalEffectivePrice!
+              : orderDetails?.totalPrice,
             false
           )}
           {!!getOffersResponse &&
+            getOffersResponse?.length > 0 &&
             getOffersResponse?.map((item) => renderOffers(item, offerAmountSplit))}
           {!!refundText && renderPrices(refundText, refundAmountToShow, false)}
         </View>
@@ -757,7 +760,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
 
   const renderOffers = (transaction: any, offerAmount: number) => {
     const { offersDetails } = getOffersDetails(transaction);
-    return <View>{renderPrices(offersDetails, offerAmount, false)}</View>;
+    return !!offersDetails ? <View>{renderPrices(offersDetails, offerAmount, false)}</View> : null;
   };
 
   const renderAddPassportView = () => {
