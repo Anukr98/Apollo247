@@ -6,7 +6,6 @@ import moment from 'moment';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import {
   formatAddressForApi,
-  isEmptyObject,
   nameFormater,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -32,7 +31,13 @@ import {
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { DiagnosticOrderSummaryViewed } from '@aph/mobile-patients/src/components/Tests/Events';
-import { Down, Up, DownloadOrange, CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  Down,
+  Up,
+  DownloadOrange,
+  CircleLogo,
+  OneApollo,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { PassportPaitentOverlay } from '@aph/mobile-patients/src/components/Tests/components/PassportPaitentOverlay';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -248,7 +253,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   const renderOrderId = () => {
     const bookedOn = moment(orderDetails?.createdDate)?.format('Do MMM') || null;
     return (
-      <View style={{ justifyContent: 'space-between', flexDirection: 'row' }}>
+      <View style={styles.passportView}>
         <View style={{ flex: 0.9 }}>
           <Text style={styles.orderId}>Order ID #{orderDetails?.displayId}</Text>
           <Text style={styles.bookedOn}>Booked on {bookedOn}</Text>
@@ -388,7 +393,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   const renderItemsCard = () => {
     return (
       <View style={styles.orderSummaryView}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+        <View style={styles.passportView}>
           <Text style={styles.itemHeading}> ITEM NAME</Text>
           <Text style={styles.itemHeading}> PRICE</Text>
         </View>
@@ -396,7 +401,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           return (
             <View style={styles.commonTax}>
               <View style={{ width: '65%' }}>
-                <View style={{ flexDirection: 'row' }}>
+                <View style={styles.flexRow}>
                   <Text style={styles.commonText}>
                     {!!item?.itemName ? item?.itemName : item?.diagnostics?.itemName}
                   </Text>
@@ -628,7 +633,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       <>
         {renderHeading(string.diagnosticsCircle.circleMembership)}
         <View style={styles.circlePurchaseDetailsCard}>
-          <View style={{ flexDirection: 'row' }}>
+          <View style={styles.flexRow}>
             <CircleLogo style={styles.circleLogoIcon} />
             <View style={styles.circlePurchaseDetailsView}>
               <Text style={styles.circlePurchaseText}>
@@ -737,12 +742,39 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
         <View style={styles.orderSummaryView}>
           {renderPrices(
             txtToShow,
-            !!getOffersResponse ? getTotalEffectivePrice! : orderDetails?.totalPrice,
+            !!getOffersResponse && getOffersResponse?.length > 0
+              ? getTotalEffectivePrice!
+              : orderDetails?.totalPrice,
             false
           )}
           {!!getOffersResponse &&
             getOffersResponse?.map((item) => renderOffers(item, offerAmountSplit))}
+          {!!getOffersResponse && getOffersResponse?.length > 0 && renderHealthCredits()}
           {!!refundText && renderPrices(refundText, refundAmountToShow, false)}
+        </View>
+      </View>
+    );
+  };
+
+  const renderHealthCredits = () => {
+    const totalHealthCredits = orderDetails?.diagnosticOrderTransactions?.reduce(
+      (prev: any, curr: any) => prev + curr?.healthCreditsUsed,
+      0
+    );
+    return (
+      <View style={styles.passportView}>
+        <View style={styles.flexRow}>
+          <OneApollo style={styles.iconSize} />
+          <Text style={styles.healthCreditsText}>
+            {string.diagnosticsCartPage.healthCredits}{' '}
+            <Text style={styles.redemmedText}>{string.diagnosticsCartPage.redemmedTxt}</Text>
+          </Text>
+        </View>
+        <View>
+          <Text style={styles.healthCreditsText}>
+            {string.common.Rs}
+            {totalHealthCredits?.toFixed(2)}
+          </Text>
         </View>
       </View>
     );
@@ -757,7 +789,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
 
   const renderOffers = (transaction: any, offerAmount: number) => {
     const { offersDetails } = getOffersDetails(transaction);
-    return <View>{renderPrices(offersDetails, offerAmount, false)}</View>;
+    return !!offersDetails ? <View>{renderPrices(offersDetails, offerAmount, false)}</View> : null;
   };
 
   const renderAddPassportView = () => {
@@ -1043,6 +1075,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     borderColor: '#4CAF50',
     justifyContent: 'center',
+    alignSelf: 'center',
   },
   newText: {
     ...theme.viewStyles.text('SB', 10, 'white'),
@@ -1110,4 +1143,17 @@ const styles = StyleSheet.create({
     height: 25,
     justifyContent: 'center',
   },
+  iconSize: {
+    height: 22,
+    width: 27,
+    resizeMode: 'contain',
+  },
+  healthCreditsText: {
+    ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 24),
+    marginLeft: 4,
+  },
+  redemmedText: {
+    ...theme.viewStyles.text('M', 14, theme.colors.CHAT_TILE_BG, 1, 24),
+  },
+  flexRow: { flexDirection: 'row', alignItems: 'center' },
 });

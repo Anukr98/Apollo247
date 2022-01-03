@@ -144,6 +144,8 @@ import {
   DIAGNOSTICS_ITEM_TYPE,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { PaymentInitiated } from '@aph/mobile-patients/src/components/PaymentGateway/Events';
+import { useFetchHealthCredits } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useFetchHealthCredits';
+import { HealthCreditsCard } from '@aph/mobile-patients/src/components/Tests/components/HealthCreditsCard';
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
@@ -241,6 +243,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     hdfcSubscriptionId,
   } = useShoppingCart();
 
+  const { healthCredits } = useFetchHealthCredits('diagnostics');
   const { hdfcStatus, hdfcPlanId, circleStatus, circlePlanId } = useAppCommonData();
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
@@ -1561,7 +1564,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const showCirclePurchaseAmount = isDiagnosticCircleSubscription || isCircleAddedToCart;
     const showCircleRelatedSavings =
       showCirclePurchaseAmount && circleSaving > 0 && (!!coupon ? couponCircleBenefits : true);
-
+    const showOneApollo = isModifyFlow
+      ? modifiedOrder?.paymentType === DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT
+      : true;
     return (
       <>
         <View
@@ -1646,6 +1651,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             )}
           <Spearator style={{ marginBottom: 6, marginTop: 6 }} />
           {renderPrices(string.common.toPay, toPayPrice?.toFixed(2), true)}
+          {healthCredits != 0 && showOneApollo && <Spearator style={{ marginBottom: 15 }} />}
+          {showOneApollo && renderOneApollo()}
           {isCircleAddedToCart && renderCODDisableText()}
         </View>
 
@@ -1663,6 +1670,10 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         <Text style={styles.codDisableText}>{string.diagnostics.codDisableTextForCircle}</Text>
       </View>
     );
+  };
+
+  const renderOneApollo = () => {
+    return <HealthCreditsCard availableHC={healthCredits} />;
   };
 
   const getHcCharges = (): number => {
