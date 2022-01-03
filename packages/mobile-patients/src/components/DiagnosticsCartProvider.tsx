@@ -218,6 +218,8 @@ export interface DiagnosticsCartContextProps {
   setCouponCircleBenefits: ((value: boolean) => void) | null;
   couponOnMrp: any;
   setCouponOnMrp: ((items: any) => void) | null;
+  waiveOffCollectionCharges: boolean;
+  setWaiveOffCollectionCharges: ((value: boolean) => void) | null;
 }
 
 export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>({
@@ -348,6 +350,8 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   setCouponCircleBenefits: null,
   couponOnMrp: null,
   setCouponOnMrp: null,
+  waiveOffCollectionCharges: false,
+  setWaiveOffCollectionCharges: null,
 });
 
 const showGenericAlert = (message: string) => {
@@ -545,6 +549,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   >(false);
 
   const [couponOnMrp, setCouponOnMrp] = useState<DiagnosticsCartContextProps['couponOnMrp']>(null);
+
+  const [waiveOffCollectionCharges, setWaiveOffCollectionCharges] = useState<
+    DiagnosticsCartContextProps['waiveOffCollectionCharges']
+  >(false);
 
   const setShowMultiPatientMsg: DiagnosticsCartContextProps['setShowMultiPatientMsg'] = (value) => {
     _setShowMultiPatientMsg(value);
@@ -1010,6 +1018,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setSelectedCirclePlan?.(null);
     setCouponCircleBenefits?.(false);
     setCouponOnMrp?.(false);
+    setWaiveOffCollectionCharges?.(false);
   };
 
   useEffect(() => {
@@ -1167,6 +1176,8 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         setCouponCircleBenefits,
         couponOnMrp,
         setCouponOnMrp,
+        waiveOffCollectionCharges,
+        setWaiveOffCollectionCharges,
       }}
     >
       {props.children}

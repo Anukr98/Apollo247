@@ -40,7 +40,6 @@ export interface CouponScreenProps
 
 export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
   const {
-    modifiedOrder,
     isDiagnosticCircleSubscription,
     isCircleAddedToCart,
     setCoupon,
@@ -50,6 +49,7 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
     setHcCharges,
     setModifyHcCharges,
     setDistanceCharges,
+    setWaiveOffCollectionCharges,
   } = useDiagnosticsCart();
   const { circleSubscriptionId, hdfcSubscriptionId } = useShoppingCart();
   const { hdfcPlanId, circlePlanId, hdfcStatus, circleStatus } = useAppCommonData();
@@ -57,7 +57,6 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
   const { showAphAlert, setLoading, loading } = useUIElements();
   const getPincode = props.navigation.getParam('pincode');
   const lineItemWithQuantity = props.navigation.getParam('lineItemWithQuantity');
-  const toPayPrice = props.navigation.getParam('toPayPrice');
   const [couponsList, setCouponsList] = useState([] as any);
   const [couponListError, setCouponListError] = useState<string>('');
   const [couponError, setCouponError] = useState<string>('');
@@ -65,7 +64,6 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
   const [appliedCouponName, setAppliedCouponName] = useState<string>('');
   const [disableCouponsList, setDisableCouponsList] = useState<string[]>([]);
   const [loadingOverlay, setLoadingOverlay] = useState<boolean>(false);
-  const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
 
   const isEnableApplyBtn = couponText.length >= 4;
 
@@ -199,7 +197,10 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
             } else {
               const successMessage = responseData?.successMessage || '';
               //if any sku has freeCollection as true => waive off
-              isFreeHomeCollection?.length > 0 && clearCollectionCharges();
+              if (isFreeHomeCollection?.length > 0) {
+                setWaiveOffCollectionCharges?.(true);
+                clearCollectionCharges();
+              }
               setCoupon?.({
                 ...responseData,
                 successMessage: successMessage,

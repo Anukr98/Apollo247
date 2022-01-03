@@ -229,6 +229,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setCouponCircleBenefits,
     couponOnMrp,
     setCouponOnMrp,
+    waiveOffCollectionCharges,
+    setWaiveOffCollectionCharges,
   } = useDiagnosticsCart();
 
   const {
@@ -574,7 +576,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             } else {
               const successMessage = responseData?.successMessage || '';
               //if any sku has freeCollection as true => waive off
-              isFreeHomeCollection?.length > 0 && clearCollectionCharges();
+              if (isFreeHomeCollection?.length > 0) {
+                setWaiveOffCollectionCharges?.(true);
+                clearCollectionCharges();
+              }
+
               setCoupon?.({
                 ...responseData,
                 successMessage: successMessage,
@@ -2120,6 +2126,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           charges: hcCharges,
           distanceCharges:
             !!diagnosticSlot?.isPaidSlot && diagnosticSlot?.isPaidSlot ? distanceCharges : 0,
+          couponDiscApplied: !!coupon && waiveOffCollectionCharges,
         },
         bookingSource: DiagnosticsBookingSource.MOBILE,
         deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,

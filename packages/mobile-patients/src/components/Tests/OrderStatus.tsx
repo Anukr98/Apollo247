@@ -354,7 +354,6 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const postwebEngageCheckoutCompletedEvent = () => {
     const circleDiscount = circleSubscriptionId && orderCircleSaving ? orderCircleSaving : 0;
     const circleUser = isDiagnosticCircleSubscription || isCircleAddedToCart ? 'Yes' : 'No';
-    console.log({ verticalSpecificEventAttributes });
     const mode = isCOD ? 'Cash' : 'Prepaid';
     DiagnosticOrderPlaced(
       currentPatient,

@@ -4336,21 +4336,6 @@ export const SEARCH_DIAGNOSTICS_BY_ID = gql`
   }
 `;
 
-export const SAVE_DIAGNOSTIC_ORDER_NEW = gql`
-  mutation saveDiagnosticBookHCOrder($diagnosticOrderInput: SaveBookHomeCollectionOrderInput) {
-    saveDiagnosticBookHCOrder(diagnosticOrderInput: $diagnosticOrderInput) {
-      orderId
-      displayId
-      status
-      errorMessageToDisplay
-      attributes {
-        itemids
-        refreshCart
-      }
-    }
-  }
-`;
-
 export const CREATE_INTERNAL_ORDER = gql`
   mutation createOrderInternal($order: OrderCreate) {
     createOrderInternal(order: $order) {

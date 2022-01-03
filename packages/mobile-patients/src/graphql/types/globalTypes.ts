@@ -1880,28 +1880,6 @@ export interface SUBSCRIPTION_DETAILS_PHARMA {
   userSubscriptionId?: string | null;
 }
 
-export interface SaveBookHomeCollectionOrderInput {
-  patientId: string;
-  patientAddressId: string;
-  totalPrice: number;
-  prescriptionUrl: string;
-  diagnosticDate: any;
-  bookingSource?: DiagnosticsBookingSource | null;
-  deviceType?: DEVICETYPE | null;
-  items?: (DiagnosticLineItem | null)[] | null;
-  slotId: string;
-  areaId?: number | null;
-  collectionCharges: number;
-  uniqueID?: string | null;
-  slotDateTimeInUTC: any;
-  totalPriceExcludingDiscounts?: number | null;
-  userSubscriptionId?: string | null;
-  subscriptionInclusionId?: string | null;
-  attachmentData?: (Attachments | null)[] | null;
-  caseSheets?: (string | null)[] | null;
-  agentLoginID?: string | null;
-}
-
 export interface SaveBookHomeCollectionOrderInputv2 {
   patientAddressID: string;
   patientObjWithLineItems?: (patientObjWithLineItems | null)[] | null;
@@ -2113,6 +2091,7 @@ export interface patientObjWithLineItems {
 export interface phleboCharges {
   charges: number;
   distanceCharges?: number | null;
+  couponDiscApplied?: boolean | null;
 }
 
 export interface prescriptionPrismFileProperties {
