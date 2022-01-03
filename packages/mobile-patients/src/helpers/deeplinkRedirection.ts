@@ -253,10 +253,15 @@ export const handleOpenURL = (event: any) => {
         break;
 
       case 'order':
+      case 'orders':
         if (linkId) {
           return {
             routeName: 'Order',
             id: linkId,
+          };
+        } else {
+          return {
+            routeName: 'MyOrders',
           };
         }
         break;
