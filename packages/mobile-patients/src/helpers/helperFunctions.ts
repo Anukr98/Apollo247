@@ -4432,3 +4432,13 @@ export const showDiagnosticCTA = (pageName: CALL_TO_ORDER_CTA_PAGE_ID, cityId: s
     }
   });
 };
+
+export const isTodaysDate = (time: string) => moment(time).isSame(new Date(), 'date');
+export const isTomorrowsDate = (time: string) => {
+  let tommorowDate = new Date();
+  tommorowDate.setDate(tommorowDate.getDate() + 1);
+  const difference = moment(tommorowDate)
+    .startOf('day')
+    .diff(moment(time).startOf('day'), 'days');
+  return difference == 0;
+}

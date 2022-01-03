@@ -7,6 +7,7 @@ import moment from 'moment';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { format } from 'date-fns';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { isTodaysDate, isTomorrowsDate } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 export interface CartTatCardProps {
   deliveryTime: string;
@@ -33,9 +34,9 @@ export const CartTatCard: React.FC<CartTatCardProps> = (props) => {
     let tommorowDate = new Date();
     tommorowDate.setDate(tommorowDate.getDate() + 1);
     let dateText = `${format(deliveryTime, 'D-MMM-YYYY')}`;
-    if (new Date(deliveryTime).toLocaleDateString() == new Date().toLocaleDateString()) {
+    if (isTodaysDate(deliveryTime)) {
       dateText = `${format(deliveryTime, 'h:mm A')}, Today!`;
-    } else if (new Date(deliveryTime).toLocaleDateString() == tommorowDate.toLocaleDateString()) {
+    } else if (isTomorrowsDate(deliveryTime)) {
       dateText = `${format(deliveryTime, 'h:mm A')}, Tomorrow!`;
     }
     return <Text style={styles.dateTime}>{dateText}</Text>;
