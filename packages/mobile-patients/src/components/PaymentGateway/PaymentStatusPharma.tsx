@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -17,7 +17,10 @@ import { useGetPharmaOrderInfo } from './Hooks/useGetPharmaOrderInfo';
 import { TabBar } from '@aph/mobile-patients/src/components/PaymentGateway/Components/TabBar';
 import { SubstituteNotice } from '@aph/mobile-patients/src/components/PaymentGateway/Components/SubstituteNotice';
 import { FreeConsult } from '@aph/mobile-patients/src/components/PaymentGateway/Components/FreeConsult';
-import { UPDATE_MEDICINE_ORDER_SUBSTITUTION } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  UPDATE_MEDICINE_ORDER_SUBSTITUTION,
+  GET_PHARMA_TRANSACTION_STATUS_V2,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   updateMedicineOrderSubstitution,
   updateMedicineOrderSubstitutionVariables,
@@ -44,6 +47,7 @@ import {
   fireCirclePlanActivatedEvent,
 } from '@aph/mobile-patients/src/components/PaymentGateway/Events';
 import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 export interface PaymentStatusPharmaProps extends NavigationScreenProps {}
@@ -56,7 +60,10 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
   const orderIds = orders?.map(
     (item: any, index: number) => item?.orderAutoId + (index != orders?.length - 1 && ', ')
   );
-  const { orderInfo, fetching } = useGetPharmaOrderInfo(paymentId);
+  // const { orderInfo, fetching } = useGetPharmaOrderInfo(paymentId);
+  const { setLoading } = useUIElements();
+  const [fetching, setFetching] = useState<boolean>(true);
+  const [orderInfo, setOrderInfo] = useState<any>();
   const client = useApolloClient();
   const {
     clearCartInfo,
@@ -82,6 +89,7 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
     'cleverTapCheckoutEventAttributes'
   );
   useEffect(() => {
+    initiate();
     clearCart();
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
@@ -92,6 +100,25 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
   useEffect(() => {
     !fetching && fireEvents();
   }, [fetching]);
+
+  const fetchOrderInfo = () => {
+    return client.query({
+      query: GET_PHARMA_TRANSACTION_STATUS_V2,
+      variables: { paymentOrderId: paymentId },
+      fetchPolicy: 'no-cache',
+    });
+  };
+
+  const initiate = async () => {
+    try {
+      setLoading?.(true);
+      const res = await fetchOrderInfo();
+      const { data } = res;
+      setLoading?.(false);
+      setOrderInfo(data?.pharmaPaymentStatusV2);
+      setFetching(false);
+    } catch (error) {}
+  };
 
   const handleBack = () => {
     moveToHome();
@@ -233,20 +260,16 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
 
   return (
     <>
-      {!fetching ? (
-        <SafeAreaView style={styles.container}>
-          <ScrollView>
-            {renderSubstituteNotice()}
-            {renderPaymentStatus()}
-            {renderPaymentInfo()}
-            {renderFreeConsultCard()}
-            {renderOrderInfo()}
-          </ScrollView>
-          {renderTabBar()}
-        </SafeAreaView>
-      ) : (
-        <Spinner />
-      )}
+      <SafeAreaView style={styles.container}>
+        <ScrollView>
+          {renderSubstituteNotice()}
+          {renderPaymentStatus()}
+          {renderPaymentInfo()}
+          {renderFreeConsultCard()}
+          {renderOrderInfo()}
+        </ScrollView>
+        {renderTabBar()}
+      </SafeAreaView>
     </>
   );
 };

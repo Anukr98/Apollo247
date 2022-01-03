@@ -19,9 +19,11 @@ export const useGetPharmaOrderInfo = (paymentId: string) => {
     try {
       const res = await fetchOrderInfo();
       const { data } = res;
-      setOrderInfo(data?.pharmaPaymentStatusV2);
       setFetching(false);
-    } catch (error) {}
+      setOrderInfo(data?.pharmaPaymentStatusV2);
+    } catch (error) {
+      setFetching(false);
+    }
   };
 
   useEffect(() => {

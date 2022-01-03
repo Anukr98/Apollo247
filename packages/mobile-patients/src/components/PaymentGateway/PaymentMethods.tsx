@@ -712,6 +712,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         data?.createOrderV2?.payment_status || data?.updateOrderDetails?.payment_status;
       if (status === 'TXN_SUCCESS') {
         navigatetoOrderStatus(true, 'success');
+        setisTxnProcessing(false);
       } else {
         showTxnFailurePopUP();
       }
