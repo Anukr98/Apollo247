@@ -191,7 +191,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
   const [deviceToken, setDeviceToken] = useState<string>('');
   const [showReferralCode, setShowReferralCode] = useState<boolean>(false);
   const [oneApolloRegistrationCalled, setoneApolloRegistrationCalled] = useState<boolean>(false);
-  const [whatsAppOptIn, setWhatsAppOptIn] = useState<boolean>(false);
+  const [whatsAppOptIn, setWhatsAppOptIn] = useState<boolean>(true);
   const isOneTimeUpdate = useRef<boolean>(false);
   const [relation, setRelation] = useState<RelationArray>();
   const client = useApolloClient();
