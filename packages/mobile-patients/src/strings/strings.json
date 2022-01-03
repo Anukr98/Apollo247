@@ -315,15 +315,16 @@
     "availableForInAppConsultsOnly": "Due to the current situation, {{doctor}} is available only for In-App Consults"
   },
   "login": {
+    "accept_tnc": "Please accept the TnC and Privacy Policy to continue",
     "hello": "hello!",
     "please_enter_no": "Please enter your phone number to get access to Apollo Doctors and Apollo Pharmacy online! ",
-    "otp_sent_to": "An OTP will be sent to this number",
+    "otp_sent_to": "OTP sent on SMS",
     "bySigningUp": "By signing up, I agree to the",
-    "termsAndCondition": "Terms and Conditions",
+    "termsAndCondition": "T&C",
     "and": "and",
     "privacyPolicy": "Privacy Policy",
     "ofApollo247": "of Apollo247",
-    "wrong_number": "This seems like a wrong number",
+    "wrong_number": "Please enter a valid phone number",
     "numberPrefix": "+91",
     "great": "great!",
     "type_otp_text": "Now type in the OTP sent to you for authentication",
@@ -340,7 +341,14 @@
     "best_general_physicians_text": "Here are our best General Physicians",
     "all_consults": "All Consults",
     "distance": "Distance",
-    "hello_login": "hello! :)"
+    "hello_login": "hello! :)",
+    "signin_signup": "Sign in/ Sign up",
+    "otp_placeholder": "Please enter OTP to access all Apollo service in an app!",
+    "otp_resent_on_call": "OTP resent on call",
+    "otp_resent_on_sms": "OTP resent on SMS",
+    "otp_not_received": "Didn't get OTP?",
+    "number_auto_detected": "Number auto detected from your SIM 1",
+    "manual_number_input": "ENTER NUMBER MANUALLY"
   },
   "home": {
     "hi": "hi",

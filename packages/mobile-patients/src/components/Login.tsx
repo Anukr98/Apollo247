@@ -6,6 +6,8 @@ import {
   ArrowYellow,
   CheckBox as CheckBoxEmpty,
   CheckBoxFilled,
+  LoginCheckBoxFilled,
+  LoginCheckBoxUnFilled
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import LandingDataView from '@aph/mobile-patients/src/components/ui/LandingDataView';
 import { LoginCard } from '@aph/mobile-patients/src/components/ui/LoginCard';
@@ -51,6 +53,8 @@ import {
   View,
   ScrollView,
   TouchableOpacity,
+  Animated,
+  PixelRatio
 } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
 import WebEngage from 'react-native-webengage';
@@ -84,6 +88,12 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { LoginCarousel } from '@aph/mobile-patients/src/components/ui/LoginCarousel';
+import { colors } from '../theme/colors';
+import LinearGradient from 'react-native-linear-gradient'
+import DeviceInfo from 'react-native-device-info'
+import SmsRetriever from 'react-native-sms-retriever'
+import Permissions from 'react-native-permissions'
 
 let TRUECALLER: any;
 
@@ -93,106 +103,7 @@ if (Platform.OS === 'android') {
 
 const { height, width } = Dimensions.get('window');
 
-const styles = StyleSheet.create({
-  container: {
-    ...theme.viewStyles.container,
-  },
-  inputTextStyle: {
-    ...theme.fonts.IBMPlexSansMedium(18),
-    color: theme.colors.INPUT_TEXT,
-    paddingRight: 6,
-    letterSpacing: 0.5,
-    lineHeight: 28,
-    paddingTop: Platform.OS === 'ios' ? 0 : 6,
-    paddingBottom: Platform.OS === 'ios' ? 5 : 0,
-  },
-  inputStyle: {
-    ...theme.fonts.IBMPlexSansMedium(18),
-    width: '76%',
-    color: theme.colors.INPUT_TEXT,
-    paddingBottom: 4,
-  },
-  inputValidView: {
-    borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
-    borderBottomWidth: 2,
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: width - 135,
-    paddingBottom: 0,
-  },
-  inputView: {
-    borderBottomColor: theme.colors.INPUT_BORDER_FAILURE,
-    borderBottomWidth: 2,
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: width - 135,
-    paddingBottom: 0,
-  },
-  bottomDescription: {
-    lineHeight: 24,
-    color: theme.colors.INPUT_FAILURE_TEXT,
-    paddingTop: 8,
-    paddingBottom: 12,
-    ...theme.fonts.IBMPlexSansMedium(12),
-    letterSpacing: 0.04,
-    paddingHorizontal: 16,
-  },
-  bottomValidDescription: {
-    lineHeight: 24,
-    color: theme.colors.INPUT_SUCCESS_TEXT,
-    opacity: 0.6,
-    paddingTop: 8,
-    letterSpacing: 0.04,
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    ...theme.fonts.IBMPlexSansMedium(12),
-  },
-  viewWebStyles: {
-    position: 'absolute',
-    width: width,
-    height: height,
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    elevation: 20,
-  },
-  hyperlink: {
-    color: theme.colors.PURPLE,
-    ...fonts.IBMPlexSansBold(10),
-    textDecorationLine: 'underline',
-  },
-  checkBoxContainer: {
-    backgroundColor: 'transparent',
-    borderWidth: 0,
-    padding: 0,
-    margin: 0,
-  },
-  checkBoxStyle: {
-    resizeMode: 'contain',
-    width: 20,
-    height: 20,
-  },
-  leftSeperatorLine: {
-    width: '40%',
-    height: 0.5,
-    backgroundColor: theme.colors.BORDER_BOTTOM_COLOR,
-  },
-  rightSeperatorLine: {
-    width: '43%',
-    height: 0.5,
-    backgroundColor: theme.colors.BORDER_BOTTOM_COLOR,
-  },
-  authContainer: {
-    marginTop: 25,
-    marginHorizontal: 20,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-});
+
 
 export interface LoginProps extends NavigationScreenProps {}
 
@@ -217,6 +128,13 @@ export const Login: React.FC<LoginProps> = (props) => {
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [appSign, setAppSign] = useState<string>('');
+  const [isFocused, setIsFocused] = useState<boolean>(false)
+  const [error, setError] = useState<string>('')
+  const [focusAnim] = useState(new Animated.Value(0))
+  const [paginationSpace] = useState(new Animated.Value(30))
+  const [autoDetectedNumber, setAutoDetectedNumber] = useState<string>('')
+  const formRef = useRef()
+
   const isAndroid = Platform.OS === 'android';
   const client = useApolloClient();
   const [openFillerView, setOpenFillerView] = useState<boolean>(false);
@@ -227,16 +145,177 @@ export const Login: React.FC<LoginProps> = (props) => {
   const webengage = new WebEngage();
   const oneTimeApiCall = useRef<boolean>(true);
 
+  const styles = StyleSheet.create({
+    container: {
+      ...theme.viewStyles.container,
+    },
+    inputTextStyle: {
+      ...theme.fonts.IBMPlexSansMedium(15),
+      color: theme.colors.INPUT_TEXT,
+      paddingRight: 6,
+      letterSpacing: 0.5,
+      paddingBottom: Platform.OS === 'ios' ? 5 : 3,
+      width: "30%",
+      textAlign: 'right'
+    },
+    inputContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      width: '85%',
+      alignSelf: 'center',
+      borderBottomWidth: 2,
+    },
+    inputStyle: {
+      ...theme.fonts.IBMPlexSansMedium(16),
+      width: "100%",
+      color: theme.colors.INPUT_TEXT,
+      height: 40,
+      textAlign: 'center',
+      
+    },
+    inputValidView: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      width: '100%',
+      justifyContent: 'center',
+    },
+    inputView: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      width: '100%',
+      justifyContent: 'center'
+    },
+    bottomDescription: {
+      lineHeight: 24,
+      color: theme.colors.INPUT_FAILURE_TEXT,
+      paddingTop: 8,
+      paddingBottom: 12,
+      ...theme.fonts.IBMPlexSansMedium(12),
+      letterSpacing: 0.04,
+      paddingHorizontal: 16,
+    },
+    bottomValidDescription: {
+      lineHeight: 24,
+      color: theme.colors.INPUT_SUCCESS_TEXT,
+      opacity: 0.6,
+      paddingTop: 8,
+      letterSpacing: 0.04,
+      paddingHorizontal: 16,
+      paddingBottom: 12,
+      ...theme.fonts.IBMPlexSansMedium(12),
+    },
+    viewWebStyles: {
+      position: 'absolute',
+      width: width,
+      height: height,
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      elevation: 20,
+    },
+    hyperlink: {
+      color: theme.colors.PURPLE,
+      ...fonts.IBMPlexSansBold(10),
+      textDecorationLine: 'underline',
+    },
+    checkBoxContainer: {
+      backgroundColor: 'transparent',
+      borderWidth: 0,
+      padding: 0,
+      margin: 0,
+    },
+    checkBoxStyle: {
+      resizeMode: 'contain',
+      width: 15,
+      height: 15,
+    },
+    uncheckedBoxStyle: {
+      width: 17,
+      height: 17
+    },
+    leftSeperatorLine: {
+      width: '40%',
+      height: 0.5,
+      backgroundColor: theme.colors.BORDER_BOTTOM_COLOR,
+    },
+    rightSeperatorLine: {
+      width: '43%',
+      height: 0.5,
+      backgroundColor: theme.colors.BORDER_BOTTOM_COLOR,
+    },
+    authContainer: {
+      marginTop: 25,
+      marginHorizontal: 20,
+    },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    submitButtonContainer: {
+      width: '85%',
+      alignSelf: 'center',
+    },
+    submitButton: {
+      width: '100%',
+      backgroundColor: colors.ORANGE_ENABLED,
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: 40,
+      borderRadius: 5
+    },
+    logoContainer: {
+      justifyContent: 'center',
+      paddingTop: 10,
+      alignSelf: 'center',
+      width: '100%',
+      alignItems: 'center'
+    },
+    bottomContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 10,
+      justifyContent: 'flex-start',
+      paddingLeft: '2%',
+    },
+    errorText: {
+      ...theme.viewStyles.text(
+        'R',
+        12,
+        colors.INPUT_FAILURE_TEXT
+      )
+    },
+    useNumberButton: {
+      backgroundColor: colors.ORANGE_ENABLED,
+      width: '90%',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: 40,
+      borderRadius: 7
+    },
+    useNumberButtonText: {
+      ...theme.viewStyles.text(
+        'B',
+        16,
+        colors.WHITE
+      )
+    }
+  });
+
   useEffect(() => {
     isAndroid && initializeTruecaller();
     isAndroid && truecallerEventListeners();
+    isAndroid && renderNumberPopup()
     const eventAttributes: WebEngageEvents[WebEngageEventName.MOBILE_ENTRY] = {};
     postWebEngageEvent(WebEngageEventName.MOBILE_ENTRY, eventAttributes);
     postFirebaseEvent(FirebaseEventName.MOBILE_ENTRY, eventAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.MOBILE_ENTRY, eventAttributes);
   }, []);
+  
 
   useEffect(() => {
+    test()
     try {
       fireBaseFCM();
       setLoading && setLoading(false);
@@ -249,6 +328,46 @@ export const Login: React.FC<LoginProps> = (props) => {
       CommonBugFender('Login_useEffect_try', error);
     }
   }, []);
+
+  const test = async () => {
+    if(Platform.OS === 'android') {
+      Permissions.check('callPhone')
+      .then(async res => {
+        if(res === 'authorized') {
+          await DeviceInfo.getPhoneNumber()
+          .then(phone => {
+            setAutoDetectedNumber(phone?.toString())
+          })
+          .catch(err => {})
+        }
+        else {
+          Permissions.request('callPhone')
+          .then(async res => {
+            if(res === 'authorized') {
+              await DeviceInfo.getPhoneNumber()
+              .then(phone => {
+                setAutoDetectedNumber(phone?.toString())
+              })
+              .catch(err => {})
+            }
+          })
+        }
+      })
+    }
+  }
+
+  const renderNumberPopup = async () => {
+    try {
+      if(!phoneNumber) {
+        const phone = await SmsRetriever.requestPhoneNumber()
+        validateAndSetPhoneNumber(phone?.slice(3))
+        onBlur()
+      }
+    }
+    catch(err) {
+      console.log(JSON.stringify(err))
+    }
+  }
 
   const initializeTruecaller = () => {
     TRUECALLER.initializeClient(
@@ -599,6 +718,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   }, [subscriptionId]);
 
   const validateAndSetPhoneNumber = (number: string) => {
+    setError('')
     if (/^\d+$/.test(number) || number == '') {
       setPhoneNumber(number);
       setPhoneNumberIsValid(isPhoneNumberValid(number));
@@ -636,74 +756,80 @@ export const Login: React.FC<LoginProps> = (props) => {
 
   const onClickOkay = () => {
     try {
-      webengage.user.login(`+91${phoneNumber}`);
-      CommonLogEvent(AppRoutes.Login, 'Login clicked');
-      const eventAttributes: FirebaseEvents[FirebaseEventName.OTP_DEMANDED] = {
-        mobilenumber: phoneNumber,
-      };
-      postFirebaseEvent(FirebaseEventName.OTP_DEMANDED, eventAttributes);
-      postAppsFlyerEvent(AppsFlyerEventName.OTP_DEMANDED, eventAttributes);
-      setTimeout(() => {
-        const eventAttributes: WebEngageEvents[WebEngageEventName.MOBILE_NUMBER_ENTERED] = {
+      if(!phoneNumberIsValid || phoneNumber.length != 10)
+        setError(string.login.wrong_number)
+      else if(!isTandCSelected)
+        setError(string.login.accept_tnc)
+      else {
+        webengage.user.login(`+91${phoneNumber}`);
+        CommonLogEvent(AppRoutes.Login, 'Login clicked');
+        const eventAttributes: FirebaseEvents[FirebaseEventName.OTP_DEMANDED] = {
           mobilenumber: phoneNumber,
         };
-        postWebEngageEvent(WebEngageEventName.MOBILE_NUMBER_ENTERED, eventAttributes);
-        const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.MOBILE_NUMBER_ENTERED] = {
-          'Mobile Number': phoneNumber,
-          'Nav src': 'App login screen',
-          'Page Name': 'Login Screen',
-        };
-        postCleverTapEvent(CleverTapEventName.MOBILE_NUMBER_ENTERED, cleverTapEventAttributes);
-      }, 3000);
+        postFirebaseEvent(FirebaseEventName.OTP_DEMANDED, eventAttributes);
+        postAppsFlyerEvent(AppsFlyerEventName.OTP_DEMANDED, eventAttributes);
+        setTimeout(() => {
+          const eventAttributes: WebEngageEvents[WebEngageEventName.MOBILE_NUMBER_ENTERED] = {
+            mobilenumber: phoneNumber,
+          };
+          postWebEngageEvent(WebEngageEventName.MOBILE_NUMBER_ENTERED, eventAttributes);
+          const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.MOBILE_NUMBER_ENTERED] = {
+            'Mobile Number': phoneNumber,
+            'Nav src': 'App login screen',
+            'Page Name': 'Login Screen',
+          };
+          postCleverTapEvent(CleverTapEventName.MOBILE_NUMBER_ENTERED, cleverTapEventAttributes);
+        }, 3000);
 
-      Keyboard.dismiss();
-      getNetStatus().then(async (status) => {
-        if (status) {
-          if (!(phoneNumber.length == 10 && phoneNumberIsValid)) {
-            null;
-          } else {
-            const isBlocked = await _getTimerData();
-            if (isBlocked) {
-              props.navigation.navigate(AppRoutes.OTPVerification, {
-                otpString,
-                phoneNumber: phoneNumber,
-              });
+        Keyboard.dismiss();
+        getNetStatus().then(async (status) => {
+          if (status) {
+            if (!(phoneNumber.length == 10 && phoneNumberIsValid)) {
+              null;
             } else {
-              AsyncStorage.setItem('phoneNumber', phoneNumber);
-              setShowSpinner(true);
-
-              loginAPI('+91' + phoneNumber, appSign)
-                .then((confirmResult: any) => {
-                  setShowSpinner(false);
-
-                  const eventAttributes: FirebaseEvents[FirebaseEventName.LOGIN] = {
-                    mobilenumber: phoneNumber,
-                  };
-                  postFirebaseEvent(FirebaseEventName.LOGIN, eventAttributes);
-
-                  try {
-                    signOut();
-                  } catch (error) {}
-
-                  props.navigation.navigate(AppRoutes.OTPVerification, {
-                    otpString,
-                    phoneNumber: phoneNumber,
-                    loginId: confirmResult.loginId,
-                  });
-                })
-                .catch((error: Error) => {
-                  setShowSpinner(false);
-
-                  CommonLogEvent('OTP_SEND_FAIL', error.message);
-                  CommonBugFender('OTP_SEND_FAIL', error);
+              const isBlocked = await _getTimerData();
+              if (isBlocked) {
+                props.navigation.navigate(AppRoutes.OTPVerification, {
+                  otpString,
+                  phoneNumber: phoneNumber,
                 });
+              } else {
+                AsyncStorage.setItem('phoneNumber', phoneNumber);
+                setShowSpinner(true);
+
+                loginAPI('+91' + phoneNumber, appSign)
+                  .then((confirmResult: any) => {
+                    setShowSpinner(false);
+
+                    const eventAttributes: FirebaseEvents[FirebaseEventName.LOGIN] = {
+                      mobilenumber: phoneNumber,
+                    };
+                    postFirebaseEvent(FirebaseEventName.LOGIN, eventAttributes);
+
+                    try {
+                      signOut();
+                    } catch (error) {}
+
+                    props.navigation.navigate(AppRoutes.OTPVerification, {
+                      otpString,
+                      phoneNumber: phoneNumber,
+                      loginId: confirmResult.loginId,
+                    });
+                  })
+                  .catch((error: Error) => {
+                    setShowSpinner(false);
+
+                    CommonLogEvent('OTP_SEND_FAIL', error.message);
+                    CommonBugFender('OTP_SEND_FAIL', error);
+                  });
+              }
             }
+          } else {
+            setshowOfflinePopup(true);
+            setShowSpinner(false);
           }
-        } else {
-          setshowOfflinePopup(true);
-          setShowSpinner(false);
-        }
-      });
+        });
+      }
     } catch (error) {}
   };
 
@@ -786,93 +912,182 @@ export const Login: React.FC<LoginProps> = (props) => {
     postCleverTapEvent(CleverTapEventName.LOGIN_WITH_TRUECALLER_CONTINUE, eventAttributes);
   };
 
-  return (
-    <View style={{ flex: 1 }}>
-      <SafeAreaView style={styles.container}>
-        <View style={{ justifyContent: 'center', marginTop: 20, marginLeft: 20 }}>
-          <ApolloLogo style={{ width: 55, height: 47 }} resizeMode="contain" />
-        </View>
-        <View style={{ height: 16 }} />
-        <LoginCard
-          cardContainer={{ marginTop: 0, paddingBottom: 12 }}
-          description={string.login.please_enter_no}
-          buttonIcon={
-            phoneNumberIsValid &&
-            phoneNumber.replace(/^0+/, '').length === 10 &&
-            isTandCSelected ? (
-              <ArrowYellow size="md_l" />
-            ) : (
-              <ArrowDisabled size="md_l" />
-            )
+  const onFocus = async () => {
+    setIsFocused(true)
+    Animated.timing(
+      focusAnim,
+      {
+        toValue: -height*0.1,
+        duration:500
+      },
+    ).start()
+    Animated.timing(
+      paginationSpace,{
+        toValue: 5,
+        duration:500
+      }
+    ).start()
+  }
+
+  const onBlur = () => {
+    setIsFocused(false)
+    Animated.timing(
+      focusAnim,
+      {
+        toValue: 0,
+        duration: 500
+      }
+    ).start() 
+    Animated.timing(
+      paginationSpace,{
+        toValue: 30,
+        duration:500
+      }
+    ).start()
+  }
+  const switchAndroidForm = () => {
+    console.log(formRef?.current)
+    formRef?.current?.scrollTo({
+      x: width,
+      animated: true
+    })
+  }
+
+  const renderAutodetectedForm = () => <View>
+    <View style={{ alignItems: 'center', marginBottom: 30 }}>
+      <Text style={theme.viewStyles.text('R', 13, colors.SLATE_GRAY)}>{string.login.number_auto_detected}</Text>
+    </View>
+    <View style={{ alignItems: 'center' }}>
+      <TouchableOpacity style={styles.useNumberButton}>
+        <Text style={styles.useNumberButtonText}>USE {autoDetectedNumber}</Text>
+      </TouchableOpacity>
+      <View style={{ marginVertical: 12 }}>
+        <Text style={theme.viewStyles.text('M', 14, colors.LIGHT_BLUE)}>OR</Text>
+      </View>
+      <TouchableOpacity
+        style={[
+          styles.useNumberButton,
+          {
+            backgroundColor: colors.WHITE,
+            borderColor: colors.ORANGE_ENABLED,
+            borderWidth: 1
           }
-          onClickButton={onClickOkay}
-          disableButton={phoneNumberIsValid && phoneNumber.length === 10  && isTandCSelected? false : true}
+        ]}
+        onPress={switchAndroidForm}
         >
-          <View style={{ flexDirection: 'row', paddingHorizontal: 16 }}>
-            <View
-              style={[
-                {
-                  paddingTop: Platform.OS === 'ios' ? 22 : 15,
-                },
-                phoneNumber == '' || phoneNumberIsValid ? styles.inputValidView : styles.inputView,
-              ]}
-            >
-              <Text style={styles.inputTextStyle}>{string.login.numberPrefix}</Text>
-              <TextInput
-                style={styles.inputStyle}
-                keyboardType="numeric"
-                maxLength={10}
-                value={phoneNumber}
-                onChangeText={(value) => validateAndSetPhoneNumber(value)}
-              />
+        <Text
+          style={theme.viewStyles.text('M', 16, colors.ORANGE_ENABLED)}
+        >
+          {string.login.manual_number_input}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+
+  const renderManualForm = () => <>
+    <View style={{ alignItems: 'center', opacity: (error || phoneNumber.length) ? 1 : 0 }}>
+      <Text style={theme.viewStyles.text('R', 12, colors.LIGHT_BLUE)}>Registered mobile number</Text>
+    </View>
+    <Animated.View
+      style={[
+        styles.inputContainer,
+        {
+          borderBottomColor: !isFocused ? colors.CARD_HEADER : (phoneNumberIsValid || phoneNumber == '') ? theme.colors.INPUT_BORDER_SUCCESS : theme.colors.INPUT_BORDER_FAILURE,
+          marginTop: paginationSpace
+        }
+      ]}>
+      <TextInput
+        style={styles.inputStyle}
+        keyboardType="numeric"
+        maxLength={10}
+        value={phoneNumber}
+        onChangeText={(value: string) => validateAndSetPhoneNumber(value)}
+        placeholder='Enter mobile number (10 digits)'
+        onFocus={onFocus}
+        onBlur={onBlur}
+        onSubmitEditing={onClickOkay}
+      />
+    </Animated.View>
+    <Animated.View style={[styles.submitButtonContainer,{  marginTop: "6%" }]}>
+      <TouchableOpacity
+        style={styles.submitButton}
+        onPress={onClickOkay}
+      >
+        <Text style={[theme.fonts.IBMPlexSansBold(12), { color: colors.WHITE, letterSpacing: 1 }]}>{string.common.continue}</Text>
+      </TouchableOpacity>
+    </Animated.View>
+  </>
+
+  return (
+    <Animated.View style={{ flex: 1, backgroundColor: "#e5e5e5",}}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.WHITE }]}>
+        <ScrollView keyboardShouldPersistTaps='handled'>
+          <LinearGradient colors={['#edf2f9', colors.WHITE]} style={{ height: height*0.9 }}>
+            <View style={styles.logoContainer}>
+              <ApolloLogo style={{ width: 55, height: 47 }} resizeMode="contain" />
             </View>
-          </View>
-          <Text
-            style={
-              phoneNumber == '' || phoneNumberIsValid
-                ? styles.bottomValidDescription
-                : styles.bottomDescription
+            <LoginCarousel focused={isFocused} />
+
+            <Animated.View style={{ height: paginationSpace }} />
+
+            <Animated.View style={{ alignItems: 'center', marginBottom: autoDetectedNumber === 'unknown' ? 8 : paginationSpace }}>
+              <Text style={[theme.fonts.IBMPlexSansSemiBold(18), { color: colors.CARD_HEADER }]}>
+                {string.login.signin_signup}
+              </Text>
+            </Animated.View>
+            {
+              error ? <View style={{ alignItems: 'center', marginTop: 5, marginBottom: 7 }}>
+                <Text style={styles.errorText}>{error}</Text>
+              </View> : null
             }
-          >
-            {phoneNumber == '' || phoneNumberIsValid
-              ? string.login.otp_sent_to
-              : string.login.wrong_number}
-          </Text>
-          <View style={{ flexDirection: 'row', marginLeft: 5 }}>
-            <CheckBox
+
+            <View style={{ flex: 1 }}>
+              <ScrollView
+                horizontal
+                scrollEnabled={false}
+                ref={formRef}
+                showsHorizontalScrollIndicator={false}
+              >
+              <View style={{ width }}>
+                {renderAutodetectedForm()}
+              </View>
+              <View style={{ width }}>
+                {renderManualForm()}
+              </View>
+              </ScrollView>
+            </View>
+          </LinearGradient>
+        </ScrollView>
+        <View style={styles.bottomContainer}>
+          <CheckBox
               checked={isTandCSelected}
               onPress={() => setTandC(!isTandCSelected)}
-              checkedIcon={<CheckBoxFilled  style={styles.checkBoxStyle} />}
-              uncheckedIcon={<CheckBoxEmpty style={styles.checkBoxStyle} />}
+              checkedIcon={<LoginCheckBoxFilled  style={styles.checkBoxStyle} />}
+              uncheckedIcon={<LoginCheckBoxUnFilled style={styles.uncheckedBoxStyle} />}
               containerStyle={styles.checkBoxContainer}
             />
             <Text
-              style={{
-                color: '#02475b',
-                marginEnd: 45,
-                ...fonts.IBMPlexSansMedium(10),
-              }}
-            >
-              {string.login.bySigningUp}{' '}
-              <Text style={styles.hyperlink} onPress={() => openWebViewTandC()}>
-                {string.login.termsAndCondition}
-              </Text>{' '}
-              {string.login.and}{' '}
-              <Text style={styles.hyperlink} onPress={() => openWebViewPrivacyPolicy()}>
-                {string.login.privacyPolicy}
-              </Text>{' '}
-              {string.login.ofApollo247}
-            </Text>
-          </View>
-        </LoginCard>
-        <ScrollView>
-          {enableTrueCaller && isAndroid && renderTruecallerButton()}
-          <LandingDataView />
-        </ScrollView>
+                style={{
+                  color: '#02475b',
+                  marginEnd: 45,
+                  ...fonts.IBMPlexSansMedium(10),
+                }}
+              >
+                {string.login.bySigningUp}{' '}
+                <Text style={styles.hyperlink} onPress={() => openWebViewTandC()}>
+                  {string.login.termsAndCondition}
+                </Text>{' '}
+                {string.login.and}{' '}
+                <Text style={styles.hyperlink} onPress={() => openWebViewPrivacyPolicy()}>
+                  {string.login.privacyPolicy}
+                </Text>{' '}
+                {string.login.ofApollo247}
+              </Text>
+        </View>
       </SafeAreaView>
       {showSpinner ? <Spinner /> : null}
       {openFillerView && <FetchingDetails />}
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
-    </View>
+    </Animated.View>
   );
 };
