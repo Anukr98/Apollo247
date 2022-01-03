@@ -6963,6 +6963,7 @@ export const SERVER_CART_FETCH_CART = gql`
           cartSavings
           couponSavings
           totalCashBack
+          couponCashback
           cartTotal
           packagingCharges
           circleSavings {
