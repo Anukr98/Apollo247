@@ -11,6 +11,7 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { MultiVariant } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/MultiVariant';
+import { renderPDPComponentsShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 
 export interface ProductPriceDeliveryProps {
   price: number;
@@ -71,63 +72,75 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
 
   const renderProductPrice = () => {
     const discountPercent = getDiscountPercentage(price, specialPrice);
-    return !!specialPrice ? (
-      <View style={[styles.flexRow, { alignItems: 'center', paddingBottom: 9 }]}>
-        <Text style={styles.label}>{`Price: `}</Text>
-        <Text style={styles.value}>
-          {string.common.Rs}
-          {convertNumberToDecimal(price)}
-          {'  '}
-        </Text>
-        <Text style={styles.smallValue}>
-          {string.common.Rs}
-          {convertNumberToDecimal(specialPrice)} |
-        </Text>
-        <Text style={styles.discountPercent}>{`  ${discountPercent}%off`}</Text>
-        <Text style={theme.viewStyles.text('R', 10, '#02475B', 1, 13, 0)}>
-          {'  '}(Inclusive of all Taxes)
-        </Text>
-      </View>
-    ) : (
-      <View style={[styles.flexRow, { alignItems: 'center', paddingBottom: 9 }]}>
-        <Text style={styles.label}>{`Price: `}</Text>
-        <Text style={styles.smallValue}>
-          {string.common.Rs}
-          {convertNumberToDecimal(price)}
-        </Text>
-        <Text style={theme.viewStyles.text('R', 10, '#02475B', 1, 13, 0)}>
-          {' '}
-          (Inclusive of all Taxes)
-        </Text>
-      </View>
-    );
+    if (price) {
+      return !!specialPrice ? (
+        <View style={styles.cardStyle}>
+          <View style={[styles.flexRow, { alignItems: 'center', paddingBottom: 9 }]}>
+            <Text style={styles.label}>{`Price: `}</Text>
+            <Text style={styles.value}>
+              {string.common.Rs}
+              {convertNumberToDecimal(price)}
+              {'  '}
+            </Text>
+            <Text style={styles.smallValue}>
+              {string.common.Rs}
+              {convertNumberToDecimal(specialPrice)} |
+            </Text>
+            <Text style={styles.discountPercent}>{`  ${discountPercent}%off`}</Text>
+            <Text style={theme.viewStyles.text('R', 10, '#02475B', 1, 13, 0)}>
+              {'  '}(Inclusive of all Taxes)
+            </Text>
+          </View>
+        </View>
+      ) : (
+        <View style={styles.cardStyle}>
+          <View style={[styles.flexRow, { alignItems: 'center', paddingBottom: 9 }]}>
+            <Text style={styles.label}>{`Price: `}</Text>
+            <Text style={styles.smallValue}>
+              {string.common.Rs}
+              {convertNumberToDecimal(price)}
+            </Text>
+            <Text style={theme.viewStyles.text('R', 10, '#02475B', 1, 13, 0)}>
+              {' '}
+              (Inclusive of all Taxes)
+            </Text>
+          </View>
+        </View>
+      );
+    } else {
+      return renderPDPComponentsShimmer(styles.shimmerStyle);
+    }
   };
 
   const renderIsInStock = () => {
-    return showDeliverySpinner ? (
-      <ActivityIndicator
-        style={styles.activityIndicatorStyle}
-        animating={true}
-        size="small"
-        color="green"
-      />
-    ) : isBanned ? (
-      <View style={styles.inStockContainer}>
-        <Text style={styles.stockText}>Banned for Sale</Text>
-      </View>
-    ) : !isSellOnline ? (
-      <View style={styles.inStockContainer}>
-        <Text style={styles.stockText}>NOT AVAILABLE FOR ONLINE SALE</Text>
-      </View>
-    ) : isInStock ? (
-      <View style={styles.inStockContainer}>
-        <Text style={styles.inStockText}>In Stock</Text>
-      </View>
-    ) : (
-      <View style={styles.inStockContainer}>
-        <Text style={styles.stockText}>Out Of Stock</Text>
-      </View>
-    );
+    if (price) {
+      return showDeliverySpinner ? (
+        <ActivityIndicator
+          style={styles.activityIndicatorStyle}
+          animating={true}
+          size="small"
+          color="green"
+        />
+      ) : isBanned ? (
+        <View style={styles.inStockContainer}>
+          <Text style={styles.stockText}>Banned for Sale</Text>
+        </View>
+      ) : !isSellOnline ? (
+        <View style={styles.inStockContainer}>
+          <Text style={styles.stockText}>NOT AVAILABLE FOR ONLINE SALE</Text>
+        </View>
+      ) : isInStock ? (
+        <View style={styles.inStockContainer}>
+          <Text style={styles.inStockText}>In Stock</Text>
+        </View>
+      ) : (
+        <View style={styles.inStockContainer}>
+          <Text style={styles.stockText}>Out Of Stock</Text>
+        </View>
+      );
+    } else {
+      return renderPDPComponentsShimmer(styles.shimmerStyle);
+    }
   };
 
   const renderDeliverTo = () => {
@@ -138,33 +151,39 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
       : deliveryAddress
       ? `${deliveryAddress?.city || deliveryAddress?.state || ''} ${deliveryAddress?.zipcode}`
       : ``;
-    return (
-      <TouchableOpacity
-        onPress={() => {
-          showPincodePopup(false);
-        }}
-        style={styles.deliveryTo}
-      >
-        <Location style={styles.locationIcon} />
-        <Text style={theme.viewStyles.text('M', 13, '#02475B', 1, 20)}>
-          {` Deliver to ${currentPatient?.firstName} - ${location} (Change)`}
-        </Text>
-      </TouchableOpacity>
-    );
+    if (isSellOnline || location) {
+      return (
+        <TouchableOpacity
+          onPress={() => {
+            showPincodePopup(false);
+          }}
+          style={styles.deliveryTo}
+        >
+          <Location style={styles.locationIcon} />
+          <Text style={theme.viewStyles.text('M', 13, '#02475B', 1, 20)}>
+            {` Deliver to ${currentPatient?.firstName} - ${location} (Change)`}
+          </Text>
+        </TouchableOpacity>
+      );
+    } else {
+      return renderPDPComponentsShimmer(styles.shimmerStyle);
+    }
   };
 
   const renderExpress = () => {
-    return (
-      <View style={styles.flexRow}>
-        <ExpressDeliveryLogo style={styles.expressLogo} />
-        {!!hours && (
+    if (hours) {
+      return (
+        <View style={styles.flexRow}>
+          <ExpressDeliveryLogo style={styles.expressLogo} />
           <Text style={theme.viewStyles.text('SB', 14, '#02475B', 1, 25, 0.35)}>
             {`  within ${hours} `}
             {parseInt(hours) > 1 ? `hours` : `hour`}
           </Text>
-        )}
-      </View>
-    );
+        </View>
+      );
+    } else {
+      return renderPDPComponentsShimmer(styles.shimmerStyle);
+    }
   };
 
   const renderDeliveryDateTime = () => {
@@ -192,28 +211,33 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
     return (
       <View>
         <View style={styles.lineView} />
-        <View style={{ flexDirection: 'row', paddingBottom: 2 }}>
-          <View style={{ paddingVertical: 10, flexDirection: 'column' }}>
-            <CareCashbackBanner
-              bannerText={`cashback${'    '}`}
-              textStyle={styles.circleText}
-              logoStyle={styles.circleLogo}
-            />
-            <Text style={styles.effectivePriceText}>Effective price</Text>
+        {!!price ? (
+          <View style={{ flexDirection: 'row', paddingBottom: 2 }}>
+            <View style={{ paddingVertical: 10, flexDirection: 'column' }}>
+              <CareCashbackBanner
+                bannerText={`cashback${'    '}`}
+                textStyle={styles.circleText}
+                logoStyle={styles.circleLogo}
+              />
+              <Text style={styles.effectivePriceText}>Effective price</Text>
+            </View>
+            <View style={{ padding: 10, flexDirection: 'column' }}>
+              <Text style={styles.circleText}>
+                {string.common.Rs}
+                {cashback}
+                {'   '}({circleDiscountPercent.toFixed(0)}%)
+              </Text>
+              <Text
+                style={[theme.viewStyles.text('R', 16, '#02475B', 1, 21), { fontWeight: '600' }]}
+              >
+                {string.common.Rs}
+                {effectivePrice.toFixed(2)}
+              </Text>
+            </View>
           </View>
-          <View style={{ padding: 10, flexDirection: 'column' }}>
-            <Text style={styles.circleText}>
-              {string.common.Rs}
-              {cashback}
-              {'   '}({circleDiscountPercent.toFixed(0)}%)
-            </Text>
-
-            <Text style={[theme.viewStyles.text('R', 16, '#02475B', 1, 21), { fontWeight: '600' }]}>
-              {string.common.Rs}
-              {effectivePrice.toFixed(2)}
-            </Text>
-          </View>
-        </View>
+        ) : (
+          renderPDPComponentsShimmer(styles.shimmerStyle)
+        )}
         <View style={styles.lineView} />
       </View>
     );
@@ -229,14 +253,18 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
     return (
       <View>
         <View style={styles.lineView} />
-        <View style={{ paddingVertical: 10, flexDirection: 'row' }}>
-          <Text style={[styles.nonCircleText, { paddingVertical: 6 }]}>Buy </Text>
-          <CareCashbackBanner
-            bannerText={noncircleText}
-            textStyle={styles.nonCircleText}
-            logoStyle={styles.circleLogo}
-          />
-        </View>
+        {!!price ? (
+          <View style={{ paddingVertical: 10, flexDirection: 'row' }}>
+            <Text style={[styles.nonCircleText, { paddingVertical: 6 }]}>Buy </Text>
+            <CareCashbackBanner
+              bannerText={noncircleText}
+              textStyle={styles.nonCircleText}
+              logoStyle={styles.circleLogo}
+            />
+          </View>
+        ) : (
+          renderPDPComponentsShimmer(styles.shimmerStyle)
+        )}
         <View style={styles.lineView} />
       </View>
     );
@@ -257,7 +285,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
 
   return (
     <View style={styles.container}>
-      <View style={styles.cardStyle}>{renderProductPrice()}</View>
+      {renderProductPrice()}
       {/* handling 0 discount cashback case */}
       {!!cartCircleSubscriptionId
         ? !!cashback
@@ -265,7 +293,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
           : null
         : rendergetCircleMembership()}
       {showMultiVariantOption && renderMultiVariantOptions()}
-      {isSellOnline && renderDeliverTo()}
+      {renderDeliverTo()}
       {!isBanned &&
         isSellOnline &&
         (showExpress ? renderExpress() : showDeliverySpinner ? null : renderDeliveryDateTime())}
@@ -355,5 +383,11 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     marginTop: 5,
     marginLeft: 10,
+  },
+  shimmerStyle: {
+    height: 30,
+    borderRadius: 10,
+    width: '100%',
+    marginVertical: 10,
   },
 });
