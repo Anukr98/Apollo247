@@ -12,6 +12,7 @@ import {
   PriceTagIcon,
   CalendarIcon,
   DropdownGreen,
+  DropdownBlue,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -99,8 +100,8 @@ import Carousel from 'react-native-snap-carousel';
 import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { FloatingLabelInputComponent } from '@aph/mobile-patients/src/components/ui/FloatingLabeInputComponent';
-import { InputCheckBox } from './ui/InputCheckBox';
-import { getOfferCarouselForRegisteration } from '../helpers/apiCalls';
+import { InputCheckBox } from '@aph/mobile-patients/src/components/ui/InputCheckBox';
+import { getOfferCarouselForRegisteration } from '@aph/mobile-patients/src/helpers/apiCalls';
 
 const { width, height } = Dimensions.get('window');
 
@@ -611,11 +612,11 @@ const SignUp: React.FC<SignUpProps> = (props) => {
               },
             ]}
           >
-            Profile Created For *
+            {string.registerationScreenData.profileCreatedFor}
           </Text>
           <Text style={styles.relationInput}>{relation !== undefined && relation.title}</Text>
           <View style={[styles.relationDropdownCaret]}>
-            <DropdownGreen />
+            <DropdownBlue style={styles.dropdownCaret} />
           </View>
         </View>
       </MaterialMenu>
@@ -625,7 +626,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
   const renderStickyHeader = () => {
     return (
       <View style={styles.stickyHeaderMainContainer}>
-        <ApolloLogo />
+        <ApolloLogo style={styles.appLogo} />
         <View style={styles.stickyHeaderTextContainer}>
           <Text style={styles.stickyHeaderMainHeading}>
             {string.registerationScreenData.headerOneHeading}
@@ -958,6 +959,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     fontWeight: '600',
     position: 'absolute',
+    opacity: 0.7,
   },
   dateOfBirth: {
     ...theme.fonts.IBMPlexSansMedium(18),
@@ -1010,11 +1012,11 @@ const styles = StyleSheet.create({
   relationInputLabel: {
     ...theme.fonts.IBMPlexSansMedium(18),
     marginBottom: 10,
-    marginLeft: 5,
     fontWeight: '600',
     paddingLeft: 11,
     color: theme.colors.LIGHT_BLUE,
     position: 'absolute',
+    opacity: 0.7,
   },
   relationInput: {
     ...theme.fonts.IBMPlexSansMedium(18),
@@ -1027,21 +1029,22 @@ const styles = StyleSheet.create({
   stickyHeaderMainContainer: {
     alignItems: 'center',
     paddingTop: 40,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.LIGHT_GRAY_3,
   },
   stickyHeaderTextContainer: {
     alignItems: 'center',
     marginBottom: 5,
+    marginTop: 10,
   },
   stickyHeaderMainHeading: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
     color: theme.colors.LIGHT_BLUE,
   },
   stickyHeaderSubHeading: {
     fontSize: 11,
     color: theme.colors.LIGHT_BLUE,
+    marginTop: 2,
+    opacity: 0.7,
   },
   stickyHeaderOfferContain: {
     height: 100,
@@ -1096,7 +1099,8 @@ const styles = StyleSheet.create({
   whatsAppOptinCheckboxContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 15,
+    paddingLeft: 15,
+    paddingRight: 2,
   },
   whatsAppIcon: {
     height: 22,
@@ -1111,5 +1115,13 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     resizeMode: 'stretch',
+  },
+  dropdownCaret: {
+    width: 10,
+    height: 5,
+  },
+  appLogo: {
+    width: 44,
+    height: 33,
   },
 });

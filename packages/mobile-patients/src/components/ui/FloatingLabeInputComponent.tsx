@@ -197,6 +197,7 @@ export const FloatingLabelInputComponent: React.FC<FloatingLabelInputComponentPr
                   ? theme.colors.APP_GREEN
                   : theme.colors.LIGHT_BLUE,
                 fontWeight: '400',
+                opacity: 0.7,
               },
             ]}
           >

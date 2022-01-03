@@ -77,6 +77,13 @@ export const ViewIcon: React.FC<IconProps> = (props) => (
 export const DropdownGreen: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_dropdown_green.webp')} />
 );
+export const DropdownBlue: React.FC<IconProps> = (props) => (
+         <IconBase
+           size="sm"
+           {...props}
+           source={require('@aph/mobile-patients/src/images/signUp/dopdownCaretBlue.webp')}
+         />
+       );
 
 export const Remove: React.FC<IconProps> = (props) => (
   <IconBase size={'sm'} {...props} source={require('./icons/ic_cross.webp')} />
