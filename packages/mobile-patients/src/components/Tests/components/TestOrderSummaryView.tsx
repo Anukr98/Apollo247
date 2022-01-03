@@ -748,6 +748,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
             false
           )}
           {!!getOffersResponse &&
+            getOffersResponse?.length > 0 &&
             getOffersResponse?.map((item) => renderOffers(item, offerAmountSplit))}
           {!!getOffersResponse && getOffersResponse?.length > 0 && renderHealthCredits()}
           {!!refundText && renderPrices(refundText, refundAmountToShow, false)}

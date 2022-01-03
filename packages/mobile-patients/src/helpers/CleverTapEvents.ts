@@ -1002,25 +1002,25 @@ interface LoginOtpAttributes {
 }
 
 interface DiagnosticOrderPlacedAttributes{
-    'Order id': any;
-    Pincode: string | number;
-    'Order amount': number; 
-    'Payment Mode'?: 'Cash' | 'Prepaid'; 
-    'Circle discount'?: number;
-    'Appointment Date'?: string;
-    'Appointment time'?: string;
-    'Item Id': any;
-    'Item Name': any,
-    'Item Type': DIAGNOSTICS_ITEM_TYPE;
-    'Item Price': number | string;
-    'Total items in order': number;
-    'Payment type'?: string; 
-    'Circle user': 'Yes' | 'No';
-    'No of patients': number;
-    'Patient Name': any;
-    'Patient Age': any;
-    'Patient Gender': any;
-    'Patient Uhid': any;
+  'Order id': any;
+  Pincode: string | number;
+  'Order amount': number; 
+  'Payment Mode'?: 'Cash' | 'Prepaid'; 
+  'Circle discount'?: number;
+  'Appointment Date'?: string;
+  'Appointment time'?: string;
+  'Item Id': any;
+  'Item Name': any,
+  'Item Type': DIAGNOSTICS_ITEM_TYPE;
+  'Item Price': number | string;
+  'Total items in order': number;
+  'Payment type'?: string; 
+  'Circle user': 'Yes' | 'No';
+  'No of patients': number;
+  'Patient Name': any;
+  'Patient Age': any;
+  'Patient Gender': any;
+  'Patient Uhid': any;
 }
 export interface CleverTapEvents {
   // ********** AppEvents ********** \\
