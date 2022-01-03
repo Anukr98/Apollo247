@@ -50,6 +50,7 @@ export interface Props
   extends NavigationScreenProps<{
     queryIdLevel1: string;
     queryIdLevel2: string;
+    queryIdLevel3: string;
     queries?: NeedHelpHelpers.HelpSectionQuery[];
     email?: string;
     orderId?: string;
@@ -64,6 +65,7 @@ export const NeedHelpContentView: React.FC<Props> = ({ navigation }) => {
   const pathFollowed = navigation.getParam('pathFollowed') || '';
   const queryIdLevel1 = navigation.getParam('queryIdLevel1') || helpSectionQueryId.pharmacy;
   const queryIdLevel2 = navigation.getParam('queryIdLevel2') || helpSectionQueryId.returnOrder;
+  const queryIdLevel3 = navigation.getParam('queryIdLevel3') || '';
   const headingTitle = queries?.find((q) => q.id === queryIdLevel1)?.title || 'Query';
   const orderId = navigation.getParam('orderId') || '';
   const issueNotResolvedText = 'My issue is still not resolved';
@@ -73,7 +75,7 @@ export const NeedHelpContentView: React.FC<Props> = ({ navigation }) => {
   const [email, setEmail] = useState(navigation.getParam('email') || '');
   const [comments, setComments] = useState<string>('');
   const { saveNeedHelpQuery, getQueryData } = NeedHelpQueryDetailsHelpers;
-  const subQueriesData = getQueryData(queries || [], queryIdLevel1, queryIdLevel2);
+  const subQueriesData = getQueryData(queries || [], queryIdLevel1, queryIdLevel2, queryIdLevel3);
 
   const { circlePlanId, circleStatus } = useAppCommonData();
   const client = useApolloClient();

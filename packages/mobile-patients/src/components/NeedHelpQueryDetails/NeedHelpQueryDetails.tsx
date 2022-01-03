@@ -93,6 +93,7 @@ export interface Props
     queries: NeedHelpHelpers.HelpSectionQuery[];
     queryIdLevel1: string;
     queryIdLevel2: string;
+    queryIdLevel3: string;
     email: string;
     orderId?: string;
     isOrderRelatedIssue?: boolean;
@@ -114,6 +115,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const _queries = navigation.getParam('queries');
   const queryIdLevel1 = navigation.getParam('queryIdLevel1') || '';
   const queryIdLevel2 = navigation.getParam('queryIdLevel2') || '';
+  const queryIdLevel3 = navigation.getParam('queryIdLevel3') || '';
   const pathFollowed = navigation.getParam('pathFollowed') || '';
   const medicineOrderStatusDate = navigation.getParam('medicineOrderStatusDate');
   const [email, setEmail] = useState(navigation.getParam('email') || '');
@@ -131,7 +133,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   );
   const { saveNeedHelpQuery, getQueryData, getQueryDataByOrderStatus } = Helpers;
   const [queries, setQueries] = useState<NeedHelpHelpers.HelpSectionQuery[]>(_queries || []);
-  const subQueriesData = getQueryData(queries, queryIdLevel1, queryIdLevel2);
+  const subQueriesData = getQueryData(queries, queryIdLevel1, queryIdLevel2, queryIdLevel3);
   const subQueries = (subQueriesData?.queries as NeedHelpHelpers.HelpSectionQuery[]) || [];
   const headingTitle = queries?.find((q) => q.id === queryIdLevel1)?.title || 'Query';
   const helpSectionQueryId = AppConfig.Configuration.HELP_SECTION_CUSTOM_QUERIES;
@@ -456,8 +458,9 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     const onPressBack = () => {
       setSubheading('');
       if (
-        medicineOrderStatus === MEDICINE_ORDER_STATUS.CANCELLED ||
-        medicineOrderStatus === MEDICINE_ORDER_STATUS.CANCEL_REQUEST
+        !isConsult &&
+        (medicineOrderStatus === MEDICINE_ORDER_STATUS.CANCELLED ||
+          medicineOrderStatus === MEDICINE_ORDER_STATUS.CANCEL_REQUEST)
       ) {
         return navigation.navigate(AppRoutes.OrderDetailsScene, {
           orderAutoId: orderId,
@@ -749,7 +752,8 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       } else if (item?.content?.text) {
         navigation.navigate(AppRoutes.NeedHelpContentView, {
           queryIdLevel1,
-          queryIdLevel2: item?.id,
+          queryIdLevel2: queryIdLevel2 !== '' ? queryIdLevel2 : item?.id,
+          queryIdLevel3: queryIdLevel2 !== '' ? item?.id : '',
           queries,
           email,
           orderId,
