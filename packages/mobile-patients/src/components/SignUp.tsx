@@ -100,6 +100,7 @@ import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { FloatingLabelInputComponent } from '@aph/mobile-patients/src/components/ui/FloatingLabeInputComponent';
 import { InputCheckBox } from './ui/InputCheckBox';
+import { getOfferCarouselForRegisteration } from '../helpers/apiCalls';
 
 const { width, height } = Dimensions.get('window');
 
@@ -194,6 +195,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
   const [relation, setRelation] = useState<RelationArray>();
   const client = useApolloClient();
   const [isSignupEventFired, setSignupEventFired] = useState(false);
+  const [offers, setOffers] = useState<any>([]);
 
   const keyboardVerticalOffset = Platform.OS === 'android' ? { keyboardVerticalOffset: 20 } : {};
 
@@ -241,6 +243,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
     checkPatientData();
     getDeviceCountAPICall();
     getPrefillReferralCode();
+    getAllOffersForRegisterations();
   }, []);
 
   useEffect(() => {
@@ -531,30 +534,23 @@ const SignUp: React.FC<SignUpProps> = (props) => {
     }
   };
 
+  const getAllOffersForRegisterations = () => {
+    getOfferCarouselForRegisteration().then((res) => {
+      if (res?.data.data) {
+        let response = res.data.data;
+        let responseKeys = Object.keys(response);
+        let imageArray = responseKeys.map((item: string) => response[item].image);
+        imageArray = imageArray.filter((item) => item != '');
+        setOffers([...imageArray]);
+      }
+    });
+  };
   const renderOfferCrousel = () => {
     return (
       <Carousel
-        data={[1, 2, 3, 4]}
-        renderItem={({ item }) => (
-          <LinearGradientComponent
-            startOffset={{ x: 0, y: 1 }}
-            endOffset={{ x: 1, y: 0 }}
-            colors={[
-              theme.colors.GRADIENT_LIGHT_YELLOW_ONE,
-              theme.colors.GRADIENT_LIGHT_YELLOW_TWO,
-            ]}
-            style={styles.offserCrouselGradientContainer}
-          >
-            <View style={styles.offerCrouselMainContainer}>
-              <View style={styles.offerCrouselPriceTagContainer}>
-                <PriceTagIcon style={styles.priceTag} />
-              </View>
-              <View style={styles.offerDescriptionContainer}>
-                <Text style={styles.offersFirstLine}>Flat 25% off + ₹100 cashback</Text>
-                <Text style={styles.offersSecondLine}>On first medicine order</Text>
-              </View>
-            </View>
-          </LinearGradientComponent>
+        data={offers}
+        renderItem={(item: any) => (
+          <Image source={{ uri: item.item.toString() }} style={styles.offerCarouselImage} />
         )}
         sliderWidth={Dimensions.get('window').width}
         itemWidth={Dimensions.get('window').width - 70}
@@ -635,7 +631,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
             {string.registerationScreenData.headerOneHeading}
           </Text>
           <Text style={styles.stickyHeaderSubHeading}>
-            {string.registerationScreenData.headerOneHeading}
+            {string.registerationScreenData.headerTwoHeading}
           </Text>
         </View>
         <View style={styles.stickyHeaderOfferContain}>{renderOfferCrousel()}</View>
@@ -1036,6 +1032,7 @@ const styles = StyleSheet.create({
   },
   stickyHeaderTextContainer: {
     alignItems: 'center',
+    marginBottom: 5,
   },
   stickyHeaderMainHeading: {
     fontSize: 20,
@@ -1049,6 +1046,7 @@ const styles = StyleSheet.create({
   stickyHeaderOfferContain: {
     height: 100,
     paddingTop: 10,
+    marginBottom: 15,
   },
   formContainer: {
     paddingHorizontal: 30,
@@ -1108,5 +1106,10 @@ const styles = StyleSheet.create({
   whatsAppPersonalisedText: {
     ...theme.fonts.IBMPlexSansMedium(12),
     color: theme.colors.LIGHT_BLUE,
+  },
+  offerCarouselImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'stretch',
   },
 });
