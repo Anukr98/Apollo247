@@ -1923,7 +1923,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           addressData={addressData}
           onBillChangesClick={onBillChangesClick}
           cashbackDetails={cashbackDetails}
-          orderStatus={order?.currentStatus}
         />
         <View style={{ marginTop: 30 }} />
       </View>
