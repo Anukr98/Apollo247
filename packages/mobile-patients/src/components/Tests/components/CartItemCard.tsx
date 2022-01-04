@@ -58,10 +58,8 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   const inclusionItemToShow = !!finalFilterInclusions && finalFilterInclusions?.join(', ');
 
   const hasExtraData =
-    !!reportGenItem &&
-    (reportGenItem?.itemPrepration ||
-      reportTat?.preOrderReportTATMessage ||
-      reportGenItem?.itemReportTat);
+    (!!reportGenItem && (reportGenItem?.itemPrepration || reportGenItem?.itemReportTat)) ||
+    reportTat?.preOrderReportTATMessage;
   const inclusionCount = !!reportGenItem && reportGenItem?.itemParameterCount;
 
   const showSavingsView =
@@ -424,8 +422,6 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG, // backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
     borderTopRightRadius: 4,
     borderBottomRightRadius: 4,
-    borderWidth: 1,
-    borderColor: 'transparent',
     paddingRight: 6,
     paddingLeft: 3,
     marginLeft: 0,

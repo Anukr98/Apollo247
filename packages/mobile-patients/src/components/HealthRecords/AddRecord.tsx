@@ -658,10 +658,12 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           labResultsObj.result = parseFloat((item?.result || 0).toString());
           labResultsObj.unit = item?.unit || '';
           labResultsObj.parameterName = item?.parameterName || '';
-          let maxMin = item?.range?.split('-');
-          labResultsObj.minimum = parseFloat((maxMin[0] || 0).toString());
-          labResultsObj.maximum = parseFloat((maxMin[1] || 0).toString());
-          labResultsArray.push(labResultsObj);
+          if (item?.range) {
+            let maxMin = item?.range?.split('-');
+            labResultsObj.minimum = parseFloat((maxMin[0] || 0).toString());
+            labResultsObj.maximum = parseFloat((maxMin[1] || 0).toString());
+          }
+          labResultsArray?.push(labResultsObj);
         });
         setTestRecordParameters(labResultsArray?.length > 0 ? labResultsArray : []);
         setadditionalNotes(selectedRecord?.additionalNotes || '');

@@ -9,15 +9,16 @@ interface CancelAppointmentProps {
   onPressBack: () => void;
   onPressReschedule: () => void;
   onPressCancel: () => void;
+  customTitle?: string;
 }
 
 export const CancelAppointmentPopup: React.FC<CancelAppointmentProps> = (props) => {
-  const { title, onPressBack, onPressReschedule, onPressCancel } = props;
+  const { title, onPressBack, onPressReschedule, onPressCancel, customTitle } = props;
   const { currentPatient } = useAllCurrentPatients();
 
   return (
     <BottomPopUp
-      title={`Hi, ${currentPatient?.firstName} ${currentPatient?.lastName} :)`}
+      title={customTitle || `Hi, ${currentPatient?.firstName} ${currentPatient?.lastName} :)`}
       description={title}
       onPressBack={onPressBack}
     >

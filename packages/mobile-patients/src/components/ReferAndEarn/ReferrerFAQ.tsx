@@ -5,6 +5,7 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { FaqDownArrow, ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
+import { useReferralProgram } from '@aph/mobile-patients/src/components/ReferralProgramProvider';
 
 interface FAQType {
   id: number;
@@ -16,8 +17,9 @@ export interface RefererFAQProps extends NavigationScreenProps {}
 export const RefererFAQ: React.FC<RefererFAQProps> = (props) => {
   const { navigation } = props;
   const [openIndexId, setOpenIndex] = useState(0);
+  const { refererFAQsData } = useReferralProgram();
 
-  const renderFaqItem = (item: FAQType) => {
+  const renderFaqItem = (item: FAQType | any) => {
     return (
       <View style={styles.faqItemContainer}>
         <TouchableOpacity
@@ -45,10 +47,7 @@ export const RefererFAQ: React.FC<RefererFAQProps> = (props) => {
   const renderFAQList = () => {
     return (
       <View style={styles.faqMainListContainer}>
-        <FlatList
-          data={string.referAndEarn.refererFAQs}
-          renderItem={({ item }) => renderFaqItem(item)}
-        />
+        <FlatList data={refererFAQsData} renderItem={({ item }) => renderFaqItem(item)} />
       </View>
     );
   };

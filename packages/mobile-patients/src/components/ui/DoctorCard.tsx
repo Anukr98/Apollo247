@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.SKY_LIGHT_BLUE,
     width: '49.3%',
     borderRadius: 0,
-    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.GOLDEN,
     width: '49.3%',
     borderRadius: 0,
-    borderBottomRightRadius: 10,
+    borderBottomLeftRadius: 10,
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -717,9 +717,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     return (
       <View style={styles.centerRow}>
         {isOnline && isPhysical ? (
-          <>
-            <Text style={styles.availabilityText}>{getButtonTitle(physicalSlot, true)}</Text>
+        <>
             <Text style={styles.availabilityText}>{getButtonTitle(onlineSlot)}</Text>
+            <Text style={styles.availabilityText}>{getButtonTitle(physicalSlot, true)}</Text>
           </>
         ) : isPhysical ? (
           <Text style={styles.availabilityText}>{getButtonTitle(physicalSlot, true)}</Text>
@@ -840,17 +840,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     return (
       <View style={styles.bottomBtnView}>
         <TouchableOpacity
-          style={styles.bottomLeftBtn}
-          onPress={() => onPressConsultConfigCTA(ConsultMode.PHYSICAL)}
-        >
-          <View style={styles.fullWidthBtn}>
-            <HospitalPhrIcon style={styles.hospitalIcon} />
-            <Text style={styles.bottomBtnText} numberOfLines={2}>
-              {physicalCTATitle}
-            </Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
           style={styles.bottomRightBtn}
           onPress={() => onPressConsultConfigCTA(ConsultMode.ONLINE)}
         >
@@ -858,6 +847,17 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             <VideoActiveIcon style={styles.onlineConsultIcon} />
             <Text style={styles.bottomBtnText} numberOfLines={2}>
               {onlineCTATitle}
+            </Text>
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.bottomLeftBtn}
+          onPress={() => onPressConsultConfigCTA(ConsultMode.PHYSICAL)}
+        >
+          <View style={styles.fullWidthBtn}>
+            <HospitalPhrIcon style={styles.hospitalIcon} />
+            <Text style={styles.bottomBtnText} numberOfLines={2}>
+              {physicalCTATitle}
             </Text>
           </View>
         </TouchableOpacity>
@@ -873,6 +873,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             styles.bottomLeftBtn,
             {
               width: '100%',
+              borderBottomRightRadius: 10,
+              borderBottomLeftRadius: 10,
               backgroundColor: online ? theme.colors.GOLDEN : theme.colors.SKY_LIGHT_BLUE,
             },
           ]}

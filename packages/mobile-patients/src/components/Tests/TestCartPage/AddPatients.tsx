@@ -82,11 +82,7 @@ import { DiagnosticPatientSelected } from '@aph/mobile-patients/src/components/T
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { findDiagnosticSettings } from '@aph/mobile-patients/src/graphql/types/findDiagnosticSettings';
-import {
-  CALL_TO_ORDER_CTA_PAGE_ID,
-  Gender,
-  TEST_COLLECTION_TYPE,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { Gender, TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { PatientDetailsOverlay } from '@aph/mobile-patients/src/components/Tests/components/PatientDetailsOverlay';
 import {
   editProfile,

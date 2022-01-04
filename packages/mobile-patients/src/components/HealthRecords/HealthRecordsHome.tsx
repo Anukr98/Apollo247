@@ -24,6 +24,7 @@ import {
   HospitalPhrSearchIcon,
   HealthConditionPhrSearchIcon,
   Vaccination,
+  WhatsAppIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -31,6 +32,7 @@ import {
   GET_PAST_CONSULTS_PRESCRIPTIONS,
   UPDATE_PATIENT_MEDICAL_PARAMETERS,
   GET_PRISM_AUTH_TOKEN,
+  GET_ALL_CLINICAL_DOCUMENTS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getPrismAuthTokenVariables,
@@ -105,6 +107,12 @@ import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions
 import { renderHealthRecordShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import { useShoppingCart } from '../ShoppingCartProvider';
 import { getUniqueId } from 'react-native-device-info';
+import {
+  getClinicalDocuments,
+  getClinicalDocuments,
+  getClinicalDocumentsVariables,
+  getClinicalDocuments_getClinicalDocuments_response_fileInfoList,
+} from '@aph/mobile-patients/src/graphql/types/getClinicalDocuments';
 
 const { width } = Dimensions.get('window');
 
@@ -424,6 +432,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     | null
     | undefined
   >([]);
+
   const [prescriptions, setPrescriptions] = useState<
     | (getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_prescriptions_response | null)[]
     | null
@@ -431,11 +440,13 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   >([]);
 
   const movedFrom = props.navigation.getParam('movedFrom');
+  const refreshItem = props.navigation.getParam('refreshItem') || false;
   const [testAndHealthCheck, setTestAndHealthCheck] = useState<{ type: string; data: any }[]>();
   const { loading, setLoading } = useUIElements();
   const [prismdataLoader, setPrismdataLoader] = useState<boolean>(false);
   const [pastDataLoader, setPastDataLoader] = useState<boolean>(false);
   const [arrayValues, setarrayValues] = useState<any>([]);
+  const [clinicalDocs, setClinicalDocs] = useState<any>([]);
   const client = useApolloClient();
   const { getPatientApiCall } = useAuth();
   const { phrNotificationData, setPhrNotificationData } = useAppCommonData();
@@ -445,6 +456,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [callApi, setCallApi] = useState(true);
   const [callPrescriptionApi, setCallPrescriptionApi] = useState(false);
   const [callTestReportApi, setCallTestReportApi] = useState(false);
+  const [callClinicalDocsApi, setCallClinicalApi] = useState(false);
   const [updatePatientDetailsApi, setUpdatePatientDetailsApi] = useState(true);
   const [showUpdateProfilePopup, setShowUpdateProfilePopup] = useState(false);
   const [showUpdateProfileErrorPopup, setShowUpdateProfileErrorPopup] = useState(false);
@@ -529,11 +541,12 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
   useEffect(() => {
     if (prismdataLoader || pastDataLoader) {
+      fetchClinicalDocument();
       setPageLoading!(true);
     } else {
       setPageLoading!(false);
     }
-  }, [prismdataLoader, pastDataLoader]);
+  }, [prismdataLoader, pastDataLoader, refreshItem]);
 
   const setPatientHistoryValues = () => {
     setHeight(isHeightAvailable ? currentPatient?.patientMedicalHistory?.height : '');
@@ -674,6 +687,28 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       .finally(() => setPrismdataLoader(false));
   }, [currentPatient]);
 
+  // CLINICAL DOCUMENT
+  const fetchClinicalDocument = useCallback(() => {
+    setPrismdataLoader(true);
+    const supressMobileNo = currentPatient?.mobileNumber?.slice(-10);
+    client
+      .query<getClinicalDocuments, getClinicalDocumentsVariables>({
+        query: GET_ALL_CLINICAL_DOCUMENTS,
+        variables: { uhid: currentPatient?.uhid, mobileNumber: supressMobileNo },
+        fetchPolicy: 'no-cache',
+      })
+      .then((item: any) => {
+        setClinicalDocs(item?.data?.getClinicalDocuments?.response);
+        setPrismdataLoader(false);
+      })
+      .catch((err: any) => {
+        CommonBugFender('HealthRecordsHome_fetchTestData', err);
+        currentPatient && handleGraphQlError(err);
+        setPrismdataLoader(false);
+      })
+      .finally(() => setPrismdataLoader(false));
+  }, [currentPatient]);
+
   const fetchTestReportsData = useCallback(() => {
     setPrismdataLoader(true);
     getPatientPrismMedicalRecordsApi(client, currentPatient?.id, [
@@ -728,6 +763,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       setPrismdataLoader(true);
       fetchPastData();
       fetchPrescriptionAndTestReportData();
+      fetchClinicalDocument();
     }
   }, [currentPatient, updatePatientDetailsApi]);
 
@@ -740,6 +776,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         fetchPrescriptionData();
       } else if (callTestReportApi) {
         fetchTestReportsData();
+      } else if (callClinicalDocsApi) {
+        fetchClinicalDocument();
       }
     });
     const didBlurSubsription = props.navigation.addListener('didBlur', (payload) => {
@@ -763,7 +801,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     healthChecksNew?.forEach((c) => {
       mergeArray.push({ type: 'healthCheck', data: c });
     });
-    setTestAndHealthCheck(phrSortByDate(mergeArray));
   }, [labResults, healthChecksNew]);
 
   const tabsClickedCleverTapEvent = (cleverTapEventName: CleverTapEventName) => {
@@ -1020,13 +1057,22 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const onBackPrescriptionPressed = () => {
     setCallApi(false);
     setCallTestReportApi(false);
+    setCallClinicalApi(false);
     setCallPrescriptionApi(true);
   };
 
   const onBackTestReportPressed = () => {
     setCallApi(false);
     setCallPrescriptionApi(false);
+    setCallClinicalApi(false);
     setCallTestReportApi(true);
+  };
+
+  const onBackClinicalDocsPressed = () => {
+    setCallApi(false);
+    setCallClinicalApi(true);
+    setCallPrescriptionApi(false);
+    setCallTestReportApi(false);
   };
 
   const renderListItemView = (title: string, id: number) => {
@@ -1061,6 +1107,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             authToken: prismAuthToken,
             onPressBack: onBackArrowPressed,
             callPrescriptionsApi: onBackPrescriptionPressed,
+            testReportBool: true,
           });
           break;
         case 2:
@@ -1070,6 +1117,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             authToken: prismAuthToken,
             onPressBack: onBackArrowPressed,
             callTestReportsApi: onBackTestReportPressed,
+            testReportBool: true,
           });
           break;
         case 3:
@@ -1108,7 +1156,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           });
           break;
         case 8:
-          props.navigation.navigate(AppRoutes.ClinicalDocumentScreen);
+          props.navigation.navigate(AppRoutes.ClinicalDocumentListing, {
+            onPressBack: onBackArrowPressed,
+            callClinicalDocumentApi: onBackClinicalDocsPressed,
+          });
           break;
       }
     };
@@ -1174,6 +1225,91 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const renderHealthCategoriesView = () => {
     return (
       <View style={{ marginTop: 54, marginHorizontal: 20, marginBottom: 25 }}>
+        <View
+          style={{
+            marginBottom: 15,
+            backgroundColor: '#FCB716',
+            height: 60,
+            borderRadius: 10,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <WhatsAppIcon size="sm" style={{ marginLeft: 10, width: 30, height: 30 }} />
+          <Text
+            numberOfLines={2}
+            style={{ width: '85%', left: 15, justifyContent: 'space-around' }}
+          >
+            <Text
+              style={{
+                ...theme.viewStyles.text('R', 16, theme.colors.WHITE, 1),
+              }}
+            >
+              Now upload your health record from Whatsapp
+            </Text>
+            <Text style={{ ...theme.viewStyles.text('SB', 16, '#b30000', 1) }}>
+              {' +91 8045681199'}
+            </Text>
+          </Text>
+        </View>
+        <View style={{ marginBottom: 15, backgroundColor: 'white', height: 60, borderRadius: 10 }}>
+          <View
+            style={{
+              position: 'absolute',
+              right: 0,
+              top: -4,
+              backgroundColor: '#E50000',
+              width: 40,
+              borderRadius: 10,
+              height: 20,
+            }}
+          >
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 12, theme.colors.WHITE, 1, 21),
+                textAlign: 'center',
+              }}
+            >
+              New
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              top: 15,
+            }}
+            onPress={() => {
+              var filtered = clinicalDocs?.filter(function(applyFilter: any) {
+                return applyFilter?.fileInfoList.length != 0;
+              });
+              filtered?.length > 0
+                ? props.navigation.navigate(AppRoutes.ClinicalDocumentListing, {
+                    clinicalDocs: clinicalDocs,
+                    apiCall: true,
+                    onPressBack: onBackArrowPressed,
+                    callClinicalDocumentApi: onBackClinicalDocsPressed,
+                  })
+                : props.navigation.navigate(AppRoutes.ShowWelcomeMessage);
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <ClinicalDocumentPhrIcon style={{ height: 27.92, width: 20, left: 10 }} />
+              <Text
+                style={{
+                  textAlign: 'center',
+                  left: 20,
+                  ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 21),
+                }}
+              >
+                Clinical Document
+              </Text>
+            </View>
+            <ArrowRight style={{ height: 24, width: 24 }} />
+          </TouchableOpacity>
+        </View>
         <Text style={{ ...theme.viewStyles.text('B', 18, theme.colors.LIGHT_BLUE, 1, 21) }}>
           {'Health Categories'}
         </Text>
@@ -1200,14 +1336,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           {renderListItemView('Bills', 6)}
           {renderListItemView('Insurance', 7)}
         </View>
-      </View>
-    );
-  };
-
-  const renderClinicalDocumentsView = () => {
-    return (
-      <View style={styles.clinicalDocumentViewStyle}>
-        {renderListItemView('Clinical Documents', 8)}
       </View>
     );
   };
@@ -1891,6 +2019,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         ) : (
           <ScrollView style={{ flex: 1 }} bounces={false}>
             {renderProfileDetailsView()}
+
             {renderHealthCategoriesView()}
             {renderBillsInsuranceView()}
             {/* PHR Phase 2 UI */}
