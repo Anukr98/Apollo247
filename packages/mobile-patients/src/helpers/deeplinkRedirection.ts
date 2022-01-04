@@ -628,7 +628,7 @@ export const pushTheView = (
       });
       break;
     case 'MyOrders':
-      navigateToView(navigation, AppRoutes.YourOrdersScene);
+      navigateToView(navigation, AppRoutes.YourOrdersScene, {source: 'deeplink'});
       break;
     case 'webview':
       navigateToView(navigation, AppRoutes.CommonWebView, { url: id });
