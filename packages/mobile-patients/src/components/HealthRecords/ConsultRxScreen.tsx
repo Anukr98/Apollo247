@@ -777,11 +777,9 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
             }
           })
           .then((tests) => {
-            console.log({ tests });
             const getItemNames = tests?.map((item) => item?.name)?.join(', ');
             const getItemIds = tests?.map((item) => Number(item?.id))?.join(', ');
             const getInclusionCount = tests?.map((item) => Number(item?.inclusions));
-            console.log({ getInclusionCount });
             if (testPrescription.length) {
               addMultipleTestCartItems!(tests! || []);
               // Adding ePrescriptions to DiagnosticsCart
