@@ -252,7 +252,8 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
     }
   }, [props.openCamera]);
 
-  const formatResponse = (response: ImageCropPickerResponse[]) => {
+  const formatResponse = (response: any) => {
+    const rets = response[0] || response;
     if (props.isProfileImage) {
       const res = response[0] || response;
       const isPdf = res.mime == 'application/pdf';
@@ -264,6 +265,7 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
           base64: res.data,
           fileType: fileType,
           title: `${isPdf ? 'PDF' : 'IMG'}_${random8DigitNumber}`,
+          fName: res.filename,
         } as PhysicalPrescription,
       ];
       return returnValue as PhysicalPrescription[];
@@ -279,7 +281,7 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
       return {
         base64: item.data,
         fileType: fileType,
-        title: `${isPdf ? 'PDF' : 'IMG'}_${random8DigitNumber}`,
+        title: !!item?.fileName ? item?.fileName : `${isPdf ? 'PDF' : 'IMG'}_${random8DigitNumber}`,
       } as PhysicalPrescription;
     });
   };
@@ -388,15 +390,11 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
       }
 
       const base64Array = await Promise.all(getBase64(documents));
-
-      const base64FormattedArray = base64Array.map(
-        (base64, index) =>
-          ({
-            mime: documents[index].type,
-            data: base64,
-          } as ImageCropPickerResponse)
-      );
-
+      const base64FormattedArray = base64Array.map((base64, index) => ({
+        mime: documents[index].type,
+        data: base64,
+        fileName: documents[0].name,
+      }));
       props.onResponse('CAMERA_AND_GALLERY', formatResponse(base64FormattedArray));
 
       setshowSpinner(false);

@@ -12,9 +12,9 @@ export interface SelectedAddressProps {
 }
 
 export const SelectedAddress: React.FC<SelectedAddressProps> = (props) => {
-  const { addresses, deliveryAddressId, storeId, stores: storesFromContext } = useShoppingCart();
+  const { addresses, cartAddressId, storeId, stores: storesFromContext } = useShoppingCart();
   const { onPressChange, orderType, showChangeAddress } = props;
-  const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
+  const selectedAddress = addresses.find((item) => item.id == cartAddressId);
   const selectedStore =
     (storeId && storesFromContext.find((item) => item.storeid == storeId)) || undefined;
 

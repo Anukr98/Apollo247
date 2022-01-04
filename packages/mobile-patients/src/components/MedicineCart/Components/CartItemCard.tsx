@@ -127,10 +127,11 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   };
 
   const renderCareCashback = () => {
-    if (!!item.circleCashbackAmt && (!coupon || coupon.circleBenefits)) {
+    const cashback = item.circleCashbackAmt || item.cashback;
+    if (!!cashback && !coupon) {
       return (
         <CareCashbackBanner
-          bannerText={`Extra ₹${item.circleCashbackAmt.toFixed(2)} Cashback`}
+          bannerText={`Extra ₹${cashback?.toFixed(2)} Cashback`}
           textStyle={styles.careText}
           logoStyle={{
             resizeMode: 'contain',

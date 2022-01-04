@@ -1,16 +1,13 @@
-import React, { FC, useState, useEffect } from 'react';
+import React, { FC, useState } from 'react';
 import { StyleSheet, View, SafeAreaView, Text, TouchableOpacity } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import {
-  CommonLogEvent,
-  CommonBugFender,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { NavigationScreenProps } from 'react-navigation';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import { YourOrdersScene } from '@aph/mobile-patients/src/components/YourOrdersScene';
+import { YourOrdersScene } from '@aph/mobile-patients/src/components/MyOrders/YourOrdersScene';
 import { YourOrdersTest } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/YourOrdersTests';
 import { AppConfig } from '../../strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';

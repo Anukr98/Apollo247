@@ -4,6 +4,7 @@ import { StyleSheet, TouchableOpacity, StyleProp, ViewStyle, Text } from 'react-
 import Menu from 'react-native-material-menu';
 
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const styles = StyleSheet.create({
   menuContainer: {
@@ -34,6 +35,7 @@ export interface VaccineDoseChooserProps {
   showMenu?: boolean;
   menuHidden?: () => void;
   onDoseChoosed?: (dose: string) => void;
+  patientAge?: number;
 }
 
 export const VaccineDoseChooser: React.FC<VaccineDoseChooserProps> = (props) => {
@@ -91,6 +93,17 @@ export const VaccineDoseChooser: React.FC<VaccineDoseChooserProps> = (props) => 
       >
         <Text style={styles.doseTitle}>{string.vaccineBooking.title_dose_2}</Text>
       </TouchableOpacity>
+
+      {AppConfig.Configuration.Vacc_Show_Booster && props.patientAge >= 60 ? (
+        <TouchableOpacity
+          onPress={() => {
+            props.onDoseChoosed?.(string.vaccineBooking.title_dose_booster);
+            hideMenu();
+          }}
+        >
+          <Text style={styles.doseTitle}>{string.vaccineBooking.title_dose_booster}</Text>
+        </TouchableOpacity>
+      ) : null}
     </Menu>
   );
 };

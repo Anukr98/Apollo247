@@ -91,8 +91,8 @@
     "KavachText": "Explore the Apollo Kavach Program",
     "joinConsultRoomDescription": "Please click here to\n Join the Call with",
     "waitForDoctirToJoinCall": "Please wait while Dr. doctor_name is going through your medical records. This might take a while. Advice you to stay in the consult room!",
-    "exotelMessage": " is trying to call you from the number ",
-    "requestMessage": ". Request you to answer the call.",
+    "exotelMessage": " is trying to reach you on your mobile phone via number ",
+    "requestMessage": ". We request you to answer the call.",
     "jdAssignedMessage": "A doctor from 0’s team will join you shortly to collect your medical details. These details are essential for 0 to help you and will take around 3-5 minutes.",
     "consultCompleteMessage": "Please wait while {0} is preparing your prescription. The prescription will be sent here in the consult room itself. However, this might take a while!",
     "customerCareNumber": 4041894343,
@@ -171,7 +171,15 @@
     "selectSpeciality": "Select Speciality",
     "apollo247UniversalLink": "www.apollo247.com",
     "apolloPharmacyUniversalLink": "www.apollopharmacy.in",
-    "assessmentSummary": "Medical Assessment Summary:"
+    "assessmentSummary": "Medical Assessment Summary:",
+    "stagingBlogUrl": "https://stagingpatients.apollo247.com/blog?user_from_device=true",
+    "bookVideoConsult": "Book Video Consult",
+    "bookHospitalVisit": "Book Hospital Visit",
+    "cancelAppointmentTitleHeading": "Appointment Cancellation",
+    "cancelAppointmentBody": "Confirm if you would like to proceed with the cancellation of your",
+    "cancelRefundBody": "We regret the inconvenience caused. We’ll issue you a full refund.",
+    "goBack": "GO BACK",
+    "proceedCta": "PROCEED TO CONNECT"
   },
   "diagnosticsLocation": {
     "savedAddressText": "Saved Addresses",
@@ -183,6 +191,47 @@
     "unableToGetPermissionCTA": "turn on",
     "denied": "denied",
     "restricted": "restricted"
+  },
+  "diagnosticsCoupons": {
+    "couponsText": "Offers and Coupons",
+    "applyCouponText": "Apply Coupon Code",
+    "couponForYou": "Coupons for You",
+    "apply": "Apply",
+    "couponPlcaholder": "Enter Coupon code",
+    "couponFetchError": "Sorry, we're unable to fetch coupon codes right now. Please try again.",
+    "noCouponsText": "No coupons available",
+    "invalidCouponCode": "Invalid Coupon Code",
+    "discountOnMrp": "Discount on MRP",
+    "couponDiscount": "Coupon Discount",
+    "totalMrp": "Total MRP",
+    "circleDiscount": "Circle Discount",
+    "applyCoupon": "Apply Coupon",
+    "unableToValidate": "Sorry, unable to validate coupon right now.",
+    "couponApplied": "Coupon Applied",
+    "couponNotApplied": "Coupon discount not applicable"
+  },
+  "diagnosticsCircle": {
+    "nonCircleHeading": "Buy Circle Membership",
+    "circleHeading": "Yay! You are a Circle Member",
+    "you": "you",
+    "youCan": "You can",
+    "save": "save",
+    "saved": "saved",
+    "orderCircle": "on this order with Circle!",
+    "viewPlans": "VIEW PLANS",
+    "yourEfectivePrice": "Your effective price is",
+    "effectivePrice": "Effective price would be",
+    "circleMembership": "Circle Membership",
+    "onThisOrder": "on this order.",
+    "congratsText": "Congrats! You have successfully purchased the {{duration}} {{months}} (Trial) Circle Plan for {{symbol}}{planPrice}"
+  },
+  "diagnosticsOrders": {
+    "proceedToCancel": "PROCEED TO CANCEL",
+    "proceedToReschedule": "PROCEED TO RESCHEDULE",
+    "cancel": "Cancel",
+    "reschedule": "Reschedule",
+    "noSlot": "Sorry! No Slots are Available",
+    "callPhleboText": "You can call the apollo agent now using the call button"
   },
   "components": {
     "medicineDetails": {
@@ -319,6 +368,7 @@
     "need_help": "Need Help?",
     "book_appointment": "BOOK AN APPOINTMENT",
     "book_appointment_question": "Want to book an appointment?",
+    "search_not_available": "No Results Found",
     "arrayTest": [
       {
         "id": 1,
@@ -546,7 +596,7 @@
     "pricesChangedMessage": "Few tests prices might have updated or are not available for this address",
     "areaNotAvailableMessage": "Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.",
     "itemAlreadyExist": " added more than once in your cart. Please remove and proceed to pay.",
-    "specialDiscountText": "TESTS247 coupon pre-applied",
+    "specialDiscountText": "Limited period offer coupon pre-applied",
     "unableToOpenReport": "We are facing some issue in opening the report. Please try again later.",
     "responseUnavailableForReport": "Report is not yet available to download. Please try after some time.",
     "disclaimerText": [
@@ -685,7 +735,32 @@
     "prescriptionError": "Sorry cannot submit precription, an error occured",
     "prescriptionSuccess": "Prescription Successfully Uploaded",
     "fromHealthRecord": "PRESCRIPTION FROM HEALTH RECORDS",
-    "addMorePrescription": "+ ADD MORE PRESCRIPTIONS"
+    "addMorePrescription": "+ ADD MORE PRESCRIPTIONS",
+    "itemAdded": "item added",
+    "itemsAdded": "items added",
+    "goToCart": "Go to cart",
+    "invalidFileSize": "Invalid File Size. File size must be less than 25MB.",
+    "invalidFileType": "Invalid File Type. File type must be PDF.",
+    "prescriptionHeading": "Place your order via prescription",
+    "test247Text": "Limited period offer",
+    "frequentlyBrought": "Frequently Brought",
+    "topBookedTests": "Top Booked Tests",
+    "similarPackages": "Similar Packages",
+    "needToAddPaitent": "• Do you want to edit patient details?",
+    "needToAddOrder": "• Do you want to add tests to your order?",
+    "radiology": "radiology",
+    "prescriptionUploaded": "Prescription Uploaded",
+    "homepagePastOrderRecommendations": "Recommended for You",
+    "phleboConnectCall": "Connect on a phone call with the Apollo Agent",
+    "phleboFollowSteps": "Please follow the steps below to connect",
+    "phleboWaitText": "Wait for Apollo Agent to Connect",
+    "phleboPleaseNote": "Please Note: Your personal number would not be shared with the agent",
+    "phleboTextOne": "Answer the call from",
+    "phleboTextTwo": "to connect",
+    "uploadPrescriptionWhatsapp": {
+      "whatsappPhoneNumber": "4048218743",
+      "message": "I want to place a Lab Test Order with prescription"
+    }
   },
   "diagnosticCategoryTitle": {
     "category": "category",
@@ -706,7 +781,14 @@
     "homeCollectionText": "Collection and hygiene charges",
     "paidSlotText": "Paid slot charges",
     "patientSelectionLimit": "You can add only {{count}} patients. Please remove extra patients",
-    "multiPatientMsg": "You can now book tests for your family and friends in a single order"
+    "multiPatientMsg": "You can now book tests for your family and friends in a single order",
+    "nonCircleMsg": "Extra 15% off for circle customers. TnC Apply",
+    "couponSavings": "Coupon Savings",
+    "circleMembershipSavings": "Circle Membership Savings",
+    "cartSavings": "Cart Savings",
+    "additionalAmount": "Additional amount that needs to be paid",
+    "totalCharges": "Total charges",
+    "reviewPagePolicyText": "As an add-on service, you would receive recommendations for relevant tests or packages from our lab personnel"
   },
   "orders": {
     "urOrders": "MY ORDERS",
@@ -1240,27 +1322,53 @@
   "aboutApolloList": [
     {
       "title": "About Us",
-      "url": "https://www.apollo247.com/aboutUs?isMobile=true"
+      "url": "https://www.apollo247.com/AboutUs?isMobile=true&user_from_device=true"
     },
     {
       "title": "Contact Us",
-      "url": "https://www.apollo247.com/contact?isMobile=true"
+      "url": "https://www.apollo247.com/contact?isMobile=true&user_from_device=true"
     },
     {
       "title": "FAQs",
-      "url": "https://www.apollo247.com/faq?isMobile=true"
+      "url": "https://www.apollo247.com/faq?isMobile=true&user_from_device=true"
     },
     {
       "title": "Terms and Conditions",
-      "url": "https://www.apollo247.com/terms?isMobile=true"
+      "url": "https://www.apollo247.com/terms?isMobile=true&user_from_device=true"
     },
     {
       "title": "Returns Policy",
-      "url": "https://www.apollo247.com/returns?isMobile=true"
+      "url": "https://www.apollo247.com/returns?isMobile=true&user_from_device=true"
     },
     {
       "title": "Privacy Policy",
-      "url": "https://www.apollo247.com/privacy?isMobile=true"
+      "url": "https://www.apollo247.com/privacy?isMobile=true&user_from_device=true"
+    }
+  ],
+  "aboutApolloListForQA": [
+    {
+      "title": "About Us",
+      "url": "https://stagingpatients.apollo247.com/AboutUs?isMobile=true&user_from_device=true"
+    },
+    {
+      "title": "Contact Us",
+      "url": "https://stagingpatients.apollo247.com/contact?isMobile=true&user_from_device=true"
+    },
+    {
+      "title": "FAQs",
+      "url": "https://stagingpatients.apollo247.com/faq?isMobile=true&user_from_device=true"
+    },
+    {
+      "title": "Terms and Conditions",
+      "url": "https://stagingpatients.apollo247.com/terms?isMobile=true&user_from_device=true"
+    },
+    {
+      "title": "Returns Policy",
+      "url": "https://stagingpatients.apollo247.com/returns?isMobile=true&user_from_device=true"
+    },
+    {
+      "title": "Privacy Policy",
+      "url": "https://stagingpatients.apollo247.com/privacy?isMobile=true&user_from_device=true"
     }
   ],
   "truecaller": {
@@ -1331,6 +1439,7 @@
     "select_vaccine_dose": "Choose vaccination dose number",
     "title_dose_1": "Dose 1",
     "title_dose_2": "Dose 2",
+    "title_dose_booster": "Booster Dose",
     "select_vaccine_type_opt": "Select Vaccine type (Optional)",
     "vaccine_type": "Vaccine type",
     "title_no_booking": "NO BOOKINGS",
@@ -1406,6 +1515,7 @@
     "success_generate_pdf": "Successfully generated vaccination booking PDF ",
     "success_generate_invoice_pdf": "Successfully generated vaccination invoice.",
     "dose_2_alert": "Please make sure that the difference between 1st and 2nd dose is as per Govt. guidelines. If difference in 2nd dose is less than Govt. guideline, you will not be given 2nd dose.",
+    "dose_booster_alert": "Please make sure that the difference between 2nd and Booster dose is as per Govt. guidelines. If the difference in Booster dose is less than Govt. guideline, you will not be given Booster dose.",
     "verify_title": "VERIFY",
     "submit_title": "SUBMIT "
   },
@@ -1472,6 +1582,15 @@
     "consultNow": "CONSULT NOW",
     "paymentPendingBooking": "Please wait while we proccess your payment. You can book consultation from specilaty screen later."
   },
+  "vonageToast": {
+    "unstableVideo": "Your Internet connection appears to be Unstable... if the problem persists, the video will be automatically turned off at doctor's end",
+    "unstableAudio": "Your Internet connection appears to be Unstable…call might disconnect",
+    "wentWrong": "Something went wrong!!  Trying to connect",
+    "reconnect": "Trying to Reconnect the Call...",
+    "audioFallback": "Video has been turned off automatically due to unstable internet. It will be turned ON after network Improves",
+    "fallbackWarning": "Bad Network, if the problem persists you might get a telephonic call on your mobile phone",
+    "callDisconnected": "Call disconnected due to bad network."
+  },
   "askApollo": {
     "mobileNumber": "Mobile Number",
     "emailId": "Email ID",
@@ -1489,6 +1608,7 @@
     "referAndEarnLine2": "Your friends get ₹100 on signup",
     "earnNow": "Earn Now",
     "willBeCreditSoon": "Will be credited in a few mins*",
+    "subjectedToTnC": "Subjected to TnC",
     "yourFriendGot": "Your friend get ₹100 on signup & you get ₹100 on their first order.",
     "onSignUp": "on signup &",
     "youGet": "You get",
@@ -1513,6 +1633,9 @@
     "expireOn": "Expires on 12 Sep,21",
     "purchasedOn": "Purchased On 20th July",
     "signedUp": "Signed up {signedUpDate}\nPurchase is Pending.",
+    "notEligibleForRewardMaxLimitReadched": "Not eligible for reward, Max limit reached. Read TnC",
+    "useYourFirstTnc": "Use code FIRST3 to get Flat 25% off ",
+    "firstThreeMedecineTransition": "on your first 3 medicine transactions.",
     "purchaseIsPending": ", ",
     "noReferralReward": "No referral rewards",
     "youHaveNotInvited": "You have not invited your friends yet",
@@ -1531,19 +1654,19 @@
     "refererTermsAndCondition": [
       {
         "id": 1,
-        "condition": "The credits received from a referral can only be redeemed as a discount on services availed on the Apollo247 app."
+        "condition": "The Health Credits received from a referral can only be redeemed as discounts on services available on the Apollo 24|7 app."
       },
       {
         "id": 2,
-        "condition": "Referrers will get 100 HC only after the first medicine order is delivered and the return period is passed (i.e 3 days). For 1st diagnostic orders, once the report is generated the referrer will get 100 HC."
+        "condition": "Referrers will get 100 Health Credits only after the first medicine order is delivered to the referee and the return period has passed (i.e. 3 days). For first diagnostic bookings, once the report is generated the referrer will get 100 Health Credits."
       },
       {
         "id": 3,
-        "condition": "HC will only be credited to the referrer’s account if the referee places an order of min 300 and above."
+        "condition": "Health Credits will be credited to the referrer’s account only if the referee’s minimum order value is INR 300 or above."
       },
       {
         "id": 4,
-        "condition": "Credits will only be credited for the 1st order of the referee on the App be it for Pharmacy or diagnostic. Referral rewards are not applicable for consultations booked via the app."
+        "condition": "Health Credits will only be credited for the referee’s first pharmacy or diagnostic order on the Apollo 24|7 app. Referral rewards are not applicable for doctor consultations booked via the app."
       },
       {
         "id": 5,
@@ -1572,6 +1695,10 @@
       {
         "id": 11,
         "condition": "Any rewards earned as part of this program are strictly non-transferable and shall be used by the same user on the same device ID."
+      },
+      {
+        "id": 12,
+        "condition": "Maximum number of referrals allowed by a user in a week is 5 and in a month is 20. Any other referral above this will not be counted and no signup reward will be credited to the referee."
       }
     ],
     "refererFAQs": [
@@ -1635,5 +1762,172 @@
         }
       ]
     }
+  },
+  "refAndEarn": {
+    "global": {
+      "refereeInitialsEarnAmount": "100",
+      "currency": "₹",
+      "currencyName": "HC",
+      "validUptoPurchase": "300",
+      "shareLinkMessage": "Save on medical bills like me!\nSign up on Apollo 247 app and get Flat ₹100 worth of health credits"
+    },
+    "referralMainBanner": {
+      "bannerTextLineOne": "Refer & Earn {currency}{initialEarnAmount}",
+      "bannerTextLineTwo": "Your friends get {currency}{initialEarnAmount} on signup",
+      "referralBannerImageURL": ""
+    },
+    "shareReferrerLink": {
+      "banerTextLineOne": "Refer & Earn",
+      "bannerTextLineTwo": "{currency}{initialEarnAmount}",
+      "banerTextLineThree": "Your friend get {currency}{initialEarnAmount} on signup & you get {currency}{initialEarnAmount} on their first order.",
+      "referViaText": "Refer Via",
+      "howItWorks": {
+        "mainHeading": "How it works?",
+        "pointOne": "Invite your friend",
+        "pointTwo": "Friend receives {currency}{referShareAmount} on signup",
+        "pointThree": "You get {currency}{referShareAmount} on their first\ntransaction",
+        "pointThreeNote": "Not valid for order below {currency}{validUptoPurchase}*"
+      },
+      "termsAndCondition": "Terms and Condition",
+      "faqs": "FAQs",
+      "checkReward": "Check Rewards",
+      "redeemNow": "REDEEM NOW"
+    },
+    "yourRewards": {
+      "totalEarningHeading": "Earned {currencyName} : {earnedAmount}",
+      "claimedCard": {
+        "eligible": {
+          "youEarnedRefreePoints": "You earned refree points on",
+          "firstTimeLogin": " first time Login."
+        },
+        "notEligible": {
+          "useYourFirstTnc": "Use code FIRST3 to get Flat 25% off ",
+          "firstThreeMedecineTransition": "on your first 3 medicine transactions."
+        }
+      },
+      "pendingCard": {
+        "signedUpPurchasePending": "Signed up {signedUpDate}\nPurchase is Pending.",
+        "notEligibleForRewardMaxLimitReadched": "Not eligible for reward, Max limit reached. Read TnC"
+      },
+      "noReferralReward": {
+        "mainHeading": "No referral rewards",
+        "subHeading": "You have not invited your friends yet",
+        "buttonText": "Refer Your Friend"
+      },
+      "tabBarMenuName": {
+        "menuOne": "Claimed",
+        "menuTwo": "Pending"
+      }
+    },
+    "congratulationPage": {
+      "congratulations": "Congratulations!",
+      "yourFriendGiftYou": "Your friend gifted you",
+      "referrerAmountAndCurrencyName": "{earnedAmount} {currencyName}",
+      "willBeCreditSoon": "Will be credited in a few mins*",
+      "subjectedToTnC": "Subjected to TnC",
+      "redeemPoints": "Redeem Points",
+      "whyChooseApollo247": "Why choose Apollo 247?",
+      "deleiveryInHours": "Delivery in 2 hours",
+      "consultDoctorIn15Minutes": "Consult doctor in 15 mins",
+      "labTestAtHome": "Lab test at home",
+      "tncHeading": "Terms & Conditions",
+      "termsAndCondition": [
+        {
+          "id": "1",
+          "data": "Max referrals allowed per person is 5 in a week, referrals above 5 will not be rewarded"
+        },
+        {
+          "id": "2",
+          "data": "New accounts created from a same device will not be rewarded"
+        }
+      ]
+    },
+    "refererTermsAndCondition": [
+      {
+        "id": 1,
+        "condition": "The Health Credits received from a referral can only be redeemed as discounts on services available on the Apollo 24|7 app."
+      },
+      {
+        "id": 2,
+        "condition": "Referrers will get 100 Health Credits only after the first medicine order is delivered to the referee and the return period has passed (i.e. 3 days). For first diagnostic bookings, once the report is generated the referrer will get 100 Health Credits."
+      },
+      {
+        "id": 3,
+        "condition": "Health Credits will be credited to the referrer’s account only if the referee’s minimum order value is INR 300 or above."
+      },
+      {
+        "id": 4,
+        "condition": "Health Credits will only be credited for the referee’s first pharmacy or diagnostic order on the Apollo 24|7 app. Referral rewards are not applicable for doctor consultations booked via the app."
+      },
+      {
+        "id": 5,
+        "condition": "If the person being referred is a pre-existing user of the Apollo247 app or website and has already availed at least one service through the Apollo247 app or website, they will not receive referral credits."
+      },
+      {
+        "id": 6,
+        "condition": "If a user receives multiple referral links, only the first link in chronological order will be counted for validation."
+      },
+      {
+        "id": 7,
+        "condition": "Apollo247 reserves the right to allocate different reward values to different users and different service categories."
+      },
+      {
+        "id": 8,
+        "condition": "Apollo247 reserves the right to declare any reward null at any point in time at its own discretion."
+      },
+      {
+        "id": 9,
+        "condition": "Apollo247 reserves the right to block usage of rewards or credits for certain users at its own discretion."
+      },
+      {
+        "id": 10,
+        "condition": "Apollo247 reserves the right to change the nature of the referral program and introduce other kinds of rewards and discounts for the sender and/or receiver."
+      },
+      {
+        "id": 11,
+        "condition": "Any rewards earned as part of this program are strictly non-transferable and shall be used by the same user on the same device ID."
+      },
+      {
+        "id": 12,
+        "condition": "Maximum number of referrals allowed by a user in a week is 5 and in a month is 20. Any other referral above this will not be counted and no signup reward will be credited to the referee."
+      }
+    ],
+    "refererFAQs": [
+      {
+        "id": 1,
+        "question": "Who is eligible to get a referral reward?",
+        "answer": "Who hasn't tried any Apollo247 service before either on Apollo 247 App or website."
+      },
+      {
+        "id": 2,
+        "question": "What is the value of 1HC ?",
+        "answer": "1 HC = 1 Rs"
+      },
+      {
+        "id": 3,
+        "question": "What will I earn by referring?",
+        "answer": "Fixed amount of ₹100 redeemable on all Apollo247 services. You can redeem your health credit on your order. The reward can change in the future, depending upon availability."
+      },
+      {
+        "id": 4,
+        "question": "Will these rewards have an expiry duration?",
+        "answer": "Yes. The reward will expire in 30 days. Apollo247 reserves the right to change the expiry date of upcoming rewards at any point in time at its discretion."
+      },
+      {
+        "id": 5,
+        "question": "How many health credits can you earn?",
+        "answer": "You can refer a maximum of 100 people and earn 10,000 health credits from referrals."
+      },
+      {
+        "id": 6,
+        "question": "I already have some health credits. Can I redeem both?",
+        "answer": "Yes you can redeem both in the same booking."
+      },
+      {
+        "id": 7,
+        "question": "Can I gift these rewards?",
+        "answer": "No. These rewards are non-transferable and can be only used by the referrer from his registered account."
+      }
+    ]
   }
 }

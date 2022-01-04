@@ -31,6 +31,7 @@ import {
   isEmptyObject,
   isSmallDevice,
   isValidSearch,
+  nameFormater,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -81,7 +82,6 @@ import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/St
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 
 type searchResults = searchDiagnosticItem_searchDiagnosticItem_data;
-import DeviceInfo from 'react-native-device-info';
 
 const GO_TO_CART_HEIGHT = 50;
 const isIphoneX = DeviceInfo.hasNotch();
@@ -129,7 +129,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     setDeliveryAddressId,
     setCartItems,
   } = useDiagnosticsCart();
-  const { cartItems: shopCartItems } = useShoppingCart();
+  const { serverCartItems: shopCartItems } = useShoppingCart();
   const { showAphAlert, setLoading: setGlobalLoading, hideAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
@@ -725,6 +725,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
                     keyExtractor={(_, index) => `${index}`}
                     scrollEnabled={false}
                     data={popularPackages}
+                    bounces={false}
                     renderItem={renderPopularDiagnostic}
                   />
                 </View>
@@ -738,6 +739,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
                     keyExtractor={(_, index) => `${index}`}
                     scrollEnabled={false}
                     data={popularTests}
+                    bounces={false}
                     renderItem={renderPopularDiagnostic}
                   />
                 </View>
@@ -799,7 +801,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           {cartCount} {cartItems?.length == 1 ? 'item' : 'items'} added
         </Text>
         <Button
-          title={'GO TO CART'}
+          title={nameFormater(string.diagnostics.goToCart, 'upper')}
           onPress={() => _navigateToCartPage()}
           style={{ width: '60%' }}
         />
@@ -922,30 +924,6 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     backgroundColor: 'white',
     marginBottom: GO_TO_CART_HEIGHT,
-  },
-  cartDetailView: {
-    position: 'absolute',
-    backgroundColor: theme.colors.APP_YELLOW_COLOR,
-    bottom: isIphoneX ? 10 : 0,
-    height: GO_TO_CART_HEIGHT,
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  itemAddedText: {
-    marginLeft: 20,
-    ...theme.viewStyles.text('SB', isSmallDevice ? 13 : 14, theme.colors.WHITE),
-    lineHeight: 16,
-    textAlign: 'left',
-    alignSelf: 'center',
-  },
-  goToCartText: {
-    marginRight: 20,
-    ...theme.viewStyles.text('SB', isSmallDevice ? 15 : 16, theme.colors.WHITE),
-    lineHeight: 20,
-    textAlign: 'right',
-    alignSelf: 'center',
   },
   cartDetailView: {
     position: 'absolute',
