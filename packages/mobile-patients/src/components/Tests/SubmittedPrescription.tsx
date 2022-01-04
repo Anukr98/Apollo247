@@ -60,6 +60,9 @@ const { height } = Dimensions.get('window');
 import LottieView from 'lottie-react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import { getPatientPrismMedicalRecordsApi } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { DocumentPickerResponse } from 'react-native-document-picker';
+import ImageResizer from 'react-native-image-resizer';
+import RNFetchBlob from 'rn-fetch-blob';
 const GreenTickAnimation = '@aph/mobile-patients/src/components/Tests/greenTickAnimation.json';
 
 export interface SubmittedPrescriptionProps extends NavigationScreenProps {
@@ -78,13 +81,12 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
   const [EPrescriptionsProps, setEPrescriptionsProps] = useState<EPrescription[]>(
     ePrescriptionsProp
   );
-  const { setEPrescriptions, setPhysicalPrescriptions } = useShoppingCart();
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
+  const { setEPrescriptions, setPhysicalPrescriptions } = useShoppingCart();
   const [locationName, setLocationName] = useState<string>('');
   const [additionalNotes, setadditionalNotes] = useState<string>('');
   const [onSumbitSuccess, setOnSumbitSuccess] = useState<boolean>(false);
   const [isErrorOccured, setIsErrorOccured] = useState<boolean>(false);
-
   useEffect(() => {
     setLoading?.(false);
     fetchPatientPrescriptions();
@@ -106,8 +108,6 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
   }, [onSumbitSuccess]);
 
   const handleBack = () => {
-    setEPrescriptions?.([]);
-    setPhysicalPrescriptions?.([]);
     props.navigation.navigate('TESTS', {
       phyPrescriptionUploaded: [],
       ePresscriptionUploaded: [],

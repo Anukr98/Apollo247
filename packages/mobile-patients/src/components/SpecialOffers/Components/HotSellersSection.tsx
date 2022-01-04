@@ -19,13 +19,10 @@ import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/S
 import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import {
-  addPharmaItemToCart,
-  getIsMedicine,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { OfferIcon } from '../../ui/Icons';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 export interface HotSellersProps extends NavigationScreenProps {}
 
@@ -34,24 +31,23 @@ export const HotSellersSection: React.FC<HotSellersProps> = (props) => {
   const title = 'TRENDING DEALS';
   const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
   const {
-    cartItems,
-    addCartItem,
-    removeCartItem,
-    updateCartItem,
+    serverCartItems,
     pharmacyCircleAttributes,
     asyncPincode,
     medicineHotSellersData,
+    setAddToCartSource,
   } = useShoppingCart();
+  const { setUserActionPayload } = useServerCart();
   const pharmacyPincode =
     asyncPincode?.pincode || pharmacyLocation?.pincode || locationDetails?.pincode;
   const { currentPatient } = useAllCurrentPatients();
   const movedFrom = 'Special Offers';
 
   const renderItem = (imgUrl: string, item) => {
-    const specialPrice = item.special_price ? true : false;
+    const specialPrice = item?.special_price ? true : false;
     const fallbackImage = `https://newassets.apollo247.com/images/ic_placeholder_circle.png`;
     const imagePathPresent = imgUrl.match(/\.(jpeg|jpg|gif|png|webp)$/) != null;
-    const discount = Math.round(getDiscountPercentage(item.price, item.special_price));
+    const discount = Math.round(getDiscountPercentage(item?.price, item?.special_price));
 
     return (
       <View style={styles.hotSellersContainer}>
@@ -128,15 +124,36 @@ export const HotSellersSection: React.FC<HotSellersProps> = (props) => {
           addToCart={() => {
             const q = getItemQuantity(item.sku);
             if (q == getMaxQtyForMedicineItem(item.MaxOrderQty)) return;
-            onUpdateCartItem(item.sku, getItemQuantity(item.sku) + 1);
+            setUserActionPayload?.({
+              medicineOrderCartLineItems: [
+                {
+                  medicineSKU: item?.sku,
+                  quantity: q + 1,
+                },
+              ],
+            });
           }}
           removeItemFromCart={() => {
             const q = getItemQuantity(item.sku);
-            q == 1 ? onRemoveCartItem(item.sku) : onUpdateCartItem(item.sku, q - 1);
+            setUserActionPayload?.({
+              medicineOrderCartLineItems: [
+                {
+                  medicineSKU: item?.sku,
+                  quantity: q - 1,
+                },
+              ],
+            });
           }}
           removeFromCart={() => {
             const q = getItemQuantity(item.sku);
-            q == 1 ? onRemoveCartItem(item.sku) : onUpdateCartItem(item.sku, q - 1);
+            setUserActionPayload?.({
+              medicineOrderCartLineItems: [
+                {
+                  medicineSKU: item?.sku,
+                  quantity: q - 1,
+                },
+              ],
+            });
           }}
           containerStyle={{
             width: '49%',
@@ -148,67 +165,22 @@ export const HotSellersSection: React.FC<HotSellersProps> = (props) => {
   };
 
   const getItemQuantity = (id: string) => {
-    const foundItem = cartItems?.find((item) => item.id == id);
+    const foundItem = serverCartItems?.find((item) => item?.sku == id);
     return foundItem ? foundItem.quantity : 0;
   };
 
-  const onUpdateCartItem = (id: string, quantity: number) => {
-    updateCartItem!({ id, quantity: quantity });
-  };
-
-  const onRemoveCartItem = (id: string) => {
-    removeCartItem!(id);
-  };
-
   const onAddCartItem = (item: MedicineProduct) => {
-    const {
-      sku,
-      mou,
-      name,
-      price,
-      special_price,
-      is_prescription_required,
-      type_id,
-      thumbnail,
-      MaxOrderQty,
-      category_id,
-      url_key,
-      subcategory,
-    } = item;
+    const { sku } = item;
     setItemsLoading({ ...itemsLoading, [sku]: true });
-    addPharmaItemToCart(
-      {
-        id: sku,
-        mou,
-        name,
-        price: price,
-        specialPrice: special_price
-          ? typeof special_price == 'string'
-            ? Number(special_price)
-            : special_price
-          : undefined,
-        prescriptionRequired: is_prescription_required == '1',
-        isMedicine: getIsMedicine(type_id?.toLowerCase()) || '0',
-        quantity: Number(1),
-        thumbnail: thumbnail,
-        isInStock: true,
-        maxOrderQty: MaxOrderQty,
-        productType: type_id,
-        circleCashbackAmt: 0,
-        url_key,
-        subcategory,
-      },
-      asyncPincode?.pincode || pharmacyPincode!,
-      addCartItem,
-      null,
-      props.navigation,
-      currentPatient,
-      !!isPharmacyLocationServiceable,
-      { source: 'Special Offers', categoryId: category_id },
-      JSON.stringify(cartItems),
-      () => setItemsLoading({ ...itemsLoading, [sku]: false }),
-      pharmacyCircleAttributes!
-    );
+    setAddToCartSource?.({ source: 'Hot Seller', categoryId: item?.category_id });
+    setUserActionPayload?.({
+      medicineOrderCartLineItems: [
+        {
+          medicineSKU: sku,
+          quantity: 1,
+        },
+      ],
+    });
   };
 
   const renderDiscountTag = (item, discount: number) => {

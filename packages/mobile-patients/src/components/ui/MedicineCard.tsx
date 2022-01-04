@@ -98,7 +98,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
   const priceToBeDisplayed = isSpecialPrice ? specialPrice : price;
 
   const renderSpecialDiscountText = (styleObj?: any) => {
-    return <SpecialDiscountText isImage={true} text={'TEST 247'} />;
+    return <SpecialDiscountText isImage={true} text={string.diagnostics.test247Text} />;
   };
 
   const renderTitleAndIcon = () => {

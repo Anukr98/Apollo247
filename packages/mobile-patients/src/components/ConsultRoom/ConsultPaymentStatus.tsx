@@ -925,7 +925,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
                       key: null,
                       actions: [
                         NavigationActions.navigate({
-                          routeName: AppRoutes.ConsultRoom,
+                          routeName: AppRoutes.HomeScreen,
                           params: {
                             isFreeConsult: navigateToChatRoom ? false : true,
                             doctorName: doctorName,
