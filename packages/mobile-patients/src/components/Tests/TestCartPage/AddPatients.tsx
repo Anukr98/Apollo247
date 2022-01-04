@@ -898,7 +898,14 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
           style={itemViewStyle}
           onPress={() => _onPressPatient(item, index)}
         >
-          <View style={{ flexDirection: 'row' }}>
+          <View
+            style={[
+              { flexDirection: 'row' },
+              isMinorAge
+                ? { marginLeft: -20, marginRight: -16 }
+                : { marginLeft: -8, marginRight: -4 },
+            ]}
+          >
             <Text
               style={[
                 styles.patientNameTextStyle,
@@ -1156,11 +1163,10 @@ const styles = StyleSheet.create({
   },
   patientNameTextStyle: {
     ...text('SB', 14, SHERPA_BLUE, 1, 19, 0),
-    width: '70%',
+    width: '68%',
   },
   genderAgeTextStyle: {
     ...text('M', 12, SHERPA_BLUE, 1, 15.6, -0.36),
-    width: '18%',
     textAlign: 'right',
   },
   arrowStyle: {

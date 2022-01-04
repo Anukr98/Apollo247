@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import {
   SafeAreaView,
   View,
@@ -65,7 +65,6 @@ import {
   postCleverTapIfNewSession,
   removeObjectProperty,
   postCleverTapEvent,
-  postWebEngagePHR,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -91,6 +90,7 @@ import {
   getIndividualTestResultPdfVariables,
 } from '@aph/mobile-patients/src/graphql/types/getIndividualTestResultPdf';
 import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import ListEmptyComponent from '@aph/mobile-patients/src/components/HealthRecords/Components/ListEmptyComponent';
 
 const styles = StyleSheet.create({
   searchFilterViewStyle: {
@@ -202,10 +202,13 @@ export interface TestReportScreenProps
     onPressBack: () => void;
     authToken: string;
     callTestReportsApi: () => void;
+    callDataBool: boolean;
+    testReportBool: boolean;
   }> {}
 
 export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
   const testReportsData = props.navigation?.getParam('testReportsData') || [];
+  const callDataBool = props.navigation?.getParam('callDataBool') || false;
   const [testReportMainData, setTestReportMainData] = useState<any>([]);
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
@@ -230,17 +233,32 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
   const [prismAuthToken, setPrismAuthToken] = useState<string>(
     props.navigation?.getParam('authToken') || ''
   );
+  const testReportBool = props?.navigation?.state?.params?.testReportBool;
   const [searchQuery, setSearchQuery] = useState({});
   const { phrSession, setPhrSession } = useAppCommonData();
 
+  useLayoutEffect(() => {
+    if (testReportBool) {
+      getLatestLabAndHealthCheckRecords();
+    } else {
+      setApiError(true);
+    }
+  }, [testReportBool]);
+
   const gotoPHRHomeScreen = () => {
     if (!callApi && !callPhrMainApi) {
-      props.navigation.state.params?.onPressBack();
+      callDataBool
+        ? props.navigation.navigate('HEALTH RECORDS')
+        : props.navigation.state.params?.onPressBack();
     } else {
-      props.navigation.state.params?.onPressBack();
-      props.navigation.state.params?.callTestReportsApi();
+      callDataBool ? props.navigation.navigate('HEALTH RECORDS') : handleNavigation();
     }
-    props.navigation.goBack();
+    callDataBool ? props.navigation.navigate('HEALTH RECORDS') : props.navigation.goBack();
+  };
+
+  const handleNavigation = () => {
+    props.navigation.state.params?.onPressBack();
+    props.navigation.state.params?.callTestReportsApi();
   };
 
   const handleBack = async () => {
@@ -742,6 +760,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       labResults: true,
       testReport: testReportsData,
       testResultArray: imageArray?.length > 0 ? imageArray : checkSelectedItem?.testResultFiles,
+      callDataBool: callDataBool,
     });
   };
 
@@ -1009,6 +1028,9 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
                   : '-'
               }`
             : dataItem?.data?.labTestName || dataItem?.data?.healthCheckName;
+        var pdfStringHandler = prescriptionName?.includes('.pdf')
+          ? prescriptionName.slice(0, -4)
+          : prescriptionName;
         const doctorName =
           filterApplied === FILTER_TYPE.PARAMETER_NAME && dataItem?.data?.labTestName
             ? dataItem?.data?.labTestName
@@ -1037,7 +1059,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
             onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
             onDeletePress={(selectedItem) => onPressDeletePrismMedicalRecords(selectedItem)}
             onEditPress={(selectedItem) => onPressEditPrismMedicalRecords(selectedItem)}
-            prescriptionName={prescriptionName}
+            prescriptionName={pdfStringHandler}
             doctorName={doctorName}
             dateText={dateText}
             selfUpload={selfUpload}
@@ -1117,7 +1139,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         contentContainerStyle={{ paddingBottom: 60, paddingTop: 12, paddingHorizontal: 20 }}
         sections={localTestReportsData || []}
         renderItem={({ item, index }) => renderTestReportsItems(item, index)}
-        ListEmptyComponent={renderEmptyView()}
+        ListEmptyComponent={ListEmptyComponent.getEmptyListComponent(showSpinner, apiError)}
         renderSectionHeader={({ section }) => renderSectionHeader(section)}
       />
     );
@@ -1129,14 +1151,6 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         <Spinner style={styles.loaderStyle} />
       </View>
     );
-  };
-
-  const renderEmptyView = () => {
-    if (!!testReportMainData) {
-      return null;
-    } else {
-      return <PhrNoDataComponent />;
-    }
   };
 
   const searchListHeaderView = () => {
@@ -1157,6 +1171,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       healthrecordId: healthrecordId,
       healthRecordType: MedicalRecordType.TEST_REPORT,
       labResults: true,
+      callDataBool: callDataBool,
     });
   };
 
@@ -1255,9 +1270,6 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         <Text style={styles.doctorTestReportPHRTextStyle}>
           {string.common.doctorConsultPHRText}
         </Text>
-        {apiError ? (
-          <PhrNoDataComponent noDataText={string.common.phr_api_error_text} phrErrorIcon />
-        ) : null}
         {searchText?.length > 2 ? renderHealthRecordSearchResults() : renderTestReportsMainView()}
       </SafeAreaView>
     </View>

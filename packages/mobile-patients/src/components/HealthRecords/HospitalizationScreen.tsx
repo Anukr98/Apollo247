@@ -142,6 +142,7 @@ export interface HospitalizationScreenProps
   extends NavigationScreenProps<{
     onPressBack: () => void;
     authToken: string;
+    callDataBool: boolean;
   }> {}
 
 export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (props) => {
@@ -161,6 +162,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
   const _searchInputRef = useRef(null);
+  const callDataBool = props.navigation?.getParam('callDataBool') || false;
   const [healthRecordSearchResults, setHealthRecordSearchResults] = useState<any>([]);
   const [prismAuthToken, setPrismAuthToken] = useState<string>(
     props.navigation?.getParam('authToken') || ''
@@ -284,9 +286,13 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
     }
   }, [callApi]);
 
-  const gotoPHRHomeScreen = () => {
+  const navigateToHome = () => {
     props.navigation.state.params?.onPressBack();
     props.navigation.goBack();
+  };
+
+  const gotoPHRHomeScreen = () => {
+    callDataBool ? props.navigation.navigate('HEALTH RECORDS') : navigateToHome();
   };
 
   const renderProfileImage = () => {
@@ -437,7 +443,9 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
         ? string.common.clicnical_document_text
         : source;
     };
-    const prescriptionName = 'Dr. ' + item?.data?.doctorName;
+    const prescriptionName = item?.data?.doctorName
+      ? 'Dr. ' + item?.data?.doctorName
+      : 'Discharge Summary';
     const dateText =
       item?.data?.dateOfHospitalization && item?.data?.date
         ? getPresctionDate(item?.data?.dateOfHospitalization)

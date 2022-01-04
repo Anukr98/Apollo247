@@ -1674,9 +1674,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       frequentlyBroughtRecommendations?.length > 0
         ? getWidgetTitle?.frequentlyBrought
         : getWidgetTitle?.topBookedTests;
-    const dataToShow = frequentlyBroughtRecommendations?.length > 0
-    ? frequentlyBroughtRecommendations
-    : topBookedTests
+    const dataToShow =
+      frequentlyBroughtRecommendations?.length > 0
+        ? frequentlyBroughtRecommendations
+        : topBookedTests;
 
     const inclusionIdArray: any[] = [];
     const inclusionIds =

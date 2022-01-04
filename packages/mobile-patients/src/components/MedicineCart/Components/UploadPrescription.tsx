@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, FlatList, View } from 'react-native';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
-import {
-  useShoppingCart,
-  PhysicalPrescription,
-} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { View } from 'react-native';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
 import { NavigationScreenProps } from 'react-navigation';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 export interface UploadPrescriptionProps extends NavigationScreenProps {
   showPopUp: boolean;
@@ -17,21 +15,14 @@ export interface UploadPrescriptionProps extends NavigationScreenProps {
 }
 
 export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => {
+  const { ePrescriptions } = useShoppingCart();
   const {
-    physicalPrescriptions,
-    setPhysicalPrescriptions,
-    setEPrescriptions,
-    ePrescriptions,
-  } = useShoppingCart();
+    uploadEPrescriptionsToServerCart,
+    uploadPhysicalPrescriptionsToServerCart,
+  } = useServerCart();
+  const { currentPatient } = useAllCurrentPatients();
   const { showPopUp, onClickClose, type, onUpload } = props;
   const [showEprescriptionUpload, setshowEprescriptionUpload] = useState<boolean>(false);
-
-  const updatePhysicalPrescriptions = (uploadPrescriptions: PhysicalPrescription[]) => {
-    const itemsToAdd = uploadPrescriptions.filter(
-      (p) => !physicalPrescriptions.find((pToFind) => pToFind.base64 == p.base64)
-    );
-    setPhysicalPrescriptions && setPhysicalPrescriptions([...itemsToAdd, ...physicalPrescriptions]);
-  };
 
   const renderUploadPrescription = () => {
     return showPopUp ? (
@@ -56,7 +47,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         onResponse={(selectedType, response) => {
           onClickClose();
           if (selectedType == 'CAMERA_AND_GALLERY') {
-            updatePhysicalPrescriptions(response);
+            uploadPhysicalPrescriptionsToServerCart(response);
           } else {
             setshowEprescriptionUpload(true);
           }
@@ -76,7 +67,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           if (selectedEPres.length == 0) {
             return;
           }
-          setEPrescriptions && setEPrescriptions([...selectedEPres]);
+          uploadEPrescriptionsToServerCart(selectedEPres);
         }}
         selectedEprescriptionIds={ePrescriptions.map((item) => item.id)}
         isVisible={showEprescriptionUpload}

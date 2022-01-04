@@ -253,7 +253,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       })
       .catch((error) => {
         CommonBugFender('fetchingPaymentOptions', error);
-        props.navigation.navigate(AppRoutes.MedicineCart);
+        props.navigation.navigate(AppRoutes.ServerCart);
         renderErrorPopup(string.common.tryAgainLater);
       });
     return () => {};
@@ -732,7 +732,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               title: `Uh oh.. :(`,
               description: resp?.data?.response?.reason,
             });
-            props.navigation.navigate(AppRoutes.MedicineCart);
+            props.navigation.navigate(AppRoutes.ServerCart);
           }
         } else {
           CommonBugFender('validatingPharmaCoupon', g(resp?.data, 'errorMsg'));
@@ -740,7 +740,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             title: `Uh oh.. :(`,
             description: 'Coupon validation failed',
           });
-          props.navigation.navigate(AppRoutes.MedicineCart);
+          props.navigation.navigate(AppRoutes.ServerCart);
         }
       })
       .catch((error) => {

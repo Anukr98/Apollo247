@@ -41,7 +41,7 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import {
   AppConfig,
   BLACK_LIST_CANCEL_STATUS_ARRAY,
@@ -86,6 +86,7 @@ export interface Props
     queries: NeedHelpHelpers.HelpSectionQuery[];
     queryIdLevel1: string;
     queryIdLevel2: string;
+    queryIdLevel3: string;
     email: string;
     orderId?: string;
     isOrderRelatedIssue?: boolean;
@@ -100,6 +101,7 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
   const _queries = navigation.getParam('queries');
   const queryIdLevel1 = navigation.getParam('queryIdLevel1') || '';
   const queryIdLevel2 = navigation.getParam('queryIdLevel2') || '';
+  const queryIdLevel3 = navigation.getParam('queryIdLevel3') || '';
   const medicineOrderStatusDate = navigation.getParam('medicineOrderStatusDate');
   const [email, setEmail] = useState(navigation.getParam('email') || '');
   const orderId = navigation.getParam('orderId') || '';
@@ -114,11 +116,11 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
   const medicineOrderStatus = navigation.getParam('medicineOrderStatus');
   const { saveNeedHelpQuery, getQueryData, getQueryDataByOrderStatus } = Helpers;
   const [queries, setQueries] = useState<NeedHelpHelpers.HelpSectionQuery[]>(_queries || []);
-  const subQueriesData = getQueryData(queries, queryIdLevel1, queryIdLevel2);
+  const subQueriesData = getQueryData(queries, queryIdLevel1, queryIdLevel2, queryIdLevel3);
   const subQueries = (subQueriesData?.queries as NeedHelpHelpers.HelpSectionQuery[]) || [];
   const headingTitle = queries?.find((q) => q.id === queryIdLevel1)?.title || 'Query';
   const helpSectionQueryId = AppConfig.Configuration.HELP_SECTION_CUSTOM_QUERIES;
-
+  const { buildApolloClient, authToken } = useAuth();
   const client = useApolloClient();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
@@ -131,7 +133,7 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
   const [filteredOrderList, setFilteredOrderList] = useState<(orderListByMobile | null)[] | null>(
     []
   );
-
+  const apolloClientWithAuth = buildApolloClient(authToken);
   const [orders, setOrders] = useState<any>([]);
   const { getHelpSectionQueries } = NeedHelpHelpers;
 
@@ -181,7 +183,7 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
   const fetchOrders = async () => {
     try {
       setLoading?.(true);
-      client
+      apolloClientWithAuth
         .query<getDiagnosticOrdersListByMobile, getDiagnosticOrdersListByMobileVariables>({
           query: GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
           context: {

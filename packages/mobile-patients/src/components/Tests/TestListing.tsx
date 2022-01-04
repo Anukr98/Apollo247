@@ -491,6 +491,29 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         !!inclusions && inclusions?.length > 1 ? itemPackages.push(item) : itemTests.push(item);
       });
 
+    const getActualPricePackages =
+      !!itemPackages && itemPackages?.length > 0
+        ? itemPackages?.filter((pckg: any) => pckg?.diagnosticPricing)
+        : [];
+    const getActualPriceTests =
+      !!itemTests && itemTests?.length > 0
+        ? itemTests?.filter((test: any) => test?.diagnosticPricing)
+        : [];
+
+    const packageItemsArray =
+      !!getActualPricePackages &&
+      getActualPricePackages?.length > 10 &&
+      widgetName == string.diagnostics.homepagePastOrderRecommendations
+        ? getActualPricePackages?.slice(0, 10)
+        : itemPackages;
+
+    const testItemsArray =
+      !!getActualPriceTests &&
+      getActualPriceTests?.length > 10 &&
+      widgetName == string.diagnostics.homepagePastOrderRecommendations
+        ? getActualPriceTests?.slice(0, 10)
+        : itemTests;
+
     return (
       <>
         {!!actualItemsToShow && actualItemsToShow?.length > 0 ? (
@@ -501,13 +524,19 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
             }}
             scrollEventThrottle={16}
           >
-            {itemPackages?.length > 0 && (
+            {!!packageItemsArray && packageItemsArray?.length > 0 && (
               <>
                 <Text style={styles.headingText}>
                   {nameFormater(deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle, 'upper')}{' '}
                   PACKAGES{' '}
-                  {itemPackages?.length > 0 && (
-                    <Text style={styles.itemCountText}>({itemPackages?.length})</Text>
+                  {!!getActualPricePackages && getActualPricePackages?.length > 0 && (
+                    <Text style={styles.itemCountText}>
+                      (
+                      {widgetName == string.diagnostics.homepagePastOrderRecommendations
+                        ? packageItemsArray?.length
+                        : getActualPricePackages?.length}
+                      )
+                    </Text>
                   )}
                 </Text>
                 <PackageCard
@@ -530,16 +559,25 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
                 />
               </>
             )}
-            {!error && !loading && itemPackages?.length && itemPackages?.length > packageOffset
-              ? renderLoadAll('packages', itemPackages?.length)
+            {!error &&
+            !loading &&
+            packageItemsArray?.length &&
+            packageItemsArray?.length > packageOffset
+              ? renderLoadAll('packages', packageItemsArray?.length)
               : null}
-            {itemTests?.length > 0 && (
+            {!!testItemsArray && testItemsArray?.length > 0 && (
               <>
                 <Text style={styles.headingText}>
                   {nameFormater(deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle, 'upper')}{' '}
                   TESTS{' '}
-                  {itemTests?.length > 0 && (
-                    <Text style={styles.itemCountText}>({itemTests?.length})</Text>
+                  {!!getActualPriceTests && getActualPriceTests?.length > 0 && (
+                    <Text style={styles.itemCountText}>
+                      (
+                      {widgetName == string.diagnostics.homepagePastOrderRecommendations
+                        ? testItemsArray?.length
+                        : getActualPriceTests?.length}
+                      )
+                    </Text>
                   )}
                 </Text>
                 <ItemCard
@@ -547,9 +585,9 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
                     diagnosticWidgetTitle: widgetsData?.diagnosticWidgetTitle,
                     diagnosticWidgetType: widgetsData?.diagnosticWidgetType,
                     diagnosticwidgetsRankOrder: widgetsData?.diagnosticwidgetsRankOrder,
-                    diagnosticWidgetData: itemTests,
+                    diagnosticWidgetData: testItemsArray,
                   }}
-                  diagnosticWidgetData={itemTests?.slice(0, testsOffset)}
+                  diagnosticWidgetData={testItemsArray?.slice(0, testsOffset)}
                   isCircleSubscribed={isDiagnosticCircleSubscription}
                   isServiceable={isDiagnosticLocationServiceable}
                   isVertical={true}
@@ -562,8 +600,11 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
                 />
               </>
             )}
-            {!error && !loading && itemTests?.length != 0 && itemTests?.length > testsOffset
-              ? renderLoadAll('tests', itemTests?.length)
+            {!error &&
+            !loading &&
+            testItemsArray?.length != 0 &&
+            testItemsArray?.length > testsOffset
+              ? renderLoadAll('tests', testItemsArray?.length)
               : null}
           </ScrollView>
         ) : null}

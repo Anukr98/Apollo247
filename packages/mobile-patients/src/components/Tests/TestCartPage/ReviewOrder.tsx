@@ -146,6 +146,7 @@ import {
 import { PaymentInitiated } from '@aph/mobile-patients/src/components/PaymentGateway/Events';
 import { useFetchHealthCredits } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useFetchHealthCredits';
 import { HealthCreditsCard } from '@aph/mobile-patients/src/components/Tests/components/HealthCreditsCard';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
@@ -2133,6 +2134,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         subscriptionInclusionId: null,
         userSubscriptionId: circleSubscriptionId != '' ? circleSubscriptionId : localCircleSubId,
       };
+      AsyncStorage.setItem('bookingOrderInfo', JSON.stringify({ bookingOrderInfo }));
       if (!!coupon) {
         bookingOrderInfo.couponCode = coupon?.coupon;
       }
@@ -2575,6 +2577,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           );
         } else {
           setLoading?.(false);
+          AsyncStorage.setItem('orderInfo', JSON.stringify(orderInfo));
           props.navigation.navigate(AppRoutes.PaymentMethods, {
             paymentId: payId!,
             amount: toPayPrice,
@@ -2751,7 +2754,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     verticalSpecificData: any
   ) {
     setLoading?.(false);
-    props.navigation.navigate(AppRoutes.OrderStatus, {
+    props.navigation.navigate(AppRoutes., {
       isModify: isModifyFlow ? modifiedOrder : null,
       orderDetails: orderInfo,
       isCOD: isCOD,
@@ -2760,6 +2763,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       paymentId: paymentId,
       verticalSpecificData,
     });
+
   }
 
   const saveModifyOrder = (orderInfo: saveModifyDiagnosticOrderInput) =>
@@ -2796,6 +2800,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       subscriptionInclusionId: null,
       amountToPay: grandTotal, //total amount to pay
     };
+    AsyncStorage.setItem('modifyBookingInput', JSON.stringify({ modifyBookingInput }));
     saveModifyOrder?.(modifyBookingInput)
       .then((data) => {
         const getModifyResponse = data?.data?.saveModifyDiagnosticOrder;

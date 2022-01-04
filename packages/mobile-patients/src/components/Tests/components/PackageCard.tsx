@@ -214,7 +214,12 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     const discountPrice =
       specialDiscount > 0 ? specialDiscount : hasOtherDiscount > 0 ? hasOtherDiscount : 0;
     return (
-      <View style={[styles.discountPercentageView, isCircleSubscribed && { marginHorizontal: -6 }]}>
+      <View
+        style={[
+          styles.discountPercentageView,
+          isCircleSubscribed && isOnlyCircle && { marginHorizontal: -6 },
+        ]}
+      >
         <DiscountPercentage
           discount={discount}
           isOnlyCircle={isOnlyCircle}
@@ -290,7 +295,6 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     const slashedPrice =
       !!packageMrpForItem && packageMrpForItem > price ? packageMrpForItem : price;
     const hasCirclePrice = promoteCircle && !promoteDiscount && priceToShow != circleSpecialPrice;
-
     return pricesForItem || packageMrpForItem ? (
       <View>
         {/** show circle price for non-circle user */}

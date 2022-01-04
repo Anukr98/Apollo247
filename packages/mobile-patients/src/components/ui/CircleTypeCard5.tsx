@@ -1,39 +1,34 @@
 import React from 'react';
 import { View, StyleSheet, Text, Image, Dimensions } from 'react-native';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { NavigationScreenProps } from 'react-navigation';
 const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   planContainer: {
     flexDirection: 'row',
     flex: 1,
-    marginVertical: 5,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginVertical: 4,
   },
 
   subPlanOne: {
     flex: 0.2,
-    overflow: 'hidden',
-    alignItems: 'center',
-    backgroundColor: 'transparent',
-    padding: 5,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    paddingVertical: 6,
   },
 
   subPlanTwo: {
-    flex: 0.2,
+    flex: 0.7,
     alignItems: 'flex-start',
     justifyContent: 'center',
   },
 
   subPlanThree: {
     flex: 0.3,
-    alignItems: 'flex-start',
-  },
-
-  subPlanFour: {
-    flex: 0.3,
-    alignItems: 'center',
+    alignItems: 'flex-end',
     justifyContent: 'center',
   },
 
@@ -41,9 +36,18 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     width: 46,
     height: 29,
-    marginTop: -5,
   },
 
+  subPlanTwoThreeDevider: {
+    flex: 0.8,
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderRadius: 6,
+    borderColor: '#4D9CB3',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+  },
   alertText: {
     transform: [{ rotate: '-43deg' }],
     ...theme.viewStyles.text('M', 9, '#fff', 1, 11),
@@ -57,7 +61,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface CircleTypeCard5Props extends NavigationScreenProps {
+export interface CircleTypeCard5Props {
   onButtonPress: () => void;
   savings?: string;
   expiry?: string;
@@ -67,58 +71,43 @@ export interface CircleTypeCard5Props extends NavigationScreenProps {
 }
 
 export const CircleTypeCard5: React.FC<CircleTypeCard5Props> = (props) => {
-  const { onButtonPress, savings, expired, credits, renew } = props;
+  const { onButtonPress, expired, credits, renew, savings } = props;
   return (
     <View>
       <View style={styles.planContainer}>
         <View style={styles.subPlanOne}>
-          <Text style={styles.alertText}>Expired</Text>
-
           <Image
             style={styles.circleLogo}
             source={require('@aph/mobile-patients/src/components/ui/icons/circleLogo.webp')}
           />
         </View>
-        <View style={styles.subPlanTwo}>
-          <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 1, 16) }}>
-            Previous{'\n'}Savings:
-          </Text>
-          <Text style={{ ...theme.viewStyles.text('M', 20, '#666666', 1, 25) }}>₹{savings}</Text>
-          {credits ? (
-            <View style={[styles.planContainer, { width: width }]}>
-              <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 0.6, 16) }}>
-                Available Health Credits:
-              </Text>
-              <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 1, 16) }}>
-                {' '}
-                {credits || 0}
-              </Text>
-            </View>
-          ) : null}
-        </View>
-
-        <View style={styles.subPlanThree}>
-          <Text style={{ ...theme.viewStyles.text('M', 12, '#666666', 1, 16) }}>
-            Plan Expired{'\n'}on:
-          </Text>
-          <Text style={{ ...theme.viewStyles.text('M', 20, '#666666', 1, 25) }}>{expired}</Text>
-        </View>
-
-        {renew ? <View
-          style={[
-            styles.subPlanFour,
-            {
-              marginTop: credits ? -20 : 0,
-            },
-          ]}
+        <LinearGradientComponent
+          style={styles.subPlanTwoThreeDevider}
+          colors={[theme.colors.LIGHT_BLUE, theme.colors.LIGHT_BLUE]}
         >
-          <Button
-            title={`RENEW NOW`}
-            style={{ width: 106, height: 32 }}
-            onPress={onButtonPress}
-            disabled={false}
-          />
-        </View> : null}
+          <View style={styles.subPlanTwo}>
+            <Text style={{ ...theme.viewStyles.text('M', 13, theme.colors.WHITE, 1, 20) }}>
+              You saved ₹{savings || 'Unable to Load'} with circle
+            </Text>
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 10, theme.colors.WHITE, 1, 20),
+                fontStyle: 'italic',
+              }}
+            >
+              Plan Expired on {expired}
+            </Text>
+          </View>
+
+          <View style={styles.subPlanThree}>
+            <Text
+              style={{ ...theme.viewStyles.text('B', 15, '#FC9916', 1, 18) }}
+              onPress={onButtonPress}
+            >
+              RENEW
+            </Text>
+          </View>
+        </LinearGradientComponent>
       </View>
     </View>
   );

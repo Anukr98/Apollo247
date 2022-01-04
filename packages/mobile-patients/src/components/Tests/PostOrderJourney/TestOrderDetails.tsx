@@ -146,7 +146,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const refundStatusArr = props.navigation.getParam('refundStatusArr');
   const source = props.navigation.getParam('comingFrom');
   const refundTransactionId = props.navigation.getParam('refundTransactionId');
-
+  const { buildApolloClient, authToken, getPatientApiCall } = useAuth();
+  const apolloClientWithAuth = buildApolloClient(authToken);
   const client = useApolloClient();
   const [selectedTab, setSelectedTab] = useState<string>(
     showOrderSummaryTab ? string.orders.viewBill : string.orders.trackOrder
@@ -155,7 +156,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
-  const { getPatientApiCall } = useAuth();
   const [scrollYValue, setScrollYValue] = useState(0);
   const [slotDuration, setSlotDuration] = useState(0);
   const [loading1, setLoading] = useState<boolean>(true);
@@ -190,14 +190,14 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     });
 
   const fetchOrderDetails = (orderId: string) =>
-    client.query<getDiagnosticOrderDetails, getDiagnosticOrderDetailsVariables>({
+    apolloClientWithAuth.query<getDiagnosticOrderDetails, getDiagnosticOrderDetailsVariables>({
       query: GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
       variables: { diagnosticOrderId: orderId },
       fetchPolicy: 'no-cache',
     });
 
   const getOrderDetails = async (displayId: string) => {
-    const res = await client.query<
+    const res = await apolloClientWithAuth.query<
       getDiagnosticOrderDetailsByDisplayID,
       getDiagnosticOrderDetailsByDisplayIDVariables
     >({

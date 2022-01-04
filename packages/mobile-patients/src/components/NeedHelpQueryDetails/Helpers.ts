@@ -16,12 +16,15 @@ export const Helpers = {
   getQueryData: (
     queries: NeedHelpHelpers.HelpSectionQuery[],
     idLevel1: string | null,
-    idLevel2: string | null
+    idLevel2: string | null,
+    idLevel3: string | null
   ) => {
     const data =
-      idLevel1 && idLevel2
-        ? queries.find((q1) => q1?.id === idLevel1)?.queries?.find((q2) => q2?.id === idLevel2)
-        : queries.find((q1) => q1.id === idLevel1);
+    idLevel1 && idLevel2 && idLevel3
+    ? queries.find((q1) => q1?.id === idLevel1)?.queries?.find((q2) => q2?.id === idLevel2)?.queries?.find((q3) => q3?.id === idLevel3)
+      : idLevel1 && idLevel2
+        ? queries.find((q1) => q1?.id === idLevel1)?.queries?.find((q2) => q2?.id === idLevel2)         
+          : queries.find((q1) => q1.id === idLevel1);
 
     return data as NeedHelpHelpers.HelpSectionQuery;
   },
