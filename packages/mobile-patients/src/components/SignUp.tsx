@@ -417,7 +417,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
                   key: null,
                   actions: [
                     NavigationActions.navigate({
-                      routeName: AppRoutes.Login,
+                      routeName: AppRoutes.LoginNew,
                     }),
                   ],
                 })
@@ -753,7 +753,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
                               key: null,
                               actions: [
                                 NavigationActions.navigate({
-                                  routeName: AppRoutes.Login,
+                                  routeName: AppRoutes.LoginNew,
                                 }),
                               ],
                             })

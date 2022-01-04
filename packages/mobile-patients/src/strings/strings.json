@@ -348,7 +348,8 @@
     "otp_resent_on_sms": "OTP resent on SMS",
     "otp_not_received": "Didn't get OTP?",
     "number_auto_detected": "Number auto detected from your SIM 1",
-    "manual_number_input": "ENTER NUMBER MANUALLY"
+    "manual_number_input": "ENTER NUMBER MANUALLY",
+    "auto_verfying_otp": "Auto verifying OTP"
   },
   "home": {
     "hi": "hi",

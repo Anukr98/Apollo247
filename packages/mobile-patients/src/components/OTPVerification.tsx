@@ -264,7 +264,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       ...theme.viewStyles.text(
         'M',
         otpStatus === (string.login.otp_sent_to || string.login.otp_resent_on_sms || string.login.otp_resent_on_call) ? 14 : 12,
-        otpStatus === string.login.otp_sent_to ? colors.LIGHT_BLUE : (otpStatus === string.login.otp_resent_on_sms || otpStatus === string.login.otp_resent_on_call) ? colors.GREEN : theme.colors.INPUT_FAILURE_TEXT
+        (otpStatus === string.login.otp_sent_to || otpStatus === string.login.auto_verfying_otp) ? colors.LIGHT_BLUE : (otpStatus === string.login.otp_resent_on_sms || otpStatus === string.login.otp_resent_on_call) ? colors.GREEN : theme.colors.INPUT_FAILURE_TEXT
       )
     }
   });
@@ -720,6 +720,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             if (event.message) {
               const messageOTP = event.message.match(/[0-9]{6}/g);
               if (messageOTP) {
+                setOtpStatus(string.login.auto_verfying_otp)
                 isOtpValid(messageOTP[0]);
                 onClickOk(messageOTP[0])
                 // onClickOk(messageOTP[0]);
@@ -872,6 +873,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 setOtpStatus(string.login.otp_resent_on_sms)
                 CommonBugFender('OTP_RESEND_SUCCESS', resendResult as Error);
                 setShowResentTimer(true);
+                setTimeout(() => {
+                  setOtpStatus(string.login.auto_verfying_otp)
+                }, 1500);
               })
               .catch((error: Error) => {
                 CommonBugFender('OTP_RESEND_FAIL', error);
