@@ -1157,6 +1157,11 @@ const styles = StyleSheet.create({
     height: 4,
     width: 20,
   },
+  snackBar: {
+    marginBottom: 100,
+    zIndex: 1001,
+    backgroundColor: theme.colors.RED,
+  },
 });
 
 const urlRegEx = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG)/;
@@ -1457,9 +1462,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (unstable) {
       setSnackbarState(true);
       setHandlerMessage(
-        showVideo
-          ? `Your Internet connection appears to be Unstable….if the problem persists, the video will be automatically turned off at doctor's end`
-          : 'Your Internet connection appears to be Unstable…call might disconnect'
+        showVideo ? string.vonageToast.unstableVideo : string.vonageToast.unstableAudio
       );
     }
   }, [unstable]);
@@ -3003,11 +3006,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
   const setSnackBar = () => {
     setSnackbarState(true);
-    setHandlerMessage('Something went wrong!!  Trying to connect');
+    setHandlerMessage(string.vonageToast.wentWrong);
   };
   const setSessionReconnectMsg = () => {
     setSnackbarState(true);
-    setHandlerMessage('Trying to Reconnect the Call…');
+    setHandlerMessage(string.vonageToast.reconnect);
   };
   const publisherEventHandlers = {
     streamCreated: (event: string) => {
@@ -3114,9 +3117,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       );
       if (error.reason === 'quality') {
         setSnackbarState(true);
-        setHandlerMessage(
-          'Video has been turned off automatically due to unstable internet. It will be turned ON after network Improves'
-        );
+        setHandlerMessage(string.vonageToast.audioFallback);
         setDowngradeToAudio(true);
       }
     },
@@ -3133,8 +3134,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     },
     videoDisableWarning: (error: string) => {
       postOpentokEvent('Subscriber Video Disable Warning', error);
-      callToastStatus.current =
-        'Bad Network, if the problem persists you might get a telephonic call on your mobile phone';
+      callToastStatus.current = string.vonageToast.fallbackWarning;
     },
     videoDisableWarningLifted: (error: string) => {
       postOpentokEvent('Subscriber Video Disable Warning Lifted', error);
@@ -3170,7 +3170,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         callEndWebengageEvent('Network');
         setTimeout(() => {
           setSnackbarState(true);
-          setHandlerMessage('Call disconnected due to bad network.');
+          setHandlerMessage(string.vonageToast.callDisconnected);
         }, 2050);
       } else {
         setSnackBar();
@@ -6455,11 +6455,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         {!PipView && renderChatNotificationIcon()}
         {!PipView && renderBottomButtons()}
         <Snackbar
-          style={{
-            marginBottom: 100,
-            zIndex: 1001,
-            backgroundColor: theme.colors.RED,
-          }}
+          style={styles.snackBar}
           visible={snackbarState}
           onDismiss={() => {
             setSnackbarState(false);
