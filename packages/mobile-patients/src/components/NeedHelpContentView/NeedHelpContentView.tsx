@@ -190,6 +190,8 @@ export const NeedHelpContentView: React.FC<Props> = ({ navigation }) => {
           ? ORDER_TYPE.PHARMACY
           : parentQuery?.id == helpSectionQueryId.consult
           ? ORDER_TYPE.CONSULT
+          : parentQuery?.id == helpSectionQueryId.diagnostic
+          ? ORDER_TYPE.DIAGNOSTICS
           : null;
       const variables: TicketNumberMutationVariables = {
         createHelpTicketHelpEmailInput: {
