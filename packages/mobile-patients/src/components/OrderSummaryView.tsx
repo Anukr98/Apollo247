@@ -199,7 +199,6 @@ export interface OrderSummaryViewProps {
   addressData?: string;
   onBillChangesClick?: () => void;
   cashbackDetails?: getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_amountBreakUp | null;
-  orderStatus?: MEDICINE_ORDER_STATUS | null;
 }
 
 export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
@@ -207,7 +206,6 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
   addressData,
   onBillChangesClick,
   cashbackDetails,
-  orderStatus,
 }) => {
   const medicineOrderLineItems = orderDetails.medicineOrderLineItems || [];
   const medicineOrderShipments = orderDetails.medicineOrderShipments || [];
@@ -777,7 +775,6 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             : medicineOrderLineItems?.map((item) => renderMedicineRow(item!))}
         </View>
 
-        {cashbackDetails?.circleCashback! > 0 && renderCircleSaving()}
         {orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER ||
         (orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION &&
           orderBilledAndPacked) ? (
