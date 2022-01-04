@@ -171,7 +171,7 @@
     "selectSpeciality": "Select Speciality",
     "apollo247UniversalLink": "www.apollo247.com",
     "apolloPharmacyUniversalLink": "www.apollopharmacy.in",
-    "stagingBlogUrl":"https://stagingpatients.apollo247.com/blog?user_from_device=true"
+    "stagingBlogUrl": "https://stagingpatients.apollo247.com/blog?user_from_device=true"
   },
   "diagnosticsLocation": {
     "savedAddressText": "Saved Addresses",
@@ -184,35 +184,35 @@
     "denied": "denied",
     "restricted": "restricted"
   },
-  "diagnosticsCoupons":{
+  "diagnosticsCoupons": {
     "couponsText": "Offers and Coupons",
-    "applyCouponText":"Apply Coupon Code",
+    "applyCouponText": "Apply Coupon Code",
     "couponForYou": "Coupons for You",
     "apply": "Apply",
     "couponPlcaholder": "Enter Coupon code",
-    "couponFetchError":"Sorry, we're unable to fetch coupon codes right now. Please try again.",
-    "noCouponsText":"No coupons available",
-    "invalidCouponCode":"Invalid Coupon Code",
+    "couponFetchError": "Sorry, we're unable to fetch coupon codes right now. Please try again.",
+    "noCouponsText": "No coupons available",
+    "invalidCouponCode": "Invalid Coupon Code",
     "discountOnMrp": "Discount on MRP",
-    "couponDiscount":"Coupon Discount",
-    "totalMrp":"Total MRP",
+    "couponDiscount": "Coupon Discount",
+    "totalMrp": "Total MRP",
     "circleDiscount": "Circle Discount",
     "applyCoupon": "Apply Coupon",
     "unableToValidate": "Sorry, unable to validate coupon right now.",
-    "couponApplied":"Coupon Applied",
-    "couponNotApplied":"Coupon discount not applicable"
+    "couponApplied": "Coupon Applied",
+    "couponNotApplied": "Coupon discount not applicable"
   },
-  "diagnosticsCircle":{
-    "nonCircleHeading" : "Buy Circle Membership",
-    "circleHeading":"Yay! You are a Circle Member",
+  "diagnosticsCircle": {
+    "nonCircleHeading": "Buy Circle Membership",
+    "circleHeading": "Yay! You are a Circle Member",
     "you": "you",
     "youCan": "You can",
     "save": "save",
     "saved": "saved",
     "orderCircle": "on this order with Circle!",
-    "viewPlans":"VIEW PLANS",
+    "viewPlans": "VIEW PLANS",
     "yourEfectivePrice": "Your effective price is",
-    "effectivePrice":"Effective price would be",
+    "effectivePrice": "Effective price would be",
     "circleMembership": "Circle Membership",
     "onThisOrder": "on this order.",
     "congratsText": "Congrats! You have successfully purchased the {{duration}} {{months}} (Trial) Circle Plan for {{symbol}}{planPrice}"
@@ -717,21 +717,21 @@
     "diagnosticSearchLocation": "Search for street name, pincode…",
     "prescriptionCallBack": "Expect a call in the next 2 working hours from an Apollo agent to assist you in placing your order.",
     "prescriptionError": "Sorry cannot submit precription, an error occured",
-    "prescriptionSuccess":"Prescription Successfully Uploaded",
-    "fromHealthRecord":"PRESCRIPTION FROM HEALTH RECORDS",
+    "prescriptionSuccess": "Prescription Successfully Uploaded",
+    "fromHealthRecord": "PRESCRIPTION FROM HEALTH RECORDS",
     "addMorePrescription": "+ ADD MORE PRESCRIPTIONS",
     "itemAdded": "item added",
     "itemsAdded": "items added",
     "goToCart": "Go to cart",
     "invalidFileSize": "Invalid File Size. File size must be less than 25MB.",
-    "invalidFileType":"Invalid File Type. File type must be PDF.",
-    "prescriptionHeading":"Place your order via prescription",
+    "invalidFileType": "Invalid File Type. File type must be PDF.",
+    "prescriptionHeading": "Place your order via prescription",
     "test247Text": "Limited period offer",
     "frequentlyBrought": "Frequently Brought",
     "topBookedTests": "Top Booked Tests",
-    "similarPackages":"Similar Packages",
-    "needToAddPaitent":"• Do you want to edit patient details?",
-    "needToAddOrder":"• Do you want to add tests to your order?"
+    "similarPackages": "Similar Packages",
+    "needToAddPaitent": "• Do you want to edit patient details?",
+    "needToAddOrder": "• Do you want to add tests to your order?"
   },
   "diagnosticCategoryTitle": {
     "category": "category",
@@ -751,15 +751,15 @@
     "nonServiceableText": "This address is not serviceable",
     "homeCollectionText": "Collection and hygiene charges",
     "paidSlotText": "Paid slot charges",
-    "patientSelectionLimit" : "You can add only {{count}} patients. Please remove extra patients",
+    "patientSelectionLimit": "You can add only {{count}} patients. Please remove extra patients",
     "multiPatientMsg": "You can now book tests for your family and friends in a single order",
     "nonCircleMsg": "Extra 15% off for circle customers. TnC Apply",
-    "couponSavings":"Coupon Savings",
+    "couponSavings": "Coupon Savings",
     "circleMembershipSavings": "Circle Membership Savings",
     "cartSavings": "Cart Savings",
     "additionalAmount": "Additional amount that needs to be paid",
     "totalCharges": "Total charges",
-    "reviewPagePolicyText":"As an add-on service, you would receive recommendations for relevant tests or packages from our lab personnel"
+    "reviewPagePolicyText": "As an add-on service, you would receive recommendations for relevant tests or packages from our lab personnel"
   },
   "orders": {
     "urOrders": "MY ORDERS",
@@ -1536,8 +1536,8 @@
     "patientSelectionGuide": "Make sure to add valid patient details, it will be reflected on Prescription and Invoice",
     "oneTapConsultation": "ONE TAP CONSULTATION",
     "myPackages": "MY PACKAGES",
-    "morePackagesForYour":"More Packages For You",
-    "packagesAndPlans":"Packages & Plans",
+    "morePackagesForYour": "More Packages For You",
+    "packagesAndPlans": "Packages & Plans",
     "bookedConsult": "Consultations Booked",
     "validTill": "Valid Till",
     "doctorBookingInfo": "Your doctor will be available at the earliest!",
@@ -1547,10 +1547,19 @@
     "consultConfirmation": "CONSULTATION CONFIRMATION",
     "orderId": "Order ID : ",
     "viewALL": "VIEW ALL",
-    "consultNow":"CONSULT NOW",
-    "paymentPendingBooking":"Please wait while we proccess your payment. You can book consultation from specilaty screen later."
+    "consultNow": "CONSULT NOW",
+    "paymentPendingBooking": "Please wait while we proccess your payment. You can book consultation from specilaty screen later."
   },
-    "askApollo": {
+  "vonageToast": {
+    "unstableVideo": "Your Internet connection appears to be Unstable... if the problem persists, the video will be automatically turned off at doctor's end",
+    "unstableAudio": "Your Internet connection appears to be Unstable…call might disconnect",
+    "wentWrong": "Something went wrong!!  Trying to connect",
+    "reconnect": "Trying to Reconnect the Call...",
+    "audioFallback": "Video has been turned off automatically due to unstable internet. It will be turned ON after network Improves",
+    "fallbackWarning": "Bad Network, if the problem persists you might get a telephonic call on your mobile phone",
+    "callDisconnected": "Call disconnected due to bad network."
+  },
+  "askApollo": {
     "mobileNumber": "Mobile Number",
     "emailId": "Email ID",
     "patientName": "Patient Name",
@@ -1566,7 +1575,7 @@
     "referAndEarn": "Refer & Earn",
     "referAndEarnLine2": "Your friends get ₹100 on signup",
     "earnNow": "Earn Now",
-    "willBeCreditSoon":"Will be credited in a few mins*",
+    "willBeCreditSoon": "Will be credited in a few mins*",
     "yourFriendGot": "Your friend get ₹100 on signup & you get ₹100 on their first order.",
     "onSignUp": "on signup &",
     "youGet": "You get",
@@ -1577,7 +1586,7 @@
     "friendReceiveRs": "Friend receives ₹{referShareAmount} on signup",
     "youReceive": "You get ₹{referShareAmount} on their first\ntransaction",
     "notValidForOrder": "Not valid for order below ₹{validRuppes}*",
-    "onceOrderGetDelivered":"once order get delivered",
+    "onceOrderGetDelivered": "once order get delivered",
     "termsAndCondition": "Terms and Condition",
     "FAQs": "FAQs",
     "checkRewards": "Check Rewards",

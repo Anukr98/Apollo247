@@ -236,6 +236,7 @@ import {
   createVonageSessionToken,
   createVonageSessionTokenVariables,
 } from '../../graphql/types/createVonageSessionToken';
+import useOpenTokSpeedTest from '@aph/mobile-patients/src/helpers/useOpenTokSpeedTest';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 interface OpentokStreamObject {
@@ -1156,6 +1157,11 @@ const styles = StyleSheet.create({
     height: 4,
     width: 20,
   },
+  snackBar: {
+    marginBottom: 100,
+    zIndex: 1001,
+    backgroundColor: theme.colors.RED,
+  },
 });
 
 const urlRegEx = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG)/;
@@ -1429,6 +1435,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const typingThrottleTime = 200; //0.2 seconds
   const typingClearTime = 1000; //1 seconds
   const clearTimerId = useRef<NodeJS.Timeout>();
+  const { unstable } = useOpenTokSpeedTest();
 
   let cancelAppointmentTitle = '';
   if (appointmentDiffMin >= 15) {
@@ -1450,6 +1457,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
   }, []);
+
+  useEffect(() => {
+    if (unstable) {
+      setSnackbarState(true);
+      setHandlerMessage(
+        showVideo ? string.vonageToast.unstableVideo : string.vonageToast.unstableAudio
+      );
+    }
+  }, [unstable]);
 
   const handleExternalFileShareUpload = () => {
     try {
@@ -2990,11 +3006,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
   const setSnackBar = () => {
     setSnackbarState(true);
-    setHandlerMessage('      Something went wrong!!  Trying to connect');
+    setHandlerMessage(string.vonageToast.wentWrong);
   };
   const setSessionReconnectMsg = () => {
     setSnackbarState(true);
-    setHandlerMessage('There is a problem with network connection. Reconnecting, Please wait...');
+    setHandlerMessage(string.vonageToast.reconnect);
   };
   const publisherEventHandlers = {
     streamCreated: (event: string) => {
@@ -3101,7 +3117,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       );
       if (error.reason === 'quality') {
         setSnackbarState(true);
-        setHandlerMessage('Falling back to audio due to bad network!!');
+        setHandlerMessage(string.vonageToast.audioFallback);
         setDowngradeToAudio(true);
       }
     },
@@ -3118,8 +3134,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     },
     videoDisableWarning: (error: string) => {
       postOpentokEvent('Subscriber Video Disable Warning', error);
-      callToastStatus.current =
-        'Internet connection at the doctor’s end appears to be unstable if the problem persists, the video will be automatically turned off.';
+      callToastStatus.current = string.vonageToast.fallbackWarning;
     },
     videoDisableWarningLifted: (error: string) => {
       postOpentokEvent('Subscriber Video Disable Warning Lifted', error);
@@ -3155,7 +3170,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         callEndWebengageEvent('Network');
         setTimeout(() => {
           setSnackbarState(true);
-          setHandlerMessage('Check the network connection.');
+          setHandlerMessage(string.vonageToast.callDisconnected);
         }, 2050);
       } else {
         setSnackBar();
@@ -6439,6 +6454,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         {showDoctorProfile && renderNoSubscriberConnectedThumbnail()}
         {!PipView && renderChatNotificationIcon()}
         {!PipView && renderBottomButtons()}
+        <Snackbar
+          style={styles.snackBar}
+          visible={snackbarState}
+          onDismiss={() => {
+            setSnackbarState(false);
+          }}
+          duration={50000}
+        >
+          {handlerMessage}
+        </Snackbar>
       </>
     );
   };
@@ -8282,16 +8307,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
         />
       )}
-      <Snackbar
-        style={{ marginBottom: 100, zIndex: 1001 }}
-        visible={snackbarState}
-        onDismiss={() => {
-          setSnackbarState(false);
-        }}
-        duration={5000}
-      >
-        {handlerMessage}
-      </Snackbar>
     </View>
   );
 };
