@@ -441,7 +441,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   }, []);
 
   const getAddressList = () => {
-    setLoading && setLoading(true);
     client
       .query<getPatientAddressList, getPatientAddressListVariables>({
         query: GET_PATIENT_ADDRESS_LIST,
@@ -463,12 +462,10 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             if (address) {
               address?.latitude && setDefaultAddress(address);
             } else {
-              setLoading && setLoading(false);
               setPrescAvailability('unavailable');
               setTestAvailability('unavailable');
             }
           } else {
-            setLoading && setLoading(false);
             setPrescAvailability('unavailable');
             setTestAvailability('unavailable');
           }
@@ -1168,7 +1165,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     const { isAllMedicineAtPincode, isPartialMedicineAtPincode, noPincode } = tatContent.find(
       (item) => item.isMedicine
     );
-    return prescAvailability !== 'unavailable' ? (
+    return prescAvailability !== 'unavailable' && defaultAddress?.zipcode && tat ? (
       <Text style={styles.tatText}>
         {prescAvailability == 'available'
           ? isAllMedicineAtPincode + ' at '
