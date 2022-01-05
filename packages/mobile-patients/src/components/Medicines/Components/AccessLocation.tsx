@@ -21,6 +21,7 @@ export interface AccessLocationProps {
   source?: string;
   hidePincodeCurrentLocation?: boolean;
   isAddressLoading: boolean;
+  selectedCartAddress?: string;
 }
 
 export const AccessLocation: React.FC<AccessLocationProps> = (props) => {
@@ -33,16 +34,25 @@ export const AccessLocation: React.FC<AccessLocationProps> = (props) => {
     onPressPincode,
     source,
     hidePincodeCurrentLocation,
+    selectedCartAddress,
   } = props;
 
   const isFromTest = source == AppRoutes.Tests;
+  const isFromPharma = source == 'pharmacy';
 
   function sortAddresses(addresses: savePatientAddress_savePatientAddress_patientAddress[]) {
     if (addresses) {
-      const array1 = addresses?.filter((item) => item?.defaultAddress);
-      const array2 = addresses?.filter((item) => !item?.defaultAddress);
-      const sortedAddresses = array1?.concat(array2);
-      return sortedAddresses;
+      if (isFromPharma && selectedCartAddress) {
+        const array1 = addresses?.filter((item) => item?.id == selectedCartAddress);
+        const array2 = addresses?.filter((item) => item?.id != selectedCartAddress);
+        const sortedAddresses = array1?.concat(array2);
+        return sortedAddresses;
+      } else {
+        const array1 = addresses?.filter((item) => item?.defaultAddress);
+        const array2 = addresses?.filter((item) => !item?.defaultAddress);
+        const sortedAddresses = array1?.concat(array2);
+        return sortedAddresses;
+      }
     } else {
       return [];
     }
@@ -89,6 +99,8 @@ export const AccessLocation: React.FC<AccessLocationProps> = (props) => {
                 item={item}
                 onPressSelectAddress={(item) => onPressSelectAddress(item)}
                 onPressEditAddress={(item) => onPressEditAddress(item)}
+                source={source}
+                selectedCartAddress={selectedCartAddress}
               />
             );
           })}

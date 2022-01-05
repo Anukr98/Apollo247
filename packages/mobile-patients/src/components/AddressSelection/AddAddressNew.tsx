@@ -94,7 +94,6 @@ export interface locationResponseProps {
   state?: string;
 }
 export const AddAddressNew: React.FC<MapProps> = (props) => {
-  console.log({ props });
   const KeyName = props.navigation.getParam('KeyName');
   const addressDetails = props.navigation.getParam('addressDetails');
   const addOnly = props.navigation.getParam('addOnly');

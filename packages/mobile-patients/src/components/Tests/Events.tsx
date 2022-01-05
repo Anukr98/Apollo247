@@ -1096,25 +1096,20 @@ export function DiagnosticHomePageClicked(
   currentPatient: any,
   userType: any,
   navSrc: string,
-  circleMember: any,
-  deviceId: any
+  circleMember: any
 ) {
-  try {
-    const eventAttributes = {
-      'Patient Name': `${currentPatient?.firstName} ${currentPatient?.lastName}`,
-      'Patient Uhid': currentPatient?.uhid,
-      Relation: currentPatient?.relation,
-      'Patient Age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
-      'Patient Gender': currentPatient?.gender,
-      'Mobile Number': currentPatient?.mobileNumber,
-      'Customer ID': currentPatient?.id,
-      User_Type: userType,
-      'Nav src': navSrc,
-      'Circle Member': circleMember,
-      'Device Id': deviceId,
-    };
-    postCleverTapEvent(CleverTapEventName.HOME_ICON_CLICKED, eventAttributes);
-  } catch (error) {}
+  const eventAttributes = {
+    'Patient name': `${currentPatient?.firstName} ${currentPatient?.lastName}`,
+    'Patient UHID': currentPatient?.uhid,
+    'Patient age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
+    'Patient gender': currentPatient?.gender,
+    'Mobile Number': currentPatient?.mobileNumber,
+    'Customer ID': currentPatient?.id,
+    User_Type: userType,
+    'Circle Member': circleMember,
+    'Page name': navSrc,
+  };
+  postCleverTapEvent(CleverTapEventName.HOME_ICON_CLICKED, eventAttributes);
 }
 
 export async function RadiologyLandingPage(

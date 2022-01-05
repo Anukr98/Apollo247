@@ -116,8 +116,6 @@ import {
   MedicalRecordType,
   UserState,
   BannerDisplayType,
-  ProcessDiagnosticHCOrderInput,
-  DIAGNOSTIC_ORDER_PAYMENT_TYPE,
   SaveBookHomeCollectionOrderInputv2,
   patientObjWithLineItems,
   patientAddressObj,
@@ -261,10 +259,6 @@ import {
   savePhleboFeedbackVariables,
   savePhleboFeedback_savePhleboFeedback,
 } from '@aph/mobile-patients/src/graphql/types/savePhleboFeedback';
-import {
-  processDiagnosticHCOrder,
-  processDiagnosticHCOrderVariables,
-} from '@aph/mobile-patients/src/graphql/types/processDiagnosticHCOrder';
 import {
   getDiagnosticPaymentSettings,
   getDiagnosticPaymentSettingsVariables,
@@ -1276,22 +1270,6 @@ export const savePhleboFeedback = (
   });
 };
 
-export const processDiagnosticsCODOrder = (
-  client: ApolloClient<object>,
-  orderId: string,
-  amount: number
-) => {
-  const processDiagnosticHCOrderInput: ProcessDiagnosticHCOrderInput = {
-    orderID: orderId,
-    paymentMode: DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD,
-    amount: amount,
-  };
-  return client.mutate<processDiagnosticHCOrder, processDiagnosticHCOrderVariables>({
-    mutation: PROCESS_DIAG_COD_ORDER,
-    variables: { processDiagnosticHCOrderInput: processDiagnosticHCOrderInput },
-    fetchPolicy: 'no-cache',
-  });
-};
 
 export const diagnosticPaymentSettings = (client: ApolloClient<object>, paymentId: string) => {
   return client.query<getDiagnosticPaymentSettings, getDiagnosticPaymentSettingsVariables>({
@@ -1374,6 +1352,18 @@ export const diagnosticSaveBookHcCollectionV2 = (
     },
   });
 };
+
+export const saveModifyOrder = (
+  client: ApolloClient<object>,
+  orderInfo: saveModifyDiagnosticOrderInput
+) =>
+  client.mutate<saveModifyDiagnosticOrder, saveModifyDiagnosticOrderVariables>({
+    mutation: MODIFY_DIAGNOSTIC_ORDERS,
+    context: {
+      sourceHeaders,
+    },
+    variables: { saveModifyDiagnosticOrder: orderInfo },
+  });
 
 export const createInternalOrder = (client: ApolloClient<object>, orders: OrderCreate) => {
   return client.mutate<createOrderInternal, createOrderInternalVariables>({
@@ -1536,8 +1526,7 @@ export const getReportTAT = (
   pincode: number,
   itemIds: number[],
   source?: REPORT_TAT_SOURCE
-) =>
-{
+) => {
   return client.query<getConfigurableReportTAT, getConfigurableReportTATVariables>({
     query: GET_DIAGNOSTIC_REPORT_TAT,
     context: {
@@ -1548,7 +1537,7 @@ export const getReportTAT = (
       cityId: cityId,
       pincode: pincode,
       itemIds: itemIds,
-      source: source
+      source: source,
     },
     fetchPolicy: 'no-cache',
   });

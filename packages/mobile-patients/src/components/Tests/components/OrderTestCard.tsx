@@ -418,6 +418,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     const showVaccinationStatus = !!phlObj?.diagnosticPhlebotomists?.vaccinationStatus;
     const allowCallingETAText = !!phlObj && phlObj?.allowCallingETAText;
     const isNewPhleboAssigned = !!phlObj && phlObj?.isPhleboChanged;
+    const changeVaccineStatusStyle = !!name && name?.length > 16 && otpToShow;
 
     return (
       <>
@@ -443,15 +444,9 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                     ? `New ${string.diagnostics.agent} Assigned`
                     : `${string.diagnostics.agent} Details`
                 }`}</Text>
-                <View style={styles.rowCenter}>
+                <View style={[styles.rowCenter, changeVaccineStatusStyle && styles.columnStyle]}>
                   <Text style={styles.nameTextStyles}>{name}</Text>
-                  {!!showVaccinationStatus && showVaccinationStatus && (
-                    <View style={styles.vaccinationContainer}>
-                      <Text style={styles.vaccinationText}>
-                        {phlObj?.diagnosticPhlebotomists?.vaccinationStatus}
-                      </Text>
-                    </View>
-                  )}
+                  {renderVaccinationStatus(phlObj, showVaccinationStatus, changeVaccineStatusStyle)}
                 </View>
               </View>
             ) : null}
@@ -471,6 +466,28 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
         {orderLevelStatus === DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN &&
           renderAgentETATracking(checkEta, phlObj)}
       </>
+    );
+  };
+
+  const renderVaccinationStatus = (
+    phlObj: any,
+    showVaccinationStatus: boolean,
+    changeVaccineStatusStyle: boolean
+  ) => {
+    return (
+      !!showVaccinationStatus &&
+      showVaccinationStatus && (
+        <View
+          style={[
+            styles.vaccinationContainer,
+            { marginHorizontal: changeVaccineStatusStyle ? 0 : 8 },
+          ]}
+        >
+          <Text style={styles.vaccinationText}>
+            {phlObj?.diagnosticPhlebotomists?.vaccinationStatus}
+          </Text>
+        </View>
+      )
     );
   };
 
@@ -958,4 +975,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   editIcon: { height: 16, width: 16, resizeMode: 'contain' },
+  columnStyle: { flexDirection: 'column', alignItems: 'flex-start' },
 });

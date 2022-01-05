@@ -42,7 +42,7 @@ export enum ProductPageViewedSource {
 }
 
 export enum WebEngageEventName {
-  Patient_API_Error = 'Patient_API_Error',
+  Patient_API_Error = 'Consult Patient API error',
   //DOH
   DOH_Clicked = 'DOH Clicked',
   DOH_Viewed = 'DOH Viewed',
@@ -132,7 +132,7 @@ export enum WebEngageEventName {
   GO_BACK_CLICKED_DOC_LIST = 'go back clicked doc list',
   SHARE_CLICKED_DOC_PROFILE_SCREEN = 'share clicked doc profile screen',
   SHARE_PROFILE_CLICKED_DOC_PROFILE = 'Share profile clicked doc profile',
-  GO_BACK_CLICKED_DOC_PROFILE = 'go back clicked doc profile',
+  GO_BACK_CLICKED_DOC_PROFILE = 'Consult share go back clicked',
   DOCTOR_PROFILE_SCREEN_BY_SHARE_LINK = 'Doctor profile screen by share link',
 
   MY_ORDERS_CLICKED = 'My Orders Clicked',
@@ -492,7 +492,7 @@ export enum WebEngageEventName {
   VACCINE_REGISTRATION_COMPLETED = 'Vaccine Registeration Completed',
   ERROR_WHILE_FETCHING_JWT_TOKEN = 'Error while Fetching JWT token',
   AUTHTOKEN_UPDATED = 'Authtoken Updated',
-  NO_FIREBASE_USER = 'No user on Firebase'
+  NO_FIREBASE_USER = 'No user on Firebase',
 }
 
 export interface PatientInfo {
@@ -1103,10 +1103,7 @@ export interface WebEngageEvents {
     User_Type?: PharmaUserStatus;
     'Split Cart'?: YesOrNo;
     'Prescription Option selected'?: PrescriptionOptions;
-    Shipment_1_Value?: number; // amount after discount
-    Shipment_2_Value?: number;
-    Shipment_1_Items?: number; // number of items
-    Shipment_2_Items?: number;
+    Shipment?: string;
   };
   [WebEngageEventName.PHARMACY_PAYMENT_INITIATED]: {
     'Payment mode': 'Online' | 'COD';
@@ -1823,14 +1820,7 @@ export interface WebEngageEvents {
     User_Type?: PharmaUserStatus;
     'Split Cart': YesOrNo;
     'Cart Items': string;
-    Shipment_1_TAT?: Date;
-    Shipment_2_TAT?: Date;
-    Shipment_1_Value?: number; // amount after discount
-    Shipment_2_Value?: number;
-    Shipment_1_Items?: number; // number of items
-    Shipment_2_Items?: number;
-    Shipment_1_Site_Type?: SiteType;
-    Shipment_2_Site_Type?: SiteType;
+    Shipment?: string;
   };
 
   [WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_FAILURE]: {

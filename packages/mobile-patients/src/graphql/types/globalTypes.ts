@@ -477,6 +477,7 @@ export enum MedicalConditionIllnessTypes {
 
 export enum MedicalRecordType {
   ALLERGY = 'ALLERGY',
+  CLINICAL_DOCUMENTS = 'CLINICAL_DOCUMENTS',
   CONSULTATION = 'CONSULTATION',
   EHR = 'EHR',
   FAMILY_HISTORY = 'FAMILY_HISTORY',
@@ -629,13 +630,6 @@ export enum PharmaDiscountApplicableOn {
 export enum PlanPurchaseType {
   first_time = 'first_time',
   renew = 'renew',
-}
-
-export enum PrescriptionType {
-  CONSULT = 'CONSULT',
-  LATER = 'LATER',
-  NA = 'NA',
-  UPLOADED = 'UPLOADED',
 }
 
 export enum REFUND_STATUS {
@@ -865,6 +859,19 @@ export interface AddAllergyRecordInput {
   reactionToAllergy?: string | null;
   notes?: string | null;
   attachmentList?: (AllergyFileProperties | null)[] | null;
+}
+
+export interface AddClinicalDocumentInput {
+  id?: string | null;
+  createdDate?: string | null;
+  lastmodifieddate?: string | null;
+  mobileNumber?: string | null;
+  uhid?: string | null;
+  uploadedVia?: string | null;
+  documentName?: string | null;
+  fileType?: string | null;
+  fileInfoList?: (fileUploadType | null)[] | null;
+  source?: string | null;
 }
 
 export interface AddCommentHelpdeskTicketInput {
@@ -1421,6 +1428,12 @@ export interface LabTestParameters {
   minimum?: number | null;
   parameterName?: string | null;
   result?: number | null;
+  unit?: string | null;
+}
+
+export interface PrescriptionParameters {
+  medication?: string | null;
+  dosage?: number | null;
   unit?: string | null;
 }
 
@@ -2070,6 +2083,12 @@ export interface fileProperties {
   base64FileInput?: string | null;
 }
 
+export interface fileUploadType {
+  fileName?: string | null;
+  mimeType?: string | null;
+  content?: string | null;
+}
+
 export interface patientAddressObj {
   patientAddressID: string;
   latitude: number;
@@ -2140,6 +2159,7 @@ export enum APPOINTMENT_STATUS {
 export enum DOSE_NUMBER {
   FIRST = 'FIRST',
   SECOND = 'SECOND',
+  BOOSTER_DOSE = 'BOOSTER_DOSE'
 }
 /** * payment type for appointment */
 export enum PAYMENT_TYPE {
@@ -2242,6 +2262,10 @@ export enum CALL_TO_ORDER_CTA_PAGE_ID {
   TESTLISTING = 'TESTLISTING',
 }
 
+export interface GetMedicineOrderCancelReasonsV2Input {
+  orderId?: number | null;
+}
+
 export interface SubscriptionDetailsInput {
   specialtyName?: string | null;
   benefitId?: string | null;
@@ -2252,6 +2276,67 @@ export interface SubscriptionDetailsInput {
   subscriptionSubPlanId?: string | null;
 }
 
+export enum CouponApplicable {
+  APPLIED = "APPLIED",
+  ITEM_AT_HIGHER_DISCOUNT = "ITEM_AT_HIGHER_DISCOUNT",
+  NOT_APPLICABLE = "NOT_APPLICABLE",
+}
+
+export enum PLAN_ID {
+  CIRCLEPlan = "CIRCLEPlan",
+}
+
+export interface InputCartLineItems {
+  medicineSKU: string;
+  quantity?: number | null;
+}
+
+export enum PrescriptionType {
+  CONSULT = "CONSULT",
+  LATER = "LATER",
+  NA = "NA",
+  UPLOADED = "UPLOADED",
+}
+
+export interface CartInputData {
+  patientId: string;
+  medicineOrderCartLineItems?: (InputCartLineItems | null)[] | null;
+  zipcode?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  patientAddressId?: string | null;
+  coupon?: string | null;
+  prescriptionDetails?: (CartPrescriptionDetails | null)[] | null;
+  prescriptionType?: PrescriptionType | null;
+  subscription?: CartSubscription | null;
+}
+
+export interface CartPrescriptionDetails {
+  prescriptionImageUrl?: string | null;
+  prismPrescriptionFileId?: string | null;
+  uhid?: string | null;
+  appointmentId?: string | null;
+  meta?: any | null;
+}
+
+export interface CartSubscription {
+  userSubscriptionId?: string | null;
+  planId?: PLAN_ID | null;
+  subPlanId?: string | null;
+  TYPE?: PLAN | null;
+  subscriptionApplied?: boolean | null;
+}
+
+export interface SaveMedicineOrderV3Input {
+  patientId: string;
+  cartType: MEDICINE_ORDER_TYPE;
+  medicineDeliveryType?: MEDICINE_DELIVERY_TYPE | null;
+  bookingSource?: BOOKING_SOURCE | null;
+  deviceType?: DEVICE_TYPE | null;
+  appVersion?: string | null;
+  customerComment?: string | null;
+  showPrescriptionAtStore?: boolean | null;
+}
 
 //==============================================================
 // END Enums and Input Objects

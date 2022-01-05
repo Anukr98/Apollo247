@@ -55,7 +55,9 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
     const saveSessionValues = async () => {
       const [loginToken, phoneNumber] = await getAsyncStorageValues();
       setToken(JSON.parse(loginToken));
-      setUserMobileNumber(JSON.parse(phoneNumber)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber);
+      setUserMobileNumber(
+        JSON.parse(phoneNumber)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber
+      );
     };
     saveSessionValues();
   }, []);
@@ -172,7 +174,7 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
             key: null,
             actions: [
               NavigationActions.navigate({
-                routeName: AppRoutes.ConsultRoom,
+                routeName: AppRoutes.HomeScreen,
                 params: {
                   skipAutoQuestions: true,
                 },

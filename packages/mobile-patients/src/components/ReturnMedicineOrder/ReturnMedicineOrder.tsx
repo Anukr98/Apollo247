@@ -50,6 +50,7 @@ export interface Props
   extends NavigationScreenProps<{
     queryIdLevel1: string;
     queryIdLevel2: string;
+    queryIdLevel3: string;
     queries?: NeedHelpHelpers.HelpSectionQuery[];
     email?: string;
     orderId?: number;
@@ -60,6 +61,7 @@ export const ReturnMedicineOrder: React.FC<Props> = ({ navigation }) => {
   const queries = navigation.getParam('queries');
   const queryIdLevel1 = navigation.getParam('queryIdLevel1') || helpSectionQueryId.pharmacy;
   const queryIdLevel2 = navigation.getParam('queryIdLevel2') || helpSectionQueryId.returnOrder;
+  const queryIdLevel3 = navigation.getParam('queryIdLevel3') || '';
   const orderId = navigation.getParam('orderId');
 
   const [email, setEmail] = useState(navigation.getParam('email') || '');
@@ -160,7 +162,7 @@ export const ReturnMedicineOrder: React.FC<Props> = ({ navigation }) => {
           StackActions.reset({
             index: 0,
             key: null,
-            actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+            actions: [NavigationActions.navigate({ routeName: AppRoutes.HomeScreen })],
           })
         );
       },
@@ -183,7 +185,7 @@ export const ReturnMedicineOrder: React.FC<Props> = ({ navigation }) => {
         _queries = await getHelpSectionQueries(apolloClient);
       }
       const parentQuery = _queries?.find(({ id }) => id === queryIdLevel1);
-      const subQueriesData = getQueryData(_queries, queryIdLevel1, queryIdLevel2);
+      const subQueriesData = getQueryData(_queries, queryIdLevel1, queryIdLevel2, queryIdLevel3);
       const variables: returnPharmaOrderVariables = {
         returnPharmaOrderInput: {
           category: parentQuery?.title,

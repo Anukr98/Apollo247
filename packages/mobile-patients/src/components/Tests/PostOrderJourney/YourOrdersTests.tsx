@@ -193,7 +193,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [rescheduleSource, setRescheduleSource] = useState<string>('');
   const [selectedOrder, setSelectedOrder] = useState<orderList>();
   const [error, setError] = useState(false);
-  const { getPatientApiCall } = useAuth();
+  const { getPatientApiCall, buildApolloClient, authToken } = useAuth();
   const client = useApolloClient();
   const [orders, setOrders] = useState<any>(props.navigation.getParam('orders'));
   const cityId = props.navigation.getParam('cityId');
@@ -215,6 +215,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const source = props.navigation.getParam('source');
   const getCTADetails = showDiagnosticCTA(CALL_TO_ORDER_CTA_PAGE_ID.MYORDERS, cityId);
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
+  const apolloClientWithAuth = buildApolloClient(authToken);
 
   var rescheduleDate: Date,
     rescheduleSlotObject: {
@@ -227,7 +228,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     };
 
   const handleBack = () => {
-    if (source === AppRoutes.OrderStatus) {
+    if (source === AppRoutes.PaymentStatusDiag) {
       navigateToScreenWithEmptyStack(props.navigation, 'TESTS');
     } else {
       props.navigation.goBack();
@@ -288,7 +289,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
     try {
       setLoading?.(true);
-      getDiagnosticsOrder(client, currentPatient?.mobileNumber, 10, currentOffset)
+      getDiagnosticsOrder(apolloClientWithAuth, currentPatient?.mobileNumber, 10, currentOffset)
         .then((data) => {
           const ordersList = data?.data?.getDiagnosticOrdersListByMobile?.ordersList || [];
           const requestedCancelReason =
@@ -315,11 +316,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           getPhleboOTP(orderIdsArr, filteredOrderList, isRefetch);
         })
         .catch((error) => {
+          console.log({ error });
           setLoading?.(false);
           setError(true);
           CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchOrders`, error);
         });
     } catch (error) {
+      console.log({ error });
       setLoading?.(false);
       setError(true);
       CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchOrders`, error);
@@ -1291,6 +1294,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       </View>
     );
   };
+
   const renderPromoteCashback = () => {
     return (
       <View style={styles.promoViewContainer}>
@@ -2463,7 +2467,7 @@ const styles = StyleSheet.create({
   patientNameText: { ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1, 18) },
   proceedToCancelTouch: {
     height: 40,
-    width: '37%',
+    width: '40%',
     justifyContent: 'center',
     alignItems: 'center',
   },

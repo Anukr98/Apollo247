@@ -728,14 +728,6 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           ?.reduce((curr, prev) => prev! + curr!, 0)
       : 0;
 
-    const getTotalPrepaidPrice = !!getOffersResponse
-      ? getOffersResponse
-          ?.map((diag) => diag?.prepaidAmount)
-          ?.reduce((curr, prev) => prev! + curr!, 0)
-      : orderDetails?.totalPrice;
-
-    const offerAmountSplit = getTotalPrepaidPrice! - getTotalEffectivePrice!;
-
     return (
       <View>
         {renderHeading('Payment Mode')}
@@ -749,7 +741,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           )}
           {!!getOffersResponse &&
             getOffersResponse?.length > 0 &&
-            getOffersResponse?.map((item) => renderOffers(item, offerAmountSplit))}
+            getOffersResponse?.map((item) => renderOffers(item))}
           {!!getOffersResponse && getOffersResponse?.length > 0 && renderHealthCredits()}
           {!!refundText && renderPrices(refundText, refundAmountToShow, false)}
         </View>
@@ -783,13 +775,15 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
 
   function getOffersDetails(transaction: any) {
     const offersDetails = transaction?.offers?.[0]?.offer_description?.title;
+    const offerAmount = transaction?.prepaidAmount - transaction?.effectivePrepaidAmount;
     return {
       offersDetails,
+      offerAmount,
     };
   }
 
-  const renderOffers = (transaction: any, offerAmount: number) => {
-    const { offersDetails } = getOffersDetails(transaction);
+  const renderOffers = (transaction: any) => {
+    const { offersDetails, offerAmount } = getOffersDetails(transaction);
     return !!offersDetails ? <View>{renderPrices(offersDetails, offerAmount, false)}</View> : null;
   };
 

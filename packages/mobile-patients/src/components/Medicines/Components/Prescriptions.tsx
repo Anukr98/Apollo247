@@ -10,12 +10,12 @@ import {
 } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import {
-  useShoppingCart,
   PhysicalPrescription,
   EPrescription,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { EPrescriptionCard } from '@aph/mobile-patients/src/components/ui/EPrescriptionCard';
 import { PhysicalPrescriptionCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/PhysicalPrescriptionCard';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 export interface PrescriptionsProps {
   onPressUploadMore: () => void;
   screen?: string;
@@ -25,7 +25,7 @@ export interface PrescriptionsProps {
 }
 
 export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
-  const { removeEPrescription, removePhysicalPrescription } = useShoppingCart();
+  const { removePrescriptionFromCart } = useServerCart();
   const { onPressUploadMore, screen, style, physicalPrescriptions, ePrescriptions } = props;
 
   const renderHeader = () => {
@@ -60,7 +60,7 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
         i={i}
         arrayLength={arrayLength}
         onRemove={() => {
-          removePhysicalPrescription && removePhysicalPrescription(item.title);
+          removePrescriptionFromCart(item?.prismPrescriptionFileId);
         }}
         showTick={true}
       />
@@ -93,7 +93,7 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
         doctorName={item.doctorName}
         forPatient={item.forPatient}
         onRemove={() => {
-          removeEPrescription && removeEPrescription(item.id);
+          removePrescriptionFromCart(item?.prismPrescriptionFileId);
         }}
         showTick={true}
       />

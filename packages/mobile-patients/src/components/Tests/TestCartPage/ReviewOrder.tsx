@@ -146,6 +146,7 @@ import {
 import { PaymentInitiated } from '@aph/mobile-patients/src/components/PaymentGateway/Events';
 import { useFetchHealthCredits } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useFetchHealthCredits';
 import { HealthCreditsCard } from '@aph/mobile-patients/src/components/Tests/components/HealthCreditsCard';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
@@ -2133,6 +2134,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         subscriptionInclusionId: null,
         userSubscriptionId: circleSubscriptionId != '' ? circleSubscriptionId : localCircleSubId,
       };
+      AsyncStorage.setItem('bookingOrderInfo', JSON.stringify({ bookingOrderInfo }));
       if (!!coupon) {
         bookingOrderInfo.couponCode = coupon?.coupon;
       }
@@ -2575,6 +2577,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           );
         } else {
           setLoading?.(false);
+          AsyncStorage.setItem('orderInfo', JSON.stringify(orderInfo));
           props.navigation.navigate(AppRoutes.PaymentMethods, {
             paymentId: payId!,
             amount: toPayPrice,
@@ -2751,13 +2754,14 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     verticalSpecificData: any
   ) {
     setLoading?.(false);
-    props.navigation.navigate(AppRoutes.OrderStatus, {
-      isModify: isModifyFlow ? modifiedOrder : null,
+    props.navigation.navigate(AppRoutes.PaymentStatusDiag, {
+      paymentId: paymentId,
       orderDetails: orderInfo,
       isCOD: isCOD,
       eventAttributes,
       paymentStatus: paymentStatus,
-      paymentId: paymentId,
+      isModify: isModifyFlow ? modifiedOrder : null,
+      isCircleAddedToCart: isCircleAddedToCart,
       verticalSpecificData,
     });
   }
@@ -2796,6 +2800,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       subscriptionInclusionId: null,
       amountToPay: grandTotal, //total amount to pay
     };
+    AsyncStorage.setItem('modifyBookingInput', JSON.stringify({ modifyBookingInput }));
     saveModifyOrder?.(modifyBookingInput)
       .then((data) => {
         const getModifyResponse = data?.data?.saveModifyDiagnosticOrder;
@@ -3264,9 +3269,12 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 14),
     alignSelf: 'flex-end',
   },
-  circleItemCartView: { backgroundColor: 'white', flexDirection: 'row', paddingVertical: 10 },
+  circleItemCartView: {
+    backgroundColor: 'white',
+    flexDirection: 'row',
+  },
   circleIconView: { paddingHorizontal: 10 },
   circleText: { flexDirection: 'column' },
-  circleTextPrice: { padding: 10 },
+  circleTextPrice: { padding: 10, paddingLeft: 0 },
   circleTextStyle: { ...theme.viewStyles.text('M', 14, colors.SHERPA_BLUE, 1) },
 });

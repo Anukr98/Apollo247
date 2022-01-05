@@ -530,7 +530,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
         'Mobile Number': g(currentPatient, 'mobileNumber'),
         'Customer ID': g(currentPatient, 'id'),
         User_Type: getUserType(allCurrentPatients),
-        'Doctor Name': doctorDetails?.fullName,
+        'Doctor Name': doctorDetails?.displayName,
         'Doctor Id': doctorDetails?.id,
         'Doctor Speciality': doctorDetails?.specialty?.name,
       };
@@ -542,7 +542,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   };
 
   const renderDoctorName = () => {
-    return <Text style={styles.doctorName}>{doctorDetails?.fullName}</Text>;
+    return <Text style={styles.doctorName}>{doctorDetails?.displayName}</Text>;
   };
 
   const renderSpecialities = () => {
@@ -666,9 +666,11 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
             <Text style={[styles.date, { color: textColor }]}>
               {index < 2 ? item?.date : moment(item?.date).format('DD MMM')}
             </Text>
-            <Text style={[styles.dateSlots, { color: textColor }]}>
-              {item?.count === 0 ? 'No' : item?.count} slot{item?.count === 1 ? '' : 's'}
-            </Text>
+            {(!doctorDetails?.medmantraSync || isOnlineSelected) && (
+              <Text style={[styles.dateSlots, { color: textColor }]}>
+                {item?.count === 0 ? 'No' : item?.count} slot{item?.count === 1 ? '' : 's'}
+              </Text>
+            )}
           </View>
         )}
       </TouchableOpacity>
@@ -878,7 +880,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
       isDoctorsOfTheHourStatus: doctorDetails?.doctorsOfTheHourStatus,
     };
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION] = {
-      'Doctor name': g(doctorDetails, 'fullName')!,
+      'Doctor name': doctorDetails?.displayName!,
       'Speciality name': g(doctorDetails, 'specialty', 'name')!,
       Experience: Number(g(doctorDetails, 'experience')!),
       Languages: g(doctorDetails, 'languages')! || 'NA',
@@ -950,7 +952,9 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     return (
       <View style={styles.noSlotsContainer}>
         <Text style={styles.noSlotsAvailableText}>No slots available!</Text>
-        <Text style={styles.nextAvailabilityTitle}>Next availability - {availabilityTitle}</Text>
+        {(!doctorDetails?.medmantraSync || isOnlineSelected) && (
+          <Text style={styles.nextAvailabilityTitle}>Next availability - {availabilityTitle}</Text>
+        )}
         <Button
           title="VIEW AVAILABLE SLOTS"
           style={styles.viewAvailableSlotsBtn}

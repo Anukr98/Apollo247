@@ -41,7 +41,7 @@ import { Image } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -303,6 +303,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
     props.navigation.state.params ? props.navigation.state.params.testResultArray : []
   );
   const [trueOR, setTrueOR] = useState<boolean>(false);
+  const callDataBool = props.navigation?.getParam('callDataBool') || false;
   const [showPrescription, setshowPrescription] = useState<boolean>(true);
   const [showAdditionalNotes, setShowAdditionalNotes] = useState<boolean>(false);
   const [showReadMore, setShowReadMore] = useState<boolean>(false);
@@ -322,6 +323,8 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const config = AppConfig.Configuration;
+  const { buildApolloClient, authToken } = useAuth();
+  const apolloClientWithAuth = buildApolloClient(authToken);
   let responseAPI: boolean = false;
   let infoResponseAPI: boolean = false;
 
@@ -446,7 +449,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
   };
 
   const getOrderDetails = async (displayId: string) => {
-    const res = await client.query<
+    const res = await apolloClientWithAuth.query<
       getDiagnosticOrderDetailsByDisplayID,
       getDiagnosticOrderDetailsByDisplayIDVariables
     >({
@@ -560,7 +563,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
         hideAphAlert?.();
         redirectToOrders
           ? props.navigation.navigate(AppRoutes.YourOrdersTest)
-          : props.navigation.navigate(AppRoutes.ConsultRoom);
+          : props.navigation.navigate(AppRoutes.HomeScreen);
       },
     });
   };
@@ -818,9 +821,9 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
               const rangeBool = regExp.test(item?.range);
               var numCheck = hasNumber(item?.range);
               if (!rangeBool && !!numCheck) {
-                minNum = item?.range?.split(/[-_–]/)[0].trim();
-                maxNum = item?.range?.split(/[-_–]/)[1].trim();
-                const parseResult = Number(item?.result);
+                minNum = item?.range?.split(/[-_–]/)[0]?.trim();
+                maxNum = item?.range?.split(/[-_–]/)[1]?.trim();
+                let parseResult = Number(item?.result);
                 if (!!minNum && !!maxNum) {
                   parseResult >= minNum && parseResult <= maxNum
                     ? (resultColorChanger = true)
@@ -1216,6 +1219,9 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
         ).format(string.common.date_placeholder_text)}`}</Text>
       );
     };
+    var pdfStringHandler = data?.labTestName?.includes('.pdf')
+      ? data?.labTestName?.slice(0, -4)
+      : data?.labTestName;
     return (
       <View style={styles.topView}>
         <View style={styles.shareIconRender}>
@@ -1228,7 +1234,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
         <View style={styles.dateViewRender}>{renderDateView()}</View>
         <View style={styles.doctorNameRender}>
           <Text style={styles.recordNameTextStyle}>
-            {data?.labTestName || data?.healthCheckName}
+            {pdfStringHandler || data?.healthCheckName}
           </Text>
           <View style={{ flexDirection: 'row' }}>
             {!!data?.labTestRefferedBy ? (
@@ -1342,6 +1348,8 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
   const onGoBack = () => {
     if (movedFrom == 'deeplink') {
       navigateToHome(props.navigation);
+    } else if (!!callDataBool) {
+      props.navigation.goBack();
     } else {
       props.navigation.state.params?.onPressBack && props.navigation.state.params?.onPressBack();
       props.navigation.goBack();
