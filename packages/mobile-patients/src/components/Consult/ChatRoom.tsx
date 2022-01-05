@@ -31,6 +31,7 @@ import {
   UserThumbnailIcon,
   CopyIcon,
   ExternalMeetingVideoCall,
+  MedicalAssessment,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -237,6 +238,7 @@ import {
   createVonageSessionToken,
   createVonageSessionTokenVariables,
 } from '../../graphql/types/createVonageSessionToken';
+import { ChatBotPopup } from '@aph/mobile-patients/src/components/Consult/Components/ChatBotPopup';
 import useOpenTokSpeedTest from '@aph/mobile-patients/src/helpers/useOpenTokSpeedTest';
 import InAppReview from 'react-native-in-app-review';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
@@ -1159,6 +1161,72 @@ const styles = StyleSheet.create({
     height: 4,
     width: 20,
   },
+  assessmentView: {
+    padding: 12,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    backgroundColor: theme.colors.WHITE,
+  },
+  symptomName: {
+    backgroundColor: theme.colors.BGK_GRAY,
+    ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
+    paddingVertical: 10,
+    paddingStart: 14,
+    flexWrap: 'wrap',
+    marginVertical: 4,
+  },
+  symptomDetail: {
+    backgroundColor: theme.colors.WHITE,
+    ...theme.viewStyles.text('B', 14, theme.colors.LIGHT_BLUE, 1, 16),
+    paddingVertical: 4,
+    paddingStart: 14,
+    flexWrap: 'wrap',
+  },
+  assignmentParentView: {
+    width: 300,
+    marginStart: 40,
+    borderWidth: 1.5,
+    borderColor: theme.colors.PORCELAIN_GRAY,
+    borderRadius: 10,
+    marginVertical: 20,
+  },
+  proceedBtn: {
+    width: 75,
+    height: 30,
+    borderRadius: 8,
+    alignSelf: 'flex-end',
+  },
+  assessmentHeading: {
+    ...theme.viewStyles.text('M', 14, theme.colors.TUNDORA_GRAY, 1, 16),
+  },
+  assessmentIcon: { height: 35, width: 35, marginStart: 18, marginTop: 12 },
+  startAssessmentView: {
+    borderRadius: 10,
+    borderTopLeftRadius: 0,
+    borderWidth: 1.5,
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 22,
+    marginTop: 40,
+    marginEnd: 30,
+    borderColor: theme.colors.CHAT_TILE_BG,
+    backgroundColor: theme.colors.CHAT_TILE_BG,
+  },
+  symptomValue: {
+    ...theme.viewStyles.text('R', 14, theme.colors.LIGHT_BLUE, 1, 16),
+  },
+  sympDetailView: {
+    flexDirection: 'column',
+    paddingStart: 20,
+    paddingBottom: 6,
+  },
+  symParentText: { paddingStart: 14, paddingVertical: 4 },
+  assessmentText: {
+    ...theme.viewStyles.text('M', 15, theme.colors.WHITE, 1, 16),
+    width: 250,
+    marginBottom: 16,
+  },
+  assessmentParentView: { flexDirection: 'row', marginBottom: 60, marginStart: 54 },
   snackBar: {
     marginBottom: 100,
     zIndex: 1001,
@@ -1181,6 +1249,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [currentCaseSheet, setcurrentCaseSheet] = useState<any>([]);
   const [loginToken, setLoginToken] = useState<string | null>('');
   const [userMobileNumber, setUserMobileNumber] = useState<string | null>('');
+  const [displayChatQuestions, setDisplayChatQuestions] = useState<boolean>(false);
   let appointmentData: any = props.navigation.getParam('data');
   const caseSheet = followUpChatDaysCaseSheet(appointmentData.caseSheet);
   const followUpChatDaysCurrentCaseSheet = followUpChatDaysCaseSheet(currentCaseSheet);
@@ -1320,7 +1389,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const currentCallRetryAttempt = useRef<number>(1);
   const isErrorToast = useRef<boolean>(false);
   const jrDoctorJoined = useRef<boolean>(false); // using ref to get the current updated values on event listeners
-  const [displayChatQuestions, setDisplayChatQuestions] = useState<boolean>(false);
   const [displayUploadHealthRecords, setDisplayUploadHealthRecords] = useState<boolean>(false);
   const [userAnswers, setUserAnswers] = useState<ConsultQueueInput>();
   const [isSendAnswers, setisSendAnswers] = useState<boolean[]>([
@@ -1342,6 +1410,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [textChange, setTextChange] = useState(false);
   const [callerAudio, setCallerAudio] = useState<boolean>(true);
   const [callerVideo, setCallerVideo] = useState<boolean>(true);
+  const [startAssessment, setStartAssessment] = useState<boolean>(false);
   const [downgradeToAudio, setDowngradeToAudio] = React.useState<boolean>(false);
   const patientJoinedCall = useRef<boolean>(false); // using ref to get the current values on listener events
   const subscriberConnected = useRef<boolean>(false);
@@ -1402,6 +1471,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const externalMeetingLink = '^^#externalMeetingLink';
   const jdAutoAssign = '^^#JdInfoMsg';
   const delayedConsultReminder = '^^#DelayReminder';
+  const chatBotPatientVitalsSummary = '^^#chatBotPatientVitalsSummary';
 
   const disconnecting = 'Disconnecting...';
   const callConnected = 'Call Connected';
@@ -5660,6 +5730,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
+  const symptomTextRow = (heading: string, value: string) => {
+    return (
+      <Text style={styles.symParentText}>
+        <Text style={styles.symptomDetail}>{heading}</Text>
+        <Text style={styles.symptomValue}>{value}</Text>
+      </Text>
+    );
+  };
+
   const renderChatRow = (
     rowData: {
       id: string;
@@ -5788,6 +5867,59 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     } else {
       leftComponent = 0;
       rightComponent++;
+      if (rowData?.automatedText == chatBotPatientVitalsSummary) {
+        const finalSummary = JSON.parse(rowData?.message);
+        const { age, Height, Weight, medicineAllergies, foodAllergies } =
+          finalSummary?.[0]?.staticQuestions || {};
+        return (
+          <View style={styles.assignmentParentView}>
+            <View style={styles.assessmentView}>
+              <Text style={styles.assessmentHeading}>{string.common.assessmentSummary}</Text>
+            </View>
+            {finalSummary?.[0]?.staticQuestions && (
+              <>
+                {symptomTextRow('Age: ', age || '')}
+                {symptomTextRow('Height: ', Height || '')}
+                {symptomTextRow('Weight: ', Weight || '')}
+                {!!medicineAllergies && symptomTextRow('Medicine Allergies: ', medicineAllergies)}
+                {!!foodAllergies && symptomTextRow('Food Allergies: ', foodAllergies)}
+              </>
+            )}
+            {finalSummary?.[0]?.dynamicQuestions?.map((item: any) => {
+              return (
+                <View>
+                  <Text style={styles.symptomName}>{item?.symptom || ''}</Text>
+                  {!!item?.since && symptomTextRow('Duration: ', item.since)}
+                  {!!item?.severity && symptomTextRow('Severity: ', item.severity)}
+                  {!!item?.howOften && symptomTextRow('HowOften: ', item.howOften)}
+
+                  {!!item?.details &&
+                    !!Object.keys(item.details).length &&
+                    Object.entries(item?.details).map(([key, value]: any) => {
+                      return (
+                        <View>
+                          <Text style={styles.symptomDetail}>{`${key}: `}</Text>
+                          {Array.isArray(value) && (
+                            <View style={styles.sympDetailView}>
+                              {value?.map((detailsItem: any, j: number) => {
+                                return (
+                                  <Text style={{ ...styles.symptomValue, paddingVertical: 2 }}>
+                                    {'\u2022 ' + detailsItem}
+                                  </Text>
+                                );
+                              })}
+                            </View>
+                          )}
+                        </View>
+                      );
+                    })}
+                </View>
+              );
+            })}
+          </View>
+        );
+      }
+
       return (
         <View style={{ marginHorizontal: 20 }}>
           {!moment(rowData?.messageDate).isSame(messages[index - 1]?.messageDate, 'day') && (
@@ -6381,6 +6513,46 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       cleverTapEventAttributesFollowUp
     );
   };
+  const renderStartAssessment = () => {
+    return (
+      <View style={styles.assessmentParentView}>
+        <View style={styles.startAssessmentView}>
+          <Text
+            style={styles.assessmentText}
+          >{`Hi, We request you to fill the following medical assessment, before ${appointmentData?.doctorInfo.displayName} speaks with you.`}</Text>
+          <Button
+            title={string.vaccineBooking.proceed}
+            style={styles.proceedBtn}
+            titleTextStyle={theme.viewStyles.text('SB', 12, theme.colors.WHITE)}
+            onPress={() => {
+              setStartAssessment(true);
+              chatInitializedEvent();
+            }}
+          />
+        </View>
+      </View>
+    );
+  };
+  const chatInitializedEvent = () => {
+    let eventAttributes = {
+      'Appointment Date Time': moment(g(appointmentData, 'appointmentDateTime')).toDate(),
+      'Event date-time': new Date(),
+      'Display ID': appointmentData?.displayId || '',
+      'Consult Mode': appointmentData?.appointmentType || '',
+      'Doctor Category': appointmentData?.doctorInfo?.doctorType || '',
+      'Doctor Name': appointmentData?.doctorInfo?.displayName || '',
+      'Hospital City': appointmentData?.doctorInfo?.doctorHospital?.[0]?.facility?.city || '',
+      'Hospital Name ': appointmentData?.doctorInfo?.doctorHospital?.[0]?.facility?.name || '',
+      Relation: appointmentData?.patientInfo?.relation || '',
+      'Specialty ID': appointmentData?.doctorInfo?.specialty?.id || '',
+      'Specialty Name': appointmentData?.doctorInfo?.specialty?.name || '',
+      'Doctor Id': appointmentData?.doctorInfo?.id || '',
+      platForm: Platform.OS,
+    };
+
+    postCleverTapEvent(CleverTapEventName.VITAL_QUESTION_ASSESSMENT_STARTED, eventAttributes);
+  };
+
   const renderChatView = () => {
     return (
       <View style={{ width: width, height: heightList, marginTop: 0, flex: 1 }}>
@@ -6403,7 +6575,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           showsVerticalScrollIndicator={false}
           initialNumToRender={messages ? messages.length : 0}
           ListFooterComponent={() => {
-            if (disableChat) {
+            if (displayChatQuestions) {
+              return renderStartAssessment();
+            } else if (disableChat) {
               return chatDisabled();
             } else {
               return <View style={{ height: 150 }}></View>;
@@ -7585,6 +7759,29 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   return (
     <View style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
+      <ChatBotPopup
+        visiblity={startAssessment}
+        appointmentId={apptId}
+        onCloseClicked={(data) => {
+          pubnub.publish(
+            {
+              channel: channel.current,
+              message: {
+                message: JSON.stringify(data),
+                automatedText: chatBotPatientVitalsSummary,
+                id: patientId,
+                isTyping: true,
+                messageDate: new Date(),
+              },
+              storeInHistory: true,
+              sendByPost: true,
+            },
+            (status, response) => {}
+          );
+          setDisplayChatQuestions(false);
+          setStartAssessment(false);
+        }}
+      />
       <StatusBar hidden={hideStatusBar} />
       {isCancelVisible && (
         <CancelReasonPopup
@@ -7698,6 +7895,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       <SafeAreaView
         style={{
           ...theme.viewStyles.container,
+          backgroundColor: theme.colors.WHITE,
         }}
       >
         <Header
@@ -7764,31 +7962,29 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         {renderChatView()}
         {Platform.OS == 'ios' ? (
           <>
-            {!displayChatQuestions ? (
-              <TouchableOpacity
-                activeOpacity={1}
-                style={[styles.uploadButtonStyles, { opacity: disableChat ? 0.5 : 1 }]}
-                onPress={async () => {
-                  if (!disableChat) {
-                    CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
-                    setDropdownVisible(!isDropdownVisible);
-                  }
+            <TouchableOpacity
+              activeOpacity={1}
+              style={[styles.uploadButtonStyles, { opacity: disableChat ? 0.5 : 1 }]}
+              onPress={async () => {
+                if (!disableChat) {
+                  CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
+                  setDropdownVisible(!isDropdownVisible);
+                }
+              }}
+            >
+              <UploadHealthRecords
+                style={{ width: 21, height: 21, backgroundColor: 'transparent' }}
+              />
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 7, '#01475b', 1, undefined, -0.03),
+                  marginTop: 2,
+                  textAlign: 'center',
                 }}
               >
-                <UploadHealthRecords
-                  style={{ width: 21, height: 21, backgroundColor: 'transparent' }}
-                />
-                <Text
-                  style={{
-                    ...theme.viewStyles.text('M', 7, '#01475b', 1, undefined, -0.03),
-                    marginTop: 2,
-                    textAlign: 'center',
-                  }}
-                >
-                  {'Upload Records'}
-                </Text>
-              </TouchableOpacity>
-            ) : null}
+                {'Upload Records'}
+              </Text>
+            </TouchableOpacity>
             {availableMessages == 0 && <ChatDisablePrompt followChatLimit={followChatLimit} />}
             <View
               style={[
@@ -7827,42 +8023,28 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   }}
                 />
               </View>
-              {displayChatQuestions && Platform.OS === 'ios' && (
-                <ChatQuestions
-                  onItemDone={(value: { k: string; v: string[] }) => {
-                    setAnswerData([value]);
-                  }}
-                  onDonePress={(values: { k: string; v: string[] }[]) => {
-                    setAnswerData(values, true);
-                    setDisplayChatQuestions(false);
-                    setDisplayUploadHealthRecords(true);
-                  }}
-                />
-              )}
             </View>
-            {!displayChatQuestions ? (
-              <TouchableOpacity
-                activeOpacity={1}
-                style={[styles.sendButtonStyles, { opacity: disableChat ? 0.5 : 1 }]}
-                onPress={async () => {
-                  if (!disableChat) {
-                    const textMessage = messageText.trim();
+            <TouchableOpacity
+              activeOpacity={1}
+              style={[styles.sendButtonStyles, { opacity: disableChat ? 0.5 : 1 }]}
+              onPress={async () => {
+                if (!disableChat) {
+                  const textMessage = messageText.trim();
 
-                    if (textMessage.length == 0) {
-                      Alert.alert('Apollo', 'Please write something to send message.');
-                      CommonLogEvent(AppRoutes.ChatRoom, 'Please write something to send message.');
-                      return;
-                    }
-                    CommonLogEvent(AppRoutes.ChatRoom, 'Message sent clicked');
-
-                    send(textMessage);
-                    setContentHeight(40);
+                  if (textMessage.length == 0) {
+                    Alert.alert('Apollo', 'Please write something to send message.');
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Please write something to send message.');
+                    return;
                   }
-                }}
-              >
-                <ChatSend style={{ width: 24, height: 24, marginTop: 8, marginLeft: 14 }} />
-              </TouchableOpacity>
-            ) : null}
+                  CommonLogEvent(AppRoutes.ChatRoom, 'Message sent clicked');
+
+                  send(textMessage);
+                  setContentHeight(40);
+                }
+              }}
+            >
+              <ChatSend style={{ width: 24, height: 24, marginTop: 8, marginLeft: 14 }} />
+            </TouchableOpacity>
           </>
         ) : (
           <>
@@ -7951,18 +8133,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             </TouchableOpacity>
           </>
         )}
-
-        {displayChatQuestions && Platform.OS === 'android' && (
-          <ChatQuestions
-            onItemDone={(value: { k: string; v: string[] }) => {
-              setAnswerData([value]);
-            }}
-            onDonePress={(values: { k: string; v: string[] }[]) => {
-              setAnswerData(values, true);
-              setDisplayChatQuestions(false);
-              setDisplayUploadHealthRecords(true);
-            }}
-          />
+        {doctorTyping && (
+          <Text style={styles.doctorTypingText}>{string.appointments.doctorTyping}</Text>
         )}
         {doctorTyping && (
           <Text style={styles.doctorTypingText}>{string.appointments.doctorTyping}</Text>

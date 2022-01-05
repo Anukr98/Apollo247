@@ -789,6 +789,7 @@ const ConfigurationQA = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  PATIENT_VITALS: 'https://aph-staging-web-patients.apollo247.com/patient-vitals',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://aph-staging-web-patients.apollo247.com',
@@ -850,6 +851,7 @@ const ConfigurationQA2 = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  PATIENT_VITALS: 'https://qapatients.apollo247.com/patient-vitals',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://qapatients.apollo247.com',
@@ -912,6 +914,7 @@ const ConfigurationQA3 = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  PATIENT_VITALS: 'https://qathreepatients.apollo247.com/patient-vitals',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://qathreepatients.apollo247.com',
@@ -975,6 +978,7 @@ const ConfigurationQA5 = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  PATIENT_VITALS: 'https://qa5patients.apollo247.com/patient-vitals',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://qa5patients.apollo247.com',
@@ -1037,6 +1041,7 @@ const ConfigurationQA6 = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  PATIENT_VITALS: 'https://qa6patients.apollo247.com/patient-vitals',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://qa6patients.apollo247.com',
@@ -1099,6 +1104,7 @@ const ConfigurationVAPT = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  PATIENT_VITALS: 'https://aph-staging-web-patients.apollo247.com/patient-vitals',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://stagingpatients.apollo247.com',
@@ -1159,6 +1165,7 @@ const ConfigurationProd = {
   baseUrl: 'https://www.apollo247.com',
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE: 'https://newassets.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  PATIENT_VITALS: 'https://www.apollo247.com/patient-vitals',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://apollo247.com',
@@ -1222,6 +1229,7 @@ const ConfigurationPERFORM = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  PATIENT_VITALS: 'https://aph-staging-web-patients.apollo247.com/patient-vitals',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://perfpatients.apollo247.com',
@@ -1285,6 +1293,7 @@ const ConfigurationDevReplica = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  PATIENT_VITALS: 'https://aph-staging-web-patients.apollo247.com/patient-vitals',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://devpatients.apollo247.com',

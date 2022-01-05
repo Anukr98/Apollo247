@@ -94,6 +94,7 @@ export enum CleverTapEventName {
   CONSULT_FILTER_ICON_CLICKED = 'Consult filter icon clicked',
   CONSULT_MEDICAL_DETAILS_FILLED = 'Consult Medical details filled',
   VIEW_PRESCRIPTION_CLICKED_APPOINTMENT_CARD = 'View Prescription Clicked on Appointment Card',
+  VITAL_QUESTION_ASSESSMENT_STARTED = 'Vital Question Assessment Started',
   CONSULT_GO_TO_CONSULT_ROOM_CLICKED = 'Consult go to consult room clicked',
   CONSULT_DOC_PARTNER_TAB_CLICKED = 'Consult doc partner tab clicked',
 
@@ -254,6 +255,7 @@ export enum CleverTapEventName {
   CONSULT_PACKAGE_PROCEED_TO_PAY_CLICKED = 'Consult package proceed to pay clicked',
   CONSULT_PACKAGE_PAY_BUTTON_CLICKED = 'Consult package pay button clicked',
   CONSULT_PACKAGE_BOOK_CONSULT_CLICKED = 'Consult package book consult clicked',
+  CONSULT_PACKAGE_BOOK_ONE_TAP_CLICKED = 'Consult package book one tap clicked',
   CONSULT_ONETAP_PACKAGE_VIEWED = 'Consult OneTap Package Viewed',
 
   // Network Test
