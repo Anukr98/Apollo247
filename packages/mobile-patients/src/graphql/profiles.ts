@@ -5390,16 +5390,6 @@ export const GET_ORDER_INFO = gql`
   }
 `;
 
-export const PROCESS_DIAG_COD_ORDER = gql`
-  mutation processDiagnosticHCOrder($processDiagnosticHCOrderInput: ProcessDiagnosticHCOrderInput) {
-    processDiagnosticHCOrder(processDiagnosticHCOrderInput: $processDiagnosticHCOrderInput) {
-      status
-      preBookingID
-      message
-    }
-  }
-`;
-
 export const VERIFY_VPA = gql`
   mutation verifyVPA($verifyVPA: VerifyVPA) {
     verifyVPA(verifyVPA: $verifyVPA) {

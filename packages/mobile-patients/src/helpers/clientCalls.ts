@@ -116,8 +116,6 @@ import {
   MedicalRecordType,
   UserState,
   BannerDisplayType,
-  ProcessDiagnosticHCOrderInput,
-  DIAGNOSTIC_ORDER_PAYMENT_TYPE,
   SaveBookHomeCollectionOrderInputv2,
   patientObjWithLineItems,
   patientAddressObj,
@@ -261,10 +259,6 @@ import {
   savePhleboFeedbackVariables,
   savePhleboFeedback_savePhleboFeedback,
 } from '@aph/mobile-patients/src/graphql/types/savePhleboFeedback';
-import {
-  processDiagnosticHCOrder,
-  processDiagnosticHCOrderVariables,
-} from '@aph/mobile-patients/src/graphql/types/processDiagnosticHCOrder';
 import {
   getDiagnosticPaymentSettings,
   getDiagnosticPaymentSettingsVariables,
@@ -1276,22 +1270,6 @@ export const savePhleboFeedback = (
   });
 };
 
-export const processDiagnosticsCODOrder = (
-  client: ApolloClient<object>,
-  orderId: string,
-  amount: number
-) => {
-  const processDiagnosticHCOrderInput: ProcessDiagnosticHCOrderInput = {
-    orderID: orderId,
-    paymentMode: DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD,
-    amount: amount,
-  };
-  return client.mutate<processDiagnosticHCOrder, processDiagnosticHCOrderVariables>({
-    mutation: PROCESS_DIAG_COD_ORDER,
-    variables: { processDiagnosticHCOrderInput: processDiagnosticHCOrderInput },
-    fetchPolicy: 'no-cache',
-  });
-};
 
 export const diagnosticPaymentSettings = (client: ApolloClient<object>, paymentId: string) => {
   return client.query<getDiagnosticPaymentSettings, getDiagnosticPaymentSettingsVariables>({

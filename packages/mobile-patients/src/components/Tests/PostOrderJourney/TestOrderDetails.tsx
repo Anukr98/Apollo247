@@ -655,8 +655,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     );
   };
 
-  console.log({ orderDetails });
-
   function showContentBasedOnStatus(order: any, isStatusDone: boolean, index: number) {
     const orderStatus = order?.orderStatus;
     const slotDate = moment(selectedOrder?.slotDateTimeInUTC).format('Do MMM');
