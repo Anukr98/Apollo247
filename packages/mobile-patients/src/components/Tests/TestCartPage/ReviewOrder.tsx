@@ -2754,16 +2754,16 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     verticalSpecificData: any
   ) {
     setLoading?.(false);
-    props.navigation.navigate(AppRoutes., {
-      isModify: isModifyFlow ? modifiedOrder : null,
+    props.navigation.navigate(AppRoutes.PaymentStatusDiag, {
+      paymentId: paymentId,
       orderDetails: orderInfo,
       isCOD: isCOD,
       eventAttributes,
       paymentStatus: paymentStatus,
-      paymentId: paymentId,
+      isModify: isModifyFlow ? modifiedOrder : null,
+      isCircleAddedToCart: isCircleAddedToCart,
       verticalSpecificData,
     });
-
   }
 
   const saveModifyOrder = (orderInfo: saveModifyDiagnosticOrderInput) =>
@@ -3269,9 +3269,12 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 14),
     alignSelf: 'flex-end',
   },
-  circleItemCartView: { backgroundColor: 'white', flexDirection: 'row', paddingVertical: 10 },
+  circleItemCartView: {
+    backgroundColor: 'white',
+    flexDirection: 'row',
+  },
   circleIconView: { paddingHorizontal: 10 },
   circleText: { flexDirection: 'column' },
-  circleTextPrice: { padding: 10 },
+  circleTextPrice: { padding: 10, paddingLeft: 0 },
   circleTextStyle: { ...theme.viewStyles.text('M', 14, colors.SHERPA_BLUE, 1) },
 });

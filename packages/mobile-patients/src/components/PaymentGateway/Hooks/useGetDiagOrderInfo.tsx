@@ -1,35 +1,33 @@
 import { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { GET_INTERNAL_ORDER } from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  getOrderInternal,
-  getOrderInternalVariables,
-} from '@aph/mobile-patients/src/graphql/types/getOrderInternal';
+import { getDiagnosticRefundOrders } from '@aph/mobile-patients/src/helpers/clientCalls';
 
-export const useGetDiagOrderInfo = (paymentId: string) => {
+export const useGetDiagOrderInfo = (paymentId: string, modifiedOrder: any) => {
   const client = useApolloClient();
   const [fetching, setFetching] = useState<boolean>(true);
   const [orderInfo, setOrderInfo] = useState<any>();
   const [subscriptionInfo, setSubscriptionInfo] = useState<any>();
   const [PaymentMethod, setPaymentMethod] = useState<any>();
-
-  const fetchOrderInfo = () => {
-    return client.query<getOrderInternal, getOrderInternalVariables>({
-      query: GET_INTERNAL_ORDER,
-      variables: {
-        order_id: paymentId,
-      },
-      fetchPolicy: 'no-cache',
-    });
-  };
+  const [offerAmount, setOfferAmount] = useState<number>(0);
+  const [isSingleUhid, setIsSingleUhid] = useState<boolean>(false);
 
   const initiate = async () => {
     try {
-      const res = await fetchOrderInfo();
-      const info = res?.data?.getOrderInternal?.DiagnosticsPaymentDetails;
+      let res: any = await getDiagnosticRefundOrders(client, paymentId);
+      const info = res?.data?.data?.getOrderInternal?.DiagnosticsPaymentDetails;
+      const getOffersResponse = res?.data?.data?.getOrderInternal?.offers;
       setOrderInfo(info);
-      setSubscriptionInfo(res?.data?.getOrderInternal?.SubscriptionOrderDetails);
+      setSubscriptionInfo(res?.data?.data?.getOrderInternal?.SubscriptionOrderDetails);
       setPaymentMethod(res?.data?.getOrderInternal?.payment_method_type);
+      if (!!getOffersResponse) {
+        const getOffersAmount = getOffersResponse?.[0]?.benefits;
+        const totalOfferAmount = getOffersAmount?.reduce(
+          (prev: any, curr: any) => prev + curr?.amount,
+          0
+        );
+        !!totalOfferAmount && setOfferAmount(totalOfferAmount);
+      }
+      setIsSingleUhid(info?.ordersList?.length == 1);
       setFetching(false);
     } catch (error) {}
   };
@@ -38,5 +36,5 @@ export const useGetDiagOrderInfo = (paymentId: string) => {
     initiate();
   }, []);
 
-  return { orderInfo, fetching, PaymentMethod, subscriptionInfo };
+  return { orderInfo, fetching, PaymentMethod, subscriptionInfo, isSingleUhid, offerAmount };
 };
