@@ -439,9 +439,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
             `Slot you are trying to book is no longer available. Please try a different slot.`
           );
         } else if (message === 'Internal Error') {
-          renderErrorPopup(
-            `Booking failed, please call on 0404-821-5522 for assistance, Error Code: MM_UHID_Issue `
-          );
+          renderErrorPopup(string.common.bookingFailedMM);
           const eventAttributes: WebEngageEvents[WebEngageEventName.Patient_API_Error] = {
             'Error Name': 'Medmantra_Issue',
             'Patient Name': currentPatient?.firstName || '',

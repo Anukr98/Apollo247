@@ -1036,9 +1036,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         );
         break;
       case 'Internal Error':
-        renderErrorPopup(
-          `Booking failed, please call on 0404-821-5522 for assistance, Error Code: MM_UHID_Issue `
-        );
+        renderErrorPopup(string.common.bookingFailedMM);
         const eventAttributes: WebEngageEvents[WebEngageEventName.Patient_API_Error] = {
           'Error Name': 'Medmantra_Issue',
           'Patient Name': currentPatient?.firstName || '',
