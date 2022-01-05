@@ -226,22 +226,6 @@ export const ConsultPackageDetail: React.FC<ConsultPackageDetailProps> = (props)
       .finally(() => {
         setLoading(false);
       });
-
-    if (isOneTap) {
-      let eventAttributes = {
-        'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-        'Patient UHID': g(currentPatient, 'uhid'),
-        Relation: g(currentPatient, 'relation'),
-        'Patient age': Math.round(
-          moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
-        ),
-        'Patient gender': g(currentPatient, 'gender'),
-        'Mobile Number': g(currentPatient, 'mobileNumber'),
-        'New user': !currentPatient?.isConsulted,
-        'Package Name': 'OneTap',
-      };
-      postCleverTapEvent(CleverTapEventName.CONSULT_ONETAP_PACKAGE_VIEWED, eventAttributes);
-    }
   }, []);
 
   const renderHeader = (props) => {
