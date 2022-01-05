@@ -21,7 +21,11 @@ import {
   CommonBugFender,
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { UPDATE_PATIENT, CREATE_ONE_APOLLO_USER } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  UPDATE_PATIENT,
+  CREATE_ONE_APOLLO_USER,
+  ADD_NEW_PROFILE,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   Gender,
   Relation,
@@ -102,6 +106,10 @@ import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMen
 import { FloatingLabelInputComponent } from '@aph/mobile-patients/src/components/ui/FloatingLabeInputComponent';
 import { InputCheckBox } from '@aph/mobile-patients/src/components/ui/InputCheckBox';
 import { getOfferCarouselForRegisteration } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  addNewProfile,
+  addNewProfileVariables,
+} from '@aph/mobile-patients/src/graphql/types/addNewProfile';
 
 const { width, height } = Dimensions.get('window');
 
@@ -183,7 +191,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
   const [lastName, setLastName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [emailValidation, setEmailValidation] = useState<boolean>(false);
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
   const [referral, setReferral] = useState<string>('');
   const { signOut, getPatientApiCall } = useAuth();
@@ -753,7 +761,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
             maxLength: 50,
           }}
         />
-
+        {showReferralCode && renderReferral()}
         <View style={styles.whatsAppOptinContainer}>
           <View style={styles.whatsAppOptinCheckboxContainer}>
             <InputCheckBox
@@ -768,140 +776,180 @@ const SignUp: React.FC<SignUpProps> = (props) => {
             <WhatsAppIcon style={styles.whatsAppIcon} />
           </View>
         </View>
-        {showReferralCode && renderReferral()}
       </View>
     );
   };
 
+  const registerUserForNewAndExisting = async () => {
+    Keyboard.dismiss();
+    CommonLogEvent(AppRoutes.SignUp, 'Sign button clicked');
+    let validationMessage = '';
+    let trimReferral = referral;
+    if (!(firstName && isSatisfyingNameRegex(firstName.trim()))) {
+      validationMessage = 'Enter valid first name';
+    } else if (!(lastName && isSatisfyingNameRegex(lastName.trim()))) {
+      validationMessage = 'Enter valid last name';
+    } else if (!date) {
+      validationMessage = 'Enter valid date of birth';
+    } else if (email) {
+      if (!emailValidation) {
+        validationMessage = 'Enter valid email';
+      }
+    } else if (!gender) {
+      validationMessage = 'Please select gender';
+      setGenderNotSelectError({
+        error: true,
+        errorMsg: 'Please select gender',
+      });
+    } else if (referral !== '') {
+      trimReferral = trimReferral.trim();
+    }
+    if (validationMessage) {
+      if (validationMessage != 'Please select gender') {
+        Alert.alert('Error', validationMessage);
+      }
+    } else {
+      setGenderNotSelectError({
+        error: false,
+        errorMsg: '',
+      });
+      setVerifyingPhoneNumber(true);
+      const formatDate = Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD');
+      const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
+      const item = JSON.parse(retrievedItem || 'null');
+      const callByPrism: any = await AsyncStorage.getItem('callByPrism');
+      let allPatients;
+      if (callByPrism === 'true') {
+        allPatients =
+          item && item.data && item.data.getCurrentPatients
+            ? item.data.getCurrentPatients.patients
+            : null;
+      } else {
+        allPatients =
+          item && item.data && item.data.getPatientByMobileNumber
+            ? item.data.getPatientByMobileNumber.patients
+            : null;
+      }
+      const mePatient = allPatients
+        ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
+        : null;
+      let patientDetails: any = {
+        id: mePatient.id,
+        // whatsAppOptIn: whatsAppOptIn,  It will use in future, but right now this is not working So I just commented it
+        mobileNumber: mePatient.mobileNumber,
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        relation: relation == undefined ? Relation.ME : relation.key,
+        gender:
+          gender === 'Female'
+            ? Gender['FEMALE']
+            : gender === 'Male'
+            ? Gender['MALE']
+            : Gender['OTHER'], //gender.toUpperCase(),
+        uhid: '',
+        dateOfBirth: formatDate,
+        emailAddress: email.trim(),
+        referralCode: trimReferral ? trimReferral : null,
+        deviceCode: deviceToken,
+      };
+      let preApolloExistingUser = await AsyncStorage.getItem('preApolloUser');
+
+      if (preApolloExistingUser && preApolloExistingUser === 'true') {
+        try {
+          let data = await client.mutate<addNewProfile, addNewProfileVariables>({
+            mutation: ADD_NEW_PROFILE,
+            variables: {
+              PatientProfileInput: {
+                firstName: firstName.trim(),
+                lastName: lastName.trim(),
+                dateOfBirth: formatDate,
+                gender:
+                  gender === 'Female'
+                    ? Gender['FEMALE']
+                    : gender === 'Male'
+                    ? Gender['MALE']
+                    : Gender['OTHER'],
+                relation: relation == undefined ? Relation.ME : relation.key,
+                emailAddress: email.trim(),
+                photoUrl: '',
+                mobileNumber: mePatient.mobileNumber,
+              },
+            },
+          });
+          patientDetails = {
+            id: data?.data?.addNewProfile?.patient?.id || '',
+            relation: relation == undefined ? Relation.ME : relation.key, // profile ? profile.relation!.toUpperCase() : '',
+            referralCode: trimReferral ? trimReferral : null,
+            deviceCode: deviceToken,
+          };
+        } catch (e) {}
+      }
+      try {
+        client
+          .mutate<updatePatient, updatePatientVariables>({
+            mutation: UPDATE_PATIENT,
+            variables: {
+              patientInput: patientDetails,
+            },
+          })
+          .then((data: any) => {
+            if (preApolloExistingUser && preApolloExistingUser === 'true') {
+              setCurrentPatientId(patientDetails.id);
+              AsyncStorage.removeItem('preApolloUser');
+            }
+            getPatientApiCall(),
+              _postWebEngageEvent(),
+              AsyncStorage.setItem('userLoggedIn', 'true'),
+              AsyncStorage.setItem('signUp', 'false'),
+              AsyncStorage.setItem('gotIt', patient ? 'true' : 'false'),
+              createOneApolloUser(data?.updatePatient?.patient?.id!),
+              postAppsFlyerEventAppInstallViaReferral(data);
+          })
+          .catch((error) => {
+            signOut(),
+              AsyncStorage.setItem('userLoggedIn', 'false'),
+              AsyncStorage.setItem('multiSignUp', 'false'),
+              AsyncStorage.setItem('signUp', 'false'),
+              CommonLogEvent(AppRoutes.SignUp, 'Error going back to login'),
+              console.log(error, 'EEOOEOE'),
+              setTimeout(() => {
+                setVerifyingPhoneNumber(false),
+                  props.navigation.dispatch(
+                    StackActions.reset({
+                      index: 0,
+                      key: null,
+                      actions: [
+                        NavigationActions.navigate({
+                          routeName: AppRoutes.Login,
+                        }),
+                      ],
+                    })
+                  );
+              }, 0);
+          });
+      } catch (e) {}
+    }
+  };
   const renderStickySaveButton = () => {
     return (
       <StickyBottomComponent position={false}>
-        <Mutation<updatePatient, updatePatientVariables> mutation={UPDATE_PATIENT}>
-          {(mutate, { loading, data, error }) => (
-            <Button
-              title={'SAVE'}
-              style={styles.stickySubmitButton}
-              titleTextStyle={styles.stickySubmitButtonTitle}
-              disabled={!firstName || !lastName || !date || !relation}
-              onPress={async () => {
-                Keyboard.dismiss();
-                CommonLogEvent(AppRoutes.SignUp, 'Sign button clicked');
-                let validationMessage = '';
-                let trimReferral = referral;
-                if (!(firstName && isSatisfyingNameRegex(firstName.trim()))) {
-                  validationMessage = 'Enter valid first name';
-                } else if (!(lastName && isSatisfyingNameRegex(lastName.trim()))) {
-                  validationMessage = 'Enter valid last name';
-                } else if (!date) {
-                  validationMessage = 'Enter valid date of birth';
-                } else if (email) {
-                  if (!emailValidation) {
-                    validationMessage = 'Enter valid email';
-                  }
-                } else if (!gender) {
-                  validationMessage = 'Please select gender';
-                  setGenderNotSelectError({
-                    error: true,
-                    errorMsg: 'Please select gender',
-                  });
-                } else if (referral !== '') {
-                  trimReferral = trimReferral.trim();
-                }
-                if (validationMessage) {
-                  if (validationMessage != 'Please select gender') {
-                    Alert.alert('Error', validationMessage);
-                  }
-                } else {
-                  setGenderNotSelectError({
-                    error: false,
-                    errorMsg: '',
-                  });
-                  setVerifyingPhoneNumber(true);
-                  const formatDate = Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD');
-
-                  const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
-                  const item = JSON.parse(retrievedItem || 'null');
-
-                  const callByPrism: any = await AsyncStorage.getItem('callByPrism');
-                  let allPatients;
-
-                  if (callByPrism === 'true') {
-                    allPatients =
-                      item && item.data && item.data.getCurrentPatients
-                        ? item.data.getCurrentPatients.patients
-                        : null;
-                  } else {
-                    allPatients =
-                      item && item.data && item.data.getPatientByMobileNumber
-                        ? item.data.getPatientByMobileNumber.patients
-                        : null;
-                  }
-
-                  const mePatient = allPatients
-                    ? allPatients.find((patient: any) => patient.relation === Relation.ME) ||
-                      allPatients[0]
-                    : null;
-
-                  const patientsDetails: UpdatePatientInput = {
-                    id: mePatient.id,
-                    // whatsAppOptIn: whatsAppOptIn,  It will use in future, but right now this is not working So I just commented it
-                    mobileNumber: mePatient.mobileNumber,
-                    firstName: firstName.trim(),
-                    lastName: lastName.trim(),
-                    relation: relation == undefined ? Relation.ME : relation.key,
-                    gender:
-                      gender === 'Female'
-                        ? Gender['FEMALE']
-                        : gender === 'Male'
-                        ? Gender['MALE']
-                        : Gender['OTHER'], //gender.toUpperCase(),
-                    uhid: '',
-                    dateOfBirth: formatDate,
-                    emailAddress: email.trim(),
-                    referralCode: trimReferral ? trimReferral : null,
-                    deviceCode: deviceToken,
-                  };
-                  mutate({
-                    variables: {
-                      patientInput: patientsDetails,
-                    },
-                  });
-                }
-              }}
-            >
-              {data
-                ? (getPatientApiCall(),
-                  _postWebEngageEvent(),
-                  AsyncStorage.setItem('userLoggedIn', 'true'),
-                  AsyncStorage.setItem('signUp', 'false'),
-                  AsyncStorage.setItem('gotIt', patient ? 'true' : 'false'),
-                  createOneApolloUser(data?.updatePatient?.patient?.id!),
-                  postAppsFlyerEventAppInstallViaReferral(data))
-                : null}
-              {error
-                ? (signOut(),
-                  AsyncStorage.setItem('userLoggedIn', 'false'),
-                  AsyncStorage.setItem('multiSignUp', 'false'),
-                  AsyncStorage.setItem('signUp', 'false'),
-                  CommonLogEvent(AppRoutes.SignUp, 'Error going back to login'),
-                  setTimeout(() => {
-                    setVerifyingPhoneNumber(false),
-                      props.navigation.dispatch(
-                        StackActions.reset({
-                          index: 0,
-                          key: null,
-                          actions: [
-                            NavigationActions.navigate({
-                              routeName: AppRoutes.Login,
-                            }),
-                          ],
-                        })
-                      );
-                  }, 0))
-                : null}
-            </Button>
-          )}
-        </Mutation>
+        <TouchableOpacity
+          disabled={!firstName || !lastName || !date || !relation}
+          style={[
+            styles.stickySubmitButton,
+            {
+              backgroundColor:
+                !firstName || !lastName || !date || !relation
+                  ? theme.colors.BUTTON_ORANGE_DISABLE
+                  : theme.colors.BUTTON_ORANGE,
+            },
+          ]}
+          onPress={() => {
+            registerUserForNewAndExisting();
+          }}
+        >
+          <Text style={styles.stickySubmitButtonTitle}>SAVE</Text>
+        </TouchableOpacity>
       </StickyBottomComponent>
     );
   };
@@ -1084,9 +1132,15 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   relationContainer: { marginTop: 10, marginBottom: 10 },
-  stickySubmitButton: { width: '100%', borderRadius: 0 },
+  stickySubmitButton: {
+    width: '100%',
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   stickySubmitButtonTitle: {
-    fontSize: 15,
+    ...theme.fonts.IBMPlexSansBold(15),
+    color: theme.colors.WHITE,
   },
   relationInputContainer: { flexDirection: 'row', paddingTop: 20 },
   relationDropdownCaret: { flex: 1, alignItems: 'flex-end' },

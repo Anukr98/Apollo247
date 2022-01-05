@@ -1724,5 +1724,13 @@
     "Email":"Email (Optional)",
     "personalisedWhatsAppTips":"Send me personalised health tips & offers on",
     "referralLabel":"Do You Have A Referral Code? (Optional)"
+  },
+  "multiSignupScreen":{
+    "haveAReferralCode":"Have a Referral code?",
+    "enterReferralCodeOptional":"Enter referral code (Optional)",
+    "cannotFindName":"Can’t find your name? Add a new profile",
+    "addProfile":"ADD PROFILE",
+    "confirm":"CONFIRM",
+    "choosePrimaryProfile":"Choose Primary Profile associated with your mobile no."
   }
 }
