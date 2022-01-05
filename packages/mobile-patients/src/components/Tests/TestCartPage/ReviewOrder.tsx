@@ -2761,7 +2761,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       eventAttributes,
       paymentStatus: paymentStatus,
       isModify: isModifyFlow ? modifiedOrder : null,
-      isCircleAddedToCart: isCircleAddedToCart,
       verticalSpecificData,
     });
   }

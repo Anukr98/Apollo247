@@ -56,6 +56,15 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
     getExisitingOrderItems?.length > 0 &&
     getExisitingOrderItems?.find((id: number) => Number(id) == Number(data?.diagnostic_item_id));
 
+  const isModifyOrder = !!modifiedOrder && !isEmptyObject(modifiedOrder);
+  const getExisitingOrderItems = isModifyOrder
+    ? !!modifiedOrderItemIds && modifiedOrderItemIds
+    : [];
+
+  const isAlreadyPartOfOrder =
+    getExisitingOrderItems?.length > 0 &&
+    getExisitingOrderItems?.find((id: number) => Number(id) == Number(data?.diagnostic_item_id));
+
   const renderItemNamePrice = () => {
     const getDiagnosticPricingForItem = data?.diagnostic_item_price;
     const packageMrpForItem = data?.packageCalculatedMrp!;

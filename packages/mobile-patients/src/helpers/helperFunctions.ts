@@ -2811,117 +2811,69 @@ export const addPharmaItemToCart = (
   comingFromSearch?: boolean,
   cleverTapSearchSuccessEventAttributes?: object
 ) => {
-  const outOfStockMsg = 'Sorry, this item is out of stock in your area.';
-
-  const navigate = () => {
-    navigation.push(AppRoutes.ProductDetailPage, {
-      sku: cartItem?.id,
-      urlKey: cartItem?.url_key,
-      deliveryError: outOfStockMsg,
-    });
-  };
-
-  const addToCart = () => {
-    addCartItem!(cartItem);
-    postwebEngageAddToCartEvent(
-      {
-        sku: cartItem?.id,
-        name: cartItem?.name,
-        price: cartItem?.price,
-        special_price: cartItem?.specialPrice,
-        category_id: otherInfo?.categoryId,
-      },
-      otherInfo?.source,
-      otherInfo?.section,
-      otherInfo?.categoryName,
-      pharmacyCircleAttributes!
-    );
-    postFirebaseAddToCartEvent(
-      {
-        sku: cartItem?.id,
-        name: cartItem?.name,
-        price: cartItem?.price,
-        special_price: cartItem?.specialPrice,
-        category_id: otherInfo?.categoryId,
-      },
-      otherInfo?.source,
-      otherInfo?.section,
-      '',
-      pharmacyCircleAttributes!
-    );
-    postAppsFlyerAddToCartEvent(
-      {
-        sku: cartItem?.id,
-        name: cartItem?.name,
-        price: cartItem?.price,
-        special_price: cartItem?.specialPrice,
-        category_id: otherInfo?.categoryId,
-      },
-      currentPatient?.id,
-      pharmacyCircleAttributes!
-    );
-  };
-
-  if (!isLocationServeiceable) {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE] = {
-      'product name': cartItem.name,
-      'product id': cartItem.id,
-      pincode: pincode,
-      'Mobile Number': currentPatient?.mobileNumber,
+  try {
+    const addToCart = () => {
+      addCartItem!(cartItem);
+      postwebEngageAddToCartEvent(
+        {
+          sku: cartItem?.id,
+          name: cartItem?.name,
+          price: cartItem?.price,
+          special_price: cartItem?.specialPrice,
+          category_id: otherInfo?.categoryId,
+        },
+        otherInfo?.source,
+        otherInfo?.section,
+        otherInfo?.categoryName,
+        pharmacyCircleAttributes!
+      );
+      postFirebaseAddToCartEvent(
+        {
+          sku: cartItem?.id,
+          name: cartItem?.name,
+          price: cartItem?.price,
+          special_price: cartItem?.specialPrice,
+          category_id: otherInfo?.categoryId,
+        },
+        otherInfo?.source,
+        otherInfo?.section,
+        '',
+        pharmacyCircleAttributes!
+      );
+      postAppsFlyerAddToCartEvent(
+        {
+          sku: cartItem?.id,
+          name: cartItem?.name,
+          price: cartItem?.price,
+          special_price: cartItem?.specialPrice,
+          category_id: otherInfo?.categoryId,
+        },
+        currentPatient?.id,
+        pharmacyCircleAttributes!
+      );
     };
-    postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE, eventAttributes);
-    onComplete && onComplete();
-    navigate();
-    return;
-  }
-
-  setLoading && setLoading(true);
-  availabilityApi247(pincode, cartItem.id)
-    .then((res) => {
-      const availability = g(res, 'data', 'response', '0' as any, 'exist');
-      if (availability) {
-        if (comingFromSearch === true) {
-          cleverTapSearchSuccessEventAttributes['Product availability'] = 'Is in stock';
-          postCleverTapEvent(
-            CleverTapEventName.PHARMACY_SEARCH_SUCCESS,
-            cleverTapSearchSuccessEventAttributes
-          );
-        }
-        addToCart();
-        onAddedSuccessfully?.();
-      } else {
-        if (comingFromSearch === true) {
-          cleverTapSearchSuccessEventAttributes['Product availability'] = 'Out of stock';
-          postCleverTapEvent(
-            CleverTapEventName.PHARMACY_SEARCH_SUCCESS,
-            cleverTapSearchSuccessEventAttributes
-          );
-        }
-        navigate();
-      }
-      try {
-        const { mrp, exist, qty } = res.data.response[0];
-        const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED] = {
-          Source: setLoading ? 'Add_Display' : 'Add_Search',
-          Input_SKU: cartItem.id,
-          Input_Pincode: pincode,
-          Input_MRP: cartItem.price,
-          No_of_items_in_the_cart: 1,
-          Response_Exist: exist ? 'Yes' : 'No',
-          Response_MRP: mrp,
-          Response_Qty: qty,
-          'Cart Items': JSON.stringify(itemsInCart) || '',
-        };
-        postWebEngageEvent(WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED, eventAttributes);
-      } catch (error) {}
-    })
-    .catch(() => {
-      addToCart();
-    })
-    .finally(() => {
-      setLoading && setLoading(false);
+    if (!isLocationServeiceable) {
+      const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE] = {
+        'product name': cartItem.name,
+        'product id': cartItem.id,
+        pincode: pincode,
+        'Mobile Number': currentPatient?.mobileNumber,
+      };
+      postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE, eventAttributes);
       onComplete && onComplete();
-    });
+      return;
+    }
+    if (comingFromSearch === true) {
+      cleverTapSearchSuccessEventAttributes?.['Product availability'] = 'Is in stock';
+      postCleverTapEvent(
+        CleverTapEventName.PHARMACY_SEARCH_SUCCESS,
+        cleverTapSearchSuccessEventAttributes
+      );
+    }
+    addToCart();
+    onAddedSuccessfully?.();
+  }
+  catch(error) {}
 };
 
 export const dataSavedUserID = async (key: string) => {

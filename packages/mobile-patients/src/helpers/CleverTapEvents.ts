@@ -148,7 +148,6 @@ export enum CleverTapEventName {
   PHARMACY_NOTIFY_ME = 'Pharmacy Notify Me',
   PHARMACY_UPLOAD_PRESCRIPTION_CLICKED = 'Pharmacy Upload Prescription Clicked',
   PHARMACY_TAT_API_CALLED = 'Pharmacy TAT API Called',
-  PHARMACY_CART_TAT_API_CALLED = 'Pharmacy Cart TAT API Called',
   PHARMACY_PROCEED_TO_ADD_NEW_ADDRESS_CLICK = 'Pharmacy Proceed to Add Address Clicked',
   PHARMACY_PAYMENT_INSTRUMENT_SELECTED = 'Pharmacy Payment Instrument Selected',
   PHARMACY_NONCART_ORDER_SUBMIT_CLICKED = 'Pharmacy Noncart Order Submit Clicked',
@@ -2438,18 +2437,6 @@ export interface CleverTapEvents {
     'Response store type': string;
     'Response TAT': string;
     'Response TATU': number;
-  };
-  [CleverTapEventName.PHARMACY_CART_TAT_API_CALLED]: {
-    'TAT 1 day'?: number;
-    'TAT 1 hour'?: number;
-    'TAT 1 items'?: string;
-    'TAT 1 amount'?: number;
-    'TAT 2 day'?: number;
-    'TAT 2 hour'?: number;
-    'TAT 2 items'?: string;
-    'TAT 2 amount'?: number;
-    'Split cart': YesOrNo;
-    Status: 'Success' | 'Failure';
   };
 
   [CleverTapEventName.PHARMACY_CART_SELECT_DELIVERY_ADDRESS_CLICKED]: {
