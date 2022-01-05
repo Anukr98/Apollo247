@@ -14,6 +14,7 @@ interface ConsultPatientSelectorProps extends NavigationScreenProps {
   visiblity: boolean;
   setPatient: (patient: object) => void;
   onCloseClicked: () => void;
+  onOutboundClicked?: () => void;
 }
 
 export const ConsultPatientSelector: React.FC<ConsultPatientSelectorProps> = (props) => {
@@ -61,10 +62,17 @@ export const ConsultPatientSelector: React.FC<ConsultPatientSelectorProps> = (pr
       transparent={true}
       visible={visiblity}
       presentationStyle={'overFullScreen'}
-      onRequestClose={() => {}}
+      onRequestClose={() => {
+        props.onOutboundClicked();
+      }}
       onDismiss={() => {}}
     >
-      <View style={styles.parentOverlay}>
+      <TouchableOpacity
+        style={styles.parentOverlay}
+        onPress={() => {
+          props.onOutboundClicked();
+        }}
+      >
         <TouchableOpacity
           style={{ alignSelf: 'flex-end' }}
           onPress={() => {
@@ -95,7 +103,7 @@ export const ConsultPatientSelector: React.FC<ConsultPatientSelectorProps> = (pr
             title={string.submit}
           />
         </View>
-      </View>
+      </TouchableOpacity>
     </Modal>
   );
 };
