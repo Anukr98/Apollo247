@@ -445,7 +445,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       uploadPrescriptionRequired,
       diagnosticSlot,
       coupon,
-      hcCharges,circlePlanValidity,
+      hcCharges,
+      circlePlanValidity,
       circleSubscriptionId,
       isDiagnosticCircleSubscription,
       pinCodeFromAddress,
@@ -2590,13 +2591,14 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     paymentId: string | number
   ) {
     setLoading?.(false);
-    props.navigation.navigate(AppRoutes.OrderStatus, {
-      isModify: isModifyFlow ? modifiedOrder : null,
+
+    props.navigation.navigate(AppRoutes.PaymentStatusDiag, {
+      paymentId: paymentId,
       orderDetails: orderInfo,
       isCOD: isCOD,
       eventAttributes,
       paymentStatus: paymentStatus,
-      paymentId: paymentId,
+      isModify: isModifyFlow ? modifiedOrder : null,
     });
   }
 

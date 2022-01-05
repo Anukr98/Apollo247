@@ -46,6 +46,15 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
   const inclusionData = data?.diagnostic_inclusions;
   const dataLength = inclusionData?.length;
 
+  const isModifyOrder = !!modifiedOrder && !isEmptyObject(modifiedOrder);
+  const getExisitingOrderItems = isModifyOrder
+    ? !!modifiedOrderItemIds && modifiedOrderItemIds
+    : [];
+
+  const isAlreadyPartOfOrder =
+    getExisitingOrderItems?.length > 0 &&
+    getExisitingOrderItems?.find((id: number) => Number(id) == Number(data?.diagnostic_item_id));
+
   const renderItemNamePrice = () => {
     const getDiagnosticPricingForItem = data?.diagnostic_item_price;
     const packageMrpForItem = data?.packageCalculatedMrp!;
@@ -182,13 +191,6 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
   };
 
   const renderAddToCartView = (pricesForItem: any) => {
-    const isModifyOrder = !!modifiedOrder && !isEmptyObject(modifiedOrder);
-    const getExisitingOrderItems = isModifyOrder
-      ? !!modifiedOrderItemIds && modifiedOrderItemIds
-      : [];
-    const isAlreadyPartOfOrder =
-      getExisitingOrderItems?.length > 0 &&
-      getExisitingOrderItems?.find((id: number) => Number(id) == Number(data?.diagnostic_item_id));
     return (
       <TouchableOpacity
         style={{ marginTop: 4 }}
@@ -202,7 +204,7 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
         }
       >
         {isAlreadyPartOfOrder ? (
-          <View style={styles.removeCtaView}>
+          <View style={[styles.removeCtaView, { width: 80 }]}>
             <Text style={styles.removeCta}>{string.diagnostics.alreadyAdded}</Text>
           </View>
         ) : isAddedToCart ? (
