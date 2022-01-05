@@ -27,7 +27,7 @@ import {
   getOrderStatusText,
   isEmptyObject,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import ApolloClient from 'apollo-client';
@@ -61,7 +61,8 @@ const styles = StyleSheet.create({
 
 type AppSection = { buyAgainSection: true };
 export type MedOrder = getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList;
-export interface YourOrdersSceneProps extends NavigationScreenProps<{ header: string }> {
+export interface YourOrdersSceneProps
+  extends NavigationScreenProps<{ header: string; source?: string }> {
   showHeader?: boolean;
 }
 
@@ -72,6 +73,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState<any>([]);
   const [skuList, setSkuList] = useState<string[]>([]);
+  const { validateAndReturnAuthToken, buildApolloClient } = useAuth();
 
   useEffect(() => {
     fetchOrders();
@@ -85,8 +87,13 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
 
   const fetchOrders = async () => {
     try {
+      let ordersClient: ApolloClient<Object> = client;
       setLoading(true);
-      const ordersResponse = await client.query<
+      if (props.navigation.getParam('source')) {
+        const authToken: string = await validateAndReturnAuthToken();
+        ordersClient = buildApolloClient(authToken);
+      }
+      const ordersResponse = await ordersClient.query<
         getMedicineOrdersOMSList,
         getMedicineOrdersOMSListVariables
       >({

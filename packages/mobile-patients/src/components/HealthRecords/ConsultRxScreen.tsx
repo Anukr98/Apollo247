@@ -108,6 +108,7 @@ import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/Heal
 import { DiagnosticAddToCartEvent } from '@aph/mobile-patients/src/components/Tests/Events';
 import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
+import ListEmptyComponent from '@aph/mobile-patients/src/components/HealthRecords/Components/ListEmptyComponent';
 
 const { width, height } = Dimensions.get('window');
 
@@ -212,7 +213,9 @@ export interface ConsultRxScreenProps
     prescriptionArray: any[];
     onPressBack: () => void;
     authToken: string;
+    callDataBool: boolean;
     callPrescriptionsApi: () => void;
+    testReportBool: boolean;
   }> {}
 
 export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
@@ -220,6 +223,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [filterApplied, setFilterApplied] = useState<FILTER_TYPE | string>('');
   const client = useApolloClient();
+  const [apiError, setApiError] = useState(false);
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [localConsultRxData, setLocalConsultRxData] = useState<Array<{
     key: string;
@@ -242,6 +246,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
     props.navigation?.getParam('consultArray') || []
   );
   const [callApi, setCallApi] = useState(false);
+  const [callDelete, setCallDelete] = useState(false);
   const [callPhrMainApi, setCallPhrMainApi] = useState(false);
   const [isSearchFocus, SetIsSearchFocus] = useState(false);
   const [showSearchBar, setShowSearchBar] = useState(false);
@@ -253,6 +258,8 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
   const [prismAuthToken, setPrismAuthToken] = useState<string>(
     props.navigation?.getParam('authToken') || ''
   );
+  const testReportBool = props?.navigation?.state?.params?.testReportBool;
+  const callDataBool = props.navigation.getParam('callDataBool') || false;
   const [searchQuery, setSearchQuery] = useState({});
 
   const doctorType = (item: any) => {
@@ -260,6 +267,12 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       return obj.doctorType !== 'JUNIOR';
     });
   };
+
+  useEffect(() => {
+    if (testReportBool) {
+      getLatestPrescriptionRecords();
+    }
+  }, [testReportBool]);
 
   const handleBack = async () => {
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
@@ -278,6 +291,9 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         mergeArray.push({ type: 'prescriptions', data: c });
       });
       setConsultRxMainData(phrSortByDate(mergeArray));
+    } else {
+      setApiError(true);
+      setConsultRxMainData(phrSortByDate([]));
     }
   }, [consultArray, prescriptions]);
 
@@ -373,6 +389,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         setPrescriptions(prescriptionsData);
         setShowSpinner(false);
         setCallPhrMainApi(true);
+        setCallApi(false);
       })
       .catch((error) => {
         setShowSpinner(false);
@@ -443,12 +460,18 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
 
   const gotoPHRHomeScreen = () => {
     if (!callApi && !callPhrMainApi) {
-      props.navigation.state.params?.onPressBack();
+      callDataBool
+        ? props.navigation.navigate('HEALTH RECORDS')
+        : props.navigation.state.params?.onPressBack();
     } else {
-      props.navigation.state.params?.onPressBack();
-      props.navigation.state.params?.callPrescriptionsApi();
+      callDataBool ? props.navigation.navigate('HEALTH RECORDS') : handleNavigation();
     }
-    props.navigation.goBack();
+    callDataBool ? props.navigation.navigate('HEALTH RECORDS') : props.navigation.goBack();
+  };
+
+  const handleNavigation = () => {
+    props.navigation.state.params?.onPressBack();
+    props.navigation.state.params?.callPrescriptionsApi();
   };
 
   const renderProfileImage = () => {
@@ -994,7 +1017,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         contentContainerStyle={{ paddingBottom: 60, paddingTop: 12, paddingHorizontal: 20 }}
         sections={localConsultRxData || []}
         renderItem={({ item, index }) => renderConsultRxItems(item, index)}
-        ListEmptyComponent={renderEmptyList()}
+        ListEmptyComponent={ListEmptyComponent.getEmptyListComponent(showSpinner, apiError)}
         renderSectionHeader={({ section }) => renderSectionHeader(section)}
       />
     );

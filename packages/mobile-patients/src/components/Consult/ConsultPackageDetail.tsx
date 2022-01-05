@@ -6,7 +6,15 @@ import React, { useEffect, useState } from 'react';
 import { default as Moment, default as moment } from 'moment';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { Text, SafeAreaView, View, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import {
+  Text,
+  SafeAreaView,
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  BackHandler,
+} from 'react-native';
 import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import HTML from 'react-native-render-html';
 import { ConsultPatientSelector } from '@aph/mobile-patients/src/components/Consult/Components/ConsultPatientSelector';
@@ -191,9 +199,13 @@ export const ConsultPackageDetail: React.FC<ConsultPackageDetailProps> = (props)
     setLoading(true);
     getConsultPackageDetailPrePurchase(planId)
       .then((response) => {
-        if (response?.data?.Packagedata && response?.data?.Plandata) {
-          if (response?.data?.Plandata?.length == 1) {
+        const { Plandata } = response?.data;
+        if (response?.data?.Packagedata && Plandata) {
+          if (Plandata?.length == 1) {
             setSeletectedPlanIndex(0);
+          } else {
+            const preSelectedIndex = Plandata?.findIndex((plan: any) => !!plan?.PlanPreSelected);
+            !!preSelectedIndex && preSelectedIndex > -1 && setSeletectedPlanIndex(preSelectedIndex);
           }
           setPackageDetailData(response?.data);
         } else {
@@ -222,6 +234,22 @@ export const ConsultPackageDetail: React.FC<ConsultPackageDetailProps> = (props)
       .finally(() => {
         setLoading(false);
       });
+
+    if (isOneTap) {
+      let eventAttributes = {
+        'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+        'Patient UHID': g(currentPatient, 'uhid'),
+        Relation: g(currentPatient, 'relation'),
+        'Patient age': Math.round(
+          moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+        ),
+        'Patient gender': g(currentPatient, 'gender'),
+        'Mobile Number': g(currentPatient, 'mobileNumber'),
+        'New user': !currentPatient?.isConsulted,
+        'Package Name': 'OneTap',
+      };
+      postCleverTapEvent(CleverTapEventName.CONSULT_ONETAP_PACKAGE_VIEWED, eventAttributes);
+    }
   }, []);
 
   const renderHeader = (props) => {
@@ -332,7 +360,9 @@ export const ConsultPackageDetail: React.FC<ConsultPackageDetailProps> = (props)
         </ScrollView>
         {/* Proceed to Pay */}
         <Button
-          title={string.consultPackageList.prodeedToPay}
+          title={
+            isOneTap ? string.consultPackageList.bookOneTap : string.consultPackageList.prodeedToPay
+          }
           style={styles.proceedToPayButton}
           disabled={disableProceedToPay()}
           onPress={onProceedToPay}
@@ -370,8 +400,15 @@ export const ConsultPackageDetail: React.FC<ConsultPackageDetailProps> = (props)
       'Plan Price': packageDetailData?.Plandata[selectedPlanIndex]?.PlanPrice,
       'Plan Type': packageDetailData?.Plandata[selectedPlanIndex]?.PlanType,
     };
-
-    postCleverTapEvent(CleverTapEventName.CONSULT_PACKAGE_PROCEED_TO_PAY_CLICKED, eventAttributes);
+    if (isOneTap) {
+      eventAttributes['Vertical'] = 'one-tap';
+      postCleverTapEvent(CleverTapEventName.CONSULT_PACKAGE_BOOK_ONE_TAP_CLICKED, eventAttributes);
+    } else {
+      postCleverTapEvent(
+        CleverTapEventName.CONSULT_PACKAGE_PROCEED_TO_PAY_CLICKED,
+        eventAttributes
+      );
+    }
   };
 
   const disableProceedToPay = () => {
@@ -387,10 +424,13 @@ export const ConsultPackageDetail: React.FC<ConsultPackageDetailProps> = (props)
   };
 
   const onPatientSelected = (patient: any) => {
+    setShowPatientSelector(false);
+
     setPatient(patient);
     props.navigation.navigate(AppRoutes.PackageCheckout, {
       packageDetailData,
       selectedPlanIndex,
+      isOneTap: isOneTap,
       oneTapPatient: patient,
     });
   };
@@ -422,6 +462,9 @@ export const ConsultPackageDetail: React.FC<ConsultPackageDetailProps> = (props)
             setVisiblity(false);
           }}
           onCloseClicked={() => {
+            setShowPatientSelector(false);
+          }}
+          onOutboundClicked={() => {
             setShowPatientSelector(false);
           }}
         />

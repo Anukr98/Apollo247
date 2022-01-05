@@ -127,6 +127,7 @@ export interface ConsultPackagePostPurchaseProps
   extends NavigationScreenProps<{
     planId?: string;
     onSubscriptionCancelled: () => void;
+    subscriptionId?: string;
   }> {}
 
 export const ConsultPackagePostPurchase: React.FC<ConsultPackagePostPurchaseProps> = (props) => {
@@ -141,12 +142,13 @@ export const ConsultPackagePostPurchase: React.FC<ConsultPackagePostPurchaseProp
   const [specialities, setSpecialities] = useState([]);
   const [termsAndConditions, setTermsAndConditions] = useState('');
   const [faq, setFaq] = useState([]);
-  const [subscriptionId, setSubscriptionId] = useState<string>();
   const [subscriptionDetails, setSubscriptionDetails] = useState<any>();
   const [planName, setPlanName] = useState<string>('');
   const [postPurchaseBackgroundImageUrl, setPostPurchaseBackgroundImageUrl] = useState<string>('');
   const planId = props.navigation.getParam('planId') || '';
   const [isCancellable, setIsCancellable] = useState<true>();
+  const pkgSubscriptionId = props.navigation.getParam('subscriptionId') || '';
+  const [subscriptionId, setSubscriptionId] = useState<string>(pkgSubscriptionId);
 
   const renderHeader = (props) => {
     return (
@@ -214,13 +216,14 @@ export const ConsultPackagePostPurchase: React.FC<ConsultPackagePostPurchaseProp
                   (plan: any) =>
                     plan.plan_vertical === 'Consult' &&
                     (plan.status === 'active' || plan.status === 'deferred_active') &&
-                    plan.sub_plan_id === planId
+                    plan.sub_plan_id === planId &&
+                    (!!subscriptionId ? plan?.subscription_id == subscriptionId : true)
                 );
                 if (desiredPlan) {
                   setValidTill(desiredPlan.subscriptionEndDate);
                   setTermsAndConditions(desiredPlan?.meta?.terms_and_conditions);
                   setFaq(desiredPlan?.meta?.freqeuntly_asked_questions);
-                  setSubscriptionId(desiredPlan?.subscription_id);
+                  !!subscriptionId && setSubscriptionId(desiredPlan?.subscription_id);
                   setSubscriptionDetails(desiredPlan?.subscription_details);
 
                   setIsCancellable(desiredPlan?.cancellation?.is_cancellable);

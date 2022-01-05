@@ -13,6 +13,7 @@ import {
   HospitalPhrIcon,
   VideoActiveIcon,
   DoctorLanguage,
+  Tick,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   CommonBugFender,
@@ -168,7 +169,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
   },
   infoIcon: {
-    marginLeft: 7,
+    marginLeft: 4,
     width: 10,
     height: 10,
     marginRight: 2,
@@ -227,7 +228,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.SKY_LIGHT_BLUE,
     width: '49.3%',
     borderRadius: 0,
-    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -236,7 +237,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.GOLDEN,
     width: '49.3%',
     borderRadius: 0,
-    borderBottomRightRadius: 10,
+    borderBottomLeftRadius: 10,
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -364,6 +365,16 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 10, theme.colors.APP_YELLOW),
     marginTop: 2,
   },
+  cashbackText: {
+    ...theme.viewStyles.text('M', 10, theme.colors.APP_YELLOW),
+    marginLeft: 4,
+  },
+  tickIcon: {
+    height: 8,
+    width: 8,
+    marginStart: 4,
+  },
+  hcContainer: { flexDirection: 'row', alignItems: 'center' },
 });
 
 export interface DoctorCardProps extends NavigationScreenProps {
@@ -426,6 +437,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     isCircleDoctorOnSelectedConsultMode,
     physicalConsultSlashedPrice,
     physicalConsultDiscountedPrice,
+    cashbackEnabled,
+    cashbackAmount,
   } = circleDoctorDetails;
   const { availableModes, isPlatinumDoctor } = props;
   const { showCircleSubscribed, circleSubPlanId, circleSubscriptionId } = useShoppingCart();
@@ -523,16 +536,36 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     if (showCircleSubscribed) {
       return (
         <View style={{ marginTop: 5 }}>
-          <View style={styles.rowContainer}>
-            <Text style={styles.carePrice}>
-              {string.common.Rs}
-              {convertNumberToDecimal(circleDoctorFees)}
-            </Text>
-            <Text style={styles.careDiscountedPrice}>
-              {string.common.Rs}
-              {convertNumberToDecimal(circleDoctorSlashedPrice)}
-            </Text>
-          </View>
+          {!cashbackEnabled ? (
+            <View style={styles.rowContainer}>
+              <Text style={styles.carePrice}>
+                {string.common.Rs}
+                {convertNumberToDecimal(circleDoctorFees)}
+              </Text>
+              <Text style={styles.careDiscountedPrice}>
+                {string.common.Rs}
+                {convertNumberToDecimal(circleDoctorSlashedPrice)}
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.rowContainer}>
+              <View>
+                <Text style={styles.circleDoctorFeeText1}>You pay</Text>
+                <Text style={styles.circleDoctorFeeText2}>
+                  {string.common.Rs}
+                  {convertNumberToDecimal(circleDoctorFees)}
+                </Text>
+              </View>
+              <View style={styles.seperatorLine} />
+              <View>
+                <View style={styles.hcContainer}>
+                  <Text style={styles.cashbackText}>{string.common.circleCashback}</Text>
+                  <Tick style={styles.tickIcon} />
+                </View>
+                <Text style={styles.cashbackText}>{`Upto ${cashbackAmount} HC`}</Text>
+              </View>
+            </View>
+          )}
         </View>
       );
     }
@@ -552,13 +585,15 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             onPress={() => openCircleWebView()}
             activeOpacity={1}
           >
-            <Text style={styles.circleDoctorFeeText3}>{string.circleDoctors.circleMemberPays}</Text>
+            <Text style={styles.circleDoctorFeeText3}>
+              {cashbackEnabled ? string.common.circleCashback : string.common.circleDiscount}
+            </Text>
             <View style={styles.rowContainer}>
               <Text style={styles.circleDoctorFeeText4}>
-                {string.common.Rs}
-                {convertNumberToDecimal(circleDoctorSlashedPrice)}
+                {cashbackEnabled
+                  ? `Upto ${cashbackAmount} HC`
+                  : string.common.Rs + convertNumberToDecimal(circleDoctorDiscountedPrice)}
               </Text>
-
               <InfoBlue style={styles.infoIcon} />
               <Text style={styles.circleDoctorFeeText5}>{string.circleDoctors.upgradeNow}</Text>
             </View>
@@ -682,9 +717,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     return (
       <View style={styles.centerRow}>
         {isOnline && isPhysical ? (
-          <>
-            <Text style={styles.availabilityText}>{getButtonTitle(physicalSlot, true)}</Text>
+        <>
             <Text style={styles.availabilityText}>{getButtonTitle(onlineSlot)}</Text>
+            <Text style={styles.availabilityText}>{getButtonTitle(physicalSlot, true)}</Text>
           </>
         ) : isPhysical ? (
           <Text style={styles.availabilityText}>{getButtonTitle(physicalSlot, true)}</Text>
@@ -764,7 +799,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       <View>
         {isCircleDoctorOnSelectedConsultMode &&
         circleDoctorDiscountedPrice > -1 &&
-        showCircleSubscribed ? (
+        showCircleSubscribed &&
+        !cashbackEnabled ? (
           <Text style={styles.doctorSlashedPriceText}>
             {string.circleDoctors.circleSavings.replace(
               '{amount}',
@@ -804,17 +840,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     return (
       <View style={styles.bottomBtnView}>
         <TouchableOpacity
-          style={styles.bottomLeftBtn}
-          onPress={() => onPressConsultConfigCTA(ConsultMode.PHYSICAL)}
-        >
-          <View style={styles.fullWidthBtn}>
-            <HospitalPhrIcon style={styles.hospitalIcon} />
-            <Text style={styles.bottomBtnText} numberOfLines={2}>
-              {physicalCTATitle}
-            </Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
           style={styles.bottomRightBtn}
           onPress={() => onPressConsultConfigCTA(ConsultMode.ONLINE)}
         >
@@ -822,6 +847,17 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             <VideoActiveIcon style={styles.onlineConsultIcon} />
             <Text style={styles.bottomBtnText} numberOfLines={2}>
               {onlineCTATitle}
+            </Text>
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.bottomLeftBtn}
+          onPress={() => onPressConsultConfigCTA(ConsultMode.PHYSICAL)}
+        >
+          <View style={styles.fullWidthBtn}>
+            <HospitalPhrIcon style={styles.hospitalIcon} />
+            <Text style={styles.bottomBtnText} numberOfLines={2}>
+              {physicalCTATitle}
             </Text>
           </View>
         </TouchableOpacity>
@@ -837,6 +873,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             styles.bottomLeftBtn,
             {
               width: '100%',
+              borderBottomRightRadius: 10,
+              borderBottomLeftRadius: 10,
               backgroundColor: online ? theme.colors.GOLDEN : theme.colors.SKY_LIGHT_BLUE,
             },
           ]}

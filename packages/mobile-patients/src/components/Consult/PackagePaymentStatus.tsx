@@ -117,6 +117,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
   const [planDescription, setPlanDescription] = useState<string>('');
   const [planValidity, setPlanValidity] = useState<any>();
   const [planId, setPlanId] = useState<string>('');
+  const [subscriptionId, setSubscriptionId] = useState<string>('');
   const [paymentAmount, setPaymentAmount] = useState<number>(0);
 
   const { currentPatient } = useAllCurrentPatients();
@@ -125,6 +126,8 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
   const [showEmailInput, setshowEmailInput] = useState<boolean>(false);
   const [email, setEmail] = useState<string>(currentPatient?.emailAddress || '');
   const [emailSent, setEmailSent] = useState<boolean>(false);
+
+  const [autoBookTimerCount, setAutoBookTimerCount] = useState(15);
 
   useEffect(() => {
     fetchOrderStatus();
@@ -326,8 +329,9 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
           ),
           text: paymentSuccessful,
           textColor: SUCCESS_TEXT,
-          description:
-            'The health package has been purchased successfully! You can go ahead and book your first consultation. We’ll assign a doctor as per availability.',
+          description: oneTapPatient
+            ? 'Yayy! Your booking is complete.You can talk to a doctor within 15 minutes.'
+            : 'The health package has been purchased successfully! You can go ahead and book your first consultation. We’ll assign a doctor as per availability.',
         };
       case FAILED:
         return {
@@ -338,7 +342,8 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
           ),
           text: paymentFailed,
           textColor: FAILURE_TEXT,
-          description: 'Failed to purchase the health package! ',
+          description:
+            'Your payment could not be completed. We apologize for the inconvenience caused. Please try again to complete your booking.',
         };
       default:
         return {
@@ -556,14 +561,31 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
           response?.data?.getOrderInternal?.SubscriptionOrderDetails?.group_plan?.meta
             ?.description || '-'
         );
+        setSubscriptionId(response?.data?.getOrderInternal?.SubscriptionOrderDetails?._id || '');
         setPlanId(
           response?.data?.getOrderInternal?.SubscriptionOrderDetails?.group_sub_plan?.plan_id || ''
         );
+
         setPlanValidity(response?.data?.getOrderInternal?.SubscriptionOrderDetails?.end_date);
 
         setInvoiceUrl(
           response?.data?.getOrderInternal?.SubscriptionOrderDetails?.payment_reference?.invoice_url
         );
+
+        if (oneTapPatient && txnStatus == PAYMENT_STATUS.TXN_SUCCESS) {
+          let interval = setInterval(() => {
+            setAutoBookTimerCount((lastTimerCount) => {
+              if (lastTimerCount <= 1) {
+                fetchOneTapPlanFromSubscriptionBenefits(
+                  response?.data?.getOrderInternal?.SubscriptionOrderDetails?.group_sub_plan
+                    ?.plan_id || ''
+                );
+                clearInterval(interval);
+              }
+              return lastTimerCount - 1;
+            });
+          }, 1000);
+        }
       } else {
         renderErrorPopup(
           "We could not confirm your payment at this moment. We apologize for the inconvenience caused. Please refresh this page or check your plan in the 'My Memberships' tab in the 'My Account' section."
@@ -680,9 +702,8 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
       });
   };
 
-  const fetchOneTapPlanFromSubscriptionBenefits = () => {
+  const fetchOneTapPlanFromSubscriptionBenefits = (obtianedPlanId: string) => {
     setShowSpinner?.(true);
-
     const mobile_number = g(currentPatient, 'mobileNumber');
 
     mobile_number &&
@@ -710,7 +731,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
                   (plan: any) =>
                     plan.plan_vertical === 'Consult' &&
                     (plan.status === 'active' || plan.status === 'deferred_active') &&
-                    plan.sub_plan_id === planId
+                    plan.sub_plan_id === obtianedPlanId
                 );
 
                 if (desiredPlan) {
@@ -837,70 +858,146 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
       .finally(() => setLoading?.(false));
   };
 
-  return (
-    <SafeAreaView style={theme.viewStyles.container}>
-      <View style={styles.container}>
-        <ScrollView>
-          {renderPaymentStatusHeader()}
+  const renderPaymentStatusHeaderOneTap = () => {
+    const { icon, text, textColor, description } = getPaymentStatus();
+
+    return (
+      <View>
+        <View style={{ marginBottom: 28 }}>
+          {icon}
+          <Text style={styles.paymentSuccessfullText}>{text}</Text>
+          <Text style={[styles.purchaseStatusText, { color: textColor }]}>{description}</Text>
+
+          {!paymentStatus ||
+          (paymentStatus != PAYMENT_STATUS.TXN_SUCCESS &&
+            paymentStatus != PAYMENT_STATUS.TXN_FAILURE) ? (
+            <TouchableOpacity
+              onPress={() => {
+                fetchOrderStatus();
+              }}
+            >
+              <Text
+                style={[
+                  styles.purchaseStatusText,
+                  {
+                    color: textColor,
+                    textDecorationLine: 'underline',
+                    marginTop: 5,
+                    alignSelf: 'center',
+                  },
+                ]}
+              >
+                REFRESH
+              </Text>
+            </TouchableOpacity>
+          ) : null}
+        </View>
+      </View>
+    );
+  };
+
+  if (oneTapPatient) {
+    return (
+      <SafeAreaView style={theme.viewStyles.container}>
+        <LinearGradient
+          start={{ x: 0, y: -0.5 }}
+          end={{ x: 0, y: 1.5 }}
+          colors={[
+            paymentStatus === PAYMENT_STATUS.TXN_SUCCESS ? '#D5F5FF' : '#FFD7D4',
+            colors.DEFAULT_BACKGROUND_COLOR,
+          ]}
+          style={styles.oneTapcontainer}
+        >
+          {renderPaymentStatusHeaderOneTap()}
 
           {renderPaymentCard()}
 
-          {renderConsultInfo()}
+          {autoBookTimerCount != 0 ? (
+            <Text style={{ ...theme.viewStyles.text('R', 10, theme.colors.BLACK_COLOR, 0.7) }}>
+              Automatically booking your consultation in {autoBookTimerCount} secs
+            </Text>
+          ) : null}
+        </LinearGradient>
 
-          {locationDetails && renderSavedLocation()}
+        {showSpinner ? <Spinner /> : null}
+      </SafeAreaView>
+    );
+  } else {
+    return (
+      <SafeAreaView style={theme.viewStyles.container}>
+        <View style={styles.container}>
+          <ScrollView>
+            {renderPaymentStatusHeader()}
 
-          <View style={styles.consultGuideLinesContainer}>
-            <Text style={styles.consultBookText}>{string.consultPackages.consultGuildeline}</Text>
-          </View>
-        </ScrollView>
-        <Button
-          style={styles.viewPackageBtn}
-          disabled={paymentStatus == PAYMENT_STATUS.TXN_SUCCESS ? false : true}
-          onPress={() => {
-            if (paymentStatus == PAYMENT_STATUS.TXN_SUCCESS) {
-              if (oneTapPatient) {
-                fetchOneTapPlanFromSubscriptionBenefits();
+            {renderPaymentCard()}
+
+            {renderConsultInfo()}
+
+            {locationDetails && renderSavedLocation()}
+
+            <View style={styles.consultGuideLinesContainer}>
+              <Text style={styles.consultBookText}>{string.consultPackages.consultGuildeline}</Text>
+            </View>
+          </ScrollView>
+          <Button
+            style={styles.viewPackageBtn}
+            disabled={paymentStatus == PAYMENT_STATUS.TXN_SUCCESS ? false : true}
+            onPress={() => {
+              if (paymentStatus == PAYMENT_STATUS.TXN_SUCCESS) {
+                if (oneTapPatient) {
+                  fetchOneTapPlanFromSubscriptionBenefits(planId);
+                } else {
+                  props.navigation.navigate(AppRoutes.ConsultPackagePostPurchase, {
+                    planId: planId,
+                    subscriptionId,
+                    onSubscriptionCancelled: () => {
+                      props.navigation.goBack();
+                    },
+                  });
+                }
+                logBookConsultCleverTapEvent();
               } else {
-                props.navigation.navigate(AppRoutes.ConsultPackagePostPurchase, {
-                  planId: planId,
-                  onSubscriptionCancelled: () => {
-                    props.navigation.goBack();
-                  },
+                showAphAlert?.({
+                  title: 'Oops!',
+                  description: string.consultPackages.paymentPendingBooking,
                 });
               }
-              logBookConsultCleverTapEvent();
-            } else {
-              showAphAlert?.({
-                title: 'Oops!',
-                description: string.consultPackages.paymentPendingBooking,
-              });
+            }}
+            title={
+              oneTapPatient ? string.consultPackages.consultNow : string.consultPackages.viewPackage
             }
-          }}
-          title={
-            oneTapPatient ? string.consultPackages.consultNow : string.consultPackages.viewPackage
-          }
-        />
-      </View>
-      {showPDF && (
-        <RenderPdf
-          uri={'https://newassets-test.apollo247.com/files/Mobile_View_Infographic.pdf'}
-          title={'Consultation guideline'}
-          isPopup={true}
-          setDisplayPdf={() => {
-            setShowPDF(false);
-          }}
-          navigation={props.navigation}
-        />
-      )}
-      {showSpinner ? <Spinner /> : null}
-    </SafeAreaView>
-  );
+          />
+        </View>
+        {showPDF && (
+          <RenderPdf
+            uri={'https://newassets-test.apollo247.com/files/Mobile_View_Infographic.pdf'}
+            title={'Consultation guideline'}
+            isPopup={true}
+            setDisplayPdf={() => {
+              setShowPDF(false);
+            }}
+            navigation={props.navigation}
+          />
+        )}
+        {showSpinner ? <Spinner /> : null}
+      </SafeAreaView>
+    );
+  }
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.CARD_BG,
+  },
+  oneTapcontainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignContent: 'center',
+    alignSelf: 'center',
+    marginHorizontal: -10,
+    paddingHorizontal: 26,
   },
   paymenStatusHeader: {
     height: 270,

@@ -45,7 +45,7 @@ import {
 import { SearchInput } from '@aph/mobile-patients/src/components/ui/SearchInput';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { getBuyAgainSkuList } from '@aph/mobile-patients/src/components/YourOrdersScene';
+import { getBuyAgainSkuList } from '@aph/mobile-patients/src/components/MyOrders/YourOrdersScene';
 import {
   CommonBugFender,
   CommonLogEvent,

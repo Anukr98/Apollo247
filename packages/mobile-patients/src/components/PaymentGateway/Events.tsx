@@ -6,6 +6,7 @@ import {
   formatAddress,
   postCleverTapEvent,
   getCleverTapCircleMemberValues,
+  getUserType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   ShoppingCartItem,
@@ -26,6 +27,13 @@ import {
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
+import DeviceInfo from 'react-native-device-info';
+import moment from 'moment';
+import { Platform } from 'react-native';
+import {
+  MEDICINE_ORDER_PAYMENT_TYPE,
+  MEDICINE_ORDER_STATUS,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 export function PaymentInitiated(
   grandTotal: number,
@@ -136,7 +144,7 @@ export function PharmaOrderPlaced(
     };
     postFirebaseEvent(FirebaseEventName.PURCHASE, firebaseEventAttributes);
 
-    const skus = cartItems?.map((item) => item?.id);
+    const skus = serverCartItems?.map((item) => item?.id);
     const firebaseCheckoutEventAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_CHECKOUT_COMPLETED] = {
       order_id: orderId,
       transaction_id: paymentOrderId,
@@ -281,3 +289,255 @@ export function PaymentTxnResponse(
     postCleverTapEvent(CleverTapEventName.PAYMENT_TXN_RESPONSE, eventAttributes);
   } catch (error) {}
 }
+
+export const InAppReviewEvent = async (
+  currentPatient: any,
+  pharmacyUserTypeAttribute: any,
+  pharmacyCircleAttributes: any
+) => {
+  const uniqueId = await DeviceInfo.getUniqueId();
+  const eventAttributes: CleverTapEvents[CleverTapEventName.PLAYSTORE_APP_REVIEW_AND_RATING] = {
+    'Patient Name': `${currentPatient?.firstName} ${currentPatient?.lastName}`,
+    'Patient UHID': currentPatient?.uhid,
+    'User Type': pharmacyUserTypeAttribute?.User_Type || '',
+    'Patient Age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
+    'Patient Gender': currentPatient?.gender,
+    'Mobile Number': currentPatient?.mobileNumber,
+    'Customer ID': currentPatient?.id,
+    'CT Source': Platform.OS,
+    'Device ID': uniqueId,
+    'Circle Member':
+      getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) || '',
+    'Page Name': 'Dignostic Order Completed',
+    'NAV Source': 'Dignostic',
+  };
+  postCleverTapEvent(
+    Platform.OS == 'android'
+      ? CleverTapEventName.APP_REVIEW_AND_RATING_TO_PLAYSTORE
+      : CleverTapEventName.APP_REVIEW_AND_RATING_TO_APPSTORE,
+    eventAttributes
+  );
+};
+
+export function firePaymentOrderStatusEvent(
+  paymentStatus: string,
+  payload: any,
+  defaultClevertapEventParams: any
+) {
+  try {
+    const { mobileNumber, vertical, displayId, paymentId } = defaultClevertapEventParams;
+    const status = paymentStatus == 'success' ? 'PAYMENT_SUCCESS' : 'PAYMENT_PENDING';
+    const eventAttributes: CleverTapEvents[CleverTapEventName.PAYMENT_ORDER_STATUS] = {
+      'Phone Number': mobileNumber,
+      vertical: vertical,
+      'Vertical Internal Order Id': displayId,
+      'Payment Order Id': paymentId,
+      'Payment Method Type': payload?.payload?.action,
+      BackendPaymentStatus: status,
+      JuspayResponseCode: payload?.errorCode,
+      Response: payload?.payload?.status,
+      Status: status,
+    };
+    postCleverTapEvent(CleverTapEventName.PAYMENT_ORDER_STATUS, eventAttributes);
+  } catch (error) {}
+}
+
+export const InAppReviewEventPharma = async (
+  currentPatient: any,
+  pharmacyUserTypeAttribute: any,
+  pharmacyCircleAttributes: any
+) => {
+  const uniqueId = await DeviceInfo.getUniqueId();
+  const eventAttributes: CleverTapEvents[CleverTapEventName.PLAYSTORE_APP_REVIEW_AND_RATING] = {
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient UHID': g(currentPatient, 'uhid'),
+    'User Type': pharmacyUserTypeAttribute?.User_Type || '',
+    'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+    'Patient Gender': g(currentPatient, 'gender'),
+    'Mobile Number': g(currentPatient, 'mobileNumber'),
+    'Customer ID': g(currentPatient, 'id'),
+    'CT Source': Platform.OS,
+    'Device ID': uniqueId,
+    'Circle Member':
+      getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) || '',
+    'Page Name': 'Pharmacy Order Completed',
+    'NAV Source': 'Pharmacy',
+  };
+  postCleverTapEvent(
+    Platform.OS == 'android'
+      ? CleverTapEventName.APP_REVIEW_AND_RATING_TO_PLAYSTORE
+      : CleverTapEventName.APP_REVIEW_AND_RATING_TO_APPSTORE,
+    eventAttributes
+  );
+};
+
+const getFormattedAmount = (num: number) => Number(num.toFixed(2));
+
+export const firePaymentStatusPageViewedEvent = (
+  status: string,
+  transactionId: number,
+  paymentMode: string,
+  orderIds: any,
+  grandTotal: number,
+  totalCashBack: number,
+  deliveryCharges: number,
+  circleSubscriptionId: string,
+  isCircleSubscription: boolean,
+  showSubstituteMessage: string
+) => {
+  const paymentStatus =
+    status == MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS
+      ? 'Success'
+      : status == MEDICINE_ORDER_STATUS.PAYMENT_FAILED
+      ? 'Payment Failed'
+      : status == 'PAYMENT_STATUS_NOT_KNOWN' // for COD
+      ? 'Payment Status Not Known'
+      : 'Payment Aborted';
+  const paymentType = paymentMode == MEDICINE_ORDER_PAYMENT_TYPE.COD ? 'COD' : 'Cashless';
+  const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_POST_CART_PAGE_VIEWED] = {
+    'Payment status': paymentStatus,
+    'Payment Type': paymentType,
+    'Transaction ID': transactionId,
+    'Order ID(s)': orderIds,
+    'MRP Total': getFormattedAmount(grandTotal),
+    'Discount Amount': totalCashBack,
+    'Payment Instrument': paymentMode,
+    'Order Type': 'Cart',
+    'Shipping Charges': deliveryCharges,
+    'Circle Member': circleSubscriptionId || isCircleSubscription ? true : false,
+    'Substitution Option Shown': showSubstituteMessage ? 'Yes' : 'No',
+  };
+  postWebEngageEvent(WebEngageEventName.PHARMACY_POST_CART_PAGE_VIEWED, eventAttributes);
+};
+
+enum SUBSTITUTION_RESPONSE {
+  OK = 'OK',
+  NOT_OK = 'not-OK',
+}
+
+export const fireSubstituteResponseEvent = (action: string, paymentId: string, orderIds: any) => {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ORDER_SUBSTITUTE_OPTION_CLICKED] = {
+    'Transaction ID': paymentId,
+    'Order ID(s)': orderIds,
+    'Substitute Action Taken': action == SUBSTITUTION_RESPONSE.OK ? 'Agree' : 'Disagree',
+  };
+  postWebEngageEvent(WebEngageEventName.PHARMACY_ORDER_SUBSTITUTE_OPTION_CLICKED, eventAttributes);
+};
+
+export const fireCirclePlanActivatedEvent = (
+  currentPatient: any,
+  planPurchased: boolean,
+  circlePlanSelected: any
+) => {
+  const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PURCHASE_CIRCLE] = {
+    'Patient UHID': currentPatient?.uhid,
+    'Mobile Number': currentPatient?.mobileNumber,
+    'Customer ID': currentPatient?.id,
+    'Membership Type': String(circlePlanSelected?.valid_duration) + ' days',
+    'Membership End Date': moment(new Date())
+      .add(circlePlanSelected?.valid_duration, 'days')
+      .format('DD-MMM-YYYY'),
+    'Circle Plan Price': circlePlanSelected?.currentSellingPrice,
+    Type: 'Pharmacy',
+    Source: 'Pharma',
+  };
+  planPurchased && postWebEngageEvent(WebEngageEventName.PURCHASE_CIRCLE, CircleEventAttributes);
+};
+
+export const fireConsultBookedEvent = (
+  displayId: any,
+  orderDetails: any,
+  allCurrentPatients: any
+) => {
+  const {
+    webEngageEventAttributes,
+    cleverTapConsultBookedEventAttributes,
+    appsflyerEventAttributes,
+    fireBaseEventAttributes,
+    isDoctorsOfTheHourStatus,
+  } = orderDetails;
+  try {
+    let eventAttributes = webEngageEventAttributes;
+    eventAttributes['Display ID'] = displayId;
+    eventAttributes['User_Type'] = getUserType(allCurrentPatients);
+    let cleverTapEventAttributes = cleverTapConsultBookedEventAttributes;
+    cleverTapEventAttributes['Display ID'] = displayId;
+    cleverTapEventAttributes['User_type'] = getUserType(allCurrentPatients);
+    postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, appsflyerEventAttributes);
+    postFirebaseEvent(FirebaseEventName.CONSULTATION_BOOKED, fireBaseEventAttributes);
+    // firePurchaseEvent(amountBreakup);
+    eventAttributes['Dr of hour appointment'] = !!isDoctorsOfTheHourStatus ? 'Yes' : 'No';
+    cleverTapEventAttributes['Dr of hour appointment'] = !!isDoctorsOfTheHourStatus ? 'Yes' : 'No';
+    postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
+    postCleverTapEvent(CleverTapEventName.CONSULTATION_BOOKED, cleverTapEventAttributes);
+  } catch (error) {
+    console.log(error);
+  }
+};
+export const fireCirclePurchaseEvent = (circlePlanSelected: any, paymentId: string) => {
+  const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
+    currency: 'INR',
+    items: [
+      {
+        item_name: 'Circle Plan',
+        item_id: circlePlanSelected?.subPlanId,
+        price: Number(circlePlanSelected?.currentSellingPrice),
+        item_category: 'Circle',
+        index: 1, // Item sequence number in the list
+        quantity: 1, // "1" or actual quantity
+      },
+    ],
+    transaction_id: paymentId,
+    value: Number(circlePlanSelected?.currentSellingPrice),
+    LOB: 'Circle',
+  };
+
+  postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
+};
+
+export const firePurchaseEvent = (orderDetails: any) => {
+  const {
+    price,
+    orderId,
+    doctorName,
+    doctorID,
+    doctor,
+    webEngageEventAttributes,
+    coupon,
+  } = orderDetails;
+  const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
+    coupon: coupon,
+    currency: 'INR',
+    items: [
+      {
+        item_name: doctorName, // Product Name or Doctor Name
+        item_id: doctorID, // Product SKU or Doctor ID
+        price: Number(price), // Product Price After discount or Doctor VC price (create another item in array for PC price)
+        item_brand: doctor.doctorType, // Product brand or Apollo (for Apollo doctors) or Partner Doctors (for 3P doctors)
+        item_category: 'Consultations', // 'Pharmacy' or 'Consultations'
+        item_category2: doctor.specialty.name, // FMCG or Drugs (for Pharmacy) or Specialty Name (for Consultations)
+        item_category3: doctor.city, // City Name (for Consultations)
+        item_variant: webEngageEventAttributes['Consult Mode'], // "Default" (for Pharmacy) or Virtual / Physcial (for Consultations)
+        index: 1, // Item sequence number in the list
+        quantity: 1, // "1" or actual quantity
+      },
+    ],
+    transaction_id: orderId,
+    value: Number(price),
+    LOB: 'Consult',
+  };
+  postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
+};
+
+export const firePaymentStatusEvent = (status: string, id: string) => {
+  try {
+    const paymentEventAttributes = {
+      Payment_Status: status,
+      LOB: 'Consultation',
+      Appointment_Id: id,
+    };
+    postWebEngageEvent(WebEngageEventName.PAYMENT_STATUS, paymentEventAttributes);
+    postFirebaseEvent(FirebaseEventName.PAYMENT_STATUS, paymentEventAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_STATUS, paymentEventAttributes);
+  } catch (error) {}
+};

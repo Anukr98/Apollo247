@@ -761,6 +761,16 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
     // setEmailValidation(isSatisfyingEmailRegex(trimmedValue));
   };
 
+  const getDoseNumber = (doseNumber: string) => {
+    if (doseNumber == DOSE_NUMBER.BOOSTER_DOSE) {
+      return 'BOOSTER DOSE';
+    } else if (doseNumber == DOSE_NUMBER.FIRST) {
+      return 'FIRST';
+    } else {
+      return 'SECOND';
+    }
+  };
+
   const renderConfirmationDetails = () => {
     return (
       <View style={styles.confirmationDetailContainer}>
@@ -832,7 +842,10 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
           string.vaccineBooking.slot_title,
           bookingInfo?.resource_session_details?.session_name
         )}
-        {renderBookingDetailsMatrixItem(string.vaccineBooking.dose_title, bookingInfo?.dose_number)}
+        {renderBookingDetailsMatrixItem(
+          string.vaccineBooking.dose_title,
+          getDoseNumber(bookingInfo?.dose_number)
+        )}
 
         {bookingInfo?.resource_session_details?.vaccine_type
           ? renderBookingDetailsMatrixItem(

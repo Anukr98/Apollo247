@@ -5,6 +5,7 @@ import { DeliveryIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { format } from 'date-fns';
 import moment from 'moment';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { isTodaysDate, isTomorrowsDate } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 export interface ReviewTatCardProps {
   style?: StyleProp<ViewStyle>;
@@ -34,14 +35,14 @@ export const ReviewTatCard: React.FC<ReviewTatCardProps> = (props) => {
     let tommorowDate = new Date();
     tommorowDate.setDate(tommorowDate.getDate() + 1);
 
-    if (new Date(deliveryDate).toLocaleDateString() == new Date().toLocaleDateString()) {
+    if (isTodaysDate(deliveryDate)) {
       return (
         <View>
           <Text style={styles.boldTxt}>Order now, get delivery today!</Text>
           <Text style={styles.normalTxt}>By {format(deliveryDate, 'h:mm A, Do MMM')}</Text>
         </View>
       );
-    } else if (new Date(deliveryDate).toLocaleDateString() == tommorowDate.toLocaleDateString()) {
+    } else if (isTomorrowsDate(deliveryDate)) {
       return (
         <View>
           <Text style={styles.boldTxt}>Delivering tomorrow!</Text>
