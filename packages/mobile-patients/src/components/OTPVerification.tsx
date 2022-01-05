@@ -1,16 +1,10 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { LoginCard } from '@aph/mobile-patients/src/components/ui/LoginCard';
 import { CountDownTimer } from '@aph/mobile-patients/src/components/ui/CountDownTimer';
 import {
   BackArrow,
-  Loader,
-  ArrowDisabled,
-  ArrowYellow,
-  WhiteCallIcon,
   CheckBox as CheckBoxEmpty,
   CheckBoxFilled,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import LandingDataView from '@aph/mobile-patients/src/components/ui/LandingDataView';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
@@ -51,7 +45,6 @@ import {
   View,
   AppState,
   AppStateStatus,
-  TextInput,
 } from 'react-native';
 import { timeDifferenceInDays } from '@aph/mobile-patients/src/utils/dateUtil';
 import firebaseAuth from '@react-native-firebase/auth';
@@ -1066,12 +1059,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               editable={invalidOtpCount <= 3}
             />
           </View>
-          {/* {showErrorMsg && (
-            <Text style={styles.errorText}>
-              Incorrect OTP. You have {3 - invalidOtpCount} more{' '}
-              {invalidOtpCount == 2 ? 'try' : 'tries'}.
-            </Text>
-          )} */}
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             {
               !resendOtpSection ? (
@@ -1104,155 +1091,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             }
           </View>
         </View>
-        {/* <View
-          style={{
-            height: 56,
-            justifyContent: 'center',
-            paddingLeft: 20,
-          }}
-        >
-          <TouchableOpacity
-            activeOpacity={1}
-            style={{
-              height: 25,
-              width: 25,
-              justifyContent: 'center',
-            }}
-            onPress={() => {
-              props.navigation.goBack();
-              intervalId && clearInterval(intervalId);
-            }}
-          >
-            <BackArrow />
-          </TouchableOpacity>
-        </View> */}
-
-        {/* {invalidOtpCount === 3 && !isValidOTP ? (
-          <LoginCard
-            key={1}
-            cardContainer={{
-              marginTop: 0,
-              // height: 290,
-              paddingBottom: 12,
-            }}
-            headingTextStyle={{
-              marginTop: 10,
-            }}
-            heading={string.login.oops}
-            description={string.login.incorrect_otp_message}
-            disableButton={isValidOTP ? false : true}
-            descriptionTextStyle={{
-              paddingBottom: Platform.OS === 'ios' ? 0 : 1,
-            }}
-          >
-            <View style={styles.inputView}>
-              <TextInput
-                style={[
-                  styles.codeInputStyle,
-                  {
-                    borderColor: 'rgba(0, 179, 142, 0.4)',
-                  },
-                ]}
-                value={otp}
-                onChangeText={(otp: string) => setOtp(otp)}
-                editable={false}
-                textContentType={'oneTimeCode'}
-              />
-            </View>
-
-            <Text style={[styles.errorText]}>
-              Try again after —{' '}
-              <CountDownTimer
-                timer={remainingTime}
-                style={[styles.errorText]}
-                onStopTimer={onStopTimer}
-              />
-            </Text>
-            {renderHyperLink()}
-          </LoginCard>
-        ) : (
-          <LoginCard
-            key={2}
-            cardContainer={{
-              marginTop: 0,
-              paddingBottom: 12,
-            }}
-            headingTextStyle={{
-              marginTop: 10,
-            }}
-            heading={string.login.great}
-            description={isresent ? string.login.resend_otp_text : descriptionPhoneText}
-            buttonIcon={
-              isValidOTP && otp.length === 6 && isTandCSelected ? (
-                <ArrowYellow size="md_l" />
-              ) : (
-                <ArrowDisabled size="md_l" />
-              )
-            }
-            onClickButton={() => onClickOk()}
-            disableButton={isValidOTP && otp.length === 6 && isTandCSelected ? false : true}
-            descriptionTextStyle={{
-              paddingBottom: Platform.OS === 'ios' ? 0 : 1,
-            }}
-          >
-            <View style={styles.inputView}>
-              <TextInput
-                style={[
-                  styles.codeInputStyle,
-                  {
-                    borderColor: showErrorBottomLine
-                      ? theme.colors.INPUT_BORDER_FAILURE
-                      : theme.colors.INPUT_BORDER_SUCCESS,
-                  },
-                ]}
-                value={otp}
-                onChangeText={isOtpValid}
-                keyboardType="numeric"
-                textContentType={'oneTimeCode'}
-                maxLength={6}
-              />
-            </View>
-            {showErrorMsg && (
-              <Text style={styles.errorText}>
-                Incorrect OTP. You have {3 - invalidOtpCount} more{' '}
-                {invalidOtpCount == 2 ? 'try' : 'tries'}.
-              </Text>
-            )}
-            {
-              <TouchableOpacity
-                activeOpacity={1}
-                onPress={showResentTimer ? () => {} : onClickResend}
-                style={{ width: '50%', paddingLeft: 16, paddingTop: 12 }}
-              >
-                <Text
-                  style={[
-                    styles.bottomDescription,
-                    showResentTimer
-                      ? {
-                          opacity: 0.5,
-                        }
-                      : {},
-                  ]}
-                >
-                  {string.login.resend_opt}
-                  {showResentTimer && ' '}
-                  {showResentTimer && (
-                    <CountDownTimer
-                      timer={30}
-                      style={{
-                        color: theme.colors.LIGHT_BLUE,
-                      }}
-                      onStopTimer={onStopResendTimer}
-                    />
-                  )}
-                </Text>
-              </TouchableOpacity>
-            }
-            {renderHyperLink()}
-          </LoginCard>
-        )} */}
-        {/* {showOtpOnCallCta && renderOtpOnCall()} */}
-        {/* <LandingDataView /> */}
         {openFillerView && <FetchingDetails />}
       </SafeAreaView>
       {showSpinner && <Spinner />}
