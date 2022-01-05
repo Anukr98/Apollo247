@@ -170,10 +170,8 @@ import { CouponScreen } from '@aph/mobile-patients/src/components/Tests/TestCart
 import { InformativeContent } from '@aph/mobile-patients/src/components/HealthRecords/InformationContent';
 import { ServerCart } from '@aph/mobile-patients/src/components/ServerCart/ServerCart';
 import { ReviewCart } from '@aph/mobile-patients/src/components/ServerCart/ReviewCart';
-import { LoginNew } from '@aph/mobile-patients/src/components/LoginNew';
 
 export enum AppRoutes {
-  LoginNew = 'LoginNew',
   Login = 'Login',
   HomeScreen = 'HomeScreen',
   TabBar = 'TabBar',
@@ -344,9 +342,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
       header: null,
       gesturesEnabled: false,
     },
-  },
-  [AppRoutes.LoginNew]: {
-    screen: LoginNew
   },
   [AppRoutes.SelectLocation]: {
     screen: SelectLocation,
