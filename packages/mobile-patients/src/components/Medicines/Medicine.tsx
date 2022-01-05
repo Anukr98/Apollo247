@@ -74,7 +74,6 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
-  availabilityApi247,
   Brand,
   callToExotelApi,
   DealsOfTheDaySection,
