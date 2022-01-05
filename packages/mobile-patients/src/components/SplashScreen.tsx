@@ -736,7 +736,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                 callPhrNotificationApi(currentPatient);
                 setCrashlyticsAttributes(mePatient);
               } else {
-                props.navigation.replace(AppRoutes.LoginNew);
+                props.navigation.replace(AppRoutes.Login);
               }
             }
           } else {
@@ -751,7 +751,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                 props.navigation.replace(AppRoutes.MultiSignup);
               }
             } else {
-              props.navigation.replace(AppRoutes.LoginNew);
+              props.navigation.replace(AppRoutes.Login);
             }
           }
           SplashScreenView.hide();

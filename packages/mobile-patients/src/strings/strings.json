@@ -315,7 +315,7 @@
     "availableForInAppConsultsOnly": "Due to the current situation, {{doctor}} is available only for In-App Consults"
   },
   "login": {
-    "accept_tnc": "Please accept the TnC and Privacy Policy to continue",
+    "accept_tnc": "Please accept the T&C and Privacy Policy to continue",
     "hello": "hello!",
     "please_enter_no": "Please enter your phone number to get access to Apollo Doctors and Apollo Pharmacy online! ",
     "otp_sent_to": "OTP sent on SMS",

@@ -215,7 +215,12 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       borderWidth: 2,
       paddingVertical: 4,
       justifyContent: 'center',
-      paddingHorizontal: 10
+      paddingHorizontal: 10,
+      elevation: 0,
+      shadowColor: colors.WHITE,
+      shadowOffset: { width: 0, height: 0 },
+      shadowRadius: 0,
+      shadowOpacity: 0
     },
     otpOnCallIcon: {
       resizeMode: 'contain',
@@ -722,8 +727,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               if (messageOTP) {
                 setOtpStatus(string.login.auto_verfying_otp)
                 isOtpValid(messageOTP[0]);
-                onClickOk(messageOTP[0])
-                // onClickOk(messageOTP[0]);
+                onClickOk(messageOTP[0]);
               }
             }
             SmsRetriever.removeSmsListener();

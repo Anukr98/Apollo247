@@ -634,7 +634,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                           key: null,
                           actions: [
                             NavigationActions.navigate({
-                              routeName: AppRoutes.LoginNew,
+                              routeName: AppRoutes.Login,
                             }),
                           ],
                         })

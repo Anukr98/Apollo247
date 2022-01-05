@@ -357,7 +357,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         StackActions.reset({
           index: 0,
           key: null,
-          actions: [NavigationActions.navigate({ routeName: AppRoutes.LoginNew })],
+          actions: [NavigationActions.navigate({ routeName: AppRoutes.Login })],
         })
       );
     } catch (error) {}

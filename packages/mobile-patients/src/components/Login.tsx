@@ -132,7 +132,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   const [error, setError] = useState<string>('')
   const [focusAnim] = useState(new Animated.Value(0))
   const [paginationSpace] = useState(new Animated.Value(30))
-  const [autoDetectedNumber, setAutoDetectedNumber] = useState<string>('')
+  const [floatingLabelSpace] = useState(new Animated.Value(10))
   const formRef = useRef()
 
   const isAndroid = Platform.OS === 'android';
@@ -281,9 +281,9 @@ export const Login: React.FC<LoginProps> = (props) => {
     },
     errorText: {
       ...theme.viewStyles.text(
-        'R',
-        12,
-        colors.INPUT_FAILURE_TEXT
+        'M',
+        13,
+        colors.REMOVE_RED
       )
     },
     useNumberButton: {
@@ -315,7 +315,6 @@ export const Login: React.FC<LoginProps> = (props) => {
   
 
   useEffect(() => {
-    test()
     try {
       fireBaseFCM();
       setLoading && setLoading(false);
@@ -329,33 +328,6 @@ export const Login: React.FC<LoginProps> = (props) => {
     }
   }, []);
 
-  const test = async () => {
-    if(Platform.OS === 'android') {
-      Permissions.check('callPhone')
-      .then(async res => {
-        if(res === 'authorized') {
-          await DeviceInfo.getPhoneNumber()
-          .then(phone => {
-            setAutoDetectedNumber(phone?.toString())
-          })
-          .catch(err => {})
-        }
-        else {
-          Permissions.request('callPhone')
-          .then(async res => {
-            if(res === 'authorized') {
-              await DeviceInfo.getPhoneNumber()
-              .then(phone => {
-                setAutoDetectedNumber(phone?.toString())
-              })
-              .catch(err => {})
-            }
-          })
-        }
-      })
-    }
-  }
-
   const renderNumberPopup = async () => {
     try {
       if(!phoneNumber) {
@@ -364,9 +336,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         onBlur()
       }
     }
-    catch(err) {
-      console.log(JSON.stringify(err))
-    }
+    catch(err) {}
   }
 
   const initializeTruecaller = () => {
@@ -915,16 +885,23 @@ export const Login: React.FC<LoginProps> = (props) => {
   const onFocus = async () => {
     setIsFocused(true)
     Animated.timing(
+      floatingLabelSpace,
+      {
+        toValue: 10,
+        duration: 500
+      }
+    ).start()
+    Animated.timing(
       focusAnim,
       {
         toValue: -height*0.1,
-        duration:500
+        duration: 500
       },
     ).start()
     Animated.timing(
       paginationSpace,{
         toValue: 5,
-        duration:500
+        duration: 500
       }
     ).start()
   }
@@ -941,59 +918,28 @@ export const Login: React.FC<LoginProps> = (props) => {
     Animated.timing(
       paginationSpace,{
         toValue: 30,
-        duration:500
+        duration: 500
+      }
+    ).start()
+    Animated.timing(
+      floatingLabelSpace,
+      {
+        toValue: 0,
+        duration: 500
       }
     ).start()
   }
-  const switchAndroidForm = () => {
-    console.log(formRef?.current)
-    formRef?.current?.scrollTo({
-      x: width,
-      animated: true
-    })
-  }
-
-  const renderAutodetectedForm = () => <View>
-    <View style={{ alignItems: 'center', marginBottom: 30 }}>
-      <Text style={theme.viewStyles.text('R', 13, colors.SLATE_GRAY)}>{string.login.number_auto_detected}</Text>
-    </View>
-    <View style={{ alignItems: 'center' }}>
-      <TouchableOpacity style={styles.useNumberButton}>
-        <Text style={styles.useNumberButtonText}>USE {autoDetectedNumber}</Text>
-      </TouchableOpacity>
-      <View style={{ marginVertical: 12 }}>
-        <Text style={theme.viewStyles.text('M', 14, colors.LIGHT_BLUE)}>OR</Text>
-      </View>
-      <TouchableOpacity
-        style={[
-          styles.useNumberButton,
-          {
-            backgroundColor: colors.WHITE,
-            borderColor: colors.ORANGE_ENABLED,
-            borderWidth: 1
-          }
-        ]}
-        onPress={switchAndroidForm}
-        >
-        <Text
-          style={theme.viewStyles.text('M', 16, colors.ORANGE_ENABLED)}
-        >
-          {string.login.manual_number_input}
-        </Text>
-      </TouchableOpacity>
-    </View>
-  </View>
 
   const renderManualForm = () => <>
-    <View style={{ alignItems: 'center', opacity: (error || phoneNumber.length) ? 1 : 0 }}>
-      <Text style={theme.viewStyles.text('R', 12, colors.LIGHT_BLUE)}>Registered mobile number</Text>
-    </View>
+    <Animated.View style={{ alignItems: 'center', opacity: (error || phoneNumber.length) ? 1 : 0, marginTop: floatingLabelSpace }}>
+      <Text style={[theme.viewStyles.text('R', 12, colors.LIGHT_BLUE), { opacity: .65 }]}>Registered mobile number</Text>
+    </Animated.View>
     <Animated.View
       style={[
         styles.inputContainer,
         {
           borderBottomColor: !isFocused ? colors.CARD_HEADER : (phoneNumberIsValid || phoneNumber == '') ? theme.colors.INPUT_BORDER_SUCCESS : theme.colors.INPUT_BORDER_FAILURE,
-          marginTop: paginationSpace
+          marginTop: !isFocused ? -2 : paginationSpace
         }
       ]}>
       <TextInput
@@ -1022,21 +968,22 @@ export const Login: React.FC<LoginProps> = (props) => {
     <Animated.View style={{ flex: 1, backgroundColor: "#e5e5e5",}}>
       <SafeAreaView style={[styles.container, { backgroundColor: colors.WHITE }]}>
         <ScrollView keyboardShouldPersistTaps='handled'>
-          <LinearGradient colors={['#edf2f9', colors.WHITE]} style={{ height: height*0.9 }}>
+          <LinearGradient colors={['#e8edf0', colors.WHITE]} style={{ height: height*0.52 }}>
             <View style={styles.logoContainer}>
               <ApolloLogo style={{ width: 55, height: 47 }} resizeMode="contain" />
             </View>
             <LoginCarousel focused={isFocused} />
+          </LinearGradient>
 
-            <Animated.View style={{ height: paginationSpace }} />
+          <Animated.View style={{ height: paginationSpace }} />
 
-            <Animated.View style={{ alignItems: 'center', marginBottom: autoDetectedNumber === 'unknown' ? 8 : paginationSpace }}>
+            <Animated.View style={{ alignItems: 'center', marginBottom: paginationSpace }}>
               <Text style={[theme.fonts.IBMPlexSansSemiBold(18), { color: colors.CARD_HEADER }]}>
                 {string.login.signin_signup}
               </Text>
             </Animated.View>
             {
-              error ? <View style={{ alignItems: 'center', marginTop: 5, marginBottom: 7 }}>
+              error ? <View style={{ alignItems: 'center', marginBottom: 20, marginTop: isFocused ? 7 : 0 }}>
                 <Text style={styles.errorText}>{error}</Text>
               </View> : null
             }
@@ -1048,15 +995,14 @@ export const Login: React.FC<LoginProps> = (props) => {
                 ref={formRef}
                 showsHorizontalScrollIndicator={false}
               >
-              <View style={{ width }}>
+              {/* <View style={{ width }}>
                 {renderAutodetectedForm()}
-              </View>
+              </View> */}
               <View style={{ width }}>
                 {renderManualForm()}
               </View>
               </ScrollView>
             </View>
-          </LinearGradient>
         </ScrollView>
         <View style={styles.bottomContainer}>
           <CheckBox

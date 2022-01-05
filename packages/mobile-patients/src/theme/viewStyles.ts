@@ -54,7 +54,7 @@ export const viewStyles = {
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.4,
     shadowRadius: 8,
-    // elevation: 4,
+    elevation: 4,
   },
   cardContainer: {
     shadowColor: colors.SHADOW_GRAY,
