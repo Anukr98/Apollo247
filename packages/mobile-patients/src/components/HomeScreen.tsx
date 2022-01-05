@@ -2153,7 +2153,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           'Home Screen'
         );
         props.navigation.navigate(AppRoutes.DoctorSearch);
-        //props.navigation.navigate(AppRoutes.PostShareAppointmentSelectorScreen);
       },
     },
     {

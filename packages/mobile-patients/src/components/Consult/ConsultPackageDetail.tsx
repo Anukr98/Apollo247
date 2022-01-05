@@ -417,6 +417,7 @@ export const ConsultPackageDetail: React.FC<ConsultPackageDetailProps> = (props)
     props.navigation.navigate(AppRoutes.PackageCheckout, {
       packageDetailData,
       selectedPlanIndex,
+      isOneTap: isOneTap,
       oneTapPatient: patient,
     });
   };

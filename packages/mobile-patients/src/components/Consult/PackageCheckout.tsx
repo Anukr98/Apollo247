@@ -3,11 +3,7 @@ import { View, StyleSheet, SafeAreaView, Image, Text, Platform } from 'react-nat
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import {
-  Specialist,
-  VideoActiveIcon,
-  UserPackage,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+
 import moment from 'moment';
 import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -60,6 +56,8 @@ export const PackageCheckout: React.FC<PackageCheckoutProps> = (props) => {
   const packageDetailData = props.navigation.getParam('packageDetailData');
   const selectedPlanIndex = props.navigation.getParam('selectedPlanIndex');
   const oneTapPatient = props.navigation.getParam('oneTapPatient');
+  const isOneTap = props.navigation.getParam('isOneTap');
+  const [isPackagePurchaseInitialized, setPackagePurchaseInitialized] = useState<boolean>(false);
 
   const storeCode =
     Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
@@ -74,6 +72,12 @@ export const PackageCheckout: React.FC<PackageCheckoutProps> = (props) => {
   useEffect(() => {
     !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
   }, [isfetchingId]);
+
+  useEffect(() => {
+    if (hyperSdkInitialized) {
+      initiatePackagePurchase();
+    }
+  }, [hyperSdkInitialized]);
 
   const initiateHyperSDK = async (cusId: any) => {
     try {
@@ -166,8 +170,9 @@ export const PackageCheckout: React.FC<PackageCheckoutProps> = (props) => {
   const initiatePackagePurchase = async () => {
     try {
       setLoading?.(true);
-      const response = await createUserSubscription();
+      setPackagePurchaseInitialized(true);
 
+      const response = await createUserSubscription();
       const subscriptionId = g(response, 'data', 'CreateUserSubscription', 'response', '_id');
 
       const data = await createOrderInternal(subscriptionId!);
@@ -181,19 +186,30 @@ export const PackageCheckout: React.FC<PackageCheckoutProps> = (props) => {
 
           setLoading!(false);
           if (res?.data?.createOrderV2?.payment_status == 'TXN_SUCCESS') {
-            props.navigation.navigate(AppRoutes.PackagePaymentStatus, {});
+            if (isOneTap) {
+              props.navigation.replace(AppRoutes.PackagePaymentStatus, {});
+            } else {
+              props.navigation.navigate(AppRoutes.PackagePaymentStatus, {});
+            }
           } else {
             renderErrorPopup();
           }
         } else {
-          props.navigation.navigate(AppRoutes.PaymentMethods, {
+          const navigationParams = {
             paymentId: data?.data?.createOrderInternal?.payment_order_id!,
             amount: amountToPay,
             orderDetails: orderInfo,
             businessLine: 'doctorPackage',
             customerId: cusId,
             oneTapPatient: oneTapPatient,
-          });
+          };
+
+          if (isOneTap) {
+            props.navigation.replace(AppRoutes.PaymentMethods, navigationParams);
+          } else {
+            props.navigation.navigate(AppRoutes.PaymentMethods, navigationParams);
+          }
+
           setLoading!(false);
         }
       } else {
@@ -261,35 +277,43 @@ export const PackageCheckout: React.FC<PackageCheckoutProps> = (props) => {
     );
   };
 
-  return (
-    <SafeAreaView style={theme.viewStyles.container}>
-      <View style={styles.container}>
-        {renderHeader()}
-        <Image
-          style={styles.banner}
-          source={{ uri: packageDetailData?.Packagedata?.PackageMobileBanner }}
-        />
-        <Text style={styles.chargesHeading}>{string.common.totalCharges}</Text>
-        <View style={styles.separator} />
-        <View style={styles.chargesContainer}>
-          {renderPackagePrice()}
-          <View style={styles.priceSeparator} />
-          {renderTotalPrice()}
-        </View>
+  if (isOneTap) {
+    return <SafeAreaView style={theme.viewStyles.container}>{renderHeader()}</SafeAreaView>;
+  } else {
+    return (
+      <SafeAreaView style={theme.viewStyles.container}>
+        <View style={styles.container}>
+          {renderHeader()}
+          <Image
+            style={styles.banner}
+            source={{ uri: packageDetailData?.Packagedata?.PackageMobileBanner }}
+          />
+          <Text style={styles.chargesHeading}>{string.common.totalCharges}</Text>
+          <View style={styles.separator} />
+          <View style={styles.chargesContainer}>
+            {renderPackagePrice()}
+            <View style={styles.priceSeparator} />
+            {renderTotalPrice()}
+          </View>
 
-        <View style={{ marginHorizontal: 16 }}>
-          {/* How does it work ?  */}
-          <ConsultPackageHowItWorks />
+          <View style={{ marginHorizontal: 16 }}>
+            {/* How does it work ?  */}
+            <ConsultPackageHowItWorks />
+          </View>
         </View>
-      </View>
-      {renderProceedButton()}
-      {!hyperSdkInitialized && <Spinner />}
-    </SafeAreaView>
-  );
+        {renderProceedButton()}
+        {!hyperSdkInitialized && !isOneTap && <Spinner />}
+      </SafeAreaView>
+    );
+  }
 };
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    backgroundColor: theme.colors.CARD_BG,
+  },
+  oneTapLoaderContainer: {
     flex: 1,
     backgroundColor: theme.colors.CARD_BG,
   },
