@@ -227,8 +227,8 @@ export const Login: React.FC<LoginProps> = (props) => {
     },
     checkBoxStyle: {
       resizeMode: 'contain',
-      width: 15,
-      height: 15,
+      width: 14,
+      height: 14,
     },
     uncheckedBoxStyle: {
       width: 17,
