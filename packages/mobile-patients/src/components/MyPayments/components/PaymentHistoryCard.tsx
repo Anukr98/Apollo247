@@ -62,16 +62,7 @@ const PaymentHistoryCard: FC<PaymentHistoryCardProps> = (props) => {
   const { id, item, lastIndex, index, paymentFor, patientId } = props;
 
   const getAmountPaid = () => {
-    if (paymentFor === 'consult') {
-      const { appointmentPayments, PaymentOrders } = item;
-      const paymentInfo = PaymentOrders?.paymentStatus ? PaymentOrders : appointmentPayments[0];
-      if (!paymentInfo) {
-        return 0;
-      } else {
-        const { amountPaid } = paymentInfo;
-        return amountPaid;
-      }
-    } else if (paymentFor === 'pharmacy') {
+    if (paymentFor === 'pharmacy') {
       const { medicineOrderPayments, PaymentOrdersPharma } = item;
       const paymentInfo = PaymentOrdersPharma?.paymentStatus
         ? PaymentOrdersPharma
