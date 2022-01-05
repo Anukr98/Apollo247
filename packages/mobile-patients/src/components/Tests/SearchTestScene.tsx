@@ -192,7 +192,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     if (!popularArray?.length) {
       fetchPopularDetails();
     }
-    setWebEngageEventOnSearchItem('', []);
   }, []);
 
   useEffect(() => {
@@ -293,7 +292,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         const products = res?.data?.searchDiagnosticItem?.data || [];
         setDiagnosticResults(products as searchDiagnosticItem_searchDiagnosticItem_data[]);
         setSearchResult(products?.length == 0);
-        setWebEngageEventOnSearchItem(_searchText, products);
+        if (_searchText?.length > 0) {
+          setWebEngageEventOnSearchItem(_searchText, products);
+        }
       } else {
         setDiagnosticResults([]);
         setSearchResult(true);
@@ -536,7 +537,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
                   setDiagnosticResults([]);
                   return;
                 }
-                const search = _.debounce(onSearchTest, 300);
+                const search = _.debounce(onSearchTest, 500);
                 setSearchQuery((prevSearch: any) => {
                   if (prevSearch?.cancel) {
                     prevSearch?.cancel();
