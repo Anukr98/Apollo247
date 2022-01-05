@@ -7,6 +7,9 @@ import {
   Platform,
   ToastAndroid,
   Clipboard,
+  View,
+  Text,
+  TouchableOpacity,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { PaymentStatus } from '@aph/mobile-patients/src/components/PaymentGateway/Components/PaymentStatus';
@@ -44,56 +47,76 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import InAppReview from 'react-native-in-app-review';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import {
   InAppReviewEvent,
   firePaymentOrderStatusEvent,
 } from '@aph/mobile-patients/src/components/PaymentGateway/Events';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { firePurchaseEvent } from '@aph/mobile-patients/src/components/Tests/Events';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { InfoIconRed } from '@aph/mobile-patients/src/components/ui/Icons';
 import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
-import { firePurchaseEvent } from '@aph/mobile-patients/src/components/Tests/Events';
 
 export interface PaymentStatusDiagProps extends NavigationScreenProps {}
 
 export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
   const paymentId = props.navigation.getParam('paymentId');
   const paymentStatus = props.navigation.getParam('paymentStatus');
+  const modifiedOrderDetails = props.navigation.getParam('isModify');
   const amount = props.navigation.getParam('amount');
   const orderDetails = props.navigation.getParam('orderDetails');
   const defaultClevertapEventParams = props.navigation.getParam('defaultClevertapEventParams');
   const payload = props.navigation.getParam('payload');
   const eventAttributes = props.navigation.getParam('eventAttributes');
   const isCOD = props.navigation.getParam('isCOD');
-  const modifiedOrderId = orderDetails?.orderId;
-  const { orderInfo, fetching, PaymentMethod, subscriptionInfo } = useGetDiagOrderInfo(paymentId);
+  const isCircleAddedToCart = props.navigation.getParam('isCircleAddedToCart');
+  const {
+    orderInfo,
+    fetching,
+    PaymentMethod,
+    subscriptionInfo,
+    isSingleUhid,
+    offerAmount,
+  } = useGetDiagOrderInfo(paymentId, modifiedOrderDetails);
   const { apisToCall } = useAppCommonData();
-  const displayId = orderInfo?.ordersList?.[0]?.displayId;
-  const [modifiedOrders, setModifiedOrders] = useState<any>([]);
   const client = useApolloClient();
+  const { buildApolloClient, authToken } = useAuth();
+  const { currentPatient } = useAllCurrentPatients();
+  const { pharmacyUserTypeAttribute } = useAppCommonData();
+  const { pharmacyCircleAttributes, circleSubscriptionId } = useShoppingCart();
+  const apolloClientWithAuth = buildApolloClient(authToken);
   const {
     isDiagnosticCircleSubscription,
     clearDiagnoticCartInfo,
     cartItems,
     modifyHcCharges,
+    setIsDiagnosticCircleSubscription,
   } = useDiagnosticsCart();
   const { setLoading, showAphAlert } = useUIElements();
+
+  const [modifiedOrders, setModifiedOrders] = useState<any>([]);
+  const [showPassportModal, setShowPassportModal] = useState<boolean>(false);
+  const [passportNo, setPassportNo] = useState<any>([]);
+  const [passportData, setPassportData] = useState<any>([]);
+
   const orderCartSaving = orderDetails?.cartSaving!;
   const orderCircleSaving = orderDetails?.circleSaving!;
-  const isCircleAddedToCart = props.navigation.getParam('isCircleAddedToCart');
   const circleSavings = isDiagnosticCircleSubscription ? Number(orderCircleSaving) : 0;
   const savings =
     isDiagnosticCircleSubscription || isCircleAddedToCart
       ? Number(orderCartSaving) + Number(orderCircleSaving)
       : orderCartSaving;
-  const [showPassportModal, setShowPassportModal] = useState<boolean>(false);
-  const [passportNo, setPassportNo] = useState<any>([]);
-  const [passportData, setPassportData] = useState<any>([]);
-  const { currentPatient } = useAllCurrentPatients();
-  const { pharmacyUserTypeAttribute } = useAppCommonData();
-  const { pharmacyCircleAttributes, circleSubscriptionId } = useShoppingCart();
+  const modifiedOrderId = orderDetails?.orderId;
+  const isModifyCod = modifiedOrderDetails && isCOD;
+  const displayId = !!modifiedOrderDetails
+    ? modifiedOrderDetails?.displayId
+    : orderInfo?.ordersList?.map((item: any) => item?.displayId)?.join(', ');
 
   useEffect(() => {
+    isCircleAddedToCart && setIsDiagnosticCircleSubscription?.(true);
+    isModifyCod && fetchOrdersDetails(modifiedOrderDetails?.id);
     clearDiagnoticCartInfo?.();
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
@@ -102,8 +125,12 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    const primaryOrderId = orderInfo?.ordersList?.[0]?.primaryOrderID;
-    primaryOrderId && fetchOrdersDetails(primaryOrderId);
+    if (!!isModifyCod) {
+      return;
+    } else {
+      const primaryOrderId = orderInfo?.ordersList?.[0]?.primaryOrderID;
+      primaryOrderId && fetchOrdersDetails(primaryOrderId);
+    }
   }, [orderInfo]);
 
   const updatePassportDetails = async (data: any) => {
@@ -147,7 +174,9 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
   const fireEvents = () => {
     requestInAppReview();
     firePaymentOrderStatusEvent('success', payload, defaultClevertapEventParams);
-    postDiagCheckoutCompletedEvent();
+    if (modifiedOrderDetails == null) {
+      postwebEngageCheckoutCompletedEvent();
+    }
     firePurchaseEvent(
       orderDetails?.orderId,
       orderDetails?.amount,
@@ -157,7 +186,7 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
     );
   };
 
-  const postDiagCheckoutCompletedEvent = () => {
+  const postwebEngageCheckoutCompletedEvent = () => {
     try {
       let attributes = {
         ...eventAttributes,
@@ -209,16 +238,17 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
 
   const fetchOrdersDetails = async (primaryOrderId: any) => {
     try {
-      const res = await client.query<getDiagnosticOrderDetails, getDiagnosticOrderDetailsVariables>(
-        {
-          query: GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
-          variables: { diagnosticOrderId: primaryOrderId },
-          fetchPolicy: 'no-cache',
-        }
-      );
+      const res = await apolloClientWithAuth.query<
+        getDiagnosticOrderDetails,
+        getDiagnosticOrderDetailsVariables
+      >({
+        query: GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
+        variables: { diagnosticOrderId: primaryOrderId },
+        fetchPolicy: 'no-cache',
+      });
       if (!!res && res?.data && !res?.errors) {
         let getOrderDetailsResponse = res?.data?.getDiagnosticOrderDetails?.ordersList || [];
-        setModifiedOrders(getOrderDetailsResponse);
+        setModifiedOrders([getOrderDetailsResponse]);
       } else {
         setModifiedOrders([]);
       }
@@ -233,13 +263,32 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
     });
   };
 
+  const navigateToOrderDetails = (showOrderSummaryTab: boolean, orderId: string) => {
+    setLoading?.(false);
+    apisToCall.current = [apiCallEnums.circleSavings];
+    props.navigation.popToTop({ immediate: true });
+    props.navigation.push(AppRoutes.TestOrderDetails, {
+      orderId: !!modifiedOrderDetails ? modifiedOrderDetails?.id : orderId,
+      setOrders: null,
+      selectedOrder: null,
+      refundStatusArr: [],
+      goToHomeOnBack: true,
+      comingFrom: AppRoutes.CartPage,
+      showOrderSummaryTab: false,
+      disableTrackOrder: false,
+      amount: orderDetails?.amount,
+    });
+  };
+
   const renderPaymentStatus = () => {
+    const toPayAmount = (!!orderDetails?.amount ? orderDetails?.amount : amount) - offerAmount;
+    //showed only circle savings
     return (
       <PaymentStatus
         status={paymentStatus}
-        amount={amount}
+        amount={toPayAmount}
         orderInfo={orderInfo}
-        savings={savings}
+        savings={circleSavings}
         PaymentMethod={PaymentMethod}
       />
     );
@@ -272,9 +321,10 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
   const renderTestsInfo = () => {
     return (
       <LabTestsInfo
-        orderInfo={orderInfo}
+        orderInfo={!!modifiedOrderDetails ? modifiedOrders : orderInfo}
         modifiedOrders={modifiedOrders}
         modifiedOrderId={modifiedOrderId}
+        isModify={!!modifiedOrderDetails}
       />
     );
   };
@@ -306,6 +356,38 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
     ) : null;
   };
 
+  const renderNoticeText = () => {
+    return (
+      <View style={styles.noticeText}>
+        <Text style={styles.phleboText}>{string.diagnostics.orderSuccessPhaleboText}</Text>
+      </View>
+    );
+  };
+
+  const renderInvoiceTimeline = () => {
+    return (
+      <View style={styles.noticeText}>
+        <View style={styles.cancel_container}>
+          <InfoIconRed />
+          <Text style={styles.cancel_text}>{string.diagnostics.invoiceTimelineText}</Text>
+        </View>
+      </View>
+    );
+  };
+
+  const renderOrderSummary = () => {
+    return (
+      <View style={styles.orderSummaryView}>
+        <TouchableOpacity
+          style={styles.orderSummaryTouch}
+          onPress={() => navigateToOrderDetails(true, orderDetails?.orderId!)}
+        >
+          <Text style={styles.orderSummary}>VIEW ORDER SUMMARY</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   return (
     <>
       {!fetching ? (
@@ -315,7 +397,10 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
             {renderPaymentInfo()}
             {renderCirclePurchase()}
             {renderAddPassportInfo()}
+            {renderNoticeText()}
             {renderTestsInfo()}
+            {isSingleUhid ? renderOrderSummary() : null}
+            {renderInvoiceTimeline()}
           </ScrollView>
           {renderPassportPaitentView()}
           {renderTabBar()}
@@ -331,5 +416,44 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  phleboText: { ...theme.fonts.IBMPlexSansRegular(12), lineHeight: 18, color: '#FF748E' },
+  noticeText: { marginLeft: 16, marginRight: 16, marginBottom: 16 },
+  cancel_container: {
+    width: '98%',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    borderRadius: 10,
+    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
+    padding: 10,
+    alignSelf: 'center',
+    marginVertical: 10,
+    elevation: 2,
+    shadowColor: theme.colors.SHADOW_GRAY,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+  },
+  cancel_text: {
+    ...theme.viewStyles.text('M', 12, '#01475b', 0.6, 18),
+    width: '90%',
+    marginHorizontal: 10,
+  },
+  orderSummaryView: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 30,
+    marginTop: 16,
+  },
+  orderSummaryTouch: {
+    height: '100%',
+    width: '70%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  orderSummary: {
+    ...theme.fonts.IBMPlexSansBold(14),
+    lineHeight: 19,
+    color: '#FC9916',
   },
 });

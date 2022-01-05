@@ -367,6 +367,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
                   borderBottomColor:
                     selectedDayTab == index ? theme.colors.APP_GREEN : theme.colors.WHITE,
                   borderBottomWidth: selectedDayTab == index ? 4 : 0,
+                  marginLeft: index == 0 ? 6 : 0,
                 },
               ]}
               onPress={() => {
