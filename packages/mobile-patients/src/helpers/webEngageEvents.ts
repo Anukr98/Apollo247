@@ -1103,10 +1103,7 @@ export interface WebEngageEvents {
     User_Type?: PharmaUserStatus;
     'Split Cart'?: YesOrNo;
     'Prescription Option selected'?: PrescriptionOptions;
-    Shipment_1_Value?: number; // amount after discount
-    Shipment_2_Value?: number;
-    Shipment_1_Items?: number; // number of items
-    Shipment_2_Items?: number;
+    Shipment?: string;
   };
   [WebEngageEventName.PHARMACY_PAYMENT_INITIATED]: {
     'Payment mode': 'Online' | 'COD';
@@ -1823,14 +1820,7 @@ export interface WebEngageEvents {
     User_Type?: PharmaUserStatus;
     'Split Cart': YesOrNo;
     'Cart Items': string;
-    Shipment_1_TAT?: Date;
-    Shipment_2_TAT?: Date;
-    Shipment_1_Value?: number; // amount after discount
-    Shipment_2_Value?: number;
-    Shipment_1_Items?: number; // number of items
-    Shipment_2_Items?: number;
-    Shipment_1_Site_Type?: SiteType;
-    Shipment_2_Site_Type?: SiteType;
+    Shipment?: string;
   };
 
   [WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_FAILURE]: {

@@ -4480,3 +4480,26 @@ export const calculateDiagnosticCartItems = (
 export const isRtpcrInCart = (cartItems: DiagnosticsCartItem[]) =>{
   return !!cartItems?.find((cartItem) =>  AppConfig.Configuration.DIAGNOSTICS_COVID_ITEM_IDS?.includes(Number(cartItem?.id)))
 }
+
+export const getShipmentAndTatInfo = (shipments) => {
+  return shipments?.length ? shipments.map((shipment) => {
+    const { tat, estimatedAmount, items } = shipment;
+    const tatDate = tat ? tat : null;
+    const tatDayDifference = tatDate
+      ? moment(tatDate).diff(new Date(), 'd')
+      : null;
+    const tatHourDifference = tatDate
+      ? moment(tatDate).format('hh:mm a')
+      : null;
+
+    const skuIds = items.map(({ sku }) => sku).join(" , ");
+    return {
+      tatDayDifference,
+      tatHourDifference,
+      estimatedAmount,
+      skuIds,
+      tat,
+    };
+  }) : [];
+};
+

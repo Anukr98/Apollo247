@@ -1088,6 +1088,16 @@ export const autoCompletePlaceSearch = (
 
 let cancelGetDeliveryTAT247: Canceler | undefined;
 
+export const getDeliveryTAT247v3 = (params: TatApiInput247): Promise<AxiosResponse<any>> => {
+  const url = `${config.UATTAT_CONFIG[0]}/v3/tat`;
+  return Axios.post(url, params, {
+    headers: {
+      Authorization: config.UATTAT_CONFIG[1],
+    },
+    timeout: config.TAT_API_TIMEOUT_IN_SEC * 1000,
+  });
+};
+
 export const getDeliveryTAT247 = (params: TatApiInput247): Promise<AxiosResponse<any>> => {
   const CancelToken = Axios.CancelToken;
   cancelGetDeliveryTAT247 && cancelGetDeliveryTAT247();

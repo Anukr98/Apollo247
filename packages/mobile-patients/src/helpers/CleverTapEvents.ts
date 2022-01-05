@@ -1550,10 +1550,7 @@ export interface CleverTapEvents {
     'Split Cart'?: YesOrNo;
     'Coupon Applied'?: string;
     'Prescription Option selected'?: PrescriptionOptions;
-    Shipment_1_Value?: number; // amount after discount
-    Shipment_2_Value?: number;
-    Shipment_1_Items?: number; // number of items
-    Shipment_2_Items?: number;
+    Shipment?: string;
   };
   [CleverTapEventName.PHARMACY_PAYMENT_INITIATED]: {
     paymentMode: string;
@@ -1718,10 +1715,6 @@ export interface CleverTapEvents {
 
   [CleverTapEventName.PHARMACY_CART_REVIEW_ORDER_PAGE_VIEWED]: {
     Pincode: string;
-    TAT_1_Hour: string;
-    TAT_1_Day: number;
-    TAT_2_Hour?: string;
-    TAT_2_Day?: number;
     Shipping_Charges: number;
     Amount_To_Pay: number;
     Prescription_Required: YesOrNo;
@@ -1731,6 +1724,7 @@ export interface CleverTapEvents {
     Circle_Membership_Value?: number;
     User_Type: string;
     User_Mobile_Number: string;
+    Shipment?: string;
   };
 
   // ********** Diagnostic Events *******
@@ -2402,14 +2396,7 @@ export interface CleverTapEvents {
     'User type'?: PharmaUserStatus;
     'Split cart': YesOrNo;
     'Cart items': string;
-    'Shipment1 TAT'?: Date;
-    'Shipment2 TAT'?: Date;
-    'Shipment1 value'?: number; // amount after discount
-    'Shipment2 value'?: number;
-    'Shipment1 items'?: number; // number of items
-    'Shipment2 items'?: number;
-    'Shipment1 site type'?: SiteType;
-    'Shipment2 site yype'?: SiteType;
+    Shipment?: string;
   };
 
   [CleverTapEventName.PHARMACY_CART_ADDRESS_SELECTED_FAILURE]: {
