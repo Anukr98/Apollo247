@@ -4,7 +4,7 @@ import { Props as ProductCardProps } from '@aph/mobile-patients/src/components/M
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { availabilityApi247, MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   addPharmaItemToCart,
   formatToCartItem,

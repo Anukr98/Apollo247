@@ -97,9 +97,12 @@ export const useServerCart = () => {
       })
       .then((result) => {
         const saveCartResponse = result?.data?.saveCart;
-        if (saveCartResponse?.errorMessage) {
-          setServerCartErrorMessage?.(saveCartResponse?.errorMessage || genericErrorMessage);
+        if (saveCartResponse?.errorMessage?.length) {
+          setServerCartErrorMessage?.(saveCartResponse?.errorMessage);
           return;
+        }
+        if (saveCartResponse?.cartMessage?.length) {
+          setServerCartErrorMessage?.(saveCartResponse?.cartMessage);
         }
         if (saveCartResponse?.data?.patientId) {
           const cartResponse = saveCartResponse?.data;
@@ -164,9 +167,12 @@ export const useServerCart = () => {
       })
       .then((result) => {
         const reviewCartResponse = result?.data?.reviewCartPage;
-        if (reviewCartResponse?.errorMessage) {
-          setServerCartErrorMessage?.(reviewCartResponse?.errorMessage || genericErrorMessage);
+        if (reviewCartResponse?.errorMessage?.length) {
+          setServerCartErrorMessage?.(reviewCartResponse?.errorMessage);
           return;
+        }
+        if (reviewCartResponse?.cartMessage?.length) {
+          setServerCartErrorMessage?.(reviewCartResponse?.cartMessage);
         }
         if (reviewCartResponse?.data?.patientId) {
           const cartResponse = reviewCartResponse?.data;
