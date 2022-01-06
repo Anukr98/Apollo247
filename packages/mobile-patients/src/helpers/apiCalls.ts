@@ -436,12 +436,12 @@ export interface MedicinePageAPiResponse {
   widget_3?: MedicinePageProducts;
   metadata: MedicinePageAPiMetadata[];
   [key: string]:
-    | MedicinePageAPiMetadata[]
-    | MedicinePageProducts
-    | OfferBannerSection[]
-    | DealsOfTheDaySection[]
-    | MedicinePageSection[]
-    | any;
+  | MedicinePageAPiMetadata[]
+  | MedicinePageProducts
+  | OfferBannerSection[]
+  | DealsOfTheDaySection[]
+  | MedicinePageSection[]
+  | any;
 }
 
 export interface PackageInclusion {
@@ -1000,13 +1000,13 @@ export const getSpecialOffersPageBrands = (): Promise<AxiosResponse<
 };
 
 export const getSpecialOffersPageBrandsProducts = (activeBrand: string, discountPercentage: object)
-:Promise<AxiosResponse<SpecialOffersBrandsProductsApiResponse>> => {
+  : Promise<AxiosResponse<SpecialOffersBrandsProductsApiResponse>> => {
   const url = `${config.SPECIAL_OFFERS_BRANDS_PRODUCTS[0]}`;
   return Axios.post(
     url,
     {
       params: activeBrand,
-      filters: {discount_percentage : discountPercentage}
+      filters: { discount_percentage: discountPercentage }
     },
     {
       headers: {
@@ -1410,7 +1410,6 @@ export const getDiagnosticListingWidget = (
 ): Promise<AxiosResponse<any>> => {
   const baseurl = config.DRUPAL_CONFIG[0];
   const getWidgets = `${baseurl}/${pageName}/${widgetName}`;
-  console.log({getWidgets})
   return Axios.get(getWidgets, {
     headers: {
       Authorization: config.DRUPAL_CONFIG[1],
@@ -1541,3 +1540,13 @@ export const sendSubscriptionInvoiceEmail = (
     },
   });
 };
+
+export const getOfferCarouselForRegisteration = (): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const url = `${baseurl}/reg-config`;
+  return Axios.get(url, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
+  });
+}
