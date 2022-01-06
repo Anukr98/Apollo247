@@ -1725,5 +1725,24 @@
         }
       ]
     }
+  },
+  "registerationScreenData":{
+    "headerOneHeading":"Create Profile",
+    "headerTwoHeading":"You are a step away from unlocking exclusive offers!",
+    "firstName": "First Name *",
+    "lastName":"Last Name *",
+    "dateofBirth": "Date Of Birth (DD/MM/YY) *",
+    "profileCreatedFor":"Profile Created For *",
+    "Email":"Email (Optional)",
+    "personalisedWhatsAppTips":"Send me personalised health tips & offers on",
+    "referralLabel":"Do You Have A Referral Code? (Optional)"
+  },
+  "multiSignupScreen":{
+    "haveAReferralCode":"Have a Referral code?",
+    "enterReferralCodeOptional":"Enter referral code (Optional)",
+    "cannotFindName":"Can’t find your name? Add a new profile",
+    "addProfile":"ADD PROFILE",
+    "confirm":"CONFIRM",
+    "choosePrimaryProfile":"Choose Primary Profile associated with your mobile no."
   }
 }

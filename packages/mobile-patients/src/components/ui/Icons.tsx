@@ -77,6 +77,13 @@ export const ViewIcon: React.FC<IconProps> = (props) => (
 export const DropdownGreen: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_dropdown_green.webp')} />
 );
+export const DropdownBlue: React.FC<IconProps> = (props) => (
+         <IconBase
+           size="sm"
+           {...props}
+           source={require('@aph/mobile-patients/src/images/signUp/dopdownCaretBlue.webp')}
+         />
+       );
 
 export const Remove: React.FC<IconProps> = (props) => (
   <IconBase size={'sm'} {...props} source={require('./icons/ic_cross.webp')} />
@@ -895,8 +902,6 @@ export const CashbackIcon: React.FC<IconProps> = (props) => (
     source={require('./icons/percent_cashback.webp')}
   />
 );
-
-
 
 export const ToggleOn: React.FC<IconProps> = (props) => (
   <IconBase
@@ -2780,5 +2785,21 @@ export const OffersIconGreen: React.FC<IconProps> = (props) => (
     size="sm"
     {...props}
     source={require('@aph/mobile-patients/src/components/ui/icons/offersIconGreen.webp')}
+  />
+);
+
+export const PriceTagIcon: React.FC<IconProps> = (props) => (
+  <Image
+    style={[props.style]}
+    source={require('@aph/mobile-patients/src/images/signUp/price-tag.webp')}
+    {...props}
+  />
+);
+
+export const CalendarIcon: React.FC<IconProps> = (props) => (
+  <Image
+    style={[props.style]}
+    source={require('@aph/mobile-patients/src/images/signUp/calendarIcon.webp')}
+    {...props}
   />
 );
