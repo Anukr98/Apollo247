@@ -192,6 +192,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     if (!popularArray?.length) {
       fetchPopularDetails();
     }
+    //for time being removing Diagnostic search clicked ct event from here required for ticket https://apollogarage.atlassian.net/browse/APP-18205
   }, []);
 
   useEffect(() => {
