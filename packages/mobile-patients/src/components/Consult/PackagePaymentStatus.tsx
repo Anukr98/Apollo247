@@ -127,7 +127,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
   const [email, setEmail] = useState<string>(currentPatient?.emailAddress || '');
   const [emailSent, setEmailSent] = useState<boolean>(false);
 
-  const [autoBookTimerCount, setAutoBookTimerCount] = useState(15);
+  const [autoBookTimerCount, setAutoBookTimerCount] = useState(10);
 
   useEffect(() => {
     fetchOrderStatus();
@@ -540,6 +540,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
   const fetchOrderStatus = async () => {
     try {
       setShowSpinner?.(true);
+      setAutoBookTimerCount(10);
 
       const response = await getOrderInfo();
 
@@ -896,6 +897,28 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
     );
   };
 
+  const renderCenteredCircle = () => {
+    const { textColor } = getPaymentStatus();
+    if (paymentStatus != PAYMENT_STATUS.TXN_SUCCESS) {
+      return null;
+    }
+    return (
+      <View
+        style={{
+          width: windowWidth - 32,
+          height: windowWidth - 32,
+          borderRadius: (windowWidth - 32) / 2,
+          borderColor: textColor,
+          opacity: 0.4,
+          borderWidth: 4,
+          borderStyle: 'dashed',
+          position: 'absolute',
+          top: 60,
+        }}
+      />
+    );
+  };
+
   if (oneTapPatient) {
     return (
       <SafeAreaView style={theme.viewStyles.container}>
@@ -908,15 +931,18 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
           ]}
           style={styles.oneTapcontainer}
         >
+          {renderCenteredCircle()}
+
           {renderPaymentStatusHeaderOneTap()}
 
           {renderPaymentCard()}
 
-          {autoBookTimerCount != 0 ? (
+          {/* Intentionally commented for future use case  */}
+          {/* {autoBookTimerCount != 0 ? (
             <Text style={{ ...theme.viewStyles.text('R', 10, theme.colors.BLACK_COLOR, 0.7) }}>
               Automatically booking your consultation in {autoBookTimerCount} secs
             </Text>
-          ) : null}
+          ) : null} */}
         </LinearGradient>
 
         {showSpinner ? <Spinner /> : null}
