@@ -995,15 +995,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       .then(({ data }) => {
         setfetching(false);
         if (searchText?.length > 2) {
-          postConsultSearchCleverTapEvent(
-            searchText,
-            currentPatient,
-            allCurrentPatients,
-            data?.getDoctorList?.doctors?.length == 0,
-            'Doctor listing screen',
-            !!circleSubscriptionId,
-            circleSubPlanId || ''
-          );
+          setSearchResults(data?.getDoctorList?.doctors?.length == 0);
         }
         pageNo ? setpageNo(pageNo + 1) : setpageNo(1);
         setData(data, docTabSelected, pageNo);
@@ -1708,6 +1700,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     );
   };
   const [doctorSearch, setDoctorSearch] = useState<string>('');
+  const [searchResults, setSearchResults] = useState<any>(null);
   useEffect(() => {
     if (isValidSearch(doctorSearch) && doctorSearch.length > 2) {
       fetchSpecialityFilterData(
@@ -1858,6 +1851,19 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           value={doctorSearch}
           placeholder="Search doctors"
           underlineColorAndroid="transparent"
+          onBlur={() => {
+            if (doctorSearch?.length > 2) {
+              postConsultSearchCleverTapEvent(
+                doctorSearch,
+                currentPatient,
+                allCurrentPatients,
+                searchResults,
+                'Doctor listing screen',
+                !!circleSubscriptionId,
+                circleSubPlanId || ''
+              );
+            }
+          }}
           onChangeText={(value) => {
             if (isValidSearch(value)) {
               const search = _.debounce(setDoctorSearch, 300);
