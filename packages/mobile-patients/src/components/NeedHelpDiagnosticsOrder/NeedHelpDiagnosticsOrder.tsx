@@ -47,6 +47,7 @@ import {
   BLACK_LIST_CANCEL_STATUS_ARRAY,
   BLACK_LIST_RESCHEDULE_STATUS_ARRAY,
   DIAGNOSTIC_ORDER_CANCELLED_STATUS,
+  DIAGNOSTIC_SHOW_RESCHEDULE_CANCEL_ARRAY,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { Down, DownO, InfoIconRed, ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -256,8 +257,7 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
       order?.orderStatus!
     );
     // const showReschedule = isRescheduleValid == undefined && !isPastOrder ? true : false;
-    const showReschedule =
-      isRescheduleValid == undefined && !isRescheduleValidAtOrderLevel ? true : false;
+    const showReschedule = DIAGNOSTIC_SHOW_RESCHEDULE_CANCEL_ARRAY.includes(order?.orderStatus);
 
     //show the reschedule option :-
 

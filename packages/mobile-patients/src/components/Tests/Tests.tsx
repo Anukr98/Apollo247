@@ -359,6 +359,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   );
   const scrollCount = useRef<number>(0);
   const [pastOrderRecommendations, setPastOrderRecommendations] = useState([] as any);
+  const [showPastRecommendations, setShowPastRecommendations] = useState<boolean>(false);
   const getCTADetails = showDiagnosticCTA(CALL_TO_ORDER_CTA_PAGE_ID.HOME, cityId);
   const hasLocation = locationDetails || diagnosticLocation || pharmacyLocation || defaultAddress;
   const showNudgeMessage = AppConfig.Configuration.DIAGNOSTICS_NUDGE_MESSAGE_CONDITION?.find(
@@ -431,7 +432,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   useEffect(() => {
     triggerLandingPageViewedEvent();
-  }, [pastOrderRecommendations]);
+  }, [showPastRecommendations]);
 
   //if new address is added on cart page
   useEffect(() => {
@@ -557,7 +558,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       movedFrom === string.diagnostics.deeplink
         ? DiagnosticHomePageSource.DEEPLINK
         : homeScreenAttributes?.Source,
-      !!pastOrderRecommendations && pastOrderRecommendations?.length > 0 ? 'Yes' : 'No'
+      !!pastOrderRecommendations && pastOrderRecommendations?.length >= 6 ? 'Yes' : 'No'
     );
   }
 
@@ -952,6 +953,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     showPastRecommendations?.length >= 6
       ? setPastOrderRecommendations(showPastRecommendations)
       : setPastOrderRecommendations([]);
+    setShowPastRecommendations(showPastRecommendations?.length >= 6);
     setPriceAvailable(true);
     setPastOrderRecommendationShimmer(false);
   }
