@@ -891,13 +891,13 @@ export const Login: React.FC<LoginProps> = (props) => {
         duration: 500
       }
     ).start()
-    Animated.timing(
-      focusAnim,
-      {
-        toValue: -height*0.1,
-        duration: 500
-      },
-    ).start()
+    // Animated.timing(
+    //   focusAnim,
+    //   {
+    //     toValue: -height*0.1,
+    //     duration: 500
+    //   },
+    // ).start()
     Animated.timing(
       paginationSpace,{
         toValue: 5,
@@ -908,13 +908,13 @@ export const Login: React.FC<LoginProps> = (props) => {
 
   const onBlur = () => {
     setIsFocused(false)
-    Animated.timing(
-      focusAnim,
-      {
-        toValue: 0,
-        duration: 500
-      }
-    ).start() 
+    // Animated.timing(
+    //   focusAnim,
+    //   {
+    //     toValue: 0,
+    //     duration: 500
+    //   }
+    // ).start() 
     Animated.timing(
       paginationSpace,{
         toValue: 30,
@@ -932,7 +932,7 @@ export const Login: React.FC<LoginProps> = (props) => {
 
   const renderManualForm = () => <>
     <Animated.View style={{ alignItems: 'center', opacity: (error || phoneNumber.length) ? 1 : 0, marginTop: floatingLabelSpace }}>
-      <Text style={[theme.viewStyles.text('R', 12, colors.LIGHT_BLUE), { opacity: .65 }]}>Registered mobile number</Text>
+      <Text style={[theme.viewStyles.text('R', 12, colors.LIGHT_BLUE), { opacity: .65 }]}>Enter mobile number</Text>
     </Animated.View>
     <Animated.View
       style={[
@@ -954,14 +954,14 @@ export const Login: React.FC<LoginProps> = (props) => {
         onSubmitEditing={onClickOkay}
       />
     </Animated.View>
-    <Animated.View style={[styles.submitButtonContainer,{  marginTop: "6%" }]}>
+    <View style={[styles.submitButtonContainer,{  marginTop: !isFocused ? "6%" : "3%" }]}>
       <TouchableOpacity
         style={styles.submitButton}
         onPress={onClickOkay}
       >
         <Text style={[theme.fonts.IBMPlexSansBold(12), { color: colors.WHITE, letterSpacing: 1 }]}>{string.common.continue}</Text>
       </TouchableOpacity>
-    </Animated.View>
+    </View>
   </>
 
   return (
@@ -977,32 +977,29 @@ export const Login: React.FC<LoginProps> = (props) => {
 
           <Animated.View style={{ height: paginationSpace }} />
 
-            <Animated.View style={{ alignItems: 'center', marginBottom: paginationSpace }}>
-              <Text style={[theme.fonts.IBMPlexSansSemiBold(18), { color: colors.CARD_HEADER }]}>
-                {string.login.signin_signup}
-              </Text>
-            </Animated.View>
-            {
-              error ? <View style={{ alignItems: 'center', marginBottom: 20, marginTop: isFocused ? 7 : 0 }}>
-                <Text style={styles.errorText}>{error}</Text>
-              </View> : null
-            }
+          <Animated.View style={{ alignItems: 'center', marginBottom: paginationSpace }}>
+            <Text style={[theme.fonts.IBMPlexSansSemiBold(18), { color: colors.CARD_HEADER }]}>
+              {string.login.signin_signup}
+            </Text>
+          </Animated.View>
+          {
+            error ? <View style={{ alignItems: 'center', marginBottom: 20, marginTop: isFocused ? 7 : 0 }}>
+              <Text style={styles.errorText}>{error}</Text>
+            </View> : null
+          }
 
-            <View style={{ flex: 1 }}>
-              <ScrollView
-                horizontal
-                scrollEnabled={false}
-                ref={formRef}
-                showsHorizontalScrollIndicator={false}
-              >
-              {/* <View style={{ width }}>
-                {renderAutodetectedForm()}
-              </View> */}
-              <View style={{ width }}>
-                {renderManualForm()}
-              </View>
-              </ScrollView>
+          <View style={{ flex: 1 }}>
+            <ScrollView
+              horizontal
+              scrollEnabled={false}
+              ref={formRef}
+              showsHorizontalScrollIndicator={false}
+            >
+            <View style={{ width }}>
+              {renderManualForm()}
             </View>
+            </ScrollView>
+          </View>
         </ScrollView>
         <View style={styles.bottomContainer}>
           <CheckBox

@@ -6,6 +6,7 @@ interface CountDownTimerTypes {
   timer: number;
   onStopTimer?: () => void;
   showSeconds?: boolean;
+  returnUpdatedValue?: (updated: number) => void;
 }
 
 interface CountDownTimerState {
@@ -22,7 +23,10 @@ export class CountDownTimer extends React.Component<CountDownTimerTypes, CountDo
 
   componentDidMount() {
     const interval = setInterval(
-      () => this.setState((prevState) => ({ timer: prevState.timer - 1 })),
+      () => {
+        this.setState((prevState) => ({ timer: prevState.timer - 1 }))
+        this.props.returnUpdatedValue && this.props.returnUpdatedValue(this.state.timer)
+      },
       1000
     );
     this.setState({ interval });

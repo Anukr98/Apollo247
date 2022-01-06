@@ -119,6 +119,11 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [showOtpOnCallCta, setShowOtpOnCallCta] = useState<boolean>(false);
   const [resendOtpSection, setResendOtpSection] = useState<boolean>(false)
   const [otpStatus, setOtpStatus] = useState<string>(string.login.otp_sent_to)
+  const [isBlocked, setIsBlocked] = useState<boolean>(false)
+  const [coolOff, setCoolOff] = useState<number>(10)
+  const [editable, setEditable] = useState<boolean>(true)
+  const [updatedTimerValue, setUpdatedTimerValue] = useState<number>(0)
+  const [newOTPNeeded, setNewOTPNeeded] = useState<boolean>(false)
 
   const styles = StyleSheet.create({
     container: {
@@ -262,7 +267,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       ...theme.viewStyles.text(
         'M',
         otpStatus === (string.login.otp_sent_to || string.login.otp_resent_on_sms || string.login.otp_resent_on_call) ? 14 : 12,
-        (otpStatus === string.login.otp_sent_to || otpStatus === string.login.auto_verfying_otp) ? colors.LIGHT_BLUE : (otpStatus === string.login.otp_resent_on_sms || otpStatus === string.login.otp_resent_on_call) ? colors.GREEN : theme.colors.INPUT_FAILURE_TEXT
+        (otpStatus === string.login.otp_sent_to || otpStatus === string.login.auto_verfying_otp) ? colors.LIGHT_BLUE : (otpStatus === string.login.otp_resent_on_sms || otpStatus === string.login.otp_resent_on_call || otpStatus === string.login.try_otp_again) ? colors.GREEN : theme.colors.INPUT_FAILURE_TEXT
       )
     }
   });
@@ -284,6 +289,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const handleBack = async () => {
     setOpenFillerView(false);
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    props.navigation.replace('Login')
     return true;
   };
 
@@ -321,6 +327,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const getTimerData = useCallback(async () => {
     try {
       const data = await AsyncStorage.getItem('timeOutData');
+      setInvalidOtpCount(0);
       if (data) {
         const timeOutData = JSON.parse(data);
         const { phoneNumber } = props.navigation.state.params!;
@@ -334,7 +341,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             const seconds = Math.ceil(dif / 1000);
             if (obj.invalidAttems === 3) {
               if (seconds < 120) {
-                setInvalidOtpCount(3);
+                // setInvalidOtpCount(3);
                 setIsValidOTP(false);
                 timer = 120 - seconds;
                 setRemainingTime(30);
@@ -459,6 +466,19 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     () => authListener();
   });
 
+  useEffect(() => {
+    if(isBlocked && coolOff>0) {
+      let timer = setTimeout(() => {
+        clearInterval(timer)
+        setCoolOff(coolOff - 1)
+      },1000)
+    }
+    if(coolOff === 0 && updatedTimerValue === 0) {
+      setNewOTPNeeded(false)
+      setEditable(true)
+    }
+  },[coolOff, updatedTimerValue])
+
   const postOtpSuccessEvent = () => {
     const phoneNumberFromParams = `+91${props.navigation.getParam('phoneNumber')}`;
     const eventAttributes: WebEngageEvents[WebEngageEventName.OTP_VERIFICATION_SUCCESS] = {
@@ -503,12 +523,10 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                   postOtpSuccessEvent();
                   CommonLogEvent('OTP_ENTERED_SUCCESS', 'SUCCESS');
                   CommonBugFender('OTP_ENTERED_SUCCESS', data as Error);
-
                   _removeFromStore();
                   setOnOtpClick(true);
                   setshowSpinner(false);
                   setOpenFillerView(true);
-
                   sendOtp(data.authToken)
                     .then(() => {
                       getAuthToken();
@@ -518,7 +536,17 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                     });
                 } else {
                   try {
-                    setOtpStatus(`Incorrect OTP. You have ${3 - invalidOtpCount} more ${invalidOtpCount == 2 ? 'try' : 'tries'}.`)
+                    if(data?.isBlocked) {
+                      setOtpStatus(string.login.max_attempts_reached)
+                      setIsBlocked(true)
+                      setCoolOff(coolOff-1)
+                      setEditable(false)
+                      setNewOTPNeeded(true)
+                    }
+                    else {
+                      setOtpStatus(`Incorrect OTP. You have ${2 - invalidOtpCount} more ${invalidOtpCount == 1? 'try' : 'tries'}.`)
+                      setInvalidOtpCount(invalidOtpCount + 1)
+                    }
                     setshowErrorBottomLine(true);
                     setOnOtpClick(false);
                     setshowSpinner(false);
@@ -852,8 +880,13 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const onClickResend = () => {
     try {
+      setInvalidOtpCount(0)
+      setEditable(true)
+      setCoolOff(10)
+      setIsBlocked(false)
+      setNewOTPNeeded(false)
       CommonLogEvent(AppRoutes.OTPVerification, 'Resend Otp clicked');
-
+      console.log("cooloff", coolOff)
       getNetStatus()
         .then((status) => {
           if (status) {
@@ -891,6 +924,11 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const onGetOtpOnCall = () => {
     try {
+      setInvalidOtpCount(0)
+      setEditable(true)
+      setCoolOff(10)
+      setIsBlocked(false)
+      setNewOTPNeeded(false)
       setDisableOtpOnCallCta(true);
       CommonLogEvent(AppRoutes.OTPVerification, 'Get OTP On Call Clicked');
       getNetStatus()
@@ -959,59 +997,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     postCleverTapEvent(CleverTapEventName.GET_OTP_ON_CALL, eventAttributes);
   };
 
-  const openWebViewTandC = () => {
-    CommonLogEvent(AppRoutes.OTPVerification, 'Terms  Conditions clicked');
-    Keyboard.dismiss();
-    props.navigation.navigate(AppRoutes.CommonWebView, {
-      url: AppConfig.Configuration.APOLLO_TERMS_CONDITIONS,
-      isGoBack: true,
-    });
-  };
-
-  const openWebViewPrivacyPolicy = () => {
-    CommonLogEvent(AppRoutes.OTPVerification, 'Privacy Policy clicked');
-    Keyboard.dismiss();
-    props.navigation.navigate(AppRoutes.CommonWebView, {
-      url: AppConfig.Configuration.APOLLO_PRIVACY_POLICY,
-      isGoBack: true,
-    });
-  };
-
-  const renderHyperLink = () => {
-    return (
-      <View style={{ flexDirection: 'row', marginLeft: 5, marginTop: 12}}>
-      <CheckBox
-        checked={isTandCSelected}
-        onPress={() => setTandC(!isTandCSelected)}
-        checkedIcon={<CheckBoxFilled  style={styles.checkBoxStyle} />}
-        uncheckedIcon={<CheckBoxEmpty style={styles.checkBoxStyle} />}
-        containerStyle={styles.checkBoxContainer}
-      />
-      <Text
-        style={{
-          color: '#02475b',
-          marginEnd: 45,
-          ...fonts.IBMPlexSansMedium(10),
-        }}
-      >
-        {string.login.bySigningUp}{' '}
-        <Text style={styles.hyperlink} onPress={() => openWebViewTandC()}>
-          {string.login.termsAndCondition}
-        </Text>{' '}
-        {string.login.and}{' '}
-        <Text style={styles.hyperlink} onPress={() => openWebViewPrivacyPolicy()}>
-          {string.login.privacyPolicy}
-        </Text>{' '}
-        {string.login.ofApollo247}
-      </Text>
-    </View>
-    );
-  };
-
   const renderOtpOnCall = () => (
     <View style={styles.otpOnCallContainer}>
       <TouchableOpacity
-        disabled={disableOtpOnCallCta}
         onPress={onGetOtpOnCall}
         activeOpacity={0.5}
         style={[
@@ -1034,8 +1022,16 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
-        <View style={{ alignItems: 'center', paddingTop: 10 }}>
-          <ApolloLogo style={{ width: 55, height: 47 }} resizeMode="contain" />
+        <View style={{ alignItems: 'center', paddingTop: 10, flexDirection: 'row', paddingLeft: 10 }}>
+          <TouchableOpacity
+            style={{ flex: .4 }}
+            onPress={handleBack}
+          >
+            <BackArrow />
+          </TouchableOpacity>
+          <View style={{ flex: .6, }}>
+            <ApolloLogo style={{ width: 55, height: 47 }} resizeMode="contain" />
+          </View>
         </View>
         <View style={{ width: '90%', alignSelf: 'center' }}>
           <View style={{ marginTop: "10%", alignItems: 'center' }}>
@@ -1056,20 +1052,21 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               onCodeFilled={onClickOk}
               codeInputFieldStyle={styles.inputContainer}
               onCodeChanged={code => setOtp(code)}
-              editable={invalidOtpCount <= 3}
+              editable={editable && !newOTPNeeded}
             />
           </View>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             {
               !resendOtpSection ? (
                 <>
-                <Text style={theme.viewStyles.text('M', 14, colors.LIGHT_BLUE, 1)}>Resend the OTP in</Text>
-                <CountDownTimer
-                  timer={remainingTime}
-                  style={theme.viewStyles.text('M', 12, colors.LIGHT_BLUE, 1)}
-                  onStopTimer={onStopTimer}
-                  showSeconds
-                />
+                  <Text style={theme.viewStyles.text('M', 14, colors.LIGHT_BLUE, 1)}>Resend the OTP in</Text>
+                  <CountDownTimer
+                    timer={remainingTime}
+                    style={theme.viewStyles.text('M', 12, colors.LIGHT_BLUE, 1)}
+                    onStopTimer={onStopTimer}
+                    showSeconds
+                    returnUpdatedValue={updated => setUpdatedTimerValue(updated)}
+                  />
                 </>
               ) : (
                 <View style={{ width: '100%' }}>

@@ -342,14 +342,16 @@
     "all_consults": "All Consults",
     "distance": "Distance",
     "hello_login": "hello! :)",
-    "signin_signup": "Sign in/ Sign up",
-    "otp_placeholder": "Please enter OTP to access all Apollo service in an app!",
+    "signin_signup": "Sign in / Sign up",
+    "otp_placeholder": "Please enter the OTP to access all of Apollo Services!",
     "otp_resent_on_call": "OTP resent on call",
     "otp_resent_on_sms": "OTP resent on SMS",
     "otp_not_received": "Didn't get OTP?",
     "number_auto_detected": "Number auto detected from your SIM 1",
     "manual_number_input": "ENTER NUMBER MANUALLY",
-    "auto_verfying_otp": "Auto verifying OTP"
+    "auto_verfying_otp": "Auto verifying OTP",
+    "max_attempts_reached": "Maximum tries exceeded! Please generate a new OTP and/or wait 10 seconds and try again",
+    "try_otp_again": "You may try again"
   },
   "home": {
     "hi": "hi",
