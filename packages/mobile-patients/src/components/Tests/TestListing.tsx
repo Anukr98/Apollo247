@@ -143,6 +143,8 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       ?.replace(/ /g, '-')
       ?.toLowerCase();
     let widgetName = movedFrom == AppRoutes.Tests ? `home-${createTitle}` : `${createTitle}`;
+    const titleFromProps = props.navigation.getParam('widgetName');
+
     if (widgetType == 'Category' || widgetType == 'Category_Scroll') {
       widgetName = createTitle.toLowerCase();
     }
@@ -154,22 +156,39 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         if (isRecommended) {
           fetchPastOrderRecommendations(getWidgetsData);
         } else {
+          if (
+            titleFromProps?.toLowerCase() ==
+            string.diagnostics.homepagePastOrderRecommendations?.toLowerCase()
+          ) {
+            fetchPastOrderRecommendations([]);
+          } else {
+            fetchWidgetsPrices(getWidgetsData);
+            setLoading?.(false);
+          }
           setWidgetsData(getWidgetsData);
-          fetchWidgetsPrices(getWidgetsData);
-          setLoading?.(false);
         }
       } else {
+        callPastRecommendations(titleFromProps!);
         setWidgetsData([]);
-        setLoading?.(false);
-        setError(true);
       }
     } catch (error) {
       CommonBugFender('fetchWidgets_TestListing', error);
+      callPastRecommendations(titleFromProps!);
       setWidgetsData([]);
+    }
+  };
+
+  function callPastRecommendations(titleFromProps: string) {
+    if (
+      titleFromProps?.toLowerCase() ==
+      string.diagnostics.homepagePastOrderRecommendations?.toLowerCase()
+    ) {
+      fetchPastOrderRecommendations([]);
+    } else {
       setLoading?.(false);
       setError(true);
     }
-  };
+  }
 
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
     client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
