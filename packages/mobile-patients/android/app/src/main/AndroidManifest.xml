@@ -162,6 +162,22 @@
                     android:scheme="https"
                     android:host="www.apollo247.com"
                     android:pathPrefix="/consultpackage" />
+
+                <data 
+                    android:scheme="https"
+                    android:host="www.apollo247.com"
+                    android:pathPrefix="/lab-tests-category" />
+
+                <data 
+                    android:scheme="https"
+                    android:host="www.apollo247.com"
+                    android:pathPrefix="/category-listing" />
+
+                <data 
+                    android:scheme="https"
+                    android:host="www.apollo247.com"
+                    android:pathPrefix="/orderdetails" />
+
             </intent-filter>
 
             <!--  support sharing images into app-->
