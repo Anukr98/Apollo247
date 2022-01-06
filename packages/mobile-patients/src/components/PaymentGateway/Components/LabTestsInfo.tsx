@@ -77,8 +77,7 @@ export const LabTestsInfo: React.FC<LabTestsInfoProps> = (props) => {
     const lineItems = order?.diagnosticOrderLineItems;
     const remainingItems = !!lineItemsLength && lineItemsLength - 1;
     const { patientName, patientSalutation } = extractPatientDetails(order?.patientObj);
-    const isNewlyModified =
-      lineItemsLength?.length > 0 && lineItems?.[0]?.editOrderID === modifiedOrderId;
+    const isNewlyModified = !!lineItemsLength && lineItems?.[0]?.editOrderID === modifiedOrderId;
     return (
       <>
         <Spearator style={styles.separator} />
