@@ -3,6 +3,7 @@ import { View, Text, Dimensions, Image, StyleSheet } from 'react-native';
 import Carousel from 'react-native-snap-carousel';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { getLoginCarouselBannerTexts } from '../../helpers/apiCalls';
 
 interface Props {
   focused: boolean;
@@ -20,29 +21,22 @@ export const LoginCarousel: React.FC<Props> = ({ focused }) => {
   }, []);
 
   const getBannerTexts = async () => {
-    await fetch('https://uatcms.apollo247.com/api/app-config', {
-      headers: {
-        Authorization: `Basic Y29udGVudDp3YWxtYXJ0TlVUdG9reW9IZWlzdA==`,
+    const { data } = await getLoginCarouselBannerTexts();
+    const { consult, diagnostic, pharma } = data?.data || {};
+    setdata([
+      {
+        image: require('@aph/mobile-patients/src/images/home/loginBanner1.webp'),
+        text: consult?.title,
       },
-    })
-      .then((res) => res.json())
-      .then((res) => {
-        const { consult, diagnostic, pharma } = res?.data || {};
-        setdata([
-          {
-            image: require('@aph/mobile-patients/src/images/home/loginBanner1.webp'),
-            text: consult?.title,
-          },
-          {
-            image: require('@aph/mobile-patients/src/images/home/loginBanner2.webp'),
-            text: diagnostic?.title,
-          },
-          {
-            image: require('@aph/mobile-patients/src/images/home/loginBanner3.webp'),
-            text: pharma?.title,
-          },
-        ]);
-      });
+      {
+        image: require('@aph/mobile-patients/src/images/home/loginBanner2.webp'),
+        text: diagnostic?.title,
+      },
+      {
+        image: require('@aph/mobile-patients/src/images/home/loginBanner3.webp'),
+        text: pharma?.title,
+      },
+    ]);
   };
 
   const [slideIndex, setSlideIndex] = useState(0);

@@ -1550,3 +1550,15 @@ export const getOfferCarouselForRegisteration = (): Promise<AxiosResponse<any>> 
     },
   });
 }
+
+export const getLoginCarouselBannerTexts = (): Promise<AxiosResponse<any>> => {
+  const baseUrl = config.DRUPAL_CONFIG[0]
+  const url = `${baseUrl}/app-config`
+  return Axios.get(
+    url, {
+      headers: {
+        Authorization: config.DRUPAL_CONFIG[1]
+      }
+    }
+  )
+}
