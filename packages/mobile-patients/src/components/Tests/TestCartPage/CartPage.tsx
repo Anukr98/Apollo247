@@ -18,6 +18,7 @@ import {
   formatAddressForApi,
   formatAddressWithLandmark,
   g,
+  getAge,
   isAddressLatLngInValid,
   isDiagnosticSelectedCartEmpty,
   isEmptyObject,
@@ -215,9 +216,17 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   );
 
   const patientsOnCartPage = !!isCartPresent && isCartPresent?.map((item) => item?.patientId);
-  const patientListForOverlay =
+  const patientListForOverlay1 =
     !!patientsOnCartPage &&
     allCurrentPatients?.filter((items: any) => patientsOnCartPage.includes(items?.id));
+  const patientListForOverlay =
+    !!patientListForOverlay1 &&
+    patientListForOverlay1?.filter((items: any) => {
+      const age = getAge(items?.dateOfBirth);
+      if (!!age && age >= 10) {
+        return items;
+      }
+    });
 
   const addressText = isModifyFlow
     ? formatAddressForApi(modifiedOrder?.patientAddressObj) || ''

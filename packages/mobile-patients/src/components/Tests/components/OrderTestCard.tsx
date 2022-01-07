@@ -121,8 +121,9 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
   };
 
   const renderMidView = () => {
+    const showAddTest = props.showAddTest && !isMinorAge;
     return (
-      <View style={styles.midViewContainer}>
+      <View style={[styles.midViewContainer, !showAddTest && { justifyContent: 'flex-start' }]}>
         {!!props.patientName && (
           <View style={styles.patientNameView}>
             <Text style={styles.testForText}>
@@ -141,23 +142,13 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
             </TouchableOpacity>
           </View>
         ) : null}
-        {props.showAddTest ? (
+        {showAddTest ? (
           <TouchableOpacity
             activeOpacity={1}
             onPress={props.onPressAddTest}
-            disabled={isMinorAge}
             style={styles.addTestTouch}
           >
-            <Text
-              style={[
-                styles.yellowText,
-                {
-                  opacity: isMinorAge ? 0.6 : 1,
-                },
-              ]}
-            >
-              ADD MORE TEST
-            </Text>
+            <Text style={styles.yellowText}>ADD MORE TEST</Text>
           </TouchableOpacity>
         ) : null}
       </View>
@@ -967,7 +958,11 @@ const styles = StyleSheet.create({
     maxWidth: '60%',
   },
   vaccinationText: { ...theme.viewStyles.text('M', 12, colors.WHITE, 1, 15) },
-  editIconView: { justifyContent: 'center', marginHorizontal: 3, marginRight: 6 },
+  editIconView: {
+    justifyContent: 'center',
+    marginHorizontal: 3,
+    marginRight: 6,
+  },
   editIconTouch: {
     width: 20,
     height: 20,
