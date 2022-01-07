@@ -1800,7 +1800,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const renderPolicyDisclaimer = () => {
     return (
       <View style={{ margin: 16, marginTop: anyCartSaving > 0 ? 16 : 0 }}>
-        <Text style={styles.disclaimerText}>{string.diagnosticsCartPage.reviewPagePolicyText}</Text>
+        <Text style={styles.disclaimerText}>
+          {AppConfig.Configuration.DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER_TEXT}
+        </Text>
       </View>
     );
   };
@@ -3095,5 +3097,5 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   savingsTitleText: { ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 1, 20) },
-  disclaimerText: { ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 0.7, 14) },
+  disclaimerText: { ...theme.viewStyles.text('M', 11, colors.SHERPA_BLUE, 0.7, 14) },
 });
