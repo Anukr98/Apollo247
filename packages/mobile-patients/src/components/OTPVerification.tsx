@@ -30,7 +30,6 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useCallback, useEffect, useState } from 'react';
-import { CheckBox } from 'react-native-elements';
 import {
   Alert,
   BackHandler,
@@ -78,7 +77,7 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
-import { colors } from '../theme/colors';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 import OTPInputView from '@twotalltotems/react-native-otp-input'
 
 const { height, width } = Dimensions.get('window');
@@ -269,6 +268,21 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         otpStatus === (string.login.otp_sent_to || string.login.otp_resent_on_sms || string.login.otp_resent_on_call) ? 14 : 12,
         (otpStatus === string.login.otp_sent_to || otpStatus === string.login.auto_verfying_otp) ? colors.LIGHT_BLUE : (otpStatus === string.login.otp_resent_on_sms || otpStatus === string.login.otp_resent_on_call || otpStatus === string.login.try_otp_again) ? colors.GREEN : theme.colors.INPUT_FAILURE_TEXT
       )
+    },
+    topViewContainer: {
+      alignItems: 'center',
+      paddingTop: 10,
+      flexDirection: 'row',
+      paddingLeft: 10
+    },
+    mainContainer: {
+      width: '90%',
+      alignSelf: 'center'
+    },
+    otpOnCall: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      width: '100%'
     }
   });
 
@@ -1021,7 +1035,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
-        <View style={{ alignItems: 'center', paddingTop: 10, flexDirection: 'row', paddingLeft: 10 }}>
+        <View style={styles.topViewContainer}>
           <TouchableOpacity
             style={{ flex: .4 }}
             onPress={handleBack}
@@ -1032,9 +1046,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             <ApolloLogo style={{ width: 55, height: 47 }} resizeMode="contain" />
           </View>
         </View>
-        <View style={{ width: '90%', alignSelf: 'center' }}>
+        <View style={styles.mainContainer}>
           <View style={{ marginTop: "10%", alignItems: 'center' }}>
-            <View><Text style={styles.otpTitle}>Enter OTP</Text></View>
+            <Text style={styles.otpTitle}>{string.login.otp_title}</Text>
             <View style={{ marginTop: '3%' }}>
               <Text style={styles.otpDescription}>{string.login.otp_placeholder}</Text>
             </View>
@@ -1070,7 +1084,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               ) : (
                 <View style={{ width: '100%' }}>
                   <Text style={theme.viewStyles.text('M', 15, colors.LIGHT_BLUE, 1)}>{string.login.otp_not_received}</Text>
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
+                  <View style={styles.otpOnCall}>
                     {renderOtpOnCall()}
                     <View style={styles.otpOnCallContainer}>
                       <TouchableOpacity

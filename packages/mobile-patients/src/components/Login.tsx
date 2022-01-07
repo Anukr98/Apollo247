@@ -1,16 +1,6 @@
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { timeOutDataType } from '@aph/mobile-patients/src/components/OTPVerification';
-import {
-  ArrowDisabled,
-  ArrowYellow,
-  CheckBox as CheckBoxEmpty,
-  CheckBoxFilled,
-  LoginCheckBoxFilled,
-  LoginCheckBoxUnFilled,
-} from '@aph/mobile-patients/src/components/ui/Icons';
-import LandingDataView from '@aph/mobile-patients/src/components/ui/LandingDataView';
-import { LoginCard } from '@aph/mobile-patients/src/components/ui/LoginCard';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -34,7 +24,6 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { CheckBox } from 'react-native-elements';
 import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
@@ -54,8 +43,6 @@ import {
   ScrollView,
   TouchableOpacity,
   Animated,
-  PixelRatio,
-  BackHandler,
   ImageBackground,
 } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
@@ -92,11 +79,8 @@ import {
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { LoginCarousel } from '@aph/mobile-patients/src/components/ui/LoginCarousel';
 import { colors } from '../theme/colors';
-import LinearGradient from 'react-native-linear-gradient';
-import DeviceInfo from 'react-native-device-info';
 import SmsRetriever from 'react-native-sms-retriever';
-import Permissions from 'react-native-permissions';
-import { InputCheckBox } from './ui/InputCheckBox';
+import { InputCheckBox } from '@aph/mobile-patients/src/components/ui/InputCheckBox';
 
 let TRUECALLER: any;
 
@@ -131,10 +115,8 @@ export const Login: React.FC<LoginProps> = (props) => {
   const [appSign, setAppSign] = useState<string>('');
   const [isFocused, setIsFocused] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
-  const [focusAnim] = useState(new Animated.Value(0));
   const [paginationSpace] = useState(new Animated.Value(30));
   const [floatingLabelSpace] = useState(new Animated.Value(10));
-  const formRef = useRef();
   const inputRef = useRef();
 
   const isAndroid = Platform.OS === 'android';
@@ -961,7 +943,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   );
 
   return (
-    <Animated.View style={{ flex: 1, backgroundColor: '#e5e5e5' }}>
+    <Animated.View style={{ flex: 1, backgroundColor: colors.CALL_BG_GRAY }}>
       <SafeAreaView style={[styles.container, { backgroundColor: colors.WHITE }]}>
         <ImageBackground
           source={require('@aph/mobile-patients/src/images/home/gradient-background.webp')}
@@ -990,7 +972,6 @@ export const Login: React.FC<LoginProps> = (props) => {
               <ScrollView
                 horizontal
                 scrollEnabled={false}
-                ref={formRef}
                 showsHorizontalScrollIndicator={false}
               >
                 <View style={{ width }}>{renderManualForm()}</View>

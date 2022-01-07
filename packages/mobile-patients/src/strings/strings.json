@@ -343,6 +343,7 @@
     "distance": "Distance",
     "hello_login": "hello! :)",
     "signin_signup": "Sign in / Sign up",
+    "otp_title": "Enter OTP",
     "otp_placeholder": "Please enter the OTP to access all of Apollo Services!",
     "otp_resent_on_call": "OTP resent on call",
     "otp_resent_on_sms": "OTP resent on SMS",
