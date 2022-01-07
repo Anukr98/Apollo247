@@ -324,7 +324,7 @@
     "and": "and",
     "privacyPolicy": "Privacy Policy",
     "ofApollo247": "of Apollo247",
-    "wrong_number": "Please enter a valid phone number",
+    "wrong_number": "Please enter a valid 10-digit phone number",
     "numberPrefix": "+91",
     "great": "great!",
     "type_otp_text": "Now type in the OTP sent to you for authentication",

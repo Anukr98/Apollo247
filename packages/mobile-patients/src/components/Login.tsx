@@ -54,7 +54,8 @@ import {
   ScrollView,
   TouchableOpacity,
   Animated,
-  PixelRatio
+  PixelRatio,
+  BackHandler
 } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
 import WebEngage from 'react-native-webengage';
@@ -134,6 +135,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   const [paginationSpace] = useState(new Animated.Value(30))
   const [floatingLabelSpace] = useState(new Animated.Value(10))
   const formRef = useRef()
+  const inputRef = useRef()
 
   const isAndroid = Platform.OS === 'android';
   const client = useApolloClient();
@@ -311,7 +313,13 @@ export const Login: React.FC<LoginProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.MOBILE_ENTRY, eventAttributes);
     postFirebaseEvent(FirebaseEventName.MOBILE_ENTRY, eventAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.MOBILE_ENTRY, eventAttributes);
+    const backHandler = Keyboard.addListener('keyboardDidHide', handleBackButtonPress)
+    return () => backHandler.remove()
   }, []);
+
+  const handleBackButtonPress = () => {
+    inputRef?.current?.blur()
+  }
   
 
   useEffect(() => {
@@ -688,6 +696,8 @@ export const Login: React.FC<LoginProps> = (props) => {
   }, [subscriptionId]);
 
   const validateAndSetPhoneNumber = (number: string) => {
+    if(number.length)
+      onBlur()
     setError('')
     if (/^\d+$/.test(number) || number == '') {
       setPhoneNumber(number);
@@ -952,6 +962,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         onFocus={onFocus}
         onBlur={onBlur}
         onSubmitEditing={onClickOkay}
+        ref={inputRef}
       />
     </Animated.View>
     <View style={[styles.submitButtonContainer,{  marginTop: !isFocused ? "6%" : "3%" }]}>

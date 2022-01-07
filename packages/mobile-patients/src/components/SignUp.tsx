@@ -780,6 +780,13 @@ const SignUp: React.FC<SignUpProps> = (props) => {
     );
   };
 
+  const postWhatsAppOptInEvent = () => {
+    const cleverTapEventAttributes: any = {
+      'MSG_whatsapp': true
+    }
+    postCleverTapEvent(CleverTapEventName.WHATSAPP_OPTIN_ENABLED, cleverTapEventAttributes);
+  }
+
   const registerUserForNewAndExisting = async () => {
     Keyboard.dismiss();
     CommonLogEvent(AppRoutes.SignUp, 'Sign button clicked');
@@ -835,7 +842,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
         : null;
       let patientDetails: any = {
         id: mePatient.id,
-        // whatsAppOptIn: whatsAppOptIn,  It will use in future, but right now this is not working So I just commented it
+        whatsappOptIn: whatsAppOptIn,
         mobileNumber: mePatient.mobileNumber,
         firstName: firstName.trim(),
         lastName: lastName.trim(),
@@ -852,6 +859,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
         referralCode: trimReferral ? trimReferral : null,
         deviceCode: deviceToken,
       };
+      console.log("details", patientDetails)
       let preApolloExistingUser = await AsyncStorage.getItem('preApolloUser');
 
       if (preApolloExistingUser && preApolloExistingUser === 'true') {
@@ -876,6 +884,8 @@ const SignUp: React.FC<SignUpProps> = (props) => {
               },
             },
           });
+          if(whatsAppOptIn)
+            postWhatsAppOptInEvent()
           patientDetails = {
             id: data?.data?.addNewProfile?.patient?.id || '',
             relation: relation == undefined ? Relation.ME : relation.key, // profile ? profile.relation!.toUpperCase() : '',

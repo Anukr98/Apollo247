@@ -886,7 +886,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       setIsBlocked(false)
       setNewOTPNeeded(false)
       CommonLogEvent(AppRoutes.OTPVerification, 'Resend Otp clicked');
-      console.log("cooloff", coolOff)
       getNetStatus()
         .then((status) => {
           if (status) {

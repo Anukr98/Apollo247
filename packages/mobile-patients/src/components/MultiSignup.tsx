@@ -329,6 +329,13 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
     );
   };
 
+  const postWhatsAppOptInEvent = () => {
+    const cleverTapEventAttributes: any = {
+      'MSG_whatsapp': true
+    }
+    postCleverTapEvent(CleverTapEventName.WHATSAPP_OPTIN_ENABLED, cleverTapEventAttributes);
+  }
+
   const renderButtons = () => {
     return (
       <View style={styles.stickyButtonMainContainer}>
@@ -370,7 +377,10 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                       relation: Relation.ME, // profile ? profile.relation!.toUpperCase() : '',
                       referralCode: trimReferral || null,
                       deviceCode: deviceToken,
+                      whatsappOptIn: whatsAppOptIn,
                     };
+                    if(whatsAppOptIn)
+                      postWhatsAppOptInEvent()
 
                     CommonLogEvent(AppRoutes.MultiSignup, 'Update API clicked');
                     mutate({

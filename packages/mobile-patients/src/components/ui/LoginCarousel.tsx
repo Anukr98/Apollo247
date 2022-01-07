@@ -55,7 +55,7 @@ export const LoginCarousel: React.FC<Props> = ({ focused }) => {
         return <View>
             <Image source={item?.image} resizeMode='contain' style={{ aspectRatio: 16/7, transform: [{ translateX }], height: ImageHeight }} />
             <View style={{ alignItems: 'center', marginTop: 40 }}>
-                <Text style={styles.imageTitle}>{'medicine delivery in 2 hours'}</Text>
+                <Text style={styles.imageTitle}>{item?.text}</Text>
             </View>
         </View>
     }
