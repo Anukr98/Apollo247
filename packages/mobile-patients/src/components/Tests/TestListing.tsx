@@ -522,14 +522,14 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     const packageItemsArray =
       !!getActualPricePackages &&
       getActualPricePackages?.length > 10 &&
-      widgetName == string.diagnostics.homepagePastOrderRecommendations
+      widgetName?.toLowerCase() == string.diagnostics.homepagePastOrderRecommendations.toLowerCase()
         ? getActualPricePackages?.slice(0, 10)
         : itemPackages;
 
     const testItemsArray =
       !!getActualPriceTests &&
       getActualPriceTests?.length > 10 &&
-      widgetName == string.diagnostics.homepagePastOrderRecommendations
+      widgetName?.toLowerCase() == string.diagnostics.homepagePastOrderRecommendations.toLowerCase()
         ? getActualPriceTests?.slice(0, 10)
         : itemTests;
 
@@ -551,7 +551,8 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
                   {!!getActualPricePackages && getActualPricePackages?.length > 0 && (
                     <Text style={styles.itemCountText}>
                       (
-                      {widgetName == string.diagnostics.homepagePastOrderRecommendations
+                      {widgetName?.toLowerCase() ==
+                      string.diagnostics.homepagePastOrderRecommendations?.toLowerCase()
                         ? packageItemsArray?.length
                         : getActualPricePackages?.length}
                       )
@@ -592,7 +593,8 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
                   {!!getActualPriceTests && getActualPriceTests?.length > 0 && (
                     <Text style={styles.itemCountText}>
                       (
-                      {widgetName == string.diagnostics.homepagePastOrderRecommendations
+                      {widgetName?.toLowerCase() ==
+                      string.diagnostics.homepagePastOrderRecommendations?.toLowerCase()
                         ? testItemsArray?.length
                         : getActualPriceTests?.length}
                       )

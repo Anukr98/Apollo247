@@ -73,6 +73,7 @@ import {
   BLACK_LIST_RESCHEDULE_STATUS_ARRAY,
   DIAGNOSTIC_EDIT_PROFILE_ARRAY,
   DIAGNOSTIC_ORDER_CANCELLED_STATUS,
+  DIAGNOSTIC_SHOW_RESCHEDULE_CANCEL_ARRAY,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -1600,9 +1601,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     const isRescheduleValidAtOrderLevel = BLACK_LIST_RESCHEDULE_STATUS_ARRAY.includes(
       order?.orderStatus!
     );
-    // const showReschedule = isRescheduleValid == undefined && !isPastOrder ? true : false;
-    const showReschedule =
-      isRescheduleValid == undefined && !isRescheduleValidAtOrderLevel ? true : false;
+
+    //commented for future ref
+    // const showReschedule =
+    //   isRescheduleValid == undefined && !isRescheduleValidAtOrderLevel ? true : false;
+    const showReschedule = DIAGNOSTIC_SHOW_RESCHEDULE_CANCEL_ARRAY.includes(order?.orderStatus);
 
     //show the reschedule option :-
 
