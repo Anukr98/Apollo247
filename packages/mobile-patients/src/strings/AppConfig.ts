@@ -374,6 +374,7 @@ const appStaticVariables = {
       phoneNumber: string.diagnostics.uploadPrescriptionWhatsapp.whatsappPhoneNumber,
     },
   ],
+  DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER_TEXT: string.diagnosticsCartPage.reviewPagePolicyText
 };
 
 const DEV_top_specialties = [

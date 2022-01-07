@@ -1860,9 +1860,17 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   };
 
   const renderPolicyDisclaimer = () => {
+    const getRemoteText = AppConfig.Configuration.DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER_TEXT;
+    const getTexts = getRemoteText?.split('<b>');
+    const firstText = getTexts?.[0];
+    const secondText = getTexts?.[1];
+    const thirdText = getTexts?.[2];
     return (
       <View style={{ margin: 16, marginTop: anyCartSaving > 0 ? 16 : 0 }}>
-        <Text style={styles.disclaimerText}>{string.diagnosticsCartPage.reviewPagePolicyText}</Text>
+        <Text style={styles.disclaimerText}>
+          {firstText} {!!secondText && <Text style={styles.disclaimerText1}>{secondText}</Text>}
+          {!!thirdText && thirdText}
+        </Text>
       </View>
     );
   };
@@ -3259,7 +3267,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   savingsTitleText: { ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 1, 20) },
-  disclaimerText: { ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 0.7, 14) },
+  disclaimerText: { ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1, 18, 0.04) },
+  disclaimerText1: { ...theme.viewStyles.text('B', 12, colors.SKY_BLUE, 1, 18, 0.04) },
   mediumGreenText: { ...theme.viewStyles.text('M', 12, theme.colors.APP_GREEN, 1, 16) },
   mediumText: { ...theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE, 1, 16), width: '90%' },
   circleIcon: { height: 35, width: 35, resizeMode: 'contain' },
