@@ -3,7 +3,7 @@ import { View, Text, Dimensions, Image, StyleSheet } from 'react-native';
 import Carousel from 'react-native-snap-carousel';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { getLoginCarouselBannerTexts } from '../../helpers/apiCalls';
+import { getLoginCarouselBannerTexts } from '@aph/mobile-patients/src/helpers/apiCalls';
 
 interface Props {
   focused: boolean;
