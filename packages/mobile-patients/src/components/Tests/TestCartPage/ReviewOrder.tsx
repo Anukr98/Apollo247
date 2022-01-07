@@ -3097,5 +3097,5 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   savingsTitleText: { ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 1, 20) },
-  disclaimerText: { ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1, 18, 0.04) },
+  disclaimerText: { ...theme.viewStyles.text('M', 11, colors.SHERPA_BLUE, 0.7, 14) },
 });
