@@ -57,8 +57,12 @@ export const useServerCart = () => {
     setTatDetailsForPrescriptionOptions,
     setCirclePlanSelected,
   } = useShoppingCart();
-  const { axdcCode, pharmacyUserTypeAttribute } = useAppCommonData();
-  const { setPharmacyLocation } = useAppCommonData();
+  const {
+    axdcCode,
+    pharmacyUserTypeAttribute,
+    setSelectedPrescriptionType,
+    setPharmacyLocation,
+  } = useAppCommonData();
   const [userActionPayload, setUserActionPayload] = useState<any>(null);
   const [userAgent, setUserAgent] = useState<string>('');
   const genericErrorMessage = 'Oops! Something went wrong.';
@@ -302,6 +306,7 @@ export const useServerCart = () => {
   ) => {
     try {
       setUserActionPayload?.(null);
+      setSelectedPrescriptionType?.(PrescriptionType.UPLOADED);
       if (physicalPrescriptions?.length) {
         setServerCartLoading?.(true);
         // upload physical prescriptions and get prism file id
@@ -348,6 +353,7 @@ export const useServerCart = () => {
     cartItemsToAdd?: any[]
   ) => {
     setUserActionPayload?.(null);
+    setSelectedPrescriptionType?.(PrescriptionType.UPLOADED);
     if (ePrescriptionsToBeUploaded?.length) {
       const prescriptionsToUpload =
         ePrescriptionsToBeUploaded.map((presToAdd: EPrescription) => {

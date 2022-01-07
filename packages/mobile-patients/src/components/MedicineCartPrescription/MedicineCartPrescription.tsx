@@ -25,6 +25,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { postCleverTapEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 export interface Props extends NavigationScreenProps {}
 
@@ -41,6 +42,7 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
     pharmacyCircleAttributes,
     serverCartAmount,
   } = useShoppingCart();
+  const { setSelectedPrescriptionType } = useAppCommonData();
   const {
     setUserActionPayload,
     uploadPhysicalPrescriptionsToServerCart,
@@ -113,6 +115,7 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
                 prismPrescriptionFileId: prescription.prismPrescriptionFileId,
                 prescriptionImageUrl: '',
               }));
+              setSelectedPrescriptionType?.(option);
               setUserActionPayload?.({
                 prescriptionType: option,
                 prescriptionDetails: prescriptionsToDelete,

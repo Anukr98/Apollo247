@@ -3235,9 +3235,12 @@ export const clearStackAndNavigate = (
 ) => {
   navigation.dispatch(
     StackActions.reset({
-      index: 0,
+      index: 1,
       key: null,
       actions: [
+        NavigationActions.navigate({ 
+          routeName: AppRoutes.HomeScreen 
+        }),
         NavigationActions.navigate({
           routeName: screenName,
           params,
