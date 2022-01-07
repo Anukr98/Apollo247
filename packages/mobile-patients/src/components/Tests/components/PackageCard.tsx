@@ -101,10 +101,15 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
 
       const imageUrl = getItem?.itemImageUrl;
       const name = getItem?.itemTitle;
-      const inclusions = getItem?.inclusionData;
+      const isFromRecommendendation =
+        sourceScreen == AppRoutes.TestListing &&
+        props.widgetHeading?.toLowerCase() ==
+          string.diagnostics.homepagePastOrderRecommendations?.toLowerCase();
+      const inclusions = isFromRecommendendation ? getItem?.inclusions : getItem?.inclusionData;
       const numberOfParametersToShow = isDiagnosticCircleSubscription ? 3 : 2;
       var getMandatoryParamter = [] as any;
-      if (sourceScreen == AppRoutes.TestDetails) {
+
+      if (sourceScreen == AppRoutes.TestDetails || isFromRecommendendation) {
         getMandatoryParamter =
           !!inclusions &&
           inclusions?.length > 0 &&
