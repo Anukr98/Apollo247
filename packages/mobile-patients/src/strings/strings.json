@@ -355,7 +355,8 @@
     "try_otp_again": "You may try again",
     "mobile_placeholder": "Enter mobile number (10 digits)",
     "resend_on_call": "Resend on Call",
-    "resend_on_sms": "Resend on SMS"
+    "resend_on_sms": "Resend on SMS",
+    "mobile_number_label": "Enter mobile number"
   },
   "home": {
     "hi": "hi",

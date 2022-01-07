@@ -78,7 +78,7 @@ import {
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { LoginCarousel } from '@aph/mobile-patients/src/components/ui/LoginCarousel';
-import { colors } from '../theme/colors';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 import SmsRetriever from 'react-native-sms-retriever';
 import { InputCheckBox } from '@aph/mobile-patients/src/components/ui/InputCheckBox';
 
@@ -321,7 +321,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         onBlur();
       }
     } catch (err) {
-      console.log(JSON.stringify({ err }))
+      console.log(JSON.stringify({ err }));
     }
   };
 
@@ -901,7 +901,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         }}
       >
         <Text style={[theme.viewStyles.text('R', 12, colors.LIGHT_BLUE), { opacity: 0.65 }]}>
-          Enter mobile number
+          {string.login.mobile_number_label}
         </Text>
       </Animated.View>
       <Animated.View
@@ -969,20 +969,13 @@ export const Login: React.FC<LoginProps> = (props) => {
             ) : null}
 
             <View style={{ flex: 1 }}>
-              <ScrollView
-                horizontal
-                scrollEnabled={false}
-                showsHorizontalScrollIndicator={false}
-              >
+              <ScrollView horizontal scrollEnabled={false} showsHorizontalScrollIndicator={false}>
                 <View style={{ width }}>{renderManualForm()}</View>
               </ScrollView>
             </View>
           </ScrollView>
           <View style={styles.bottomContainer}>
-            <InputCheckBox
-              checked={isTandCSelected}
-              onClick={() => setTandC(!isTandCSelected)}
-            />
+            <InputCheckBox checked={isTandCSelected} onClick={() => setTandC(!isTandCSelected)} />
             <Text
               style={{
                 color: '#02475b',
