@@ -302,6 +302,11 @@ export const Login: React.FC<LoginProps> = (props) => {
         16,
         colors.WHITE
       )
+    },
+    errorContainer: {
+      alignItems: 'center',
+      marginBottom: 20,
+      marginTop: isFocused ? 7 : 0
     }
   });
 
@@ -994,7 +999,7 @@ export const Login: React.FC<LoginProps> = (props) => {
             </Text>
           </Animated.View>
           {
-            error ? <View style={{ alignItems: 'center', marginBottom: 20, marginTop: isFocused ? 7 : 0 }}>
+            error ? <View style={styles.errorContainer}>
               <Text style={styles.errorText}>{error}</Text>
             </View> : null
           }
