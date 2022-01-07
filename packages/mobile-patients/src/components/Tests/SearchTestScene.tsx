@@ -377,8 +377,11 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     const addedItem = {
       id: `${itemId}`,
       name: stripHtml(itemName),
-      price: pricesObject?.rate || 0,
-      specialPrice: pricesObject?.specialPrice! || pricesObject?.rate || 0,
+      price: !!pricesObject?.rate ? pricesObject?.rate : pricesObject?.price || 0,
+      specialPrice:
+        pricesObject?.specialPrice! || !!pricesObject?.rate
+          ? pricesObject?.rate
+          : pricesObject?.price || 0,
       circlePrice: pricesObject?.circlePrice,
       circleSpecialPrice: pricesObject?.circleSpecialPrice,
       discountPrice: pricesObject?.discountPrice,
