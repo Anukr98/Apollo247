@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, FlatList, Dimensions } from 'react-native';
-import { isEmptyObject, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getPackageIds, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { NavigationScreenProps, SafeAreaView } from 'react-navigation';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -52,7 +52,13 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
     setWaiveOffCollectionCharges,
   } = useDiagnosticsCart();
   const { circleSubscriptionId, hdfcSubscriptionId } = useShoppingCart();
-  const { hdfcPlanId, circlePlanId, hdfcStatus, circleStatus } = useAppCommonData();
+  const {
+    hdfcPlanId,
+    circlePlanId,
+    hdfcStatus,
+    circleStatus,
+    activeUserSubscriptions,
+  } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const { showAphAlert, setLoading, loading } = useUIElements();
   const getPincode = props.navigation.getParam('pincode');
@@ -82,7 +88,10 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
   async function getDiagnosticCoupons() {
     setLoading?.(true);
     try {
-      const result = await fetchDiagnosticCoupons('Diag', packageId);
+      const result = await fetchDiagnosticCoupons(
+        'Diag',
+        getPackageIds(activeUserSubscriptions)?.join()
+      );
       if (!!result?.data?.response && result?.data?.response?.length > 0) {
         const getCoupons = result?.data?.response;
         setLoading?.(false);
@@ -167,7 +176,7 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
       coupon: coupon,
       pinCode: String(getPincode),
       diagnostics: createLineItemsForPayload?.pricesForItemArray?.map((item: any) => item), //define type
-      packageIds: setSubscription != undefined ? [] : packageId, //array of all subscriptions of user
+      packageIds: getPackageIds(activeUserSubscriptions),
     };
     validateConsultCoupon(data)
       .then((resp: any) => {

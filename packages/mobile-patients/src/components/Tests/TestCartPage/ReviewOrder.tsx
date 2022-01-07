@@ -34,6 +34,7 @@ import {
   g,
   getAge,
   getCircleNoSubscriptionText,
+  getPackageIds,
   getUserType,
   isDiagnosticSelectedCartEmpty,
   isEmptyObject,
@@ -247,7 +248,13 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   } = useShoppingCart();
 
   const { healthCredits } = useFetchHealthCredits('diagnostics');
-  const { hdfcStatus, hdfcPlanId, circleStatus, circlePlanId } = useAppCommonData();
+  const {
+    hdfcStatus,
+    hdfcPlanId,
+    circleStatus,
+    circlePlanId,
+    activeUserSubscriptions,
+  } = useAppCommonData();
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { setauthToken } = useAppCommonData();
@@ -546,7 +553,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       coupon: coupon,
       pinCode: String(pinCode),
       diagnostics: createLineItemsForPayload?.pricesForItemArray?.map((item: any) => item), //define type
-      packageIds: setSubscription != undefined ? [] : packageId, //array of all subscriptions of user
+      packageIds: getPackageIds(activeUserSubscriptions), //array of all subscriptions of user
     };
     validateConsultCoupon(data)
       .then((resp: any) => {
