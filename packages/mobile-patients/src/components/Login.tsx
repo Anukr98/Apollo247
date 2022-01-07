@@ -96,6 +96,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import DeviceInfo from 'react-native-device-info';
 import SmsRetriever from 'react-native-sms-retriever';
 import Permissions from 'react-native-permissions';
+import { InputCheckBox } from './ui/InputCheckBox';
 
 let TRUECALLER: any;
 
@@ -995,12 +996,9 @@ export const Login: React.FC<LoginProps> = (props) => {
             </View>
           </ScrollView>
           <View style={styles.bottomContainer}>
-            <CheckBox
+            <InputCheckBox
               checked={isTandCSelected}
-              onPress={() => setTandC(!isTandCSelected)}
-              checkedIcon={<LoginCheckBoxFilled style={styles.checkBoxStyle} />}
-              uncheckedIcon={<LoginCheckBoxUnFilled style={styles.uncheckedBoxStyle} />}
-              containerStyle={styles.checkBoxContainer}
+              onClick={() => setTandC(!isTandCSelected)}
             />
             <Text
               style={{
