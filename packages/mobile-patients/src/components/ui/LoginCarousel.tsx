@@ -15,6 +15,11 @@ export const LoginCarousel: React.FC<Props> = ({ focused }) => {
     text: string;
   }
   const [data, setdata] = useState<Array<Data>>([]);
+  const [slideIndex, setSlideIndex] = useState(0);
+
+  const { width, height } = Dimensions.get('window');
+  let imageHeight = height * 0.25;
+  const translateX = -width * 0.09;
 
   useEffect(() => {
     getBannerTexts();
@@ -39,18 +44,13 @@ export const LoginCarousel: React.FC<Props> = ({ focused }) => {
     ]);
   };
 
-  const [slideIndex, setSlideIndex] = useState(0);
-  const { width, height } = Dimensions.get('window');
-  let ImageHeight = height * 0.25;
-  const translateX = -width * 0.09;
-
   const renderLoginCarousel = ({ item }: { item: Data }) => {
     return (
       <View>
         <Image
           source={item?.image}
           resizeMode="contain"
-          style={{ aspectRatio: 16 / 7, transform: [{ translateX }], height: ImageHeight }}
+          style={{ aspectRatio: 16 / 7, transform: [{ translateX }], height: imageHeight }}
         />
         <View style={{ alignItems: 'center', marginTop: 40 }}>
           <Text style={styles.imageTitle}>{item?.text}</Text>

@@ -351,7 +351,10 @@
     "manual_number_input": "ENTER NUMBER MANUALLY",
     "auto_verfying_otp": "Auto verifying OTP",
     "max_attempts_reached": "Maximum tries exceeded! Please generate a new OTP and/or wait 10 seconds and try again",
-    "try_otp_again": "You may try again"
+    "try_otp_again": "You may try again",
+    "mobile_placeholder": "Enter mobile number (10 digits)",
+    "resend_on_call": "Resend on Call",
+    "resend_on_sms": "Resend on SMS"
   },
   "home": {
     "hi": "hi",

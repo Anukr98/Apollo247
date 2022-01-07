@@ -338,7 +338,9 @@ export const Login: React.FC<LoginProps> = (props) => {
         validateAndSetPhoneNumber(phone?.slice(3));
         onBlur();
       }
-    } catch (err) {}
+    } catch (err) {
+      console.log(JSON.stringify({ err }))
+    }
   };
 
   const initializeTruecaller = () => {
@@ -939,7 +941,7 @@ export const Login: React.FC<LoginProps> = (props) => {
           maxLength={10}
           value={phoneNumber}
           onChangeText={(value: string) => validateAndSetPhoneNumber(value)}
-          placeholder="Enter mobile number (10 digits)"
+          placeholder={string.login.mobile_placeholder}
           onFocus={onFocus}
           onBlur={onBlur}
           onSubmitEditing={onClickOkay}

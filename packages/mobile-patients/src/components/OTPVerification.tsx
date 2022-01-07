@@ -1010,7 +1010,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             styles.otpOnCallText,
           ]}
         >
-          Resend on Call
+          {string.login.resend_on_call}
         </Text>
       </TouchableOpacity>
     </View>
@@ -1078,7 +1078,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                         onPress={onClickResend}
                         activeOpacity={.5}
                       >
-                        <Text style={styles.otpOnCallText}>Resend on SMS</Text>
+                        <Text style={styles.otpOnCallText}>{string.login.resend_on_sms}</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
