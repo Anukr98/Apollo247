@@ -478,7 +478,10 @@ const SignUp: React.FC<SignUpProps> = (props) => {
   const postAppsFlyerEventAppInstallViaReferral = async (data: any) => {
     const referralData: any = await AsyncStorage.getItem('app_referral_data');
     setRefereeFlagForNewRegisterUser(referralData !== null);
-    onCleverTapUserLogin({ ...data?.updatePatient?.patient });
+    const cleverTapProfile = {...data?.updatePatient?.patient}
+    if(whatsAppOptIn)
+      cleverTapProfile['Msg-whatsapp'] = true
+    onCleverTapUserLogin(cleverTapProfile);
     if (referralData !== null) {
       const { af_referrer_customer_id, campaign, rewardId, shortlink } = JSON.parse(referralData);
       const eventAttribute = {
@@ -780,13 +783,6 @@ const SignUp: React.FC<SignUpProps> = (props) => {
     );
   };
 
-  const postWhatsAppOptInEvent = () => {
-    const cleverTapEventAttributes: any = {
-      'MSG_whatsapp': true
-    }
-    postCleverTapEvent(CleverTapEventName.WHATSAPP_OPTIN_ENABLED, cleverTapEventAttributes);
-  }
-
   const registerUserForNewAndExisting = async () => {
     Keyboard.dismiss();
     CommonLogEvent(AppRoutes.SignUp, 'Sign button clicked');
@@ -884,8 +880,6 @@ const SignUp: React.FC<SignUpProps> = (props) => {
               },
             },
           });
-          if(whatsAppOptIn)
-            postWhatsAppOptInEvent()
           patientDetails = {
             id: data?.data?.addNewProfile?.patient?.id || '',
             relation: relation == undefined ? Relation.ME : relation.key, // profile ? profile.relation!.toUpperCase() : '',

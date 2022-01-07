@@ -7,7 +7,7 @@ import {
   CheckBox as CheckBoxEmpty,
   CheckBoxFilled,
   LoginCheckBoxFilled,
-  LoginCheckBoxUnFilled
+  LoginCheckBoxUnFilled,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import LandingDataView from '@aph/mobile-patients/src/components/ui/LandingDataView';
 import { LoginCard } from '@aph/mobile-patients/src/components/ui/LoginCard';
@@ -55,7 +55,8 @@ import {
   TouchableOpacity,
   Animated,
   PixelRatio,
-  BackHandler
+  BackHandler,
+  ImageBackground,
 } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
 import WebEngage from 'react-native-webengage';
@@ -91,10 +92,10 @@ import {
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { LoginCarousel } from '@aph/mobile-patients/src/components/ui/LoginCarousel';
 import { colors } from '../theme/colors';
-import LinearGradient from 'react-native-linear-gradient'
-import DeviceInfo from 'react-native-device-info'
-import SmsRetriever from 'react-native-sms-retriever'
-import Permissions from 'react-native-permissions'
+import LinearGradient from 'react-native-linear-gradient';
+import DeviceInfo from 'react-native-device-info';
+import SmsRetriever from 'react-native-sms-retriever';
+import Permissions from 'react-native-permissions';
 
 let TRUECALLER: any;
 
@@ -103,8 +104,6 @@ if (Platform.OS === 'android') {
 }
 
 const { height, width } = Dimensions.get('window');
-
-
 
 export interface LoginProps extends NavigationScreenProps {}
 
@@ -129,13 +128,13 @@ export const Login: React.FC<LoginProps> = (props) => {
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [appSign, setAppSign] = useState<string>('');
-  const [isFocused, setIsFocused] = useState<boolean>(false)
-  const [error, setError] = useState<string>('')
-  const [focusAnim] = useState(new Animated.Value(0))
-  const [paginationSpace] = useState(new Animated.Value(30))
-  const [floatingLabelSpace] = useState(new Animated.Value(10))
-  const formRef = useRef()
-  const inputRef = useRef()
+  const [isFocused, setIsFocused] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+  const [focusAnim] = useState(new Animated.Value(0));
+  const [paginationSpace] = useState(new Animated.Value(30));
+  const [floatingLabelSpace] = useState(new Animated.Value(10));
+  const formRef = useRef();
+  const inputRef = useRef();
 
   const isAndroid = Platform.OS === 'android';
   const client = useApolloClient();
@@ -157,8 +156,8 @@ export const Login: React.FC<LoginProps> = (props) => {
       paddingRight: 6,
       letterSpacing: 0.5,
       paddingBottom: Platform.OS === 'ios' ? 5 : 3,
-      width: "30%",
-      textAlign: 'right'
+      width: '30%',
+      textAlign: 'right',
     },
     inputContainer: {
       flexDirection: 'row',
@@ -169,11 +168,10 @@ export const Login: React.FC<LoginProps> = (props) => {
     },
     inputStyle: {
       ...theme.fonts.IBMPlexSansMedium(16),
-      width: "100%",
+      width: '100%',
       color: theme.colors.INPUT_TEXT,
       height: 40,
       textAlign: 'center',
-      
     },
     inputValidView: {
       flexDirection: 'row',
@@ -185,7 +183,7 @@ export const Login: React.FC<LoginProps> = (props) => {
       flexDirection: 'row',
       alignItems: 'center',
       width: '100%',
-      justifyContent: 'center'
+      justifyContent: 'center',
     },
     bottomDescription: {
       lineHeight: 24,
@@ -234,7 +232,7 @@ export const Login: React.FC<LoginProps> = (props) => {
     },
     uncheckedBoxStyle: {
       width: 17,
-      height: 17
+      height: 17,
     },
     leftSeperatorLine: {
       width: '40%',
@@ -265,14 +263,14 @@ export const Login: React.FC<LoginProps> = (props) => {
       alignItems: 'center',
       justifyContent: 'center',
       height: 40,
-      borderRadius: 5
+      borderRadius: 5,
     },
     logoContainer: {
       justifyContent: 'center',
       paddingTop: 10,
       alignSelf: 'center',
       width: '100%',
-      alignItems: 'center'
+      alignItems: 'center',
     },
     bottomContainer: {
       flexDirection: 'row',
@@ -282,11 +280,7 @@ export const Login: React.FC<LoginProps> = (props) => {
       paddingLeft: '2%',
     },
     errorText: {
-      ...theme.viewStyles.text(
-        'M',
-        13,
-        colors.REMOVE_RED
-      )
+      ...theme.viewStyles.text('M', 13, colors.REMOVE_RED),
     },
     useNumberButton: {
       backgroundColor: colors.ORANGE_ENABLED,
@@ -294,38 +288,33 @@ export const Login: React.FC<LoginProps> = (props) => {
       alignItems: 'center',
       justifyContent: 'center',
       height: 40,
-      borderRadius: 7
+      borderRadius: 7,
     },
     useNumberButtonText: {
-      ...theme.viewStyles.text(
-        'B',
-        16,
-        colors.WHITE
-      )
+      ...theme.viewStyles.text('B', 16, colors.WHITE),
     },
     errorContainer: {
       alignItems: 'center',
       marginBottom: 20,
-      marginTop: isFocused ? 7 : 0
-    }
+      marginTop: isFocused ? 7 : 0,
+    },
   });
 
   useEffect(() => {
     isAndroid && initializeTruecaller();
     isAndroid && truecallerEventListeners();
-    isAndroid && renderNumberPopup()
+    isAndroid && renderNumberPopup();
     const eventAttributes: WebEngageEvents[WebEngageEventName.MOBILE_ENTRY] = {};
     postWebEngageEvent(WebEngageEventName.MOBILE_ENTRY, eventAttributes);
     postFirebaseEvent(FirebaseEventName.MOBILE_ENTRY, eventAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.MOBILE_ENTRY, eventAttributes);
-    const backHandler = Keyboard.addListener('keyboardDidHide', handleBackButtonPress)
-    return () => backHandler.remove()
+    const backHandler = Keyboard.addListener('keyboardDidHide', handleBackButtonPress);
+    return () => backHandler.remove();
   }, []);
 
   const handleBackButtonPress = () => {
-    inputRef?.current?.blur()
-  }
-  
+    inputRef?.current?.blur();
+  };
 
   useEffect(() => {
     try {
@@ -343,14 +332,13 @@ export const Login: React.FC<LoginProps> = (props) => {
 
   const renderNumberPopup = async () => {
     try {
-      if(!phoneNumber) {
-        const phone = await SmsRetriever.requestPhoneNumber()
-        validateAndSetPhoneNumber(phone?.slice(3))
-        onBlur()
+      if (!phoneNumber) {
+        const phone = await SmsRetriever.requestPhoneNumber();
+        validateAndSetPhoneNumber(phone?.slice(3));
+        onBlur();
       }
-    }
-    catch(err) {}
-  }
+    } catch (err) {}
+  };
 
   const initializeTruecaller = () => {
     TRUECALLER.initializeClient(
@@ -701,9 +689,8 @@ export const Login: React.FC<LoginProps> = (props) => {
   }, [subscriptionId]);
 
   const validateAndSetPhoneNumber = (number: string) => {
-    if(number.length)
-      onBlur()
-    setError('')
+    if (number.length) onBlur();
+    setError('');
     if (/^\d+$/.test(number) || number == '') {
       setPhoneNumber(number);
       setPhoneNumberIsValid(isPhoneNumberValid(number));
@@ -741,10 +728,8 @@ export const Login: React.FC<LoginProps> = (props) => {
 
   const onClickOkay = () => {
     try {
-      if(!phoneNumberIsValid || phoneNumber.length != 10)
-        setError(string.login.wrong_number)
-      else if(!isTandCSelected)
-        setError(string.login.accept_tnc)
+      if (!phoneNumberIsValid || phoneNumber.length != 10) setError(string.login.wrong_number);
+      else if (!isTandCSelected) setError(string.login.accept_tnc);
       else {
         webengage.user.login(`+91${phoneNumber}`);
         CommonLogEvent(AppRoutes.Login, 'Login clicked');
@@ -898,151 +883,144 @@ export const Login: React.FC<LoginProps> = (props) => {
   };
 
   const onFocus = async () => {
-    setIsFocused(true)
-    Animated.timing(
-      floatingLabelSpace,
-      {
-        toValue: 10,
-        duration: 500
-      }
-    ).start()
-    // Animated.timing(
-    //   focusAnim,
-    //   {
-    //     toValue: -height*0.1,
-    //     duration: 500
-    //   },
-    // ).start()
-    Animated.timing(
-      paginationSpace,{
-        toValue: 5,
-        duration: 500
-      }
-    ).start()
-  }
+    setIsFocused(true);
+    Animated.timing(floatingLabelSpace, {
+      toValue: 10,
+      duration: 500,
+    }).start();
+    Animated.timing(paginationSpace, {
+      toValue: 5,
+      duration: 500,
+    }).start();
+  };
 
   const onBlur = () => {
-    setIsFocused(false)
-    // Animated.timing(
-    //   focusAnim,
-    //   {
-    //     toValue: 0,
-    //     duration: 500
-    //   }
-    // ).start() 
-    Animated.timing(
-      paginationSpace,{
-        toValue: 30,
-        duration: 500
-      }
-    ).start()
-    Animated.timing(
-      floatingLabelSpace,
-      {
-        toValue: 0,
-        duration: 500
-      }
-    ).start()
-  }
+    setIsFocused(false);
+    Animated.timing(paginationSpace, {
+      toValue: 30,
+      duration: 500,
+    }).start();
+    Animated.timing(floatingLabelSpace, {
+      toValue: 0,
+      duration: 500,
+    }).start();
+  };
 
-  const renderManualForm = () => <>
-    <Animated.View style={{ alignItems: 'center', opacity: (error || phoneNumber.length) ? 1 : 0, marginTop: floatingLabelSpace }}>
-      <Text style={[theme.viewStyles.text('R', 12, colors.LIGHT_BLUE), { opacity: .65 }]}>Enter mobile number</Text>
-    </Animated.View>
-    <Animated.View
-      style={[
-        styles.inputContainer,
-        {
-          borderBottomColor: !isFocused ? colors.CARD_HEADER : (phoneNumberIsValid || phoneNumber == '') ? theme.colors.INPUT_BORDER_SUCCESS : theme.colors.INPUT_BORDER_FAILURE,
-          marginTop: !isFocused ? -2 : paginationSpace
-        }
-      ]}>
-      <TextInput
-        style={styles.inputStyle}
-        keyboardType="numeric"
-        maxLength={10}
-        value={phoneNumber}
-        onChangeText={(value: string) => validateAndSetPhoneNumber(value)}
-        placeholder='Enter mobile number (10 digits)'
-        onFocus={onFocus}
-        onBlur={onBlur}
-        onSubmitEditing={onClickOkay}
-        ref={inputRef}
-      />
-    </Animated.View>
-    <View style={[styles.submitButtonContainer,{  marginTop: !isFocused ? "6%" : "3%" }]}>
-      <TouchableOpacity
-        style={styles.submitButton}
-        onPress={onClickOkay}
+  const renderManualForm = () => (
+    <>
+      <Animated.View
+        style={{
+          alignItems: 'center',
+          opacity: error || phoneNumber.length ? 1 : 0,
+          marginTop: floatingLabelSpace,
+        }}
       >
-        <Text style={[theme.fonts.IBMPlexSansBold(12), { color: colors.WHITE, letterSpacing: 1 }]}>{string.common.continue}</Text>
-      </TouchableOpacity>
-    </View>
-  </>
+        <Text style={[theme.viewStyles.text('R', 12, colors.LIGHT_BLUE), { opacity: 0.65 }]}>
+          Enter mobile number
+        </Text>
+      </Animated.View>
+      <Animated.View
+        style={[
+          styles.inputContainer,
+          {
+            borderBottomColor: !isFocused
+              ? colors.CARD_HEADER
+              : phoneNumberIsValid || phoneNumber == ''
+              ? theme.colors.INPUT_BORDER_SUCCESS
+              : theme.colors.INPUT_BORDER_FAILURE,
+            marginTop: !isFocused ? -2 : paginationSpace,
+          },
+        ]}
+      >
+        <TextInput
+          style={styles.inputStyle}
+          keyboardType="numeric"
+          maxLength={10}
+          value={phoneNumber}
+          onChangeText={(value: string) => validateAndSetPhoneNumber(value)}
+          placeholder="Enter mobile number (10 digits)"
+          onFocus={onFocus}
+          onBlur={onBlur}
+          onSubmitEditing={onClickOkay}
+          ref={inputRef}
+        />
+      </Animated.View>
+      <View style={[styles.submitButtonContainer, { marginTop: !isFocused ? '6%' : '3%' }]}>
+        <TouchableOpacity style={styles.submitButton} onPress={onClickOkay}>
+          <Text
+            style={[theme.fonts.IBMPlexSansBold(12), { color: colors.WHITE, letterSpacing: 1 }]}
+          >
+            {string.common.continue}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </>
+  );
 
   return (
-    <Animated.View style={{ flex: 1, backgroundColor: "#e5e5e5",}}>
+    <Animated.View style={{ flex: 1, backgroundColor: '#e5e5e5' }}>
       <SafeAreaView style={[styles.container, { backgroundColor: colors.WHITE }]}>
-        <ScrollView keyboardShouldPersistTaps='handled'>
-          <LinearGradient colors={['#e8edf0', colors.WHITE]} style={{ height: height*0.52 }}>
+        <ImageBackground
+          source={require('@aph/mobile-patients/src/images/home/gradient-background.webp')}
+          style={{ width, flex: 1 }}
+        >
+          <ScrollView keyboardShouldPersistTaps="handled">
             <View style={styles.logoContainer}>
               <ApolloLogo style={{ width: 55, height: 47 }} resizeMode="contain" />
             </View>
             <LoginCarousel focused={isFocused} />
-          </LinearGradient>
 
-          <Animated.View style={{ height: paginationSpace }} />
+            <Animated.View style={{ height: paginationSpace }} />
 
-          <Animated.View style={{ alignItems: 'center', marginBottom: paginationSpace }}>
-            <Text style={[theme.fonts.IBMPlexSansSemiBold(18), { color: colors.CARD_HEADER }]}>
-              {string.login.signin_signup}
-            </Text>
-          </Animated.View>
-          {
-            error ? <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>{error}</Text>
-            </View> : null
-          }
+            <Animated.View style={{ alignItems: 'center', marginBottom: paginationSpace }}>
+              <Text style={[theme.fonts.IBMPlexSansSemiBold(18), { color: colors.CARD_HEADER }]}>
+                {string.login.signin_signup}
+              </Text>
+            </Animated.View>
+            {error ? (
+              <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            ) : null}
 
-          <View style={{ flex: 1 }}>
-            <ScrollView
-              horizontal
-              scrollEnabled={false}
-              ref={formRef}
-              showsHorizontalScrollIndicator={false}
-            >
-            <View style={{ width }}>
-              {renderManualForm()}
+            <View style={{ flex: 1 }}>
+              <ScrollView
+                horizontal
+                scrollEnabled={false}
+                ref={formRef}
+                showsHorizontalScrollIndicator={false}
+              >
+                <View style={{ width }}>{renderManualForm()}</View>
+              </ScrollView>
             </View>
-            </ScrollView>
-          </View>
-        </ScrollView>
-        <View style={styles.bottomContainer}>
-          <CheckBox
+          </ScrollView>
+          <View style={styles.bottomContainer}>
+            <CheckBox
               checked={isTandCSelected}
               onPress={() => setTandC(!isTandCSelected)}
-              checkedIcon={<LoginCheckBoxFilled  style={styles.checkBoxStyle} />}
+              checkedIcon={<LoginCheckBoxFilled style={styles.checkBoxStyle} />}
               uncheckedIcon={<LoginCheckBoxUnFilled style={styles.uncheckedBoxStyle} />}
               containerStyle={styles.checkBoxContainer}
             />
             <Text
-                style={{
-                  color: '#02475b',
-                  marginEnd: 45,
-                  ...fonts.IBMPlexSansMedium(10),
-                }}
-              >
-                {string.login.bySigningUp}{' '}
-                <Text style={styles.hyperlink} onPress={() => openWebViewTandC()}>
-                  {string.login.termsAndCondition}
-                </Text>{' '}
-                {string.login.and}{' '}
-                <Text style={styles.hyperlink} onPress={() => openWebViewPrivacyPolicy()}>
-                  {string.login.privacyPolicy}
-                </Text>{' '}
-                {string.login.ofApollo247}
-              </Text>
-        </View>
+              style={{
+                color: '#02475b',
+                marginEnd: 45,
+                ...fonts.IBMPlexSansMedium(10),
+              }}
+            >
+              {string.login.bySigningUp}{' '}
+              <Text style={styles.hyperlink} onPress={() => openWebViewTandC()}>
+                {string.login.termsAndCondition}
+              </Text>{' '}
+              {string.login.and}{' '}
+              <Text style={styles.hyperlink} onPress={() => openWebViewPrivacyPolicy()}>
+                {string.login.privacyPolicy}
+              </Text>{' '}
+              {string.login.ofApollo247}
+            </Text>
+          </View>
+        </ImageBackground>
       </SafeAreaView>
       {showSpinner ? <Spinner /> : null}
       {openFillerView && <FetchingDetails />}

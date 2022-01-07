@@ -424,7 +424,6 @@ export enum CleverTapEventName {
   CONSULT_MODE_TOGGLE = 'Consult mode clicked',
   CONSULT_SELECT_LOCATION = 'Consult location select clicked',
   CONSULT_HOSPITAL_CLICKED = 'Consult Hospital Visit clicked',
-  WHATSAPP_OPTIN_ENABLED = 'Whatsapp Optin Enabled',
 
   PHARMACY_CART_ADDRESS_SELECTED_FAILURE = 'Pharmacy Cart Address Selected Failure',
   PHARMACY_CART_SELECT_DELIVERY_ADDRESS_CLICKED = 'Pharmacy Cart - Select Delivery Address Clicked',

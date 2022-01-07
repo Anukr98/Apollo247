@@ -329,13 +329,6 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
     );
   };
 
-  const postWhatsAppOptInEvent = () => {
-    const cleverTapEventAttributes: any = {
-      'MSG_whatsapp': true
-    }
-    postCleverTapEvent(CleverTapEventName.WHATSAPP_OPTIN_ENABLED, cleverTapEventAttributes);
-  }
-
   const renderButtons = () => {
     return (
       <View style={styles.stickyButtonMainContainer}>
@@ -379,8 +372,6 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                       deviceCode: deviceToken,
                       whatsappOptIn: whatsAppOptIn,
                     };
-                    if(whatsAppOptIn)
-                      postWhatsAppOptInEvent()
 
                     CommonLogEvent(AppRoutes.MultiSignup, 'Update API clicked');
                     mutate({
@@ -412,7 +403,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                     AsyncStorage.setItem('userLoggedIn', 'true'),
                     AsyncStorage.setItem('multiSignUp', 'false'),
                     AsyncStorage.setItem('gotIt', 'false'),
-                    onCleverTapUserLogin(data?.updatePatient?.patient),
+                    onCleverTapUserLogin(!whatsAppOptIn ? data?.updatePatient?.patient : {...data?.updatePatient?.patient, 'Msg-whatsapp': true}),
                     createOneApolloUser(data?.updatePatient?.patient?.id!),
                     handleOpenURLs())
                   : null}

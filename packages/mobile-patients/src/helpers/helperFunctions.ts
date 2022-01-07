@@ -1634,6 +1634,9 @@ export const onCleverTapUserLogin = async (_currentPatient: any) => {
       ...(_currentPatient?.photoUrl && { Photo: _currentPatient?.photoUrl }),
       ...(_currentPatient?.createdDate && { CreatedDate: _currentPatient?.createdDate }),
     };
+    if(_currentPatient?.['Msg-whatsapp']) {
+      _userProfile['Msg-whatsapp'] = true
+    }
     CleverTap.onUserLogin(_userProfile);
     AsyncStorage.setItem('createCleverTapProifle', 'true');
   } catch (error) {
