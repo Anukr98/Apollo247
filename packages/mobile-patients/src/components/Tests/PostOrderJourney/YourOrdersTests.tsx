@@ -2185,6 +2185,22 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     );
   };
 
+  const onPressHelp = () => {
+    const helpSectionQueryId = AppConfig.Configuration.HELP_SECTION_CUSTOM_QUERIES;
+    props.navigation.navigate(AppRoutes.NeedHelpDiagnosticsOrder, {
+      queryIdLevel1: helpSectionQueryId.diagnostic,
+      sourcePage: 'My Orders',
+    });
+  };
+
+  const renderHeaderRightComponent = () => {
+    return (
+      <TouchableOpacity activeOpacity={1} style={{ paddingLeft: 10 }} onPress={onPressHelp}>
+        <Text style={styles.helpTextStyle}>{string.help.toUpperCase()}</Text>
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       {showDisplaySchedule && renderRescheduleOrderOverlay()}
@@ -2195,6 +2211,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             title={string.orders.urOrders}
             container={{ borderBottomWidth: 0 }}
             onPressLeftIcon={() => handleBack()}
+            rightComponent={renderHeaderRightComponent()}
           />
         )}
         {renderFilterArea()}
@@ -2474,4 +2491,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  helpTextStyle: { ...theme.viewStyles.text('B', 13, colors.APP_YELLOW, 1, 24) },
 });
