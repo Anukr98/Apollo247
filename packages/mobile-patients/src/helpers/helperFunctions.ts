@@ -3044,24 +3044,30 @@ export const removeConsecutiveComma = (value: string) => {
 
 export const calculateCashbackForItem = (
   price: number,
-  type_id: any,
-  subcategory: any,
-  sku: any
+  type_id: string,
+  subcategory: string | null,
+  sku: string
 ) => {
-  const { circleCashback } = useShoppingCart();
-  const categoryLevelkey = type_id?.toUpperCase();
-  const subCategoryLevelkey = `${type_id?.toUpperCase()}~${subcategory}`;
-  const skuLevelkey = `${type_id?.toUpperCase()}~${subcategory}~${sku}`;
+  try {
+    const { circleCashback } = useShoppingCart();
+  const categoryLevelkey = type_id ? type_id?.toUpperCase() : '';
+  const subCategoryLevelkey = type_id && subcategory ? `${type_id?.toUpperCase()}~${subcategory}` : '';
+  const skuLevelkey = type_id && subcategory && sku ? `${type_id?.toUpperCase()}~${subcategory}~${sku}` : '';
   let cashbackFactor = 0;
-  if (circleCashback?.[skuLevelkey] >= 0) {
+  if (skuLevelkey !== '' && circleCashback?.[skuLevelkey] >= 0) {
     cashbackFactor = circleCashback?.[skuLevelkey];
-  } else if (circleCashback?.[subCategoryLevelkey] >= 0) {
+  } else if (subCategoryLevelkey !== '' && circleCashback?.[subCategoryLevelkey] >= 0) {
     cashbackFactor = circleCashback?.[subCategoryLevelkey];
-  } else {
+  } else if (categoryLevelkey !== '' && circleCashback?.[categoryLevelkey] >= 0) {
     cashbackFactor = circleCashback?.[categoryLevelkey];
+  } else {
+    cashbackFactor = 0;
   }
   const cashback = cashbackFactor ? ((price * cashbackFactor) / 100).toFixed(2) : '0';
   return parseInt(cashback, 10) || 0;
+  } catch {
+    return 0;
+  }
 };
 
 export const readableParam = (param: string) => {
