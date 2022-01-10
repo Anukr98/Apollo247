@@ -188,6 +188,10 @@ const SignUp: React.FC<SignUpProps> = (props) => {
     error: false,
     errorMsg: '',
   });
+  const [emailValidationError, setEmailValidationError] = useState({
+    error: false,
+    errorMsg: '',
+  });
   const [lastName, setLastName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [emailValidation, setEmailValidation] = useState<boolean>(false);
@@ -226,6 +230,10 @@ const SignUp: React.FC<SignUpProps> = (props) => {
     setEmail(trimmedValue);
     setEmailValidation(isSatisfyingEmailRegex(trimmedValue));
     setEmailValidation(isSatisfyEmailRegex(trimmedValue));
+    setEmailValidationError({
+      error: false,
+      errorMsg: '',
+    });
   };
 
   const _setFirstName = (value: string) => {
@@ -711,6 +719,9 @@ const SignUp: React.FC<SignUpProps> = (props) => {
             Keyboard.dismiss();
           }}
         />
+        {genderNotSelectError.error && (
+          <Text style={styles.genderErrorMsgText}>{genderNotSelectError.errorMsg} *</Text>
+        )}
         <View style={styles.selectGenderContainer}>
           {GenderOptions.map((option) => (
             <TouchableOpacity
@@ -748,9 +759,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
             </TouchableOpacity>
           ))}
         </View>
-        {genderNotSelectError.error && (
-          <Text style={styles.genderErrorMsgText}>{genderNotSelectError.errorMsg} *</Text>
-        )}
+
         <View style={styles.relationContainer}>{renderRelation()}</View>
         <FloatingLabelInputComponent
           label={string.registerationScreenData.Email}
@@ -760,8 +769,10 @@ const SignUp: React.FC<SignUpProps> = (props) => {
           textInputprops={{
             maxLength: 50,
           }}
+          inputError={emailValidationError.error}
+          errorMsg={emailValidationError.errorMsg}
         />
-        {showReferralCode && renderReferral()}
+        {renderReferral()}
         <View style={styles.whatsAppOptinContainer}>
           <View style={styles.whatsAppOptinCheckboxContainer}>
             <InputCheckBox
@@ -794,6 +805,10 @@ const SignUp: React.FC<SignUpProps> = (props) => {
     } else if (email) {
       if (!emailValidation) {
         validationMessage = 'Enter valid email';
+        setEmailValidationError({
+          error: true,
+          errorMsg: 'Enter valid email',
+        });
       }
     } else if (!gender) {
       validationMessage = 'Please select gender';
@@ -805,7 +820,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
       trimReferral = trimReferral.trim();
     }
     if (validationMessage) {
-      if (validationMessage != 'Please select gender') {
+      if (validationMessage != 'Please select gender' && validationMessage != 'Enter valid email') {
         Alert.alert('Error', validationMessage);
       }
     } else {
@@ -1129,7 +1144,8 @@ const styles = StyleSheet.create({
   genderErrorMsgText: {
     color: theme.colors.REMOVE_RED,
     fontSize: PixelRatio.getFontScale() * 11,
-    marginTop: 5,
+    marginTop: 15,
+    marginBottom: -10,
   },
   relationContainer: { marginTop: 10, marginBottom: 10 },
   stickySubmitButton: {
@@ -1137,9 +1153,10 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     alignItems: 'center',
     justifyContent: 'center',
+    height: 40,
   },
   stickySubmitButtonTitle: {
-    ...theme.fonts.IBMPlexSansBold(15),
+    ...theme.fonts.IBMPlexSansBold(14),
     color: theme.colors.WHITE,
   },
   relationInputContainer: { flexDirection: 'row', paddingTop: 20 },
