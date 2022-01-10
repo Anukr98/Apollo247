@@ -1316,7 +1316,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       cleverTapEventForSearchBarClick();
     }
     return () => handler.remove();
-  }, [isSearchFocus, searchText]);
+  }, [isSearchFocus]);
 
   const cleverTapEventForSearchBarClick = () => {
     let eventAttributes = {
