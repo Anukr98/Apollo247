@@ -165,6 +165,7 @@ import {
   getAsyncStorageValues,
   formatUrl,
   checkCleverTapLoginStatus,
+  isEmptyObject,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -5771,14 +5772,18 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           : props.navigation.navigate(AppRoutes.SearchTestScene, { searchText: searchText });
         break;
       case MedicalRecordType.CONSULTATION:
-        postHomeCleverTapEvent(CleverTapEventName.OPTION_FROM_SEARCH_BAR_CLICKED, 'Search bar', {
-          'Doctor Name': data?.doctorName,
-          Speciality: data?.speciality,
-          Vertical: 'Consult',
-        });
-        !nav_props?.isSpeciality
-          ? props.navigation.navigate(AppRoutes.DoctorDetails, nav_props)
-          : props.navigation.navigate(AppRoutes.DoctorSearchListing, nav_props);
+        const consultOptionClicked = !isEmptyObject(nav_props);
+        consultOptionClicked &&
+          postHomeCleverTapEvent(CleverTapEventName.OPTION_FROM_SEARCH_BAR_CLICKED, 'Search bar', {
+            'Doctor Name': data?.doctorName,
+            Speciality: data?.speciality,
+            Vertical: 'Consult',
+          });
+        consultOptionClicked
+          ? !nav_props?.isSpeciality
+            ? props.navigation.navigate(AppRoutes.DoctorDetails, nav_props)
+            : props.navigation.navigate(AppRoutes.DoctorSearchListing, nav_props)
+          : props.navigation.navigate(AppRoutes.DoctorSearch, { searchText });
         break;
     }
   };
