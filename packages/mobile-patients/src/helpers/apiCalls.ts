@@ -1410,6 +1410,7 @@ export const getDiagnosticTestDetails = (
   return Axios.get(getDetails, {
     headers: {
       Authorization: config.DRUPAL_CONFIG[1],
+      'Cache-Control': 'no-cache',
     },
   });
 };
