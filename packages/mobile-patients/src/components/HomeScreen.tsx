@@ -103,12 +103,7 @@ import {
   GET_CAMPAIGN_ID_FOR_REFERRER,
   GET_REWARD_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  searchPHRApiWithAuthToken,
-  MedFilter,
-  MedicineProduct,
-  searchMedicineApi,
-} from '@aph/mobile-patients/src/helpers/apiCalls';
+import { MedFilter, MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
   GetAllUserSubscriptionsWithPlanBenefitsV2Variables,
@@ -1051,6 +1046,12 @@ const styles = StyleSheet.create({
     marginVertical: 4,
     justifyContent: 'space-between',
     width: '100%',
+  },
+  bottomItemsDetailSplit: {
+    height: 1,
+    backgroundColor: '#E6E6E6',
+    marginVertical: 6,
+    marginRight: 4,
   },
 });
 
@@ -5294,24 +5295,18 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       setSearchLoading(true);
 
       medSearchResults.current = [];
-      const res = await searchMedicineApi(
-        searchText,
-        1,
-        sortBy,
-        selectedFilters,
-        axdcCode,
-        pinCode
-      );
-
+      //  --- not making api call now, earlier we were, pls don't delete as logic might change ---
+      // const res = await searchMedicineApi(
+      //   searchText,
+      //   1,
+      //   sortBy,
+      //   selectedFilters,
+      //   axdcCode,
+      //   pinCode
+      // );
       let finalProducts: any[] = [];
-
-      if (res?.data?.products?.length > 1) {
-        finalProducts = [{ name: searchText }];
-
-        medSearchResults.current = finalProducts;
-      } else {
-        medSearchResults.current = [];
-      }
+      finalProducts = [{ name: searchText }];
+      medSearchResults.current = finalProducts;
 
       updateSearchResultList(MedicalRecordType.MEDICATION, finalProducts);
       setSearchLoading(false);
@@ -5451,11 +5446,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     setSearchResults([]);
     onSearchTests(_searchText)
       .then(() => {
-        Keyboard.dismiss();
         postSearchInputEvent('Success', 'Diagnostic', _searchText);
       })
       .catch((e) => {
-        Keyboard.dismiss();
         postSearchInputEvent('Fail', 'Diagnostic', _searchText);
         CommonBugFender('HomeScreen_ConsultRoom_onSearchTests', e);
       });
@@ -5465,18 +5458,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         postSearchInputEvent('Success', 'Pharma', _searchText);
       })
       .catch((e) => {
-        Keyboard.dismiss();
         postSearchInputEvent('Fail', 'Pharma', _searchText);
         CommonBugFender('HomeScreen_ConsultRoom_onSearchMedicinesFunction', e);
       });
 
     onSearchConsults(_searchText)
       .then(() => {
-        Keyboard.dismiss();
         postSearchInputEvent('Success', 'Consult', _searchText);
       })
       .catch((e) => {
-        Keyboard.dismiss();
         postSearchInputEvent('Fail', 'Consult', _searchText);
         CommonBugFender('HomeScreen_ConsultRoom_onSearchConsultsFunction', e);
       });
@@ -5741,19 +5731,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     );
   };
 
-  const onClickSearchItem = (
-    key: string,
-    pdp: boolean = false,
-    nav_props: any = {},
-    data?: any
-  ) => {
+  const onClickSearchItem = (key: string, pdp: boolean = false, nav_props: any = {}) => {
     // todo: for view all results
     // postHomeCleverTapEvent(
     //   CleverTapEventName.VIEW_ALL_SEARCH_RESULT_CLICKED,
     //   'Search bar'
     // );
 
-    //pdp disabled for now ->props.navigation.navigate(AppRoutes.ProductDetailPage, nav_props)
     switch (key) {
       case MedicalRecordType.MEDICATION:
         postHomeCleverTapEvent(CleverTapEventName.OPTION_FROM_SEARCH_BAR_CLICKED, 'Search bar', {
@@ -5764,7 +5748,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         break;
       case MedicalRecordType.TEST_REPORT:
         postHomeCleverTapEvent(CleverTapEventName.OPTION_FROM_SEARCH_BAR_CLICKED, 'Search bar', {
-          'Test Name': data?.testName,
+          'Test Name': nav_props?.testName,
           Vertical: 'Diagnostic',
         });
         pdp
@@ -5772,18 +5756,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           : props.navigation.navigate(AppRoutes.SearchTestScene, { searchText: searchText });
         break;
       case MedicalRecordType.CONSULTATION:
-        const consultOptionClicked = !isEmptyObject(nav_props);
-        consultOptionClicked &&
-          postHomeCleverTapEvent(CleverTapEventName.OPTION_FROM_SEARCH_BAR_CLICKED, 'Search bar', {
-            'Doctor Name': data?.doctorName,
-            Speciality: data?.speciality,
-            Vertical: 'Consult',
-          });
-        consultOptionClicked
-          ? !nav_props?.isSpeciality
-            ? props.navigation.navigate(AppRoutes.DoctorDetails, nav_props)
-            : props.navigation.navigate(AppRoutes.DoctorSearchListing, nav_props)
-          : props.navigation.navigate(AppRoutes.DoctorSearch, { searchText });
+        postHomeCleverTapEvent(CleverTapEventName.OPTION_FROM_SEARCH_BAR_CLICKED, 'Search bar', {
+          'Doctor Name': nav_props?.doctorName,
+          Speciality: nav_props?.speciality,
+          Vertical: 'Consult',
+        });
+        pdp
+          ? props.navigation.navigate(AppRoutes.DoctorDetails, nav_props)
+          : props.navigation.navigate(AppRoutes.DoctorSearchListing, nav_props);
         break;
     }
   };
@@ -5855,6 +5835,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             itemId: item?.diagnostic_item_id,
             source: 'Full search',
             comingFrom: AppRoutes.HomeScreen,
+            testName: item?.diagnostic_item_name,
           }
         : key === MedicalRecordType.MEDICATION
         ? {
@@ -5865,29 +5846,19 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             urlKey: item?.url_key,
           }
         : key === MedicalRecordType.CONSULTATION
-        ? item?.__typename == 'Specialty'
-          ? {
-              isSpeciality: true,
-              callSaveSearch: 'false',
-              consultTypeCta: '',
-              isOnlineConsultMode: true,
-              sortBy: 'Availability',
-              specialityId: item?.id,
-              specialityName: item?.specialtydisplayName,
-            }
-          : {
-              specialities: [item?.specialtydisplayName],
-              MoveDoctor: 'MoveDoctor',
-              doctorId: item?.id,
-            }
+        ? {
+            specialities: [item?.specialtydisplayName],
+            MoveDoctor: 'MoveDoctor',
+            doctorId: item?.id,
+            doctorName: item?.displayName,
+            speciality: item?.specialtydisplayName,
+          }
         : {};
-    const data = {
-      testName: item?.diagnostic_item_name,
-      doctorName: item?.displayName,
-      speciality: item?.specialtydisplayName,
-    };
+    const pdp =
+      key === MedicalRecordType.CONSULTATION && item?.__typename == 'Specialty' ? false : true;
+
     return (
-      <TouchableOpacity onPress={() => onClickSearchItem(key, true, nav_props, data)}>
+      <TouchableOpacity onPress={() => onClickSearchItem(key, pdp, nav_props)}>
         <View style={{ marginBottom: 6 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
             <View style={styles.searchItemIcon}>
@@ -5930,15 +5901,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               <ArrowRight />
             </View>
           </View>
-
-          <View
-            style={{
-              height: 1,
-              backgroundColor: '#E6E6E6',
-              marginVertical: 6,
-              marginRight: 4,
-            }}
-          />
+          <View style={styles.bottomItemsDetailSplit} />
         </View>
       </TouchableOpacity>
     );
