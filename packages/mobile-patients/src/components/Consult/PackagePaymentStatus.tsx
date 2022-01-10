@@ -130,7 +130,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
   const [autoBookTimerCount, setAutoBookTimerCount] = useState(10);
 
   useEffect(() => {
-    fetchOrderStatus();
+    fetchOrderStatus(true);
 
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
@@ -183,7 +183,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
                     'Seems like the invoice is not generated and avialable to download.Press okay to recheck and download.',
                   onPressOk: () => {
                     hideAphAlert!();
-                    fetchOrderStatus();
+                    fetchOrderStatus(false);
                   },
                 });
               }
@@ -205,7 +205,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
                     'Seems like the invoice is not generated and avialable to send.Press okay to recheck.',
                   onPressOk: () => {
                     hideAphAlert!();
-                    fetchOrderStatus();
+                    fetchOrderStatus(false);
                   },
                 });
               }
@@ -504,7 +504,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
             paymentStatus != PAYMENT_STATUS.TXN_FAILURE) ? (
             <TouchableOpacity
               onPress={() => {
-                fetchOrderStatus();
+                fetchOrderStatus(false);
               }}
             >
               <Text
@@ -537,7 +537,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
     });
   };
 
-  const fetchOrderStatus = async () => {
+  const fetchOrderStatus = async (autoBook: boolean) => {
     try {
       setShowSpinner?.(true);
       setAutoBookTimerCount(10);
@@ -573,7 +573,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
           response?.data?.getOrderInternal?.SubscriptionOrderDetails?.payment_reference?.invoice_url
         );
 
-        if (oneTapPatient && txnStatus == PAYMENT_STATUS.TXN_SUCCESS) {
+        if (oneTapPatient && autoBook && txnStatus == PAYMENT_STATUS.TXN_SUCCESS) {
           let interval = setInterval(() => {
             setAutoBookTimerCount((lastTimerCount) => {
               if (lastTimerCount <= 1) {
@@ -609,7 +609,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
       description: `${desc || ''}`.trim(),
       onPressOk: () => {
         hideAphAlert!();
-        fetchOrderStatus();
+        fetchOrderStatus(false);
       },
     });
 
@@ -749,7 +749,6 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
                     title: 'Uh oh.. :(',
                     description: "Seems like the plan dosen't exists anymore.",
                     onPressOk: () => {
-                      props.navigation.goBack();
                       hideAphAlert!();
                     },
                   });
@@ -763,7 +762,6 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
             title: 'Uh oh.. :(',
             description: "Couldn't load the plan details. Please check internet connection.",
             onPressOk: () => {
-              props.navigation.goBack();
               hideAphAlert!();
             },
           });
@@ -874,7 +872,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
             paymentStatus != PAYMENT_STATUS.TXN_FAILURE) ? (
             <TouchableOpacity
               onPress={() => {
-                fetchOrderStatus();
+                fetchOrderStatus(false);
               }}
             >
               <Text
@@ -931,8 +929,6 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
           ]}
           style={styles.oneTapcontainer}
         >
-          {renderCenteredCircle()}
-
           {renderPaymentStatusHeaderOneTap()}
 
           {renderPaymentCard()}
