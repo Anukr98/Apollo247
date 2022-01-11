@@ -1168,8 +1168,8 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.WHITE,
   },
   symptomName: {
-    backgroundColor: theme.colors.BGK_GRAY,
-    ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 16),
+    backgroundColor: theme.colors.MERCURY_GRAY,
+    ...theme.viewStyles.text('B', 14, theme.colors.LIGHT_BLUE, 1, 16),
     paddingVertical: 10,
     paddingStart: 14,
     flexWrap: 'wrap',
