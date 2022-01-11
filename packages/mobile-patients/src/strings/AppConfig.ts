@@ -23,7 +23,7 @@ export enum AppEnv {
   QA8 = 'QA8',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA5 as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -372,7 +372,7 @@ const appStaticVariables = {
       phoneNumber: string.diagnostics.uploadPrescriptionWhatsapp.whatsappPhoneNumber,
     },
   ],
-  DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER_TEXT: string.diagnosticsCartPage.reviewPagePolicyText
+  DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER_TEXT: string.diagnosticsCartPage.reviewPagePolicyText,
 };
 
 const DEV_top_specialties = [
