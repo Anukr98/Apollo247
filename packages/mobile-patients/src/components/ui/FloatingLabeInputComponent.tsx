@@ -61,6 +61,7 @@ const styles = StyleSheet.create({
     color: theme.colors.REMOVE_RED,
     fontWeight: '400',
     marginTop: 5,
+    marginLeft: 10,
   },
 });
 

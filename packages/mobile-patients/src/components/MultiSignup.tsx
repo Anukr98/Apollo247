@@ -490,7 +490,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
 
   const renderExistingAccount = () => {
     return (
-      <View>
+      <View style={styles.userItemListMain}>
         <FlatList
           data={profiles || []}
           renderItem={({ item, index }) => renderUserItem(item, index)}
@@ -519,11 +519,11 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
+        {renderHeader()}
         <KeyboardAwareScrollView style={styles.container} bounces={false}>
-          {renderHeader()}
           <ScrollView>
             {renderExistingAccount()}
-            {showReferralCode && renderReferral()}
+            {renderReferral()}
             {renderWhatsAppOptIn()}
           </ScrollView>
         </KeyboardAwareScrollView>
@@ -594,7 +594,7 @@ const styles = StyleSheet.create({
   whatsAppOptinContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.LIGHT_GREEN_ONE,
+    backgroundColor: theme.colors.LIGHT_SOIL_COLOR,
     paddingVertical: 20,
     paddingHorizontal: 20,
     paddingBottom: 40,
@@ -615,7 +615,7 @@ const styles = StyleSheet.create({
     color: theme.colors.LIGHT_BLUE,
   },
   referralMainContainer: {
-    backgroundColor: theme.colors.LIGHT_GREEN_ONE,
+    backgroundColor: theme.colors.LIGHT_SOIL_COLOR,
     alignItems: 'center',
     paddingVertical: 20,
   },
@@ -760,5 +760,8 @@ const styles = StyleSheet.create({
     bottom: 0,
     elevation: 3,
     zIndex: 3,
+  },
+  userItemListMain: {
+    minHeight: Dimensions.get('screen').height - 400,
   },
 });
