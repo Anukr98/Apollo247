@@ -58,7 +58,6 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
-  CALL_TO_ORDER_CTA_PAGE_ID,
   DEVICETYPE,
   diagnosticLineItem,
   DiagnosticLineItem,
@@ -137,7 +136,6 @@ import { saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patientsObjWith
 import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/GetPlanDetailsByPlanId';
-import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 import {
   CreateUserSubscription,
   CreateUserSubscriptionVariables,
@@ -146,12 +144,11 @@ import CircleCard from '@aph/mobile-patients/src/components/Tests/components/Cir
 import { CirclePlansListOverlay } from '@aph/mobile-patients/src/components/Tests/components/CirclePlansListOverlay';
 import { debounce } from 'lodash';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import { Decimal } from 'decimal.js';
-import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
@@ -443,13 +440,20 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       'review page',
       currentPatient,
       cartItems,
+      couponDiscount,
+      grandTotal,
+      uploadPrescriptionRequired,
+      diagnosticSlot,
+      coupon,
+      hcCharges,
+      circlePlanValidity,
+      circleSubscriptionId,
       isDiagnosticCircleSubscription,
       pinCodeFromAddress,
       cityFromAddress,
+      coupon,
       false,
-      toPayPrice,
-      hcCharges,
-      circleSubscriptionId
+      []
     );
     //add coupon code + coupon discount
   }
@@ -1796,7 +1800,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const renderPolicyDisclaimer = () => {
     return (
       <View style={{ margin: 16, marginTop: anyCartSaving > 0 ? 16 : 0 }}>
-        <Text style={styles.disclaimerText}>{string.diagnosticsCartPage.reviewPagePolicyText}</Text>
+        <Text style={styles.disclaimerText}>
+          {AppConfig.Configuration.DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER_TEXT}
+        </Text>
       </View>
     );
   };
@@ -2067,6 +2073,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         subscriptionInclusionId: null,
         userSubscriptionId: circleSubscriptionId != '' ? circleSubscriptionId : localCircleSubId,
       };
+      AsyncStorage.setItem('bookingOrderInfo', JSON.stringify({ bookingOrderInfo }));
       if (!!coupon) {
         bookingOrderInfo.couponCode = coupon?.coupon;
       }
@@ -2499,6 +2506,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           processModifiyCODOrder(getOrderDetails, grandTotal, eventAttributes, orderInfo, payId!);
         } else {
           setLoading?.(false);
+          AsyncStorage.setItem('orderInfo', JSON.stringify(orderInfo));
           props.navigation.navigate(AppRoutes.PaymentMethods, {
             paymentId: payId!,
             amount: toPayPrice,
@@ -2585,13 +2593,14 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     paymentId: string | number
   ) {
     setLoading?.(false);
-    props.navigation.navigate(AppRoutes.OrderStatus, {
-      isModify: isModifyFlow ? modifiedOrder : null,
+
+    props.navigation.navigate(AppRoutes.PaymentStatusDiag, {
+      paymentId: paymentId,
       orderDetails: orderInfo,
       isCOD: isCOD,
       eventAttributes,
       paymentStatus: paymentStatus,
-      paymentId: paymentId,
+      isModify: isModifyFlow ? modifiedOrder : null,
     });
   }
 
@@ -2629,6 +2638,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       subscriptionInclusionId: null,
       amountToPay: grandTotal, //total amount to pay
     };
+    AsyncStorage.setItem('modifyBookingInput', JSON.stringify({ modifyBookingInput }));
     saveModifyOrder?.(modifyBookingInput)
       .then((data) => {
         const getModifyResponse = data?.data?.saveModifyDiagnosticOrder;
@@ -2791,7 +2801,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       <SafeAreaView style={[{ ...theme.viewStyles.container }]}>
         {renderHeader()}
         {renderWizard()}
-        <ScrollView bounces={false} style={{ flexGrow: 1 }} showsVerticalScrollIndicator={true}>
+        <ScrollView
+          bounces={false}
+          style={{ flexGrow: 1, flex: 1 }}
+          showsVerticalScrollIndicator={true}
+        >
           {renderMainView()}
         </ScrollView>
         {renderTestProceedBar()}
@@ -3083,5 +3097,5 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   savingsTitleText: { ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 1, 20) },
-  disclaimerText: { ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 0.7, 14) },
+  disclaimerText: { ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1, 18, 0.04) },
 });

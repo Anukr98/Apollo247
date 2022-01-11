@@ -144,6 +144,7 @@ export interface BillScreenProps
   extends NavigationScreenProps<{
     onPressBack: () => void;
     authToken: string;
+    callDataBool: boolean;
   }> {}
 
 export const BillScreen: React.FC<BillScreenProps> = (props) => {
@@ -167,6 +168,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
   const [prismAuthToken, setPrismAuthToken] = useState<string>(
     props.navigation?.getParam('authToken') || ''
   );
+  const callDataBool = props.navigation?.getParam('callDataBool') || false;
   const [searchQuery, setSearchQuery] = useState({});
   const { phrSession, setPhrSession } = useAppCommonData();
 
@@ -287,9 +289,13 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
     }
   }, [callApi]);
 
-  const gotoPHRHomeScreen = () => {
+  const navigationToHome = () => {
     props.navigation.state.params?.onPressBack();
     props.navigation.goBack();
+  };
+
+  const gotoPHRHomeScreen = () => {
+    callDataBool ? props.navigation.navigate('HEALTH RECORDS') : navigationToHome();
   };
 
   const getLatestMedicalBillRecords = () => {
@@ -408,7 +414,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
   };
 
   const renderMedicalBillItems = (item: any, index: number) => {
-    const prescriptionName = item?.data?.hospitalName || '';
+    const prescriptionName = item?.data?.hospitalName || 'Bill';
     const dateText = getPrescriptionDate(item?.data?.billDateTime);
     const soureName = getSourceName(item?.data?.source!) || '-';
     const selfUpload = true;

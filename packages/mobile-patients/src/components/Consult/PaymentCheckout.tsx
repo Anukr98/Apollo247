@@ -902,11 +902,25 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     }
   };
 
+  const saveBookingInformartion = () => {
+    AsyncStorage.setItem(
+      'onGoingBookingInfo',
+      JSON.stringify({
+        appointmentInput: appointmentInput,
+        amountToPay: amountToPay,
+        consultAmounttoPay: consultAmounttoPay,
+        isCircleDoctorOnSelectedConsultMode: isCircleDoctorOnSelectedConsultMode,
+        consultedWithDoctorBefore: consultedWithDoctorBefore,
+      })
+    );
+  };
+
   const onSubmitBookAppointment = async () => {
     CommonLogEvent(AppRoutes.PaymentCheckout, 'ConsultOverlay onSubmitBookAppointment clicked');
     setLoading!(true);
     // again check coupon is valid or not
     verifyCoupon(true);
+    saveBookingInformartion();
     try {
       const response =
         !circleSubscriptionId && circlePlanSelected && isCircleDoctorOnSelectedConsultMode

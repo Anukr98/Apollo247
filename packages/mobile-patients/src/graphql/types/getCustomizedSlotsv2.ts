@@ -25,6 +25,7 @@ export interface getCustomizedSlotsv2_getCustomizedSlotsv2 {
   __typename: "getCustomizedSlotsv2Response";
   available_slots: (getCustomizedSlotsv2_getCustomizedSlotsv2_available_slots | null)[] | null;
   distanceCharges: number | null;
+  slotDurationInMinutes: number | null;
 }
 
 export interface getCustomizedSlotsv2 {

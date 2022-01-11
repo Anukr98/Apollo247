@@ -128,6 +128,7 @@ import {
   getAllProHealthAppointments,
   getUserBannersList,
   saveTokenDevice,
+  updatePatientAppVersion,
   getDiagnosticSearchResults,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
@@ -159,6 +160,7 @@ import {
   getAsyncStorageValues,
   formatUrl,
   checkCleverTapLoginStatus,
+  isEmptyObject,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -1053,6 +1055,14 @@ const styles = StyleSheet.create({
   },
 });
 
+const RewardStatus = {
+  REFEREE_REWARDED: 'REFEREE_REWARDED',
+  REFERRER_REWARDED: 'REFERRER_REWARDED',
+  NOT_ELIGIBLE_FOR_REWARD: 'NOT_ELIGIBLE_FOR_REWARD',
+  ELIGIBLE_FOR_REWARD: 'ELIGIBLE_FOR_REWARD',
+  SUCCESS: 'SUCCESS',
+};
+
 type menuOptions = {
   id: number;
   title: string;
@@ -1187,7 +1197,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const [proActiveAppointments, setProHealthActiveAppointment] = useState([] as any);
   const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
   const { APP_ENV } = AppConfig;
-  const { refreeReward, setRefreeReward, setRewardId, setCampaignId } = useReferralProgram();
+  const {
+    refreeReward,
+    setRefreeReward,
+    setRewardId,
+    setCampaignId,
+    setCampaignName,
+  } = useReferralProgram();
   const [isReferrerAvailable, setReferrerAvailable] = useState<boolean>(false);
   const {
     setHdfcPlanName,
@@ -1376,9 +1392,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       getActiveProHealthAppointments(currentPatient); //to show the prohealth appointments
     }
   }
+  const updateAppVersion = (currentPatient: any) => {
+    if (currentPatient?.id) {
+      updatePatientAppVersion(client, currentPatient);
+    }
+  };
 
   useEffect(() => {
     checkCleverTapLoginStatus(currentPatient);
+    updateAppVersion(currentPatient);
   }, [currentPatient]);
 
   useEffect(() => {
@@ -1421,7 +1443,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       });
       if (responseCampaign?.data?.getCampaignInfoByCampaignType?.id) {
         const campaignId = responseCampaign?.data?.getCampaignInfoByCampaignType?.id;
+        const campaignName = responseCampaign?.data?.getCampaignInfoByCampaignType?.campaignType;
         setCampaignId?.(campaignId);
+        setCampaignName?.(campaignName);
       }
       if (responseReward?.data?.getRewardInfoByRewardType?.id) {
         const rewardId = responseReward?.data?.getRewardInfoByRewardType?.id;
@@ -1554,7 +1578,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           showFreeConsultOverlay(params);
         } else if (!params?.isPhysicalConsultBooked) {
           overlyCallPermissions(
-            currentPatient!.firstName!,
+            currentPatient!,
             params?.doctorName,
             showAphAlert,
             hideAphAlert,
@@ -1610,7 +1634,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           showFreeConsultOverlay(params);
         } else if (!params?.isPhysicalConsultBooked) {
           overlyCallPermissions(
-            currentPatient!.firstName!,
+            currentPatient!,
             params?.doctorName,
             showAphAlert,
             hideAphAlert,
@@ -1694,7 +1718,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           getCurrentRoute() !== AppRoutes.ChatRoom
         ) {
           overlyCallPermissions(
-            currentPatient!.firstName!,
+            currentPatient!,
             'the doctor',
             showAphAlert,
             hideAphAlert,
@@ -1708,6 +1732,27 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       CommonBugFender('ConsultRoom_getPatientFutureAppointmentCount', error);
     }
   };
+
+  const postGoToConsultRoomEvent = (item: any) => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_GO_TO_CONSULT_ROOM_CLICKED] = {
+      'Patient name': `${currentPatient?.firstName} ${currentPatient?.lastName}` || '',
+      'Patient UHID': currentPatient?.uhid || '',
+      'Doctor name': item?.doctorInfo?.fullName || '',
+      'Speciality name': item?.doctorInfo?.specialty?.name || '',
+      'Doctor ID': item?.doctorId || '',
+      'Speciality ID': item?.doctorInfo?.specialty?.id || '',
+      'Patient gender': currentPatient?.gender || '',
+      'Patient age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
+      'Hospital name': item?.doctorInfo?.doctorHospital?.[0]?.facility?.name || '',
+      'Hospital city': item?.doctorInfo?.doctorHospital?.[0]?.facility?.city || '',
+      Source: 'Payment confirmation screen',
+      'Appointment datetime': moment(item?.appointmentDateTime).toDate(),
+      'Display ID': item?.displayId,
+      'Consult mode': item?.appointmentType || '',
+    };
+    postCleverTapEvent(CleverTapEventName.CONSULT_GO_TO_CONSULT_ROOM_CLICKED, eventAttributes);
+  };
+
   const showFreeConsultOverlay = (params: any) => {
     const { isJdQuestionsComplete, appointmentDateTime, doctorInfo } = params?.appointmentData;
     const { skipAutoQuestions, isPhysicalConsultBooked } = params;
@@ -1772,6 +1817,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                 props.navigation.navigate(AppRoutes.ChatRoom, {
                   data: params?.appointmentData,
                 });
+                postGoToConsultRoomEvent(params?.appointmentData);
               }}
             >
               <Text style={theme.viewStyles.yellowTextStyle}>GO TO CONSULT ROOM</Text>
@@ -1931,7 +1977,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     if (eventName == CleverTapEventName.CONSULT_ACTIVE_APPOINTMENTS) {
       eventAttributes = {
         ...eventAttributes,
-        'Nav src': source === 'Home Screen' ? 'homepage bar' : 'Bottom bar',
+        'Nav src': source === 'Home Screen' ? 'Homepage' : 'Bottom bar',
+        'Circle Member': !!circleSubscriptionId,
+        'Circle Plan type': circleSubPlanId || '',
       };
     }
     if (eventName == CleverTapEventName.HDFC_HEALTHY_LIFE) {
@@ -2155,10 +2203,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         getTokenforCM();
       },
     },
-  ];
-
-  const listValues: menuOptions[] = [
-    ...listOptions,
     {
       id: 7,
       title: 'View Health Records',
@@ -2177,10 +2221,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     },
   ];
 
-  const listValuesForProHealth: menuOptions[] = [
-    ...listOptions,
-    {
-      id: 7,
+  const listValues: menuOptions[] = [...listOptions];
+
+  const listValuesForProHealth: menuOptions[] = Object.assign([], listOptions, {
+    5: {
+      id: 6,
       title: 'ProHealth',
       image: <ProHealthIcon style={styles.menuOption2SubIconStyle} />,
       onPress: () => {
@@ -2189,7 +2234,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         getTokenForProhealthCM();
       },
     },
-  ];
+  });
 
   useEffect(() => {
     if (enableCM) {
@@ -3472,11 +3517,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const checkUserRegisterThroughReferral = async () => {
-    const referrerInstall = await AsyncStorage.getItem('referrerInstall');
-    if (referrerInstall === 'true') {
-      props.navigation.navigate('EarnedPoints');
-      AsyncStorage.removeItem('referrerInstall');
-    }
+    try {
+      const referrerInstall = await AsyncStorage.getItem('referrerInstall');
+      if (referrerInstall === 'true') {
+        const rewardStatus = await AsyncStorage.getItem('RefereeStatus');
+        if (rewardStatus === RewardStatus.ELIGIBLE_FOR_REWARD) {
+          props.navigation.navigate('EarnedPoints');
+          AsyncStorage.removeItem('RefereeStatus');
+        }
+        AsyncStorage.removeItem('referrerInstall');
+      }
+    } catch (e) {}
   };
 
   const cleverTapEventForAddMemberClick = () => {

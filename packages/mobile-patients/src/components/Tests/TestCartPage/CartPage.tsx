@@ -25,6 +25,7 @@ import {
   postAppsFlyerEvent,
   postFirebaseEvent,
   setAsyncPharmaLocation,
+  showDiagnosticCTA,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   DiagnosticPatientCartItem,
@@ -157,9 +158,15 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     addCartItem,
     newAddressAddedCartPage,
     setNewAddressAddedCartPage,
+    couponDiscount,
+    grandTotal,
+    uploadPrescriptionRequired,
+    coupon,
+    hcCharges,
+    diagnosticSlot
   } = useDiagnosticsCart();
 
-  const { setAddresses: setMedAddresses, circleSubscriptionId } = useShoppingCart();
+  const { setAddresses: setMedAddresses,circlePlanValidity, circleSubscriptionId } = useShoppingCart();
 
   const {
     locationDetails,
@@ -197,24 +204,11 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   const isCartPresent = isDiagnosticSelectedCartEmpty(
     isModifyFlow ? modifiedPatientCart : patientCartItems
   );
-  const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
-  const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
-  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
-    CALL_TO_ORDER_CTA_PAGE_ID.TESTCART
+
+  const getCTADetails = showDiagnosticCTA(
+    CALL_TO_ORDER_CTA_PAGE_ID.TESTCART,
+    deliveryAddressCityId
   );
-  const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
-    if (item?.ctaCityId == deliveryAddressCityId) {
-      if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTCART)) {
-        return item;
-      } else {
-        return null;
-      }
-    } else if (isCtaDetailDefault) {
-      return callToOrderDetails?.ctaDetailsDefault;
-    } else {
-      return null;
-    }
-  });
 
   const patientsOnCartPage = !!isCartPresent && isCartPresent?.map((item) => item?.patientId);
   const patientListForOverlay =
@@ -264,7 +258,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     newAddressAddedCartPage != '' && setNewAddressAddedCartPage?.('');
   }
 
-  function triggerCartPageViewed() {
+  function triggerCartPageViewed(isRecommendationShown : boolean,recomData: any) {
     const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
     const pinCodeFromAddress = addressToUse?.zipcode!;
     const cityFromAddress = addressToUse?.city;
@@ -272,10 +266,19 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       'cart page',
       currentPatient,
       cartItems,
+      couponDiscount,
+      grandTotal,
+      uploadPrescriptionRequired,
+      diagnosticSlot,
+      coupon,
+      hcCharges,circlePlanValidity,
+      circleSubscriptionId,
       isDiagnosticCircleSubscription,
       pinCodeFromAddress,
       cityFromAddress,
-      false
+      '',
+      isRecommendationShown,
+      recomData
     );
   }
 
@@ -372,6 +375,34 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       fetchCartPageRecommendations(itemIds, getUpdatedCartItems()?.selectedUniqueItems);
     }
   }, [cartItems?.length, addressCityId]);
+
+  const recomData = recommedationData?.length > 2 ? recommedationData : alsoAddListData
+  useEffect(() => {
+    const isRecommendationShown = recommedationData?.length > 2;
+    if (cartItems?.length > 0 && recomData?.length > 0 && !loading) {
+    const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
+    const pinCodeFromAddress = addressToUse?.zipcode!;
+    const cityFromAddress = addressToUse?.city;
+    DiagnosticCartViewed(
+      'cart page',
+      currentPatient,
+      cartItems,
+      couponDiscount,
+      grandTotal,
+      uploadPrescriptionRequired,
+      diagnosticSlot,
+      coupon,
+      hcCharges,circlePlanValidity,
+      circleSubscriptionId,
+      isDiagnosticCircleSubscription,
+      pinCodeFromAddress,
+      cityFromAddress,
+      '',
+      isRecommendationShown,
+      recomData
+    );
+    }
+  }, [cartItems?.length, recomData?.length, loading]);
 
   const getDiagnosticsAvailability = (
     cityIdForAddress: number,
@@ -1524,6 +1555,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                 }}
                 onPressRemoveItemFromCart={(item) => {}}
                 data={dataToShow}
+                recommedationDataSource = {recommedationData?.length > 2 ? 'Recommendations' : 'You can also order'}
                 isCircleSubscribed={isDiagnosticCircleSubscription}
                 isServiceable={isServiceable}
                 isVertical={false}
@@ -1702,7 +1734,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   };
 
   const renderCallToOrder = () => {
-    return ctaDetailMatched?.length ? (
+    return getCTADetails?.length ? (
       <CallToOrderView
         cityId={deliveryAddressCityId}
         customMargin={showNonServiceableText ? 240 : 180}

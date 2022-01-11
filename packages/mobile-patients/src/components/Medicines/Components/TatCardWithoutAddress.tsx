@@ -5,6 +5,7 @@ import { DeliveryIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { format } from 'date-fns';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { isTodaysDate, isTomorrowsDate } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 export interface TatCardwithoutAddressProps {
   style?: StyleProp<ViewStyle>;
@@ -20,9 +21,9 @@ export const TatCardwithoutAddress: React.FC<TatCardwithoutAddressProps> = (prop
   function getNonCartDeliveryDate() {
     let tommorowDate = new Date();
     tommorowDate.setDate(tommorowDate.getDate() + 1);
-    if (new Date(deliveryTime).toLocaleDateString() == new Date().toLocaleDateString()) {
+    if (isTodaysDate(deliveryTime)) {
       return `Expected Delivery by Today!`;
-    } else if (new Date(deliveryTime).toLocaleDateString() == tommorowDate.toLocaleDateString()) {
+    } else if (isTomorrowsDate(deliveryTime)) {
       return `Expected Delivery by Tomorrow!`;
     } else {
       return `Expected Delivery by: ${format(deliveryTime, 'D-MMM-YYYY')}`;

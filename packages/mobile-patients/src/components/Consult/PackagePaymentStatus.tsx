@@ -117,6 +117,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
   const [planDescription, setPlanDescription] = useState<string>('');
   const [planValidity, setPlanValidity] = useState<any>();
   const [planId, setPlanId] = useState<string>('');
+  const [subscriptionId, setSubscriptionId] = useState<string>('');
   const [paymentAmount, setPaymentAmount] = useState<number>(0);
 
   const { currentPatient } = useAllCurrentPatients();
@@ -556,6 +557,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
           response?.data?.getOrderInternal?.SubscriptionOrderDetails?.group_plan?.meta
             ?.description || '-'
         );
+        setSubscriptionId(response?.data?.getOrderInternal?.SubscriptionOrderDetails?._id || '');
         setPlanId(
           response?.data?.getOrderInternal?.SubscriptionOrderDetails?.group_sub_plan?.plan_id || ''
         );
@@ -863,6 +865,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
               } else {
                 props.navigation.navigate(AppRoutes.ConsultPackagePostPurchase, {
                   planId: planId,
+                  subscriptionId,
                   onSubscriptionCancelled: () => {
                     props.navigation.goBack();
                   },
