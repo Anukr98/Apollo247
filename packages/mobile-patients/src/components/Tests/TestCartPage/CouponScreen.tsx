@@ -85,13 +85,23 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
     getDiagnosticCoupons();
   }, []);
 
+  function createPackageId() {
+    const activeSubPackageId = getPackageIds(activeUserSubscriptions);
+    const circlePackageId =
+      isCircleAddedToCart || (circleSubscriptionId && circleStatus === 'active')
+        ? `APOLLO:${circlePlanId}`
+        : null;
+    if (!!circlePackageId && !activeSubPackageId.includes(circlePackageId)) {
+      //if not included, then add..
+      activeSubPackageId?.push(circlePackageId);
+    }
+    return activeSubPackageId;
+  }
+
   async function getDiagnosticCoupons() {
     setLoading?.(true);
     try {
-      const result = await fetchDiagnosticCoupons(
-        'Diag',
-        getPackageIds(activeUserSubscriptions)?.join()
-      );
+      const result = await fetchDiagnosticCoupons('Diag', createPackageId()?.join());
       if (!!result?.data?.response && result?.data?.response?.length > 0) {
         const getCoupons = result?.data?.response;
         setLoading?.(false);
@@ -176,7 +186,7 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
       coupon: coupon,
       pinCode: String(getPincode),
       diagnostics: createLineItemsForPayload?.pricesForItemArray?.map((item: any) => item), //define type
-      packageIds: getPackageIds(activeUserSubscriptions),
+      packageIds: createPackageId(),
     };
     validateConsultCoupon(data)
       .then((resp: any) => {

@@ -522,6 +522,19 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     return Math.round(Number(value));
   }
 
+  function createPackageId() {
+    const activeSubPackageId = getPackageIds(activeUserSubscriptions);
+    const circlePackageId =
+      isCircleAddedToCart || (circleSubscriptionId && circleStatus === 'active')
+        ? `APOLLO:${circlePlanId}`
+        : null;
+    if (!!circlePackageId && !activeSubPackageId.includes(circlePackageId)) {
+      //if not included, then add..
+      activeSubPackageId?.push(circlePackageId);
+    }
+    return activeSubPackageId;
+  }
+
   const revalidateAppliedCoupon = (
     coupon: string,
     cartItemsWithQuan: DiagnosticsCartItem[], //with quantity
@@ -553,7 +566,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       coupon: coupon,
       pinCode: String(pinCode),
       diagnostics: createLineItemsForPayload?.pricesForItemArray?.map((item: any) => item), //define type
-      packageIds: getPackageIds(activeUserSubscriptions), //array of all subscriptions of user
+      packageIds: createPackageId(), //array of all subscriptions of user
     };
     validateConsultCoupon(data)
       .then((resp: any) => {
@@ -3290,6 +3303,6 @@ const styles = StyleSheet.create({
   },
   circleIconView: { paddingHorizontal: 10 },
   circleText: { flexDirection: 'column' },
-  circleTextPrice: { padding: 10, paddingLeft: 0 },
+  circleTextPrice: { padding: 10 },
   circleTextStyle: { ...theme.viewStyles.text('M', 14, colors.SHERPA_BLUE, 1) },
 });
