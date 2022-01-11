@@ -330,6 +330,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
             diagnosticPricing: _diagItems?.diagnosticPricing,
             packageCalculatedMrp: _diagItems?.packageCalculatedMrp,
             inclusionData: _widget?.inclusionData || _diagItems?.inclusions,
+            inclusions: _widget?.diagnosticInclusions,
           });
         }
       });
