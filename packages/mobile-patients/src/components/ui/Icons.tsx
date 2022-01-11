@@ -1190,6 +1190,14 @@ export const CheckBoxFilled: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/checkboxfilled.webp')} />
 );
 
+export const LoginCheckBoxFilled: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/loginCheckboxFilled.webp')} />
+);
+
+export const LoginCheckBoxUnFilled: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/loginCheckboxUnfilled.webp')} />
+);
+
 export const WhatsAppIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/whatsapp.webp')} />
 );

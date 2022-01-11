@@ -478,7 +478,9 @@ const SignUp: React.FC<SignUpProps> = (props) => {
   const postAppsFlyerEventAppInstallViaReferral = async (data: any) => {
     const referralData: any = await AsyncStorage.getItem('app_referral_data');
     setRefereeFlagForNewRegisterUser(referralData !== null);
-    onCleverTapUserLogin({ ...data?.updatePatient?.patient });
+    const cleverTapProfile = { ...data?.updatePatient?.patient };
+    if (whatsAppOptIn) cleverTapProfile['Msg-whatsapp'] = true;
+    onCleverTapUserLogin(cleverTapProfile);
     if (referralData !== null) {
       const { af_referrer_customer_id, campaign, rewardId, shortlink } = JSON.parse(referralData);
       const eventAttribute = {
@@ -835,7 +837,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
         : null;
       let patientDetails: any = {
         id: mePatient.id,
-        // whatsAppOptIn: whatsAppOptIn,  It will use in future, but right now this is not working So I just commented it
+        whatsappOptIn: whatsAppOptIn,
         mobileNumber: mePatient.mobileNumber,
         firstName: firstName.trim(),
         lastName: lastName.trim(),

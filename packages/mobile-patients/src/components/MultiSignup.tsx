@@ -370,6 +370,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                       relation: Relation.ME, // profile ? profile.relation!.toUpperCase() : '',
                       referralCode: trimReferral || null,
                       deviceCode: deviceToken,
+                      whatsappOptIn: whatsAppOptIn,
                     };
 
                     CommonLogEvent(AppRoutes.MultiSignup, 'Update API clicked');
@@ -402,7 +403,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                     AsyncStorage.setItem('userLoggedIn', 'true'),
                     AsyncStorage.setItem('multiSignUp', 'false'),
                     AsyncStorage.setItem('gotIt', 'false'),
-                    onCleverTapUserLogin(data?.updatePatient?.patient),
+                    onCleverTapUserLogin(!whatsAppOptIn ? data?.updatePatient?.patient : {...data?.updatePatient?.patient, 'Msg-whatsapp': true}),
                     createOneApolloUser(data?.updatePatient?.patient?.id!),
                     handleOpenURLs())
                   : null}
