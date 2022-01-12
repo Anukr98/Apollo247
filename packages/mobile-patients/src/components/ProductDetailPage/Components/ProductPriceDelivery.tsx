@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -32,6 +32,7 @@ export interface ProductPriceDeliveryProps {
   multiVariantProducts?: any[];
   skusInformation?: any[];
   onSelectVariant?: (sku: string) => void;
+  priceLoaded: boolean
 }
 
 export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props) => {
@@ -53,6 +54,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
     skusInformation,
     sku,
     onSelectVariant,
+    priceLoaded
   } = props;
   const { currentPatient } = useAllCurrentPatients();
   const {
@@ -72,7 +74,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
 
   const renderProductPrice = () => {
     const discountPercent = getDiscountPercentage(price, specialPrice);
-    if (price) {
+    if (price && priceLoaded) {
       return !!specialPrice ? (
         <View style={styles.cardStyle}>
           <View style={[styles.flexRow, { alignItems: 'center', paddingBottom: 9 }]}>
