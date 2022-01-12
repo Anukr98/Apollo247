@@ -1850,7 +1850,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
             }
           }
         }
-        attributesObj{
+        attributesObj {
           initialCollectionCharges
           distanceCharges
           homeCollectionCharges
@@ -7082,29 +7082,30 @@ export const GET_CAMPAIGN_ID_FOR_REFERRER = gql`
   }
 `;
 
-export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS = gql `
-query getDiagnosticPackageRecommendations($itemId:Int!, $cityId: Int!){
-  getDiagnosticPackageRecommendations(itemId:$itemId, cityId:$cityId){
-    packageRecommendations{
-      itemId
-      itemName
-      inclusions
-      packageCalculatedMrp
-      diagnosticInclusions{
+export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS = gql`
+  query getDiagnosticPackageRecommendations($itemId: Int!, $cityId: Int!) {
+    getDiagnosticPackageRecommendations(itemId: $itemId, cityId: $cityId) {
+      packageRecommendations {
         itemId
-        name
-        observations{
-          observationName
-          mandatoryValue
+        itemName
+        inclusions
+        packageCalculatedMrp
+        diagnosticInclusions{
+          itemId
+          name
+          observations{
+            observationName
+            mandatoryValue
+          }
         }
-      }
-      diagnosticPricing{
-        mrp
-        price
-        groupPlan
-        status
-        startDate
-        endDate
+        diagnosticPricing {
+          mrp
+          price
+          groupPlan
+          status
+          startDate
+          endDate
+        }
       }
     }
   }
@@ -7516,6 +7517,7 @@ export const DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS = gql`
     }
   }
 `;
+
 export const INSERT_REFEREE_DATA_TO_REFERRER = gql`
   mutation addReferralRecord($referralDataInput: createReferralInput!) {
     addReferralRecord(referralInput: $referralDataInput) {
