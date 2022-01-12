@@ -7074,15 +7074,15 @@ export const GET_REWARD_ID = gql`
 `;
 
 export const GET_CAMPAIGN_ID_FOR_REFERRER = gql`
-  query campaignInfo($camp: CAMPAIGN_TYPES!) {
-    getCampaignInfoByCampaignType(campaignType: $camp) {
+  query getCampaignInfo {
+    getCampaignInfo {
       id
       campaignType
     }
   }
 `;
 
-export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS = gql `
+export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS = gql`
 query getDiagnosticPackageRecommendations($itemId:Int!, $cityId: Int!){
   getDiagnosticPackageRecommendations(itemId:$itemId, cityId:$cityId){
     packageRecommendations{
