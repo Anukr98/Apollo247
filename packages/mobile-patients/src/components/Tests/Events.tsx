@@ -448,7 +448,8 @@ export function DiagnosticCartViewed(
   city: string,
   couponCode: string,
   isRecommendationShown: boolean,
-  recommendationData: any
+  recommendationData: any,
+  totalCart: any
 ) {
   try {
     const getPatientAttributes = createPatientAttributes(currentPatient);
@@ -457,7 +458,7 @@ export function DiagnosticCartViewed(
       | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_CART_VIEWED] = {
       ...getPatientAttributes,
       'Page source': source,
-      'Total items in cart': cartItems?.length,
+      'Total items in cart': totalCart?.length,
       // 'Delivery charge': deliveryCharges,
       'Total Discount': couponDiscount ? Number(couponDiscount) : 0,
       'Recommendation Shown': isRecommendationShown ? 'Yes' : 'No',
@@ -477,12 +478,12 @@ export function DiagnosticCartViewed(
       ),
       'Circle user': isCircle ? 'Yes' : 'No',
       'Item ids': JSON.stringify(
-        cartItems?.map((item: any) => {
+        totalCart?.map((item: any) => {
           return item?.id;
         })
       ),
       'Item names': JSON.stringify(
-        cartItems?.map((item: any) => {
+        totalCart?.map((item: any) => {
           return item?.name;
         })
       ),
@@ -490,6 +491,7 @@ export function DiagnosticCartViewed(
       UHID: currentPatient?.uhid,
       city: city,
       'Prescription Needed': prescReqd ? 'Yes' : 'No',
+      'Cart Value': gTotal
     };
 
     if (!!gTotal) {

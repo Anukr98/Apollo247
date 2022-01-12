@@ -1787,6 +1787,7 @@ export interface CleverTapEvents {
     'Item names': any;
     'Recommendation Shown': string;
     'Recommendation Item ids': any;
+    'Cart Value': any;
   };
   [CleverTapEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED]: {
     'Slot time': string;
