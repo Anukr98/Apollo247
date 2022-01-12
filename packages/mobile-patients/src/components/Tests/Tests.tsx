@@ -296,6 +296,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     bannerData,
     pharmacyLocation,
     notificationCount,
+    setIsRenew,
   } = useAppCommonData();
 
   type Address = savePatientAddress_savePatientAddress_patientAddress;
@@ -1165,18 +1166,20 @@ export const Tests: React.FC<TestsProps> = (props) => {
       });
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
       if (data) {
-        if (data?.APOLLO?.[0]._id && data?.APOLLO?.[0]?.status !== 'disabled') {
-          AsyncStorage.setItem('circleSubscriptionId', data?.APOLLO?.[0]._id);
-          setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
+        const circleData = data?.APOLLO?.[0];
+        if (circleData._id && circleData?.status !== 'disabled') {
+          AsyncStorage.setItem('circleSubscriptionId', circleData._id);
+          setCircleSubscriptionId && setCircleSubscriptionId(circleData._id);
           setIsCircleSubscription && setIsCircleSubscription(true);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
           const planValidity = {
-            startDate: data?.APOLLO?.[0]?.start_date,
-            endDate: data?.APOLLO?.[0]?.end_date,
-            plan_id: data?.APOLLO?.[0]?.plan_id,
-            source_identifier: data?.APOLLO?.[0]?.source_meta_data?.source_identifier,
+            startDate: circleData?.start_date,
+            endDate: circleData?.end_date,
+            plan_id: circleData?.plan_id,
+            source_identifier: circleData?.source_meta_data?.source_identifier,
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
+          setIsRenew && setIsRenew(!!circleData?.renewNow);
         } else {
           setCircleSubscriptionId && setCircleSubscriptionId('');
           setIsCircleSubscription && setIsCircleSubscription(false);

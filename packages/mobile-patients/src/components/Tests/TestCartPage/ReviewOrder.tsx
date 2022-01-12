@@ -69,6 +69,7 @@ import {
   OrderCreate,
   OrderVerticals,
   patientObjWithLineItems,
+  PlanPurchaseType,
   SaveBookHomeCollectionOrderInputv2,
   saveModifyDiagnosticOrderInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -254,6 +255,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     circleStatus,
     circlePlanId,
     activeUserSubscriptions,
+    isRenew,
   } = useAppCommonData();
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
@@ -2891,7 +2893,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const storeCode =
       Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
 
-    const purchaseInput = {
+    const purchaseInput: CreateUserSubscriptionVariables = {
       userSubscription: {
         mobile_number: currentPatient?.mobileNumber,
         plan_id: planId,
@@ -2900,6 +2902,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           : defaultCirclePlan?.subPlanId,
         storeCode,
         transaction_date_time: new Date().toISOString(),
+        source_meta_data: {
+          purchase_type: isRenew ? PlanPurchaseType.renew : PlanPurchaseType.first_time,
+        },
       },
     };
 

@@ -191,9 +191,13 @@ export const ConsultPackageDetail: React.FC<ConsultPackageDetailProps> = (props)
     setLoading(true);
     getConsultPackageDetailPrePurchase(planId)
       .then((response) => {
-        if (response?.data?.Packagedata && response?.data?.Plandata) {
-          if (response?.data?.Plandata?.length == 1) {
+        const { Plandata } = response?.data;
+        if (response?.data?.Packagedata && Plandata) {
+          if (Plandata?.length == 1) {
             setSeletectedPlanIndex(0);
+          } else {
+            const preSelectedIndex = Plandata?.findIndex((plan: any) => !!plan?.PlanPreSelected);
+            !!preSelectedIndex && preSelectedIndex > -1 && setSeletectedPlanIndex(preSelectedIndex);
           }
           setPackageDetailData(response?.data);
         } else {
@@ -348,7 +352,9 @@ export const ConsultPackageDetail: React.FC<ConsultPackageDetailProps> = (props)
         </ScrollView>
         {/* Proceed to Pay */}
         <Button
-          title={string.consultPackageList.prodeedToPay}
+          title={
+            isOneTap ? string.consultPackageList.bookOneTap : string.consultPackageList.prodeedToPay
+          }
           style={styles.proceedToPayButton}
           disabled={disableProceedToPay()}
           onPress={onProceedToPay}
@@ -386,8 +392,15 @@ export const ConsultPackageDetail: React.FC<ConsultPackageDetailProps> = (props)
       'Plan Price': packageDetailData?.Plandata[selectedPlanIndex]?.PlanPrice,
       'Plan Type': packageDetailData?.Plandata[selectedPlanIndex]?.PlanType,
     };
-
-    postCleverTapEvent(CleverTapEventName.CONSULT_PACKAGE_PROCEED_TO_PAY_CLICKED, eventAttributes);
+    if (isOneTap) {
+      eventAttributes['Vertical'] = 'one-tap';
+      postCleverTapEvent(CleverTapEventName.CONSULT_PACKAGE_BOOK_ONE_TAP_CLICKED, eventAttributes);
+    } else {
+      postCleverTapEvent(
+        CleverTapEventName.CONSULT_PACKAGE_PROCEED_TO_PAY_CLICKED,
+        eventAttributes
+      );
+    }
   };
 
   const disableProceedToPay = () => {

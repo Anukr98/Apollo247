@@ -330,15 +330,16 @@
     "availableForInAppConsultsOnly": "Due to the current situation, {{doctor}} is available only for In-App Consults"
   },
   "login": {
+    "accept_tnc": "Please accept the T&C and Privacy Policy to continue",
     "hello": "hello!",
     "please_enter_no": "Please enter your phone number to get access to Apollo Doctors and Apollo Pharmacy online! ",
-    "otp_sent_to": "An OTP will be sent to this number",
+    "otp_sent_to": "OTP sent on SMS",
     "bySigningUp": "By signing up, I agree to the",
-    "termsAndCondition": "Terms and Conditions",
+    "termsAndCondition": "T&C",
     "and": "and",
     "privacyPolicy": "Privacy Policy",
     "ofApollo247": "of Apollo247",
-    "wrong_number": "This seems like a wrong number",
+    "wrong_number": "Please enter a valid 10-digit phone number",
     "numberPrefix": "+91",
     "great": "great!",
     "type_otp_text": "Now type in the OTP sent to you for authentication",
@@ -355,7 +356,22 @@
     "best_general_physicians_text": "Here are our best General Physicians",
     "all_consults": "All Consults",
     "distance": "Distance",
-    "hello_login": "hello! :)"
+    "hello_login": "hello! :)",
+    "signin_signup": "Sign in / Sign up",
+    "otp_title": "Enter OTP",
+    "otp_placeholder": "Please enter the OTP to access all of Apollo Services!",
+    "otp_resent_on_call": "OTP resent on call",
+    "otp_resent_on_sms": "OTP resent on SMS",
+    "otp_not_received": "Didn't get OTP?",
+    "number_auto_detected": "Number auto detected from your SIM 1",
+    "manual_number_input": "ENTER NUMBER MANUALLY",
+    "auto_verfying_otp": "Auto verifying OTP",
+    "max_attempts_reached": "Maximum tries exceeded! Please generate a new OTP and/or wait 10 seconds and try again",
+    "try_otp_again": "You may try again",
+    "mobile_placeholder": "Enter mobile number (10 digits)",
+    "resend_on_call": "Resend on Call",
+    "resend_on_sms": "Resend on SMS",
+    "mobile_number_label": "Enter mobile number"
   },
   "home": {
     "hi": "hi",
@@ -1520,7 +1536,7 @@
     "success_generate_pdf": "Successfully generated vaccination booking PDF ",
     "success_generate_invoice_pdf": "Successfully generated vaccination invoice.",
     "dose_2_alert": "Please make sure that the difference between 1st and 2nd dose is as per Govt. guidelines. If difference in 2nd dose is less than Govt. guideline, you will not be given 2nd dose.",
-    "dose_booster_alert":"Please make sure that the difference between 2nd and Booster dose is as per Govt. guidelines. If the difference in Booster dose is less than Govt. guideline, you will not be given Booster dose.",
+    "dose_booster_alert": "Please make sure that the difference between 2nd and Booster dose is as per Govt. guidelines. If the difference in Booster dose is less than Govt. guideline, you will not be given Booster dose.",
     "verify_title": "VERIFY",
     "submit_title": "SUBMIT "
   },
@@ -1552,7 +1568,8 @@
     "packageDetail": "PACKAGE DETAIL",
     "prodeedToPay": "PROCEED TO PAY",
     "cancelSubscription": "CANCEL SUBSCRIPTION",
-    "cancellationPolicy": "CANCELLATION POLICY"
+    "cancellationPolicy": "CANCELLATION POLICY",
+    "bookOneTap": "Book One Tap Now"
   },
   "consultPackages": {
     "infoTitle": "How does it work?",
@@ -1757,6 +1774,25 @@
         }
       ]
     }
+  },
+  "registerationScreenData": {
+    "headerOneHeading": "Create Profile",
+    "headerTwoHeading": "You are a step away from unlocking exclusive offers!",
+    "firstName": "First Name *",
+    "lastName": "Last Name *",
+    "dateofBirth": "Date Of Birth (DD/MM/YY) *",
+    "profileCreatedFor": "Profile Created For *",
+    "Email": "Email (Optional)",
+    "personalisedWhatsAppTips": "Send me personalised health tips & offers on",
+    "referralLabel": "Do You Have A Referral Code? (Optional)"
+  },
+  "multiSignupScreen": {
+    "haveAReferralCode": "Have a Referral code?",
+    "enterReferralCodeOptional": "Enter referral code (Optional)",
+    "cannotFindName": "Can’t find your name? Add a new profile",
+    "addProfile": "ADD PROFILE",
+    "confirm": "CONFIRM",
+    "choosePrimaryProfile": "Choose Primary Profile associated with your mobile no."
   },
   "refAndEarn": {
     "global": {

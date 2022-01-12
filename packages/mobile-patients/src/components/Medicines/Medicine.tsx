@@ -283,6 +283,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setBannerData,
     bannerData,
     pharmacyUserType,
+    setIsRenew,
   } = useAppCommonData();
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const {
@@ -307,6 +308,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     serverCartLoading,
     serverCartErrorMessage,
     setServerCartErrorMessage,
+    serverCartMessage,
+    setServerCartMessage,
     cartPrescriptions,
     cartLocationDetails,
     newAddressAdded,
@@ -423,12 +426,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    if (serverCartErrorMessage) {
+    if (serverCartErrorMessage || serverCartMessage) {
       hideAphAlert?.();
       showAphAlert!({
         unDismissable: true,
         title: 'Hey',
-        description: serverCartErrorMessage,
+        description: serverCartErrorMessage || serverCartMessage,
         titleStyle: theme.viewStyles.text('SB', 18, '#890000'),
         ctaContainerStyle: { justifyContent: 'flex-end' },
         CTAs: [
@@ -437,13 +440,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             type: 'orange-link',
             onPress: () => {
               setServerCartErrorMessage?.('');
+              setServerCartMessage?.('');
               hideAphAlert?.();
             },
           },
         ],
       });
     }
-  }, [serverCartErrorMessage]);
+  }, [serverCartErrorMessage, serverCartMessage]);
 
   useEffect(() => {
     const addressLength = addresses?.length;
@@ -1721,19 +1725,21 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
 
       if (data) {
-        if (data?.APOLLO?.[0]._id) {
-          AsyncStorage.setItem('circleSubscriptionId', data?.APOLLO?.[0]._id);
-          setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
+        const circleData = data?.APOLLO?.[0];
+        if (circleData._id) {
+          AsyncStorage.setItem('circleSubscriptionId', circleData._id);
+          setCircleSubscriptionId && setCircleSubscriptionId(circleData._id);
           setIsCircleSubscription && setIsCircleSubscription(true);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
           const planValidity = {
-            startDate: data?.APOLLO?.[0]?.start_date,
-            endDate: data?.APOLLO?.[0]?.end_date,
-            plan_id: data?.APOLLO?.[0]?.plan_id,
-            source_identifier: data?.APOLLO?.[0]?.source_meta_data?.source_identifier,
+            startDate: circleData?.start_date,
+            endDate: circleData?.end_date,
+            plan_id: circleData?.plan_id,
+            source_identifier: circleData?.source_meta_data?.source_identifier,
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
-          if (data?.APOLLO?.[0]?.status === 'disabled') {
+          setIsRenew && setIsRenew(!!circleData?.renewNow);
+          if (circleData?.status === 'disabled') {
             setIsCircleExpired && setIsCircleExpired(true);
             setNonCircleValues();
           } else {

@@ -35,7 +35,7 @@ export const useFetchHealthCredits = (
   };
 
   useEffect(() => {
-    ELIGIBLE_HC_VERTICALS.includes(businessLine) && initiate();
+    initiate();
   }, []);
 
   return { healthCredits };

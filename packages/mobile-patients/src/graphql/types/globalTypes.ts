@@ -2053,6 +2053,7 @@ export interface UpdatePatientInput {
   partnerId?: string | null;
   appsflyerId?: string | null;
   isConsulted?: boolean | null;
+  whatsappOptIn?: boolean;
 }
 
 export interface UploadDocumentInput {

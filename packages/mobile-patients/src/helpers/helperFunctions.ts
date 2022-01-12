@@ -1643,6 +1643,9 @@ export const onCleverTapUserLogin = async (_currentPatient: any) => {
       ...(_currentPatient?.photoUrl && { Photo: _currentPatient?.photoUrl }),
       ...(_currentPatient?.createdDate && { CreatedDate: _currentPatient?.createdDate }),
     };
+    if (_currentPatient?.['Msg-whatsapp']) {
+      _userProfile['Msg-whatsapp'] = true;
+    }
     CleverTap.onUserLogin(_userProfile);
     AsyncStorage.setItem('createCleverTapProifle', 'true');
   } catch (error) {
@@ -2872,8 +2875,7 @@ export const addPharmaItemToCart = (
     }
     addToCart();
     onAddedSuccessfully?.();
-  }
-  catch(error) {}
+  } catch (error) {}
 };
 
 export const dataSavedUserID = async (key: string) => {
@@ -3044,24 +3046,32 @@ export const removeConsecutiveComma = (value: string) => {
 
 export const calculateCashbackForItem = (
   price: number,
-  type_id: any,
-  subcategory: any,
-  sku: any
+  type_id: string,
+  subcategory: string | null,
+  sku: string
 ) => {
-  const { circleCashback } = useShoppingCart();
-  const categoryLevelkey = type_id?.toUpperCase();
-  const subCategoryLevelkey = `${type_id?.toUpperCase()}~${subcategory}`;
-  const skuLevelkey = `${type_id?.toUpperCase()}~${subcategory}~${sku}`;
-  let cashbackFactor = 0;
-  if (circleCashback?.[skuLevelkey] >= 0) {
-    cashbackFactor = circleCashback?.[skuLevelkey];
-  } else if (circleCashback?.[subCategoryLevelkey] >= 0) {
-    cashbackFactor = circleCashback?.[subCategoryLevelkey];
-  } else {
-    cashbackFactor = circleCashback?.[categoryLevelkey];
+  try {
+    const { circleCashback } = useShoppingCart();
+    const categoryLevelkey = type_id ? type_id?.toUpperCase() : '';
+    const subCategoryLevelkey =
+      type_id && subcategory ? `${type_id?.toUpperCase()}~${subcategory}` : '';
+    const skuLevelkey =
+      type_id && subcategory && sku ? `${type_id?.toUpperCase()}~${subcategory}~${sku}` : '';
+    let cashbackFactor = 0;
+    if (skuLevelkey !== '' && circleCashback?.[skuLevelkey] >= 0) {
+      cashbackFactor = circleCashback?.[skuLevelkey];
+    } else if (subCategoryLevelkey !== '' && circleCashback?.[subCategoryLevelkey] >= 0) {
+      cashbackFactor = circleCashback?.[subCategoryLevelkey];
+    } else if (categoryLevelkey !== '' && circleCashback?.[categoryLevelkey] >= 0) {
+      cashbackFactor = circleCashback?.[categoryLevelkey];
+    } else {
+      cashbackFactor = 0;
+    }
+    const cashback = cashbackFactor ? ((price * cashbackFactor) / 100).toFixed(2) : '0';
+    return parseInt(cashback, 10) || 0;
+  } catch {
+    return 0;
   }
-  const cashback = cashbackFactor ? ((price * cashbackFactor) / 100).toFixed(2) : '0';
-  return parseInt(cashback, 10) || 0;
 };
 
 export const readableParam = (param: string) => {
@@ -3235,9 +3245,12 @@ export const clearStackAndNavigate = (
 ) => {
   navigation.dispatch(
     StackActions.reset({
-      index: 0,
+      index: 1,
       key: null,
       actions: [
+        NavigationActions.navigate({
+          routeName: AppRoutes.HomeScreen,
+        }),
         NavigationActions.navigate({
           routeName: screenName,
           params,
@@ -4361,6 +4374,13 @@ export const shareDocument = async (
   return viewReportOrderId;
 };
 
+export const getOfferDescription = (bestOffer: any, item: any) => {
+  return parseFloat(bestOffer?.discount_amount) > 50
+    ? `Get ₹${bestOffer?.discount_amount} off on ${item?.payment_method_name} wallet`
+    : parseFloat(bestOffer?.cashback_amount) > 50
+    ? `Get ₹${bestOffer?.cashback_amount} cashback on ${item?.payment_method_name} wallet`
+    : bestOffer?.description?.description;
+};
 export const addSlotDuration = (slotValue: string, slotDuration: number) => {
   return moment(slotValue, 'hh:mm A')
     ?.add(slotDuration, 'minutes')
@@ -4386,16 +4406,6 @@ export const showDiagnosticCTA = (pageName: CALL_TO_ORDER_CTA_PAGE_ID, cityId: s
       return null;
     }
   });
-};
-
-export const isTodaysDate = (time: string) => moment(time).isSame(new Date(), 'date');
-export const isTomorrowsDate = (time: string) => {
-  let tommorowDate = new Date();
-  tommorowDate.setDate(tommorowDate.getDate() + 1);
-  const difference = moment(tommorowDate)
-    .startOf('day')
-    .diff(moment(time).startOf('day'), 'days');
-  return difference == 0;
 }
 
 export const calculateDiagnosticCartItems = (
@@ -4434,24 +4444,21 @@ export const isRtpcrInCart = (cartItems: DiagnosticsCartItem[]) =>{
 }
 
 export const getShipmentAndTatInfo = (shipments) => {
-  return shipments?.length ? shipments.map((shipment) => {
-    const { tat, estimatedAmount, items } = shipment;
-    const tatDate = tat ? tat : null;
-    const tatDayDifference = tatDate
-      ? moment(tatDate).diff(new Date(), 'd')
-      : null;
-    const tatHourDifference = tatDate
-      ? moment(tatDate).format('hh:mm a')
-      : null;
+  return shipments?.length
+    ? shipments.map((shipment) => {
+        const { tat, estimatedAmount, items } = shipment;
+        const tatDate = tat ? tat : null;
+        const tatDayDifference = tatDate ? moment(tatDate).diff(new Date(), 'd') : null;
+        const tatHourDifference = tatDate ? moment(tatDate).format('hh:mm a') : null;
 
-    const skuIds = items.map(({ sku }) => sku).join(" , ");
-    return {
-      tatDayDifference,
-      tatHourDifference,
-      estimatedAmount,
-      skuIds,
-      tat,
-    };
-  }) : [];
+        const skuIds = items.map(({ sku }) => sku).join(' , ');
+        return {
+          tatDayDifference,
+          tatHourDifference,
+          estimatedAmount,
+          skuIds,
+          tat,
+        };
+      })
+    : [];
 };
-

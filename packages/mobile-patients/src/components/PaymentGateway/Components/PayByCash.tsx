@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { CollapseView } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CollapseView';
-import { Cash } from '@aph/mobile-patients/src/components/ui/Icons';
+import { PayCash } from '@aph/mobile-patients/src/components/ui/Icons';
 import { isSmallDevice } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { InfoMessage } from '@aph/mobile-patients/src/components/Tests/components/InfoMessage';
@@ -31,7 +31,7 @@ export const PayByCash: React.FC<PayByCashProps> = (props) => {
   } = props;
   const disableDiagCOD = businessLine == 'diagnostics' && !showDiagCOD;
   const disableCodOption = disableDiagCOD || HCselected || pharmaDisableCod;
-
+  const codAlertMsg = 'COD option is not available along with OneApollo Health Credits.';
   const renderPaybyCash = () => {
     return (
       <View
@@ -40,7 +40,7 @@ export const PayByCash: React.FC<PayByCashProps> = (props) => {
           opacity: disableCodOption ? 0.4 : 1,
         }}
       >
-        <Cash />
+        <PayCash style={{ height: 36, width: 36 }} />
         <Text style={styles.payByCash}>Pay by cash</Text>
       </View>
     );
@@ -66,13 +66,15 @@ export const PayByCash: React.FC<PayByCashProps> = (props) => {
   };
 
   const renderMsg = () => {
-    return (
-      HCselected && (
-        <Text style={styles.codAlertMsg}>
-          {'! COD option is not available along with OneApollo Health Credits.'}
-        </Text>
-      )
-    );
+    return HCselected ? (
+      <Text style={styles.codAlertMsg}>{codAlertMsg}</Text>
+    ) : disableDiagCOD ? (
+      <Text style={styles.codAlertMsg}>{string.diagnostics.codDisableText}</Text>
+    ) : !!diagMsg && businessLine == 'diagnostics' ? (
+      <Text style={styles.codAlertMsg}>{diagMsg}</Text>
+    ) : !!pharmaDisincentivizeCodMessage && businessLine == 'pharma' ? (
+      <Text style={styles.codAlertMsg}>{pharmaDisincentivizeCodMessage}</Text>
+    ) : null;
   };
 
   const renderInfoMessage = () => {
@@ -111,42 +113,52 @@ export const PayByCash: React.FC<PayByCashProps> = (props) => {
 
   const renderChildComponent = () => {
     return (
-      <View>
-        {disableDiagCOD && renderInfoMessage()}
-        <View
-          style={styles.ChildComponent}
-          pointerEvents={disableDiagCOD || HCselected ? 'none' : 'auto'}
-        >
+      <View
+        style={styles.ChildComponent}
+        pointerEvents={disableDiagCOD || HCselected ? 'none' : 'auto'}
+      >
+        <View style={styles.payCont}>
           {renderPaybyCash()}
           {renderPlaceOrder()}
         </View>
-        {renderHCMsg()}
-        {renderPharmaMessage()}
-        {ELIGIBLE_HC_VERTICALS.includes(businessLine) && renderMsg()}
+        {renderMsg()}
+      </View>
+    );
+  };
+
+  const renderHeader = () => {
+    return (
+      <View style={styles.header}>
+        <Text style={styles.heading}>PAY ON DELIVERY</Text>
       </View>
     );
   };
 
   return businessLine == 'diagnostics' || businessLine == 'pharma' ? (
-    <CollapseView
-      isDown={true}
-      Heading={'PAY ON DELIVERY'}
-      ChildComponent={renderChildComponent()}
-    />
+    <View>
+      {renderHeader()}
+      {renderChildComponent()}
+    </View>
   ) : null;
 };
 
 const styles = StyleSheet.create({
   ChildComponent: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     paddingVertical: 15,
+    backgroundColor: '#FAFEFF',
+    marginHorizontal: 16,
+    borderWidth: 1,
+    borderColor: '#D4D4D4',
+    borderRadius: 4,
+    paddingHorizontal: 12,
   },
   subContainer: {
     flexDirection: 'row',
+    alignItems: 'center',
+  },
+  payCont: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
   payByCash: {
@@ -163,10 +175,8 @@ const styles = StyleSheet.create({
   codAlertMsg: {
     ...theme.fonts.IBMPlexSansMedium(12),
     color: '#01475B',
-    lineHeight: 24,
-    marginTop: 8,
-    marginBottom: 5,
-    marginHorizontal: 25,
+    lineHeight: 16,
+    marginTop: 3,
   },
   textStyle: {
     ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 8.5 : 9),
@@ -212,5 +222,16 @@ const styles = StyleSheet.create({
     width: '87%',
     alignItems: 'center',
     alignSelf: 'center',
+  },
+  header: {
+    marginHorizontal: 16,
+    paddingBottom: 12,
+    marginTop: 24,
+  },
+  heading: {
+    ...theme.fonts.IBMPlexSansSemiBold(12),
+    lineHeight: 18,
+    color: '#01475B',
+    marginLeft: 4,
   },
 });

@@ -65,7 +65,7 @@ export const SavedCard: React.FC<SavedCardProps> = (props) => {
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 20,
-    backgroundColor: '#fff',
+    backgroundColor: '#FAFEFF',
   },
   subContainer: {
     paddingTop: 21,

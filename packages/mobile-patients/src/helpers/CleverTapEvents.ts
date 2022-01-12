@@ -256,6 +256,7 @@ export enum CleverTapEventName {
   CONSULT_PACKAGE_PAY_BUTTON_CLICKED = 'Consult package pay button clicked',
   CONSULT_PACKAGE_BOOK_CONSULT_CLICKED = 'Consult package book consult clicked',
   CONSULT_ONETAP_PACKAGE_VIEWED = 'Consult OneTap Package Viewed',
+  CONSULT_PACKAGE_BOOK_ONE_TAP_CLICKED = 'Consult package book one tap clicked',
 
   // Network Test
   PRE_CALL_TEST = 'Pre Call Test Completed',
