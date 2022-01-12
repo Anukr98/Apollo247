@@ -703,7 +703,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   };
 
   const fetchDeliveryTime = async (currentPincode: string, checkButtonClicked?: boolean) => {
-    if (!currentPincode || !isPharmacyPincodeServiceable) {
+    const pinCode = currentPincode || '110001';
+    if (!pinCode || !isPharmacyPincodeServiceable) {
       setTatData({mrp:0, priceLoaded : true});//set priceLoaded true so that on product page default price is visible
       return;
     }
@@ -715,18 +716,18 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     // If we performed pincode serviceability check already in Medicine Home Screen and the current pincode is same as Pharma pincode
     try {
       let longitude, latitude;
-      if (pharmacyPincode == currentPincode) {
+      if (pharmacyPincode == pinCode) {
         latitude = pharmacyLocation ? pharmacyLocation.latitude : null;
         longitude = pharmacyLocation ? pharmacyLocation.longitude : null;
       }
-      if (!latitude || !longitude) {
+      if (currentPincode && (!latitude || !longitude)) {
         const data = await getPlaceInfoByPincode(currentPincode);
         const locationData = data.data.results[0].geometry.location;
         latitude = locationData.lat;
         longitude = locationData.lng;
       }
       callDeliveryTatApi(
-        currentPincode,
+        pinCode,
         latitude,
         longitude,
         checkButtonClicked,
