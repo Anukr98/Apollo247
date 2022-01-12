@@ -364,6 +364,9 @@ export interface ShoppingCartContextProps {
   setVdcType: ((value: string) => void) | null;
   locationCode: string;
   setLocationCode: ((value: string) => void) | null;
+
+  tatDecidedPercentage: number;
+  setTatDecidedPercentage: ((value: number) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -539,6 +542,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setVdcType: null,
   locationCode: '',
   setLocationCode: null,
+  tatDecidedPercentage: 0,
+  setTatDecidedPercentage: null
 });
 
 const AsyncStorageKeys = {
@@ -786,6 +791,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
 
   const [vdcType, setVdcType] = useState<ShoppingCartContextProps['vdcType']>('');
   const [locationCode, setLocationCode] = useState<ShoppingCartContextProps['locationCode']>('');
+  const [tatDecidedPercentage, setTatDecidedPercentage] = useState<ShoppingCartContextProps['tatDecidedPercentage']>(0);
 
   const setCartItems: ShoppingCartContextProps['setCartItems'] = (cartItems) => {
     if (cartItems.length) {
@@ -1573,6 +1579,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setVdcType,
         locationCode,
         setLocationCode,
+        tatDecidedPercentage,
+        setTatDecidedPercentage
       }}
     >
       {props.children}
