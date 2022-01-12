@@ -1509,8 +1509,7 @@ export const getDiscountPercentage = (price: number | string, specialPrice?: num
 /** 
  * ---------------------------------------
  * TAT and magneto price logic */
-export const isDiffLessThanDecidedPercentage = (num1: number, num2: number) => {
-  const decidedPercentage = 76;
+export const isDiffLessThanDecidedPercentage = (num1: number, num2: number, decidedPercentage :number) => {
   return Math.abs(((num1 - num2) / num1) * 100) < decidedPercentage;
 };
 
@@ -1518,13 +1517,14 @@ export const getSpecialPriceFromRelativePrices = (
   price: number,
   specialPrice: number,
   newPrice: number
-) => Number(((specialPrice / price) * newPrice).toFixed(2));
+) => Number(((specialPrice / price) * newPrice));
 
 export const getPriceAndSpecialPrice = (
   price: number = 0,
   specialPrice: number | string = 0,
   mrp: number = 0,
-  qty: number = 0
+  qty: number = 0,
+  decidedPercentage : number = 0
 ) => {
   const defaultValues = {
     specialPrice,
@@ -1536,12 +1536,12 @@ export const getPriceAndSpecialPrice = (
     if (!tatPrice) {
       return defaultValues;
     }
-    const isDff = isDiffLessThanDecidedPercentage(price, tatPrice);
+    const isDff = isDiffLessThanDecidedPercentage(price, tatPrice, decidedPercentage);
     if (isDff) {
-      const sPrice = typeof specialPrice === 'number' ? specialPrice : parseFloat(specialPrice);
+      const sPrice = typeof specialPrice === 'number' ? specialPrice : Number(specialPrice);
       return {
         specialPrice: getSpecialPriceFromRelativePrices(price, sPrice, tatPrice),
-        price,
+        price:tatPrice.toFixed(2) ,
       };
     }
   }

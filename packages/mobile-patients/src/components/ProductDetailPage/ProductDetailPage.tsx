@@ -168,6 +168,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     cartLocationDetails,
     cartAddressId,
     serverCartLoading,
+    tatDecidedPercentage
   } = useShoppingCart();
   const { setUserActionPayload, fetchAddress } = useServerCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
@@ -1182,7 +1183,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                     medicineDetails?.price,
                     medicineDetails?.special_price,
                     tatData?.mrp,
-                    parseInt(medicineDetails?.mou, 10)
+                    parseInt(medicineDetails?.mou, 10),
+                    tatDecidedPercentage
                   )
                 }
                 {
