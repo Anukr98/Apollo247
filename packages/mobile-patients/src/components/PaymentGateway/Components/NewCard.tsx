@@ -6,10 +6,10 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CardInfo } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import cardValidator from '@aph/mobile-patients/node_modules/@juspay/simple-card-validator/dist/validator';
 import {
-  Card,
+  AddNewCard,
   CircleCheckIcon,
-  CircleUncheckIcon,
-  Check,
+  BlackArrowUp,
+  CvvIcon,
   UnCheck,
   CheckIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -22,10 +22,9 @@ export interface NewCardProps {
   cardTypes: any;
   isCardValid: boolean;
   setisCardValid: (value: boolean) => void;
-  onPressNewCard: () => void;
-  newCardSelected: boolean;
   offers: any;
   fetchOffers: (paymentInfo?: any) => void;
+  amount: number;
 }
 
 export const NewCard: React.FC<NewCardProps> = (props) => {
@@ -34,10 +33,9 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
     cardTypes,
     isCardValid,
     setisCardValid,
-    onPressNewCard,
-    newCardSelected,
     offers,
     fetchOffers,
+    amount,
   } = props;
   const [cardNumber, setCardNumber] = useState<string>('');
   const [name, setName] = useState<string>('');
@@ -56,7 +54,8 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
   const [isCardSupported, setIsCardSupported] = useState<boolean>(true);
   const [outageStatus, setOutageStatus] = useState<string>('UP');
   const bestOffer = getBestOffer(offers, cardbin?.id);
-
+  let ExpYear = validity.slice(3);
+  const isExpired = ExpYear?.length == 2 && Number(ExpYear) < new Date().getFullYear() % 100;
   useEffect(() => {
     isCardValid && cardNumber?.replace(/\-/g, '')?.length >= 6
       ? checkIsCardSupported()
@@ -64,6 +63,14 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
     (cardNumber?.replace(/\-/g, '')?.length == 6 || cardNumber?.replace(/\-/g, '')?.length == 12) &&
       getOffers();
   }, [cardbin]);
+
+  const getOutageStatus = () => {
+    const cardType = cardTypes?.find((item: any) => item?.payment_method_code == cardbin?.brand);
+    const outageStatus = cardType?.outage_list?.find(
+      (item: any) => item?.bank_code == cardbin?.juspay_bank_code
+    );
+    return outageStatus?.outage_status;
+  };
 
   const getOffers = () => {
     const paymentInfo = [
@@ -156,7 +163,8 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
       name == '' ||
       !isCardValid ||
       !isCardSupported ||
-      outageStatus == 'DOWN'
+      getOutageStatus() == 'DOWN' ||
+      isExpired
     );
   }
 
@@ -171,21 +179,22 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
   };
 
   const cardNumberInput = () => {
-    const inputStyle = {
-      ...styles.inputStyle,
-      borderBottomColor: isCardValid && isCardSupported ? '#00B38E' : '#FF748E',
+    const conatinerstyles = {
+      ...styles.conatinerstyles,
+      borderColor: isCardValid && isCardSupported ? '#00B38E' : '#BF2600',
+      borderWidth: 2,
     };
     return (
       <View>
-        <Text style={styles.cardNumberTxt}>Card number</Text>
         <TextInputComponent
-          conatinerstyles={styles.conatinerstyles}
-          inputStyle={inputStyle}
+          conatinerstyles={conatinerstyles}
+          inputStyle={styles.inputStyle}
           value={cardNumber}
           onChangeText={(text) => updateCard(text)}
           keyboardType={'numeric'}
           maxLength={getMaxLength()}
           icon={renderCardIcon()}
+          placeholder={'Card Number'}
         />
         {renderSubContainer()}
       </View>
@@ -205,6 +214,10 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
       <Text style={styles.inValidText}>Invalid Card number</Text>
     ) : !isCardSupported ? (
       <Text style={styles.inValidText}>Card is not supported</Text>
+    ) : !!getOutageStatus() ? (
+      <View style={{ height: 14 }}>
+        <OutagePrompt outageStatus={getOutageStatus()} />
+      </View>
     ) : !!bestOffer ? (
       renderOffer()
     ) : (
@@ -214,8 +227,7 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
 
   const userNameInput = () => {
     return (
-      <View style={{ marginTop: 6 }}>
-        <Text style={styles.cardNumberTxt}>Full name</Text>
+      <View style={{ marginTop: 10 }}>
         <TextInputComponent
           conatinerstyles={styles.conatinerstyles}
           inputStyle={styles.inputStyle}
@@ -223,6 +235,7 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
           onChangeText={(text) => setName(text)}
           keyboardType={'default'}
           maxLength={50}
+          placeholder={'Name on Card'}
         />
       </View>
     );
@@ -246,26 +259,34 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
     );
   };
 
+  const renderExpired = () => {
+    return <Text style={styles.inValidText}>Card Expired</Text>;
+  };
   const validityInput = () => {
+    const conatinerstyles = {
+      ...styles.conatinerstyles,
+      borderColor: isExpired ? '#BF2600' : '#D8D8D8',
+      borderWidth: 2,
+    };
     return (
-      <View style={{ marginTop: 20, flex: 0.45 }}>
-        <Text style={styles.cardNumberTxt}>Valid through (MM/YY)</Text>
+      <View style={{ marginTop: 24, flex: 0.5 }}>
         <TextInputComponent
-          conatinerstyles={styles.conatinerstyles}
+          conatinerstyles={conatinerstyles}
           inputStyle={styles.inputStyle}
           value={validity}
           onChangeText={(text) => updateValidity(text)}
           keyboardType={'numeric'}
           maxLength={5}
+          placeholder={'Expiry Date (MM/YY)'}
         />
+        <View style={{ height: 16 }}>{isExpired && renderExpired()}</View>
       </View>
     );
   };
 
   const cvvInput = () => {
     return (
-      <View style={{ marginTop: 20, flex: 0.3 }}>
-        <Text style={styles.cardNumberTxt}>CVV</Text>
+      <View style={{ marginTop: 20, flex: 0.45 }}>
         <TextInputComponent
           conatinerstyles={styles.conatinerstyles}
           inputStyle={styles.inputStyle}
@@ -274,17 +295,20 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
           keyboardType={'numeric'}
           maxLength={cardDetails?.cvv_length?.[0] ? cardDetails.cvv_length[0] : 4}
           secureTextEntry={true}
+          placeholder="CVV"
+          icon={renderCVVIcon()}
         />
       </View>
     );
   };
 
+  const renderCVVIcon = () => {
+    return <CvvIcon style={{ height: 24, width: 38, marginRight: 8, marginBottom: 8 }} />;
+  };
+
   const saveCardOption = () => {
     return (
-      <TouchableOpacity
-        style={{ flexDirection: 'row', alignItems: 'center', marginTop: 20 }}
-        onPress={() => setSaveCard(!saveCard)}
-      >
+      <TouchableOpacity style={styles.saveCard} onPress={() => setSaveCard(!saveCard)}>
         {saveCard ? <CheckIcon style={styles.icon} /> : <UnCheck style={styles.icon} />}
         <Text style={styles.saveCardTxt}>Save this card for faster checkout</Text>
       </TouchableOpacity>
@@ -293,49 +317,36 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
 
   const renderNewCard = () => {
     return (
-      <View
-        style={{
-          backgroundColor: !newCardSelected || outageStatus == 'DOWN' ? '#fff' : '#F6FFFF',
-          paddingHorizontal: 20,
-        }}
-      >
-        <OutagePrompt outageStatus={outageStatus} msg={'Your card is'} />
-        <TouchableOpacity style={styles.newCardCont} onPress={() => onPressNewCard()}>
-          <View style={styles.cardSubCont}>
-            <Card />
-            <Text style={styles.newCard}>Pay with a New Card</Text>
-          </View>
-          {newCardSelected ? <CircleCheckIcon /> : <CircleUncheckIcon />}
-        </TouchableOpacity>
-        {newCardSelected && renderCardInput()}
-      </View>
-    );
-  };
-
-  const renderCardInput = () => {
-    return (
-      <View style={{ flex: 1, paddingBottom: 20 }}>
-        {cardNumberInput()}
-        {userNameInput()}
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          {validityInput()}
-          {cvvInput()}
-        </View>
+      <View>
+        {renderCardInput()}
         {saveCardOption()}
         {renderPayNow()}
       </View>
     );
   };
 
+  const renderCardInput = () => {
+    return (
+      <View style={styles.ChildComponent}>
+        {cardNumberInput()}
+        {userNameInput()}
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          {validityInput()}
+          {cvvInput()}
+        </View>
+      </View>
+    );
+  };
+
   const renderPayNow = () => {
     return (
-      <View style={{ alignItems: 'flex-end' }}>
+      <View style={{ marginHorizontal: 16, paddingBottom: 16 }}>
         <Button
           disabled={isPayNowDisabled()}
           title={
-            !!bestOffer?.order_breakup?.final_order_amount
-              ? `PAY  ₹${bestOffer?.order_breakup?.final_order_amount}`
-              : 'PAY NOW'
+            isCardValid && !getOutageStatus() && !!bestOffer?.order_breakup?.final_order_amount
+              ? `SUBMIT AND PAY  ₹${bestOffer?.order_breakup?.final_order_amount}`
+              : `SUBMIT AND PAY ₹${amount}`
           }
           titleTextStyle={styles.payNow}
           onPress={() => onPressNewCardPayNow(cardInfo, saveCard, bestOffer)}
@@ -345,12 +356,20 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
     );
   };
 
-  return <View style={styles.ChildComponent}>{renderNewCard()}</View>;
+  return <View style={{}}>{renderNewCard()}</View>;
 };
 
 const styles = StyleSheet.create({
   ChildComponent: {
-    backgroundColor: '#fff',
+    borderColor: '#D4D4D4',
+    borderWidth: 1,
+    borderRadius: 4,
+    backgroundColor: '#E2F6FB',
+    marginHorizontal: 16,
+    marginTop: 12,
+    paddingHorizontal: 12,
+    paddingTop: 12,
+    paddingBottom: 8,
     // paddingHorizontal: 20,
     // paddingBottom: 15,
   },
@@ -360,11 +379,26 @@ const styles = StyleSheet.create({
     color: '#898989',
   },
   conatinerstyles: {
+    height: 40,
+    paddingBottom: 0,
+    borderWidth: 1,
+    borderColor: '#D8D8D8',
+    borderRadius: 4,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
     paddingTop: 0,
   },
   inputStyle: {
-    borderBottomWidth: 1,
-    ...theme.fonts.IBMPlexSansMedium(16),
+    borderBottomWidth: 0,
+    ...theme.fonts.IBMPlexSansMedium(14),
+    alignItems: 'center',
+    paddingLeft: 20,
+  },
+  saveCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 16,
+    marginHorizontal: 16,
   },
   payNow: {
     ...theme.fonts.IBMPlexSansBold(13),
@@ -372,7 +406,6 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   buttonStyle: {
-    width: 150,
     paddingHorizontal: 18,
     marginTop: 16,
     borderRadius: 5,
@@ -380,24 +413,26 @@ const styles = StyleSheet.create({
   inValidText: {
     ...theme.fonts.IBMPlexSansMedium(10),
     lineHeight: 14,
-    color: '#FF748E',
+    color: '#BF2600',
   },
   cardIcon: {
     height: 27,
     width: 27,
-    marginBottom: 2,
+    marginRight: 8,
+    marginBottom: 5,
   },
   newCard: {
     ...theme.fonts.IBMPlexSansMedium(14),
     lineHeight: 18,
     color: '#01475B',
-    marginLeft: 8,
+    marginLeft: 13,
   },
   newCardCont: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 24,
+    paddingTop: 17,
+    paddingBottom: 21,
   },
   cardSubCont: {
     flexDirection: 'row',
@@ -416,7 +451,7 @@ const styles = StyleSheet.create({
   offer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginTop: 2,
   },
   offerTitle: {
     ...theme.fonts.IBMPlexSansMedium(12),

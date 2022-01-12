@@ -53,6 +53,9 @@ import {
   firePaymentOrderStatusEvent,
 } from '@aph/mobile-patients/src/components/PaymentGateway/Events';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import LottieView from 'lottie-react-native';
+const paymentSuccess =
+  '@aph/mobile-patients/src/components/PaymentGateway/AnimationFiles/Animation_2/tick.json';
 import { firePurchaseEvent } from '@aph/mobile-patients/src/components/Tests/Events';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { InfoIconRed } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -100,7 +103,6 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
   const [showPassportModal, setShowPassportModal] = useState<boolean>(false);
   const [passportNo, setPassportNo] = useState<any>([]);
   const [passportData, setPassportData] = useState<any>([]);
-
   const orderCartSaving = orderDetails?.cartSaving!;
   const orderCircleSaving = orderDetails?.circleSaving!;
   const circleSavings = isDiagnosticCircleSubscription ? Number(orderCircleSaving) : 0;
@@ -356,6 +358,24 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
     ) : null;
   };
 
+  const [animationfinished, setAnimationfinished] = useState<boolean>(false);
+
+  const renderSucccessAnimation = () => {
+    return (
+      <View style={{ alignItems: 'center' }}>
+        <LottieView
+          source={require(paymentSuccess)}
+          onAnimationFinish={() => setAnimationfinished(true)}
+          autoPlay
+          loop={false}
+          autoSize={true}
+          style={{ width: 225, marginBottom: 40 }}
+          imageAssetsFolder={'lottie/animation_2/images'}
+        />
+      </View>
+    );
+  };
+
   const renderNoticeText = () => {
     return (
       <View style={styles.noticeText}>
@@ -390,7 +410,7 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
 
   return (
     <>
-      {!fetching ? (
+      {animationfinished ? (
         <SafeAreaView style={styles.container}>
           <ScrollView>
             {renderPaymentStatus()}
@@ -406,7 +426,7 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
           {renderTabBar()}
         </SafeAreaView>
       ) : (
-        <Spinner />
+        renderSucccessAnimation()
       )}
     </>
   );

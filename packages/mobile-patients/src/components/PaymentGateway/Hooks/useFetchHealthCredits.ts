@@ -34,7 +34,7 @@ export const useFetchHealthCredits = (
   };
 
   useEffect(() => {
-    businessLine == 'pharma' && initiate();
+    initiate();
   }, []);
 
   return { healthCredits };
