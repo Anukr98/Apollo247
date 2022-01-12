@@ -4,7 +4,7 @@ import { Props as ProductCardProps } from '@aph/mobile-patients/src/components/M
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { availabilityApi247, MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   addPharmaItemToCart,
   formatToCartItem,
@@ -17,7 +17,6 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import React, { useCallback, useState, useEffect } from 'react';
 import {
   FlatList,
@@ -35,6 +34,8 @@ import {
   ProductPageViewedSource,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { SuggestedQuantityNudge } from '@aph/mobile-patients/src/components/SuggestedQuantityNudge/SuggestedQuantityNudge';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 type ListProps = FlatListProps<MedicineProduct>;
 
@@ -81,19 +82,16 @@ export const ProductList: React.FC<Props> = ({
     : '';
   const [dataToShow, setDataToShow] = useState(initData);
   const [lastIndex, setLastIndex] = useState<number>(data?.length > 4 ? step : 0);
-  const { currentPatient } = useAllCurrentPatients();
-  const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
+  const { isPharmacyLocationServiceable } = useAppCommonData();
   const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();
   const {
     getCartItemQty,
-    addCartItem,
-    updateCartItem,
-    removeCartItem,
+    serverCartItems,
+    setAddToCartSource,
+    cartLocationDetails,
     pharmacyCircleAttributes,
-    cartItems,
-    asyncPincode,
   } = useShoppingCart();
-  const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
+  const { setUserActionPayload } = useServerCart();
   const [showSuggestedQuantityNudge, setShowSuggestedQuantityNudge] = useState<boolean>(false);
   const [shownNudgeOnce, setShownNudgeOnce] = useState<boolean>(false);
   const [currentProductIdInCart, setCurrentProductIdInCart] = useState<string>(null);
@@ -101,14 +99,15 @@ export const ProductList: React.FC<Props> = ({
   const [itemPackForm, setItemPackForm] = useState<string>('');
   const [maxOrderQty, setMaxOrderQty] = useState<number>(0);
   const [suggestedQuantity, setSuggestedQuantity] = useState<string>(null);
+  const { currentPatient } = useAllCurrentPatients();
 
   useEffect(() => {
-    if (cartItems.find(({ id }) => id?.toUpperCase() === currentProductIdInCart)) {
+    if (serverCartItems?.find(({ sku }) => sku?.toUpperCase() === currentProductIdInCart)) {
       if (shownNudgeOnce === false) {
         setShowSuggestedQuantityNudge(true);
       }
     }
-  }, [cartItems, currentProductQuantityInCart, currentProductIdInCart]);
+  }, [serverCartItems, currentProductQuantityInCart, currentProductIdInCart]);
 
   useEffect(() => {
     if (showSuggestedQuantityNudge === false) {
@@ -142,7 +141,7 @@ export const ProductList: React.FC<Props> = ({
       });
     }
     if (comingFromSearch !== false) {
-      const pincode = asyncPincode?.pincode || pharmacyPincode;
+      const pincode = cartLocationDetails?.pincode;
       const availability = getAvailabilityForSearchSuccess(pincode, item?.sku);
       const discount = getDiscountPercentage(item?.price, item?.special_price);
       const discountPercentage = discount ? discount + '%' : '0%';
@@ -189,10 +188,19 @@ export const ProductList: React.FC<Props> = ({
       'Product name': item?.name,
       Discount: discountPercentage,
     };
+    setAddToCartSource?.({ source: addToCartSource, categoryId: item?.category_id });
+    setUserActionPayload?.({
+      medicineOrderCartLineItems: [
+        {
+          medicineSKU: item?.sku,
+          quantity: 1,
+        },
+      ],
+    });
     addPharmaItemToCart(
       formatToCartItem(item),
-      asyncPincode?.pincode || pharmacyPincode!,
-      addCartItem,
+      cartLocationDetails?.pincode,
+      () => {},
       setGlobalLoading,
       navigation,
       currentPatient,
@@ -203,20 +211,20 @@ export const ProductList: React.FC<Props> = ({
         categoryName: productPageViewedEventProps?.CategoryName,
         section: productPageViewedEventProps?.SectionName,
       },
-      JSON.stringify(cartItems),
+      JSON.stringify(serverCartItems),
       () => {},
       pharmacyCircleAttributes!,
-      onAddedSuccessfully ? onAddedSuccessfully : () => {},
+      () => {},
       comingFromSearch,
       cleverTapSearchSuccessEventAttributes
     );
     setCurrentProductIdInCart(item.sku);
-    item.pack_form ? setItemPackForm(item.pack_form) : setItemPackForm('');
-    item.suggested_qty ? setSuggestedQuantity(item.suggested_qty) : setSuggestedQuantity(null);
-    item.MaxOrderQty
-      ? setMaxOrderQty(item.MaxOrderQty)
-      : item.suggested_qty
-      ? setMaxOrderQty(+item.suggested_qty)
+    item?.pack_form ? setItemPackForm(item?.pack_form) : setItemPackForm('');
+    item?.suggested_qty ? setSuggestedQuantity(item?.suggested_qty) : setSuggestedQuantity(null);
+    item?.MaxOrderQty
+      ? setMaxOrderQty(item?.MaxOrderQty)
+      : item?.suggested_qty
+      ? setMaxOrderQty(+item?.suggested_qty)
       : setMaxOrderQty(0);
     setCurrentProductQuantityInCart(1);
   };
@@ -231,17 +239,31 @@ export const ProductList: React.FC<Props> = ({
   const renderItem = useCallback(
     (info: ListRenderItemInfo<MedicineProduct>) => {
       const { item, index } = info;
-      const id = item.sku;
+      const id = item?.sku;
       const qty = getCartItemQty(id);
       const onPressAddQty = () => {
-        if (qty < item.MaxOrderQty) {
-          updateCartItem!({ id, quantity: qty + 1 });
+        if (qty < item?.MaxOrderQty) {
           setCurrentProductQuantityInCart(qty + 1);
+          setUserActionPayload?.({
+            medicineOrderCartLineItems: [
+              {
+                medicineSKU: item?.sku,
+                quantity: qty + 1,
+              },
+            ],
+          });
         }
       };
       const onPressSubtractQty = () => {
-        qty == 1 ? removeCartItem!(id) : updateCartItem!({ id, quantity: qty - 1 });
         setCurrentProductQuantityInCart(qty - 1);
+        setUserActionPayload?.({
+          medicineOrderCartLineItems: [
+            {
+              medicineSKU: item?.sku,
+              quantity: qty - 1,
+            },
+          ],
+        });
       };
 
       const props: ProductCardProps = {
@@ -267,7 +289,7 @@ export const ProductList: React.FC<Props> = ({
         <Component {...props} />
       ) : null;
     },
-    [cartItems]
+    [serverCartItems]
   );
 
   const keyExtractor = useCallback(({ sku }) => `${sku}`, []);

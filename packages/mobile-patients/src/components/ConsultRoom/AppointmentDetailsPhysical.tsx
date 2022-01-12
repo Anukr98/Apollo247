@@ -80,6 +80,7 @@ import { NavigationScreenProps } from 'react-navigation';
 import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments } from '../../graphql/types/getPatientAllAppointments';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { useShoppingCart } from '../ShoppingCartProvider';
 
 const { width, height } = Dimensions.get('window');
 
@@ -438,12 +439,17 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
   const { getPatientApiCall } = useAuth();
   const minutes = moment.duration(moment(data.appointmentDateTime).diff(new Date())).asMinutes();
   const [appointmentDiffMin, setAppointmentDiffMin] = useState<number>(0);
+  const { circleSubscriptionId, circleSubPlanId } = useShoppingCart();
   let cancelAppointmentTitle = '';
+  let cancelAppointmentTitleHeadingState = false;
   if (appointmentDiffMin >= 15) {
-    cancelAppointmentTitle =
-      "Since you're cancelling 15 minutes before your appointment, we'll issue you a full refund!";
+    cancelAppointmentTitle = `${string.common.cancelAppointmentBody} ${
+      data?.appointmentType === APPOINTMENT_TYPE.PHYSICAL ? 'Physical' : 'Online'
+    } Appointment ${data?.displayId}.`;
+    cancelAppointmentTitleHeadingState = true;
   } else {
-    cancelAppointmentTitle = 'We regret the inconvenience caused. We’ll issue you a full refund.';
+    cancelAppointmentTitle = string.common.cancelRefundBody;
+    if (cancelAppointmentTitleHeadingState) cancelAppointmentTitleHeadingState = false;
   }
   const isAppointmentStartsInFifteenMin = appointmentDiffMin <= 15 && appointmentDiffMin > 0;
   const isAppointmentExceedsTenMin = appointmentDiffMin <= 0 && appointmentDiffMin > -10;
@@ -504,10 +510,13 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
     const diffMin = Math.ceil(moment(data?.appointmentDateTime).diff(moment(), 'minutes', true));
     setAppointmentDiffMin(diffMin);
     if (diffMin >= 15) {
-      cancelAppointmentTitle =
-        "Since you're cancelling 15 minutes before your appointment, we'll issue you a full refund!";
+      cancelAppointmentTitle = `${string.common.cancelAppointmentBody} ${
+        data?.appointmentType === APPOINTMENT_TYPE.PHYSICAL ? 'Physical' : 'Online'
+      } Appointment ${data?.displayId}.`;
+      cancelAppointmentTitleHeadingState = true;
     } else {
-      cancelAppointmentTitle = 'We regret the inconvenience caused. We’ll issue you a full refund.';
+      cancelAppointmentTitle = string.common.cancelRefundBody;
+      if (cancelAppointmentTitleHeadingState) cancelAppointmentTitleHeadingState = false;
     }
     if (diffMin <= 30 && diffMin >= -10) {
       appointmentDiffMinTimerId = BackgroundTimer.setInterval(() => {
@@ -519,11 +528,15 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
           BackgroundTimer.clearInterval(appointmentDiffMinTimerId);
         }
         if (updatedDiffMin >= 15) {
-          cancelAppointmentTitle =
-            "Since you're cancelling 15 minutes before your appointment, we'll issue you a full refund!";
+          cancelAppointmentTitle = `${
+            string.common.cancelAppointmentBody
+          } ${
+            data?.appointmentType === APPOINTMENT_TYPE.PHYSICAL ? 'Physical' : 'Online'
+          } Appointment ${data?.displayId}.`;
+          cancelAppointmentTitleHeadingState = true;
         } else {
-          cancelAppointmentTitle =
-            'We regret the inconvenience caused. We’ll issue you a full refund.';
+          cancelAppointmentTitle = string.common.cancelRefundBody;
+          if (cancelAppointmentTitleHeadingState) cancelAppointmentTitleHeadingState = false;
         }
       }, 40000);
     }
@@ -792,7 +805,7 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
         setshowSpinner(false);
         const params = {
           Data: _data?.data?.bookRescheduleAppointment?.appointmentDetails,
-          DoctorName: props.navigation.state.params?.data?.doctorInfo?.fullName,
+          DoctorName: props.navigation.state.params?.data?.doctorInfo?.displayName,
         };
         navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar, params);
       })
@@ -830,7 +843,7 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
       | WebEngageEvents[WebEngageEventName.CONTINUE_CONSULTATION_CLICKED]
       | WebEngageEvents[WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER]
       | WebEngageEvents[WebEngageEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER] = {
-      'Doctor Name': g(data, 'doctorInfo', 'fullName')!,
+      'Doctor Name': g(data, 'doctorInfo', 'displayName')!,
       'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
       'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,
       'Doctor Category': g(data, 'doctorInfo', 'doctorType')!,
@@ -1001,6 +1014,9 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
             data={data}
             navigation={props.navigation}
             title={cancelAppointmentTitle}
+            customTitle={
+              cancelAppointmentTitleHeadingState ? string.common.cancelAppointmentTitleHeading : ''
+            }
             onPressBack={() => setShowCancelPopup(false)}
             onPressReschedule={() => {
               postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
@@ -1020,7 +1036,8 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
                 CleverTapEventName.CONSULT_CANCEL_CLICKED_BY_PATIENT,
                 data,
                 currentPatient,
-                secretaryData
+                secretaryData,
+                { circleSubscriptionId: circleSubscriptionId, circleSubPlanId: circleSubPlanId }
               );
               CommonLogEvent(AppRoutes.AppointmentDetailsPhysical, 'CANCEL CONSULT_CLICKED');
               setShowCancelPopup(false);

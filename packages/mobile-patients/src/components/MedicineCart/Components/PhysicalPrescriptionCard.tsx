@@ -24,7 +24,6 @@ export interface PhysicalPrescriptionCardProps {
 
 export const PhysicalPrescriptionCard: React.FC<PhysicalPrescriptionCardProps> = (props) => {
   const { arrayLength, i, item, onRemove, showTick } = props;
-  const { removePhysicalPrescription } = useShoppingCart();
   return (
     <View key={i} style={{}}>
       <TouchableOpacity activeOpacity={1} key={i} onPress={() => {}}>

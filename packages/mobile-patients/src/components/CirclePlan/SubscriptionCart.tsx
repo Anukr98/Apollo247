@@ -36,6 +36,7 @@ import {
   PaymentStatus,
   OrderCreate,
   OrderVerticals,
+  PlanPurchaseType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -63,6 +64,7 @@ import { Decimal } from 'decimal.js';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { Spinner } from '../ui/Spinner';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 interface SubscriptionCartProps extends NavigationScreenProps {
   action?: string;
@@ -83,6 +85,7 @@ export const SubscriptionCart: React.FC<SubscriptionCartProps> = (props) => {
     subscriptionCoupon,
     circlePlanValidity,
   } = useShoppingCart();
+  const { isRenew } = useAppCommonData();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { setLoading } = useUIElements();
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
@@ -185,7 +188,7 @@ export const SubscriptionCart: React.FC<SubscriptionCartProps> = (props) => {
   };
 
   const createUserSubscription = () => {
-    const purchaseInput = subscriptionCoupon
+    const purchaseInput: CreateUserSubscriptionVariables = subscriptionCoupon
       ? {
           userSubscription: {
             mobile_number: currentPatient?.mobileNumber,
@@ -204,6 +207,9 @@ export const SubscriptionCart: React.FC<SubscriptionCartProps> = (props) => {
               },
             },
             transaction_date_time: new Date().toISOString(),
+            source_meta_data: {
+              purchase_type: isRenew ? PlanPurchaseType.renew : PlanPurchaseType.first_time,
+            },
           },
         }
       : {
@@ -217,6 +223,9 @@ export const SubscriptionCart: React.FC<SubscriptionCartProps> = (props) => {
             FirstName: currentPatient?.firstName,
             LastName: currentPatient?.lastName,
             transaction_date_time: new Date().toISOString(),
+            source_meta_data: {
+              purchase_type: isRenew ? PlanPurchaseType.renew : PlanPurchaseType.first_time,
+            },
           },
         };
 

@@ -5,7 +5,6 @@ const semiDarkClear = 'rgba(0, 0, 0, 0.3)';
 const lightColor = 'rgb(216, 216, 216)';
 const darkColor = 'rgb(115, 118, 131)';
 const sherpa_blue_light = 'rgba(1, 71, 91, 0.4)';
-
 const darkGray = '#bbbbbb';
 const hexWhite = '#ffffff';
 const app_green = '#00b38e';
@@ -48,6 +47,7 @@ const Buttons = {
   BUTTON_BG: '#fcb716',
   BUTTON_TEXT: white,
   BUTTON_DISABLED_BG: '#fed984',
+  BUTTON_ORANGE: '#FC9916',
 };
 
 const Card = {
@@ -60,9 +60,11 @@ const Card = {
 };
 
 const Common = {
+  GRAY_TWO: "#dddddd",
   DARK_GRAY: darkGray,
   BLACK_COLOR: black,
   DEFAULT_BACKGROUND_COLOR: '#f0f1ec',
+  LOGIN_BANNER_TEXT: "#00485D",
   INPUT_CURSOR_COLOR: app_green,
   APP_GREEN: app_green,
   DARK_BLUE: '#346CD9',
@@ -126,6 +128,9 @@ const Common = {
   COMPLETE_STATUS_BGK: '#E3FCEF',
   INTERMITTENT_STATUS_BGK: '#FFF0B3',
   ICE_BERG: '#DFF4F4',
+  ICE_BERG_FLAT: '#E7FFFD',
+  BLUE_FADED_FLAT: '#FAFEFF',
+  D4_GRAY: '#D4D4D4',
   GRAYED: '#CBCBCB',
   SLATE_GRAY: '#68919D',
   NILE_BLUE: '#1C4659',
@@ -148,7 +153,7 @@ const Common = {
   ORANGE: "#FF774B",
   LIGHT_ORANGE_YELLOW: "#FCA317",
   GREEN_BACKGROUND: "#F5FFFD",
-  BGK_GRAY : '#f9f9f9',
+  BGK_GRAY: '#f9f9f9',
   TEAL_BLUE: '#3F7281',
   SHERPA_BLUE_LIGHT: sherpa_blue_light,
   APP_REFERRAL_BLUE: '#4E69FF',
@@ -161,10 +166,22 @@ const Common = {
   LIGHT_GREEN_ONE: '#E8EDF0',
   LIGHT_BLUE_TWO: '#DCF0FF',
   BLUE_GRADIENT_ONE: '#1C9FC2',
+  ORANGE_DISABLED: "#f8952180",
+  ORANGE_ENABLED: "#f89521",
+  LIGHT_GRAY_3: '#ECECEC',
   DISCOUNT_GREEN: "#34AA55",
   GREEN_BG: "#F3FFFF",
   ORANGE_BG :"#FFF6DE",
-  SLOT_GRAY: "#F0F0F0"
+  SLOT_GRAY: "#F0F0F0",
+  LIGHT_REFERRER_AQUA_ONE: "#85e2dc",
+  LIGHT_REFERRER_AQUA_TWO: "#FFFCFF",
+  BLUE_REFERRER_BORDER: "#74b9ed",
+  MULTISIGNUP_HEADING_BLUE: '#01495D',
+  LIGHT_BLUE_DOWN: '#02475bb0',
+  LIGHT_WHITE_GRAY: '#F0F0F0',
+  BUTTON_ORANGE: '#fc9916eb',
+  BUTTON_ORANGE_DISABLE: '#fc991661',
+  LIGHT_SOIL_COLOR: '#FCF0E3'
 };
 
 const Header = {
@@ -205,6 +222,7 @@ const TextInput = {
   INPUT_FAILURE_TEXT: '#890000',
   INPUT_INFO: tangerine_yellow,
   placeholderTextColor: 'rgba(1,48,91, 0.3)',
+  HOME_SEARCH_PLACEHOLDER: 'rgba(2,71,91,0.7)',
   searchAreaPlaceholderTextColor: 'rgba(1,71,91,0.6)',
   light_label: '#658f9b',
 };
@@ -231,6 +249,12 @@ const StatusColors = {
   REFUND: lightPaleRed,
 };
 
+const SignupColors = {
+  GRADIENT_LIGHT_YELLOW_ONE: '#F3ECD9',
+  GRADIENT_LIGHT_YELLOW_TWO: '#FFE8AD',
+  RED_BROWN: '#A15D59'
+}
+
 export const colors = {
   ...Buttons,
   ...Card,
@@ -243,4 +267,5 @@ export const colors = {
   ...TabBar,
   ...Capsule,
   ...StatusColors,
+  ...SignupColors
 };

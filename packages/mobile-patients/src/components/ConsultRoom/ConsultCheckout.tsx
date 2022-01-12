@@ -184,7 +184,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           ? `${doctorClinics[0].facility.city}`
           : '',
       'Doctor ID': g(doctor, 'id')!,
-      'Doctor name': g(doctor, 'fullName')!,
+      'Doctor name': g(doctor, 'displayName')!,
       'Net amount': price,
       af_revenue: price,
       af_currency: 'INR',
@@ -230,7 +230,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           ? `${doctorClinics[0].facility.city}`
           : '',
       'Doctor ID': g(doctor, 'id')!,
-      'Doctor name': g(doctor, 'fullName')!,
+      'Doctor name': g(doctor, 'displayName')!,
       'Net amount': price,
       af_revenue: price,
       af_currency: 'INR',
@@ -272,7 +272,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
     });
 
     const eventAttributes: FirebaseEvents[FirebaseEventName.CONSULTATION_BOOKED] = {
-      name: g(doctor, 'fullName')!,
+      name: g(doctor, 'displayName')!,
       specialisation: g(doctor, 'specialty', 'userFriendlyNomenclature')!,
       category: g(doctor, 'doctorType')!, // send doctorType
       time: localTimeSlot.format('DD-MM-YYY, hh:mm A'),

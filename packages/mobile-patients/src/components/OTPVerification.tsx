@@ -1,16 +1,10 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { LoginCard } from '@aph/mobile-patients/src/components/ui/LoginCard';
 import { CountDownTimer } from '@aph/mobile-patients/src/components/ui/CountDownTimer';
 import {
   BackArrow,
-  Loader,
-  ArrowDisabled,
-  ArrowYellow,
-  WhiteCallIcon,
   CheckBox as CheckBoxEmpty,
   CheckBoxFilled,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import LandingDataView from '@aph/mobile-patients/src/components/ui/LandingDataView';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
@@ -36,7 +30,6 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useCallback, useEffect, useState } from 'react';
-import { CheckBox } from 'react-native-elements';
 import {
   Alert,
   BackHandler,
@@ -51,7 +44,6 @@ import {
   View,
   AppState,
   AppStateStatus,
-  TextInput,
 } from 'react-native';
 import { timeDifferenceInDays } from '@aph/mobile-patients/src/utils/dateUtil';
 import firebaseAuth from '@react-native-firebase/auth';
@@ -85,128 +77,12 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
+import OTPInputView from '@twotalltotems/react-native-otp-input'
 
 const { height, width } = Dimensions.get('window');
 
-const styles = StyleSheet.create({
-  container: {
-    ...theme.viewStyles.container,
-  },
-  inputView: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    height: 56,
-    paddingTop: 10,
-    paddingHorizontal: 16,
-  },
-  errorText: {
-    lineHeight: 24,
-    color: theme.colors.INPUT_FAILURE_TEXT,
-    ...theme.fonts.IBMPlexSansMedium(12),
-    paddingBottom: 3,
-    paddingHorizontal: 16,
-  },
-  bottomDescription: {
-    lineHeight: 24,
-    color: theme.colors.INPUT_INFO,
-    ...theme.fonts.IBMPlexSansSemiBold(12),
-  },
-  codeInputStyle: {
-    borderBottomWidth: 2,
-    width: width - 135,
-    margin: 0,
-    height: 48,
-    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
-    ...theme.fonts.IBMPlexSansMedium(18),
-    color: theme.colors.LIGHT_BLUE,
-  },
-  viewAbsoluteStyles: {
-    position: 'absolute',
-    width: width,
-    height: height,
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    elevation: 20,
-  },
-  gotItStyles: {
-    height: 60,
-    backgroundColor: 'transparent',
-  },
-  gotItTextStyles: {
-    paddingTop: 16,
-    ...theme.viewStyles.yellowTextStyle,
-  },
-  bannerTitle: {
-    color: theme.colors.WHITE,
-    ...theme.fonts.IBMPlexSansBold(15),
-    marginLeft: 24,
-  },
-  bannerDescription: {
-    ...theme.fonts.IBMPlexSansRegular(12),
-    color: theme.colors.WHITE,
-    lineHeight: 15,
-    marginLeft: 24,
-    marginTop: 8,
-  },
-  bannerWelcome: {
-    ...theme.fonts.IBMPlexSansSemiBold(13),
-    lineHeight: 15,
-    color: '#fcb717',
-  },
-  bannerBoldText: {
-    ...theme.fonts.IBMPlexSansSemiBold(13),
-    color: theme.colors.WHITE,
-    lineHeight: 15,
-  },
-  hyperlink: {
-    color: theme.colors.PURPLE,
-    ...fonts.IBMPlexSansBold(10),
-    textDecorationLine: 'underline',
-  },
-  otpOnCallContainer: {
-    marginHorizontal: 20,
-    marginTop: 20,
-  },
-  otpOnCallButton: {
-    ...theme.viewStyles.cardViewStyle,
-    flexDirection: 'row',
-    backgroundColor: '#FCB716',
-    paddingVertical: 9,
-    marginTop: 10,
-    justifyContent: 'center',
-  },
-  otpOnCallIcon: {
-    resizeMode: 'contain',
-    width: 25,
-    height: 25,
-    transform: [{ rotate: '230deg' }],
-    marginRight: 10,
-  },
-  otpOnCallText: {
-    ...theme.viewStyles.text('B', 16, '#FFFFFF', 1, 25, 0.35),
-    textAlign: 'center',
-  },
-  horizontalLine: {
-    borderBottomColor: 'black',
-    opacity: 0.35,
-    borderBottomWidth: 0.5,
-    width: '45%',
-    marginVertical: 10,
-  },
-  checkBoxContainer: {
-    backgroundColor: 'transparent',
-    borderWidth: 0,
-    padding: 0,
-    margin: 0,
-  },
-  checkBoxStyle: {
-    resizeMode: 'contain',
-    width: 20,
-    height: 20,
-  },
-});
+
 
 let timer = 120;
 export type ReceivedSmsMessage = {
@@ -228,7 +104,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [isValidOTP, setIsValidOTP] = useState<boolean>(false);
   const [invalidOtpCount, setInvalidOtpCount] = useState<number>(0);
   const [showErrorMsg, setShowErrorMsg] = useState<boolean>(false);
-  const [remainingTime, setRemainingTime] = useState<number>(120);
+  const [remainingTime, setRemainingTime] = useState<number>(30);
   const [intervalId, setIntervalId] = useState<number>(0);
   const [otp, setOtp] = useState<string>('');
   const [isresent, setIsresent] = useState<boolean>(false);
@@ -240,6 +116,175 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [openFillerView, setOpenFillerView] = useState<boolean>(false);
   const [disableOtpOnCallCta, setDisableOtpOnCallCta] = useState<boolean>(false);
   const [showOtpOnCallCta, setShowOtpOnCallCta] = useState<boolean>(false);
+  const [resendOtpSection, setResendOtpSection] = useState<boolean>(false)
+  const [otpStatus, setOtpStatus] = useState<string>(string.login.otp_sent_to)
+  const [isBlocked, setIsBlocked] = useState<boolean>(false)
+  const [coolOff, setCoolOff] = useState<number>(10)
+  const [editable, setEditable] = useState<boolean>(true)
+  const [updatedTimerValue, setUpdatedTimerValue] = useState<number>(0)
+  const [newOTPNeeded, setNewOTPNeeded] = useState<boolean>(false)
+
+  const styles = StyleSheet.create({
+    container: {
+      ...theme.viewStyles.container,
+      backgroundColor: colors.WHITE
+    },
+    inputView: {
+      flexDirection: 'row',
+      justifyContent: 'flex-start',
+      height: 56,
+      paddingTop: 10,
+      paddingHorizontal: 16,
+    },
+    errorText: {
+      lineHeight: 24,
+      color: theme.colors.INPUT_FAILURE_TEXT,
+      ...theme.fonts.IBMPlexSansMedium(12),
+      paddingBottom: 3,
+      paddingHorizontal: 16,
+    },
+    bottomDescription: {
+      lineHeight: 24,
+      color: theme.colors.INPUT_INFO,
+      ...theme.fonts.IBMPlexSansSemiBold(12),
+    },
+    codeInputStyle: {
+      borderBottomWidth: 2,
+      width: width - 135,
+      margin: 0,
+      height: 48,
+      borderColor: theme.colors.INPUT_BORDER_SUCCESS,
+      ...theme.fonts.IBMPlexSansMedium(18),
+      color: theme.colors.LIGHT_BLUE,
+    },
+    viewAbsoluteStyles: {
+      position: 'absolute',
+      width: width,
+      height: height,
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      elevation: 20,
+    },
+    gotItStyles: {
+      height: 60,
+      backgroundColor: 'transparent',
+    },
+    gotItTextStyles: {
+      paddingTop: 16,
+      ...theme.viewStyles.yellowTextStyle,
+    },
+    bannerTitle: {
+      color: theme.colors.WHITE,
+      ...theme.fonts.IBMPlexSansBold(15),
+      marginLeft: 24,
+    },
+    bannerDescription: {
+      ...theme.fonts.IBMPlexSansRegular(12),
+      color: theme.colors.WHITE,
+      lineHeight: 15,
+      marginLeft: 24,
+      marginTop: 8,
+    },
+    bannerWelcome: {
+      ...theme.fonts.IBMPlexSansSemiBold(13),
+      lineHeight: 15,
+      color: '#fcb717',
+    },
+    bannerBoldText: {
+      ...theme.fonts.IBMPlexSansSemiBold(13),
+      color: theme.colors.WHITE,
+      lineHeight: 15,
+    },
+    hyperlink: {
+      color: theme.colors.PURPLE,
+      ...fonts.IBMPlexSansBold(10),
+      textDecorationLine: 'underline',
+    },
+    otpOnCallContainer: {
+      marginTop: 15,
+    },
+    otpOnCallButton: {
+      ...theme.viewStyles.cardViewStyle,
+      flexDirection: 'row',
+      borderColor: '#FCB716',
+      borderWidth: 2,
+      paddingVertical: 4,
+      justifyContent: 'center',
+      paddingHorizontal: 10,
+      elevation: 0,
+      shadowColor: colors.WHITE,
+      shadowOffset: { width: 0, height: 0 },
+      shadowRadius: 0,
+      shadowOpacity: 0
+    },
+    otpOnCallIcon: {
+      resizeMode: 'contain',
+      width: 25,
+      height: 25,
+      transform: [{ rotate: '230deg' }],
+      marginRight: 10,
+    },
+    otpOnCallText: {
+      ...theme.viewStyles.text('B', 14, '#FFFFFF', 1, 25, 0.35),
+      textAlign: 'center',
+      color: '#FCB716'
+    },
+    horizontalLine: {
+      borderBottomColor: 'black',
+      opacity: 0.35,
+      borderBottomWidth: 0.5,
+      width: '45%',
+      marginVertical: 10,
+    },
+    checkBoxContainer: {
+      backgroundColor: 'transparent',
+      borderWidth: 0,
+      padding: 0,
+      margin: 0,
+    },
+    checkBoxStyle: {
+      resizeMode: 'contain',
+      width: 20,
+      height: 20,
+    },
+    inputContainer: {
+      borderWidth: 1,
+      borderColor: colors.LIGHT_BLUE,
+      borderRadius: 4,
+      color: colors.LIGHT_BLUE
+    },
+    otpTitle: {
+      ...theme.viewStyles.text('B', 18, colors.LIGHT_BLUE, 1)
+    },
+    otpDescription: {
+      ...theme.viewStyles.text('R', 14, colors.SLATE_GRAY, 1),
+      textAlign: 'center'
+    },
+    otpStatus: {
+      ...theme.viewStyles.text(
+        'M',
+        otpStatus === (string.login.otp_sent_to || string.login.otp_resent_on_sms || string.login.otp_resent_on_call) ? 14 : 12,
+        (otpStatus === string.login.otp_sent_to || otpStatus === string.login.auto_verfying_otp) ? colors.LIGHT_BLUE : (otpStatus === string.login.otp_resent_on_sms || otpStatus === string.login.otp_resent_on_call || otpStatus === string.login.try_otp_again) ? colors.GREEN : theme.colors.INPUT_FAILURE_TEXT
+      )
+    },
+    topViewContainer: {
+      alignItems: 'center',
+      paddingTop: 10,
+      flexDirection: 'row',
+      paddingLeft: 10
+    },
+    mainContainer: {
+      width: '90%',
+      alignSelf: 'center'
+    },
+    otpOnCall: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      width: '100%'
+    }
+  });
 
   const {
     sendOtp,
@@ -258,6 +303,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const handleBack = async () => {
     setOpenFillerView(false);
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    props.navigation.replace('Login')
     return true;
   };
 
@@ -295,6 +341,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const getTimerData = useCallback(async () => {
     try {
       const data = await AsyncStorage.getItem('timeOutData');
+      setInvalidOtpCount(0);
       if (data) {
         const timeOutData = JSON.parse(data);
         const { phoneNumber } = props.navigation.state.params!;
@@ -308,10 +355,10 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             const seconds = Math.ceil(dif / 1000);
             if (obj.invalidAttems === 3) {
               if (seconds < 120) {
-                setInvalidOtpCount(3);
+                // setInvalidOtpCount(3);
                 setIsValidOTP(false);
                 timer = 120 - seconds;
-                setRemainingTime(timer);
+                setRemainingTime(30);
               } else {
                 _removeFromStore();
               }
@@ -433,6 +480,19 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     () => authListener();
   });
 
+  useEffect(() => {
+    if(isBlocked && coolOff>0) {
+      let timer = setTimeout(() => {
+        clearInterval(timer)
+        setCoolOff(coolOff - 1)
+      },1000)
+    }
+    if(coolOff === 0 && updatedTimerValue === 0) {
+      setNewOTPNeeded(false)
+      setEditable(true)
+    }
+  },[coolOff, updatedTimerValue])
+
   const postOtpSuccessEvent = () => {
     const phoneNumberFromParams = `+91${props.navigation.getParam('phoneNumber')}`;
     const eventAttributes: WebEngageEvents[WebEngageEventName.OTP_VERIFICATION_SUCCESS] = {
@@ -477,12 +537,10 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                   postOtpSuccessEvent();
                   CommonLogEvent('OTP_ENTERED_SUCCESS', 'SUCCESS');
                   CommonBugFender('OTP_ENTERED_SUCCESS', data as Error);
-
                   _removeFromStore();
                   setOnOtpClick(true);
                   setshowSpinner(false);
                   setOpenFillerView(true);
-
                   sendOtp(data.authToken)
                     .then(() => {
                       getAuthToken();
@@ -492,6 +550,17 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                     });
                 } else {
                   try {
+                    if(data?.isBlocked) {
+                      setOtpStatus(string.login.max_attempts_reached)
+                      setIsBlocked(true)
+                      setCoolOff(coolOff-1)
+                      setEditable(false)
+                      setNewOTPNeeded(true)
+                    }
+                    else {
+                      setOtpStatus(`Incorrect OTP. You have ${2 - invalidOtpCount} more ${invalidOtpCount == 1? 'try' : 'tries'}.`)
+                      setInvalidOtpCount(invalidOtpCount + 1)
+                    }
                     setshowErrorBottomLine(true);
                     setOnOtpClick(false);
                     setshowSpinner(false);
@@ -651,7 +720,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         deviceTokenAPI(mePatient.id);
         callPhrNotificationApi(mePatient?.id);
         fireUserLoggedInEvent(mePatient, 'Login');
-        navigateTo(AppRoutes.ConsultRoom, {
+        navigateTo(AppRoutes.HomeScreen, {
           previousRoute: 'Login',
         });
       }
@@ -668,7 +737,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         onCleverTapUserLogin(mePatient);
         deviceTokenAPI(mePatient.id);
         callPhrNotificationApi(mePatient?.id);
-        navigateTo(AppRoutes.ConsultRoom, {
+        navigateTo(AppRoutes.HomeScreen, {
           previousRoute: 'Login',
         });
         fireUserLoggedInEvent(mePatient, 'Login');
@@ -691,8 +760,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             if (event.message) {
               const messageOTP = event.message.match(/[0-9]{6}/g);
               if (messageOTP) {
+                setOtpStatus(string.login.auto_verfying_otp)
                 isOtpValid(messageOTP[0]);
-                // onClickOk(messageOTP[0]);
+                onClickOk(messageOTP[0]);
               }
             }
             SmsRetriever.removeSmsListener();
@@ -797,12 +867,13 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   };
 
   const onStopTimer = () => {
-    setRemainingTime(120);
+    setRemainingTime(30);
     setShowErrorMsg(false);
     setInvalidOtpCount(0);
     setIsValidOTP(true);
     clearInterval(intervalId);
     _removeFromStore();
+    setResendOtpSection(true)
   };
 
   const onStopResendTimer = () => {
@@ -823,11 +894,16 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const onClickResend = () => {
     try {
+      setInvalidOtpCount(0)
+      setEditable(true)
+      setCoolOff(10)
+      setIsBlocked(false)
+      setNewOTPNeeded(false)
       CommonLogEvent(AppRoutes.OTPVerification, 'Resend Otp clicked');
-
       getNetStatus()
         .then((status) => {
           if (status) {
+            setResendOtpSection(false)
             setIsresent(true);
             setOtp('');
             Keyboard.dismiss();
@@ -837,9 +913,12 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             resendOTP('+91' + phoneNumber, loginId)
               .then((resendResult: any) => {
                 props.navigation.setParams({ loginId: resendResult.loginId });
-
+                setOtpStatus(string.login.otp_resent_on_sms)
                 CommonBugFender('OTP_RESEND_SUCCESS', resendResult as Error);
                 setShowResentTimer(true);
+                setTimeout(() => {
+                  setOtpStatus(string.login.auto_verfying_otp)
+                }, 1500);
               })
               .catch((error: Error) => {
                 CommonBugFender('OTP_RESEND_FAIL', error);
@@ -858,11 +937,17 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const onGetOtpOnCall = () => {
     try {
+      setInvalidOtpCount(0)
+      setEditable(true)
+      setCoolOff(10)
+      setIsBlocked(false)
+      setNewOTPNeeded(false)
       setDisableOtpOnCallCta(true);
       CommonLogEvent(AppRoutes.OTPVerification, 'Get OTP On Call Clicked');
       getNetStatus()
         .then((status) => {
           if (status) {
+            setResendOtpSection(false)
             setOtp('');
             Keyboard.dismiss();
             const { phoneNumber } = props.navigation.state.params!;
@@ -879,6 +964,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 };
                 postWebEngageEvent(WebEngageEventName.OTP_ON_CALL_CLICK, eventAttributes);
                 if (otpOnCallResult?.status) {
+                  setOtpStatus(string.login.otp_resent_on_call)
                   CommonBugFender('GET_OTP_ON_CALL_SUCCESS', otpOnCallResult);
                   setBugFenderLog('GET_OTP_ON_CALL_SUCCESS', otpOnCallResult);
                   props.navigation.setParams({ loginId: otpOnCallResult?.loginId });
@@ -924,79 +1010,21 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     postCleverTapEvent(CleverTapEventName.GET_OTP_ON_CALL, eventAttributes);
   };
 
-  const openWebViewTandC = () => {
-    CommonLogEvent(AppRoutes.OTPVerification, 'Terms  Conditions clicked');
-    Keyboard.dismiss();
-    props.navigation.navigate(AppRoutes.CommonWebView, {
-      url: AppConfig.Configuration.APOLLO_TERMS_CONDITIONS,
-      isGoBack: true,
-    });
-  };
-
-  const openWebViewPrivacyPolicy = () => {
-    CommonLogEvent(AppRoutes.OTPVerification, 'Privacy Policy clicked');
-    Keyboard.dismiss();
-    props.navigation.navigate(AppRoutes.CommonWebView, {
-      url: AppConfig.Configuration.APOLLO_PRIVACY_POLICY,
-      isGoBack: true,
-    });
-  };
-
-  const renderHyperLink = () => {
-    return (
-      <View style={{ flexDirection: 'row', marginLeft: 5, marginTop: 12}}>
-      <CheckBox
-        checked={isTandCSelected}
-        onPress={() => setTandC(!isTandCSelected)}
-        checkedIcon={<CheckBoxFilled  style={styles.checkBoxStyle} />}
-        uncheckedIcon={<CheckBoxEmpty style={styles.checkBoxStyle} />}
-        containerStyle={styles.checkBoxContainer}
-      />
-      <Text
-        style={{
-          color: '#02475b',
-          marginEnd: 45,
-          ...fonts.IBMPlexSansMedium(10),
-        }}
-      >
-        {string.login.bySigningUp}{' '}
-        <Text style={styles.hyperlink} onPress={() => openWebViewTandC()}>
-          {string.login.termsAndCondition}
-        </Text>{' '}
-        {string.login.and}{' '}
-        <Text style={styles.hyperlink} onPress={() => openWebViewPrivacyPolicy()}>
-          {string.login.privacyPolicy}
-        </Text>{' '}
-        {string.login.ofApollo247}
-      </Text>
-    </View>
-    );
-  };
-
   const renderOtpOnCall = () => (
     <View style={styles.otpOnCallContainer}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-        <View style={styles.horizontalLine} />
-        <Text style={{ textAlign: 'center' }}>Or</Text>
-        <View style={styles.horizontalLine} />
-      </View>
       <TouchableOpacity
-        disabled={disableOtpOnCallCta}
         onPress={onGetOtpOnCall}
         activeOpacity={0.5}
         style={[
           styles.otpOnCallButton,
-          { backgroundColor: disableOtpOnCallCta ? '#A9A9A9' : '#FCB716' },
         ]}
       >
-        <WhiteCallIcon style={styles.otpOnCallIcon} />
         <Text
           style={[
             styles.otpOnCallText,
-            { color: disableOtpOnCallCta ? theme.colors.DEFAULT_BACKGROUND_COLOR : '#FFFFFF' },
           ]}
         >
-          GET OTP ON CALL
+          {string.login.resend_on_call}
         </Text>
       </TouchableOpacity>
     </View>
@@ -1007,154 +1035,72 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
-        <View
-          style={{
-            height: 56,
-            justifyContent: 'center',
-            paddingLeft: 20,
-          }}
-        >
+        <View style={styles.topViewContainer}>
           <TouchableOpacity
-            activeOpacity={1}
-            style={{
-              height: 25,
-              width: 25,
-              justifyContent: 'center',
-            }}
-            onPress={() => {
-              props.navigation.goBack();
-              intervalId && clearInterval(intervalId);
-            }}
+            style={{ flex: .4 }}
+            onPress={handleBack}
           >
             <BackArrow />
           </TouchableOpacity>
+          <View style={{ flex: .6, }}>
+            <ApolloLogo style={{ width: 55, height: 47 }} resizeMode="contain" />
+          </View>
         </View>
-        {invalidOtpCount === 3 && !isValidOTP ? (
-          <LoginCard
-            key={1}
-            cardContainer={{
-              marginTop: 0,
-              // height: 290,
-              paddingBottom: 12,
-            }}
-            headingTextStyle={{
-              marginTop: 10,
-            }}
-            heading={string.login.oops}
-            description={string.login.incorrect_otp_message}
-            disableButton={isValidOTP ? false : true}
-            descriptionTextStyle={{
-              paddingBottom: Platform.OS === 'ios' ? 0 : 1,
-            }}
-          >
-            <View style={styles.inputView}>
-              <TextInput
-                style={[
-                  styles.codeInputStyle,
-                  {
-                    borderColor: 'rgba(0, 179, 142, 0.4)',
-                  },
-                ]}
-                value={otp}
-                onChangeText={(otp: string) => setOtp(otp)}
-                editable={false}
-                textContentType={'oneTimeCode'}
-              />
+        <View style={styles.mainContainer}>
+          <View style={{ marginTop: "10%", alignItems: 'center' }}>
+            <Text style={styles.otpTitle}>{string.login.otp_title}</Text>
+            <View style={{ marginTop: '3%' }}>
+              <Text style={styles.otpDescription}>{string.login.otp_placeholder}</Text>
             </View>
-
-            <Text style={[styles.errorText]}>
-              Try again after —{' '}
-              <CountDownTimer
-                timer={remainingTime}
-                style={[styles.errorText]}
-                onStopTimer={onStopTimer}
-              />
-            </Text>
-            {renderHyperLink()}
-          </LoginCard>
-        ) : (
-          <LoginCard
-            key={2}
-            cardContainer={{
-              marginTop: 0,
-              paddingBottom: 12,
-            }}
-            headingTextStyle={{
-              marginTop: 10,
-            }}
-            heading={string.login.great}
-            description={isresent ? string.login.resend_otp_text : descriptionPhoneText}
-            buttonIcon={
-              isValidOTP && otp.length === 6 && isTandCSelected ? (
-                <ArrowYellow size="md_l" />
+          </View>
+          <View style={{ marginTop: '12%' }}>
+            <Text style={styles.otpStatus}>{otpStatus}</Text>
+          </View>
+          <View>
+            <OTPInputView
+              style={{ width: '100%', height: 100 }}
+              pinCount={6}
+              autoFocusOnLoad
+              code={otp}
+              onCodeFilled={onClickOk}
+              codeInputFieldStyle={styles.inputContainer}
+              onCodeChanged={code => setOtp(code)}
+              editable={editable && !newOTPNeeded}
+            />
+          </View>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            {
+              !resendOtpSection ? (
+                <>
+                  <Text style={theme.viewStyles.text('M', 14, colors.LIGHT_BLUE, 1)}>Resend the OTP in</Text>
+                  <CountDownTimer
+                    timer={remainingTime}
+                    style={theme.viewStyles.text('M', 12, colors.LIGHT_BLUE, 1)}
+                    onStopTimer={onStopTimer}
+                    showSeconds
+                    returnUpdatedValue={updated => setUpdatedTimerValue(updated)}
+                  />
+                </>
               ) : (
-                <ArrowDisabled size="md_l" />
+                <View style={{ width: '100%' }}>
+                  <Text style={theme.viewStyles.text('M', 15, colors.LIGHT_BLUE, 1)}>{string.login.otp_not_received}</Text>
+                  <View style={styles.otpOnCall}>
+                    {renderOtpOnCall()}
+                    <View style={styles.otpOnCallContainer}>
+                      <TouchableOpacity
+                        style={styles.otpOnCallButton}
+                        onPress={onClickResend}
+                        activeOpacity={.5}
+                      >
+                        <Text style={styles.otpOnCallText}>{string.login.resend_on_sms}</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
               )
             }
-            onClickButton={() => onClickOk()}
-            disableButton={isValidOTP && otp.length === 6 && isTandCSelected ? false : true}
-            descriptionTextStyle={{
-              paddingBottom: Platform.OS === 'ios' ? 0 : 1,
-            }}
-          >
-            <View style={styles.inputView}>
-              <TextInput
-                style={[
-                  styles.codeInputStyle,
-                  {
-                    borderColor: showErrorBottomLine
-                      ? theme.colors.INPUT_BORDER_FAILURE
-                      : theme.colors.INPUT_BORDER_SUCCESS,
-                  },
-                ]}
-                value={otp}
-                onChangeText={isOtpValid}
-                keyboardType="numeric"
-                textContentType={'oneTimeCode'}
-                maxLength={6}
-              />
-            </View>
-            {showErrorMsg && (
-              <Text style={styles.errorText}>
-                Incorrect OTP. You have {3 - invalidOtpCount} more{' '}
-                {invalidOtpCount == 2 ? 'try' : 'tries'}.
-              </Text>
-            )}
-            {
-              <TouchableOpacity
-                activeOpacity={1}
-                onPress={showResentTimer ? () => {} : onClickResend}
-                style={{ width: '50%', paddingLeft: 16, paddingTop: 12 }}
-              >
-                <Text
-                  style={[
-                    styles.bottomDescription,
-                    showResentTimer
-                      ? {
-                          opacity: 0.5,
-                        }
-                      : {},
-                  ]}
-                >
-                  {string.login.resend_opt}
-                  {showResentTimer && ' '}
-                  {showResentTimer && (
-                    <CountDownTimer
-                      timer={30}
-                      style={{
-                        color: theme.colors.LIGHT_BLUE,
-                      }}
-                      onStopTimer={onStopResendTimer}
-                    />
-                  )}
-                </Text>
-              </TouchableOpacity>
-            }
-            {renderHyperLink()}
-          </LoginCard>
-        )}
-        {showOtpOnCallCta && renderOtpOnCall()}
-        <LandingDataView />
+          </View>
+        </View>
         {openFillerView && <FetchingDetails />}
       </SafeAreaView>
       {showSpinner && <Spinner />}

@@ -4,7 +4,7 @@ import {
   StackActions,
   NavigationActions,
 } from 'react-navigation';
-import { setBugFenderLog } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { CommonBugFender, setBugFenderLog } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { postCleverTapEvent, postWebEngageEvent, navigateToScreenWithEmptyStack, } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEvents,
@@ -18,6 +18,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CleverTapEventName, CleverTapEvents } from './CleverTapEvents';
 import remoteConfig from '@react-native-firebase/remote-config';
+import { getBrandPagesData } from './apiCalls';
 
 export const handleOpenURL = (event: any) => {
   try {
@@ -172,8 +173,6 @@ export const handleOpenURL = (event: any) => {
         break;
 
       case 'shop-by-health-conditions':
-      case 'shop-by-category':
-      case 'shop-by-brand':
       case 'explore-popular-products':
         if (linkId) {
           return {
@@ -186,6 +185,21 @@ export const handleOpenURL = (event: any) => {
           };
         }
         break;
+
+      case 'shop-by-category':
+      case 'shop-by-brand':
+        if (linkId) {
+          return {
+            // if brand data exist it will go to brand pages else it will be redirected to medicine listing page
+            routeName: 'BrandPages',
+            id: linkId,
+          };
+        } else {
+          return {
+            routeName: 'Medicine',
+          };
+        }
+      break;  
 
       case 'medicinesearch':
         return {
@@ -239,10 +253,15 @@ export const handleOpenURL = (event: any) => {
         break;
 
       case 'order':
+      case 'orders':
         if (linkId) {
           return {
             routeName: 'Order',
             id: linkId,
+          };
+        } else {
+          return {
+            routeName: 'MyOrders',
           };
         }
         break;
@@ -347,6 +366,7 @@ export const handleOpenURL = (event: any) => {
         };
         break;
 
+      case 'lab-tests-category':
       case 'testlisting':
         return {
           routeName: 'TestListing',
@@ -401,36 +421,21 @@ export const handleOpenURL = (event: any) => {
           id: linkId ? linkId : undefined,
         };
         break;
+
       case 'testordersummary':
       case 'test-order-summary':
+      case 'orderdetails':
         return {
           routeName: 'TestOrderSummary',
           id: linkId ? linkId : undefined
         }
         break;
 
-      case 'testordersummary':
-      case 'test-order-summary':
+      case 'category-listing':
         return {
-          routeName: 'TestOrderSummary',
-          id: linkId ? linkId : undefined,
-        };
-        break;
-
-      case 'testordersummary':
-      case 'test-order-summary':
-        return {
-          routeName: 'TestOrderSummary',
-          id: linkId ? linkId : undefined,
-        };
-        break;
-
-      case 'testordersummary':
-      case 'test-order-summary':
-        return {
-          routeName: 'TestOrderSummary',
-          id: linkId ? linkId : undefined,
-        };
+          routeName :'TestWidgetListing',
+          id: linkId ? linkId : undefined
+        }
         break;
       case 'payment':
         return {
@@ -443,7 +448,6 @@ export const handleOpenURL = (event: any) => {
           routeName: 'ShareReferLink',
         };
         break;
-
       default:
         if (b === 0) {
           return {
@@ -483,7 +487,7 @@ export const pushTheView = (
   vaccinationCmsIdentifier?: string,
   vaccinationSubscriptionId?: string,
   params?: any,
-  movedFromBrandPages?: boolean,
+  movedFromBrandPages?: boolean
 ) => {
   setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
   switch (routeName) {
@@ -512,7 +516,7 @@ export const pushTheView = (
         navigation.navigate(AppRoutes.ProductDetailPage, {
           sku: isUrlKey ? null : id,
           urlKey: isUrlKey ? id : null,
-          movedFrom: ProductPageViewedSource.BRAND_PAGES
+          movedFrom: ProductPageViewedSource.BRAND_PAGES,
         });
       } else {
         navigateToView(navigation, AppRoutes.ProductDetailPage, {
@@ -526,8 +530,7 @@ export const pushTheView = (
       navigation.navigate('TESTS', { movedFrom: 'deeplink' });
       break;
     case 'ConsultRoom':
-      movedFromBrandPages ? navigation.goBack() :
-        navigation.replace(AppRoutes.ConsultRoom);
+      navigation.replace(AppRoutes.HomeScreen);
       break;
     case 'Speciality':
       setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', id);
@@ -588,7 +591,7 @@ export const pushTheView = (
       }
       break;
     case 'MedicineCart':
-      navigateToView(navigation, AppRoutes.MedicineCart, {
+      navigateToView(navigation, AppRoutes.ServerCart, {
         movedFrom: 'splashscreen',
       });
       break;
@@ -610,7 +613,7 @@ export const pushTheView = (
       });
       break;
     case 'MyOrders':
-      navigateToView(navigation, AppRoutes.YourOrdersScene);
+      navigateToView(navigation, AppRoutes.YourOrdersScene, {source: 'deeplink'});
       break;
     case 'webview':
       navigateToView(navigation, AppRoutes.CommonWebView, { url: id });
@@ -679,7 +682,7 @@ export const pushTheView = (
           isCorporatePlan: true,
         });
       } else {
-        navigation.replace(AppRoutes.ConsultRoom);
+        navigation.replace(AppRoutes.HomeScreen);
       }
       break;
     case 'vaccinelisting':
@@ -704,6 +707,7 @@ export const pushTheView = (
       navigateToView(navigation, AppRoutes.ConsultPackageDetail, {
         comingFrom: 'deeplink',
         planId: paramsObtained?.[0],
+        isOneTap: paramsObtained?.[0].startsWith('onetap'),
       });
       break;
 
@@ -763,6 +767,12 @@ export const pushTheView = (
 
       })
       break;
+    case 'TestWidgetListing':
+      navigateToView(navigation, AppRoutes.TestWidgetListing, {
+          movedFrom: 'deeplink',
+          widgetName: id,
+        });
+      break;
     case 'ShareReferLink':
       firebaseRemoteConfigForReferrer().then((res) => {
         if (res) {
@@ -773,16 +783,34 @@ export const pushTheView = (
             source: 'deeplink',
           };
           postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
-          navigation.replace(AppRoutes.ConsultRoom);
+          navigation.replace(AppRoutes.HomeScreen);
         }
       })
+      break;
+    case 'BrandPages':
+      getBrandPagesData(id)
+        .then(({ data }) => {
+          const response = data;
+          if (response?.success === true && response?.data?.length) {
+            !!movedFromBrandPages ? navigation.navigate(AppRoutes.BrandPages, { movedFrom: 'brandPages', brandData: response?.data, categoryName: id }) :
+            navigateToView(navigation, AppRoutes.BrandPages, { movedFrom: 'deeplink', brandData: response?.data, categoryName: id });
+          } else {
+            !!movedFromBrandPages ? navigation.navigate(AppRoutes.MedicineListing, { categoryName: id, movedFrom: 'brandPages' }) :
+            navigateToView(navigation, AppRoutes.MedicineListing, { categoryName: id, movedFrom: 'deeplink' });
+          }
+        })
+        .catch(({ error }) => {
+          CommonBugFender('Deeplink_fetchBrandPageData', error);
+          !!movedFromBrandPages ? navigation.navigate(AppRoutes.MedicineListing, { categoryName: id, movedFrom: 'brandPages' }) :
+          navigateToView(navigation, AppRoutes.MedicineListing, { categoryName: id, movedFrom: 'deeplink' });
+        });
       break;
     default:
       const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
         source: 'deeplink',
       };
       postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
-      navigation.replace(AppRoutes.ConsultRoom);
+      navigation.replace(AppRoutes.HomeScreen);
       break;
   }
 };
@@ -802,7 +830,7 @@ const webViewGoBack = (navigation: NavigationScreenProp<NavigationRoute<object>,
       key: null,
       actions: [
         NavigationActions.navigate({
-          routeName: AppRoutes.ConsultRoom,
+          routeName: AppRoutes.HomeScreen,
         }),
       ],
     })
@@ -819,7 +847,7 @@ const navigateToView = (
       index: 1,
       key: null,
       actions: [
-        NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom }),
+        NavigationActions.navigate({ routeName: AppRoutes.HomeScreen }),
         NavigationActions.navigate({ routeName: routeName, params: routeParams || {} }),
       ],
     })

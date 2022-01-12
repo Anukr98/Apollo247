@@ -225,9 +225,16 @@ export const GET_PATIENT_PAST_SEARCHES = gql`
       typeId
       name
       image
+      languages
       specialty
+      specialtyId
       symptoms
       allowBookingRequest
+      facility {
+        city
+        name
+      }
+      fee
     }
   }
 `;
@@ -288,6 +295,48 @@ export const GET_INFORMATIVE_CONTENT = gql`
         parameterName
         loincCode
         contentCode
+      }
+    }
+  }
+`;
+
+export const SAVE_CLINICAL_DOCUMENTS = gql`
+  mutation saveClinicalDocuments($addClinicalDocumentInput: AddClinicalDocumentInput) {
+    saveClinicalDocuments(addClinicalDocumentInput: $addClinicalDocumentInput) {
+      status
+      id
+    }
+  }
+`;
+
+export const GET_ALL_CLINICAL_DOCUMENTS = gql`
+  query getClinicalDocuments($uhid: String!, $mobileNumber: String!) {
+    getClinicalDocuments(uhid: $uhid, mobileNumber: $mobileNumber) {
+      response {
+        id
+        documentName
+        uhid
+        mobileNumber
+        uploadedVia
+        documentStatus
+        fileTypeId
+        fileType
+        createddate
+        lastmodifieddate
+        authToken
+        source
+        parentFolder
+        fileInfoList {
+          id
+          fileStatus
+          locationtype
+          file_location
+          fileName
+          mimeType
+          content
+          byteContent
+          file_Url
+        }
       }
     }
   }
@@ -1045,6 +1094,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
         PHYSICAL
         DEFAULT
       }
+      medmantraSync
     }
   }
 `;
@@ -1384,6 +1434,10 @@ export const GET_SD_LATEST_COMPLETED_CASESHEET_DETAILS = gql`
         }
         diagnosticPrescription {
           itemname
+          testInstruction
+        }
+        radiologyPrescription {
+          servicename
           testInstruction
         }
         blobName
@@ -2828,6 +2882,7 @@ export const GET_PRESCRIPTIONS_BY_MOBILE_NUMBER = gql`
             id
             fileName
             mimeType
+            file_Url
           }
         }
         errorCode
@@ -2849,6 +2904,7 @@ export const GET_PRESCRIPTIONS_BY_MOBILE_NUMBER = gql`
             id
             fileName
             mimeType
+            file_Url
           }
           hospital_name
           hospitalId
@@ -2882,6 +2938,7 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS_BY_MOBILE = gql`
         displayId
         bookingDate
         caseSheet {
+          prismFileId
           notes
           blobName
           consultType
@@ -4253,6 +4310,38 @@ export const GET_MEDICINE_ORDER_CANCEL_REASONS = gql`
   }
 `;
 
+export const GET_MEDICINE_ORDER_CANCEL_REASONS_V2 = gql`
+  query getMedicineOrderCancelReasonsV2(
+    $getMedicineOrderCancelReasonsV2Input: GetMedicineOrderCancelReasonsV2Input!
+  ) {
+    getMedicineOrderCancelReasonsV2(
+      getMedicineOrderCancelReasonsV2Input: $getMedicineOrderCancelReasonsV2Input
+    ) {
+      cancellationReasonBuckets {
+        id
+        reasons {
+          isUserReason
+          description
+          sortOrder
+          reasonCode
+          displayMessage
+          config {
+            userCommentRequired
+            commentMinLength
+            commentMaxLength
+          }
+          nudgeConfig {
+            enabled
+            message
+          }
+        }
+        sortOrder
+        bucketName
+      }
+    }
+  }
+`;
+
 export const GET_CALL_DETAILS = gql`
   query getCallDetails($appointmentCallId: String) {
     getCallDetails(appointmentCallId: $appointmentCallId) {
@@ -5158,16 +5247,198 @@ export const ADD_DIABETIC_QUESTIONNAIRE = gql`
 `;
 
 export const GET_PAYMENT_METHODS = gql`
-  query getPaymentMethodsV2($is_mobile: Boolean, $payment_order_id: String!) {
-    getPaymentMethodsV2(is_mobile: $is_mobile, payment_order_id: $payment_order_id) {
-      name
-      minimum_supported_version
-      payment_methods {
-        image_url
-        payment_method_name
-        payment_method_code
+  query getPaymentMethodsV3(
+    $is_juspay_pharma: Boolean
+    $payment_order_id: String!
+    $prepaid_amount: Float!
+  ) {
+    getPaymentMethodsV3(
+      is_juspay_pharma: $is_juspay_pharma
+      payment_order_id: $payment_order_id
+      prepaid_amount: $prepaid_amount
+    ) {
+      linked_wallets {
+        id
+        object
+        wallet
+        token
+        current_balance
+        linked
+        last_refreshed
+        offers {
+          offer_id
+          cashback_amount
+          discount_amount
+          merchant_discount_amount
+          total_offered_amount
+          description {
+            offer_code
+            description
+          }
+        }
+        outage
+      }
+      offers {
+        offer_id
+        status
+        offer_description {
+          title
+          description
+          tnc
+          sponsored_by
+        }
+        offer_rules {
+          amount {
+            max_quantity
+            min_quantity
+          }
+          platform
+          payment_instrument {
+            payment_method
+            payment_method_type
+            type
+            variant
+          }
+        }
+        order_breakup {
+          order_amount
+          order_quantity
+          final_order_amount
+          discount_amount
+        }
+      }
+      saved_card_list {
+        customer_id
+        merchantId
+        cards {
+          card_number
+          card_exp_year
+          card_exp_month
+          card_type
+          card_issuer
+          card_brand
+          name_on_card
+          card_token
+          card_fingerprint
+          juspay_bank_code
+          outage
+          offers {
+            offer_id
+            cashback_amount
+            discount_amount
+            merchant_discount_amount
+            total_offered_amount
+            description {
+              offer_code
+              description
+            }
+          }
+        }
+      }
+      all_payment_modes {
+        name
         minimum_supported_version
-        outage_status
+        state
+        banner_text
+        payment_methods {
+          image_url
+          payment_method_name
+          payment_method_code
+          minimum_supported_version
+          outage_list {
+            outage_status
+            bank_code
+          }
+          offers {
+            offer_id
+            cashback_amount
+            discount_amount
+            merchant_discount_amount
+            total_offered_amount
+            description {
+              offer_code
+              description
+            }
+          }
+        }
+      }
+      preferred_payment_methods {
+        saved_cards {
+          customer_id
+          merchantId
+          cards {
+            card_number
+            card_exp_year
+            card_exp_month
+            card_type
+            card_issuer
+            card_brand
+            name_on_card
+            card_token
+            card_fingerprint
+            juspay_bank_code
+            outage
+            offers {
+              offer_id
+              cashback_amount
+              discount_amount
+              merchant_discount_amount
+              total_offered_amount
+              description {
+                offer_code
+                description
+              }
+            }
+          }
+        }
+        recently_used_or_defined {
+          name
+          minimum_supported_version
+          state
+          banner_text
+          payment_methods {
+            image_url
+            payment_method_name
+            payment_method_code
+            minimum_supported_version
+            outage_list {
+              outage_status
+              bank_code
+            }
+            offers {
+              offer_id
+              cashback_amount
+              discount_amount
+              merchant_discount_amount
+              total_offered_amount
+              description {
+                offer_code
+                description
+              }
+            }
+          }
+        }
+        linked_wallets {
+          id
+          object
+          wallet
+          token
+          current_balance
+          linked
+          last_refreshed
+          offers {
+            offer_id
+            cashback_amount
+            discount_amount
+            merchant_discount_amount
+            total_offered_amount
+            description {
+              offer_code
+              description
+            }
+          }
+          outage
+        }
       }
     }
   }
@@ -5203,9 +5474,7 @@ export const GET_INTERNAL_ORDER = gql`
   query getOrderInternal($order_id: String!) {
     getOrderInternal(order_id: $order_id) {
       id
-      txn_uuid
-      txn_id
-      status_id
+      payment_method_type
       payment_order_id
       DiagnosticsPaymentDetails {
         ordersList {
@@ -5232,13 +5501,13 @@ export const GET_INTERNAL_ORDER = gql`
           }
         }
       }
-      SubscriptionOrderDetails{
+      SubscriptionOrderDetails {
         end_date
         expires_in
         order_id
         sub_plan_id
         payment_reference
-        group_plan{
+        group_plan {
           name
           price
           valid_duration
@@ -5276,6 +5545,7 @@ export const GET_APPOINTMENT_INFO = gql`
   query getAppointmentInfo($order_id: String!) {
     getOrderInternal(order_id: $order_id) {
       payment_order_id
+      payment_method_type
       payment_status
       AppointmentDetails {
         displayId
@@ -5283,6 +5553,12 @@ export const GET_APPOINTMENT_INFO = gql`
           actual_price
           slashed_price
         }
+      }
+      SubscriptionOrderDetails {
+        status
+        end_date
+        payment_reference
+        expires_in
       }
     }
   }
@@ -5936,8 +6212,20 @@ export const GET_ALL_VACCINATION_APPOINTMENTS = gql`
 `;
 
 export const GET_VACCINATION_SITES = gql`
-  query getResourcesList($city: String!, $vaccine_type: VACCINE_TYPE, $is_retail: Boolean) {
-    getResourcesList(city: $city, vaccine_type: $vaccine_type, is_retail: $is_retail) {
+  query getResourcesList(
+    $city: String!
+    $vaccine_type: VACCINE_TYPE
+    $is_retail: Boolean
+    $patient_id: String!
+    $dose_number: DOSE_NUMBER
+  ) {
+    getResourcesList(
+      city: $city
+      vaccine_type: $vaccine_type
+      is_retail: $is_retail
+      patient_id: $patient_id
+      dose_number: $dose_number
+    ) {
       code
       success
       message
@@ -6028,12 +6316,16 @@ export const GET_VACCINATION_SLOTS = gql`
     $session_date: Date
     $vaccine_type: VACCINE_TYPE
     $is_retail: Boolean
+    $patient_id: String!
+    $dose_number: DOSE_NUMBER
   ) {
     getResourcesSessionAvailableByDate(
       resource_id: $resource_id
       session_date: $session_date
       vaccine_type: $vaccine_type
       is_retail: $is_retail
+      patient_id: $patient_id
+      dose_number: $dose_number
     ) {
       code
       success
@@ -6672,6 +6964,51 @@ export const CREATE_VONAGE_SESSION_TOKEN = gql`
   }
 `;
 
+export const GET_PERSONALIZED_OFFERS = gql`
+  query getPersonalizedOffers {
+    getPersonalizedOffers {
+      response {
+        personalized_data {
+          offers_for_you {
+            offer_id
+            template_name
+            coupon_code
+            notch_text {
+              text
+              values {
+                time_till_expired_at {
+                  value
+                }
+              }
+            }
+            is_active
+            expired_at
+            title {
+              text
+            }
+            subtitle {
+              text
+            }
+            cta {
+              text
+              path {
+                vertical
+                param
+              }
+            }
+          }
+          global_search_text {
+            search_text {
+              text
+              created_at
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const GET_CONFIGURATION_FOR_ASK_APOLLO_LEAD = gql`
   query getConfigurationForAskApolloLead {
     getConfigurationForAskApolloLead {
@@ -6715,12 +7052,14 @@ export const GET_HC_REFREE_RECORD = gql`
       pending {
         name
         registrationDate
+        rewardEligibility
       }
       referee {
         registrationDate
         name
         rewardValue
         rewardType
+        rewardEligibility
       }
     }
   }
@@ -6738,6 +7077,7 @@ export const GET_CAMPAIGN_ID_FOR_REFERRER = gql`
   query campaignInfo($camp: CAMPAIGN_TYPES!) {
     getCampaignInfoByCampaignType(campaignType: $camp) {
       id
+      campaignType
     }
   }
 `;
@@ -6768,8 +7108,7 @@ query getDiagnosticPackageRecommendations($itemId:Int!, $cityId: Int!){
       }
     }
   }
-}
-`
+`;
 export const CANCELL_SUBSCRIPTION = gql`
   mutation CancelSubscription($CancelSubscriptionInput: CancelSubscriptionInput!) {
     CancelSubscription(CancelSubscriptionInput: $CancelSubscriptionInput) {
@@ -6795,6 +7134,7 @@ export const GET_PACKAGE_PURCHASE_INFO = gql`
       payment_status
       total_amount
       SubscriptionOrderDetails {
+        _id
         end_date
         payment_reference
         group_plan {
@@ -6807,6 +7147,104 @@ export const GET_PACKAGE_PURCHASE_INFO = gql`
           name
         }
       }
+    }
+  }
+`;
+
+export const SERVER_CART_SAVE_CART = gql`
+  mutation saveCart($cartInputData: CartInputData!) {
+    saveCart(cartInput: $cartInputData) {
+      statusCode
+      errorMessage
+      cartMessage
+      data {
+        patientId
+        amount {
+          estimatedAmount
+          deliveryCharges
+          isDeliveryFree
+          cartSavings
+          couponSavings
+          totalCashBack
+          cartTotal
+          packagingCharges
+          circleSavings {
+            membershipCashBack
+            circleDelivery
+          }
+        }
+        noOfShipments
+        longitude
+        latitude
+        zipcode
+        city
+        state
+        patientAddressId
+        couponDetails {
+          coupon
+          couponMessage
+          valid
+          textOffer
+          reason
+          circleBenefits
+        }
+        prescriptionDetails {
+          prescriptionImageUrl
+          prismPrescriptionFileId
+          uhid
+          appointmentId
+          meta
+        }
+        prescriptionType
+        subscriptionDetails {
+          userSubscriptionId
+          planId
+          subPlanId
+          type
+          planAmount
+          currentSellingPrice
+          validDuration
+          durationInMonth
+          subscriptionApplied
+        }
+        medicineOrderCartLineItems {
+          sku
+          magentoId
+          magentoStatus
+          name
+          quantity
+          price
+          sellingPrice
+          mou
+          couponDiscountPrice
+          thumbnail
+          isExpress
+          isPrescriptionRequired
+          subcategory
+          typeId
+          urlKey
+          isInStock
+          maxOrderQty
+          sellOnline
+          tat
+          tatDuration
+          isCouponApplicable
+          cashback
+          isShippable
+          freeProduct
+          shipmentNo
+          tatCity
+          storeType
+        }
+      }
+    }
+  }
+`;
+
+export const SAVE_RECENT_SEARCH = gql`
+  mutation saveRecent($searchText: String!) {
+    saveRecentSearchData(saveRecentSearchTextInput: { searchText: $searchText }) {
+      success
     }
   }
 `;
@@ -6831,10 +7269,241 @@ export const BOOK_PACKAGE_CONSULT = gql`
   }
 `;
 
+export const GET_PAYMENT_STATUS = gql`
+  query getPaymentStatus($order_id: String!) {
+    getOrderInternal(order_id: $order_id) {
+      id
+      payment_order_id
+      payment_status
+    }
+  }
+`;
+export const SERVER_CART_FETCH_CART = gql`
+  query fetchCart($patientId: String!) {
+    fetchCart(patientId: $patientId) {
+      statusCode
+      errorMessage
+      cartMessage
+      data {
+        patientId
+        amount {
+          estimatedAmount
+          deliveryCharges
+          isDeliveryFree
+          cartSavings
+          couponSavings
+          totalCashBack
+          cartTotal
+          packagingCharges
+          circleSavings {
+            membershipCashBack
+            circleDelivery
+          }
+        }
+        noOfShipments
+        longitude
+        latitude
+        zipcode
+        city
+        state
+        patientAddressId
+        couponDetails {
+          coupon
+          couponMessage
+          valid
+          textOffer
+          reason
+          circleBenefits
+        }
+        prescriptionDetails {
+          prescriptionImageUrl
+          prismPrescriptionFileId
+          uhid
+          appointmentId
+          meta
+        }
+        prescriptionType
+        subscriptionDetails {
+          userSubscriptionId
+          planId
+          subPlanId
+          type
+          planAmount
+          currentSellingPrice
+          validDuration
+          durationInMonth
+          subscriptionApplied
+        }
+        medicineOrderCartLineItems {
+          sku
+          magentoId
+          magentoStatus
+          name
+          quantity
+          price
+          sellingPrice
+          mou
+          couponDiscountPrice
+          thumbnail
+          isExpress
+          isPrescriptionRequired
+          subcategory
+          typeId
+          urlKey
+          isInStock
+          maxOrderQty
+          sellOnline
+          tat
+          tatDuration
+          isCouponApplicable
+          cashback
+          isShippable
+          freeProduct
+          shipmentNo
+          tatCity
+          storeType
+        }
+      }
+    }
+  }
+`;
+
+export const CANCEL_PAYMENT = gql`
+  mutation cancelPayment($payment_order_id: String!) {
+    cancelPaymentOrder(payment_order_id: $payment_order_id) {
+      success
+    }
+  }
+`;
+
+export const SERVER_CART_REVIEW_CART = gql`
+  query reviewCartPage($patientId: String!) {
+    reviewCartPage(patientId: $patientId) {
+      statusCode
+      errorMessage
+      cartMessage
+      data {
+        patientId
+        amount {
+          estimatedAmount
+          deliveryCharges
+          isDeliveryFree
+          cartSavings
+          couponSavings
+          totalCashBack
+          cartTotal
+          packagingCharges
+          circleSavings {
+            membershipCashBack
+            circleDelivery
+          }
+        }
+        noOfShipments
+        longitude
+        latitude
+        zipcode
+        city
+        state
+        patientAddressId
+        couponDetails {
+          coupon
+          couponMessage
+          valid
+          textOffer
+          reason
+          circleBenefits
+        }
+        prescriptionDetails {
+          prescriptionImageUrl
+          prismPrescriptionFileId
+          uhid
+          appointmentId
+          meta
+        }
+        prescriptionType
+        subscriptionDetails {
+          userSubscriptionId
+          planId
+          subPlanId
+          type
+          planAmount
+          currentSellingPrice
+          validDuration
+          durationInMonth
+          subscriptionApplied
+        }
+        medicineOrderCartLineItems {
+          sku
+          magentoId
+          magentoStatus
+          name
+          quantity
+          price
+          sellingPrice
+          mou
+          couponDiscountPrice
+          thumbnail
+          isExpress
+          isPrescriptionRequired
+          subcategory
+          typeId
+          urlKey
+          isInStock
+          maxOrderQty
+          sellOnline
+          tat
+          tatDuration
+          isCouponApplicable
+          cashback
+          isShippable
+          freeProduct
+          shipmentNo
+          tatCity
+          storeType
+        }
+      }
+    }
+  }
+`;
+
+export const DELETE_SERVER_CART = gql`
+  mutation deletecart($patientId: String!, $paymentSuccess: Boolean!, $paymentOrderId: String!) {
+    deletecart(
+      patientId: $patientId
+      paymentSuccess: $paymentSuccess
+      paymentOrderId: $paymentOrderId
+    ) {
+      success
+    }
+  }
+`;
+
+export const SAVE_MEDICINE_ORDER_V3 = gql`
+  mutation saveMedicineOrderV3($medicineOrderInput: SaveMedicineOrderV3Input) {
+    saveMedicineOrderV3(medicineOrderInput: $medicineOrderInput) {
+      errorCode
+      errorMessage
+      data {
+        transactionId
+        orders {
+          id
+          orderAutoId
+          estimatedAmount
+        }
+        isSubstitution
+        substitutionTime
+        substitutionMessage
+        isCodEligible
+        codMessage
+        paymentOrderId
+      }
+    }
+  }
+`;
 export const DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS = gql`
-  query getDiagnosticItemRecommendationsByPastOrders ($mobileNumber: String!){
-    getDiagnosticItemRecommendationsByPastOrders(mobileNumber: $mobileNumber){
-      itemsData{
+  query getDiagnosticItemRecommendationsByPastOrders($mobileNumber: String!) {
+    getDiagnosticItemRecommendationsByPastOrders(mobileNumber: $mobileNumber) {
+      itemsData {
         itemId
         itemName
         diagnosticInclusions{
@@ -6846,4 +7515,12 @@ export const DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS = gql`
       }
     }
   }
-`
+`;
+export const INSERT_REFEREE_DATA_TO_REFERRER = gql`
+  mutation addReferralRecord($referralDataInput: createReferralInput!) {
+    addReferralRecord(referralInput: $referralDataInput) {
+      id
+      rewardStatus
+    }
+  }
+`;

@@ -9,11 +9,13 @@ import {
   getCleverTapCircleMemberValues,
   getUserType,
   postCleverTapEvent,
+  replaceVariableInString,
 } from '../../helpers/helperFunctions';
 import moment from 'moment';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { useReferralProgram } from '../ReferralProgramProvider';
 
 export interface ReferralBannerProps extends NavigationScreenProps {
   redirectOnShareReferrer: () => void;
@@ -23,6 +25,7 @@ export interface ReferralBannerProps extends NavigationScreenProps {
 export const ReferralBanner: React.FC<ReferralBannerProps> = (props) => {
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { pharmacyCircleAttributes } = useShoppingCart();
+  const { referralGlobalData, referralMainBanner } = useReferralProgram();
 
   const getReferEarnCommonAttributes = () => {
     return {
@@ -63,10 +66,17 @@ export const ReferralBanner: React.FC<ReferralBannerProps> = (props) => {
       <View style={styles.referEarntextMainContainer}>
         <View style={styles.referEarntextContainer}>
           <Text style={styles.referEarntext}>
-            {string.referAndEarn.referAndEarn}{' '}
-            {string.referAndEarn.currency + string.referAndEarn.referrHC}
+            {replaceVariableInString(referralMainBanner?.bannerTextLineOne, {
+              currency: referralGlobalData?.currency,
+              initialEarnAmount: referralGlobalData?.refereeInitialsEarnAmount,
+            })}
           </Text>
-          <Text style={styles.referEarntextLine2}>{string.referAndEarn.referAndEarnLine2}</Text>
+          <Text style={styles.referEarntextLine2}>
+            {replaceVariableInString(referralMainBanner?.bannerTextLineTwo, {
+              currency: referralGlobalData?.currency,
+              initialEarnAmount: referralGlobalData?.refereeInitialsEarnAmount,
+            })}
+          </Text>
         </View>
         <View style={styles.referEarnearnBtn}>
           <ArrowRight
@@ -110,6 +120,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingLeft: 10,
+    marginTop: 10,
   },
   referEarntextContainer: {
     marginTop: -10,
@@ -123,15 +134,15 @@ const styles = StyleSheet.create({
     marginBottom: -10,
   },
   referEarnMainContainer: {
-    backgroundColor: theme.colors.REFERRAL_WHITE_GRAY,
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    marginHorizontal: 10,
-    marginTop: 10,
-    borderWidth: 1,
-    borderColor: theme.colors.REFERRAL_BORDER_GRAY,
+    paddingHorizontal: 6,
+    paddingTop: 7,
     borderRadius: 5,
     flexDirection: 'row',
     alignItems: 'center',
+    marginVertical: 7,
+    borderWidth: 1,
+    borderColor: theme.colors.LIGHT_GRAY,
+    marginHorizontal: 10,
+    backgroundColor: theme.colors.BLUE_FADED_FLAT,
   },
 });

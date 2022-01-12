@@ -28,7 +28,10 @@ import {
   isIos,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { saveTokenDevice } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  useAppCommonData,
+  appGlobalCache,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   doRequestAndAccessLocation,
   InitiateAppsFlyer,
@@ -45,6 +48,7 @@ import {
   navigateToHome,
   setCleverTapAppsFlyerCustID,
   clevertapEventForAppsflyerDeeplink,
+  updateCallKitNotificationReceivedStatus,
   checkUniversalURL,
   removeNullFromObj,
   filterAppLaunchSoruceAttributesByKey,
@@ -60,6 +64,7 @@ import {
   GET_APPOINTMENT_DATA,
   GET_PROHEALTH_HOSPITAL_BY_SLUG,
   GET_ORDER_INFO,
+  GET_PERSONALIZED_OFFERS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   WebEngageEvents,
@@ -99,6 +104,7 @@ import CleverTap from 'clevertap-react-native';
 import { CleverTapEventName } from '../helpers/CleverTapEvents';
 import analytics from '@react-native-firebase/analytics';
 import appsFlyer from 'react-native-appsflyer';
+import { useReferralProgram } from './ReferralProgramProvider';
 
 (function() {
   /**
@@ -188,6 +194,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const CONST_SPLASH_LOADER = [string.splash.CAPSULE, string.splash.SYRINGE, string.splash.STETHO];
   const [selectedAnimationIndex, setSelectedAnimationIndex] = useState(0);
   const { currentPatient } = useAllCurrentPatients();
+  const {
+    setReferralGlobalData,
+    setReferralMainBanner,
+    setShareReferrerLinkData,
+    setYourRewardsScreenData,
+    setCongratulationPageData,
+    setRefererTermsAndConditionData,
+    setRefererFAQsData,
+  } = useReferralProgram();
 
   const { setPhrNotificationData } = useAppCommonData();
 
@@ -211,7 +226,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     DeviceEventEmitter.addListener('accept', (params) => {
       if (getCurrentRoute() !== AppRoutes.ChatRoom) {
         voipCallType.current = params.call_type;
-        callPermissions();
+        callPermissions(() => {}, undefined, currentPatient);
         getAppointmentDataAndNavigate(params.appointment_id, true);
       }
     });
@@ -222,6 +237,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     });
     AppState.addEventListener('change', _handleAppStateChange);
     checkForVersionUpdate();
+    getAllReferrerDataOnInitialsLoad();
+    getOffers();
 
     try {
       PrefetchAPIReuqest({
@@ -273,6 +290,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       analytics().setUserProperty('ct_objectId', `${res}`);
     });
   };
+
+  // Avoid Red screen Error Alerts
+  console.error = (error: any) => error.apply;
 
   const getDeviceToken = async () => {
     const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
@@ -337,6 +357,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       // on receive voip push
       const payload = notification && notification.getData();
       if (payload && payload.appointmentId) {
+        updateCallKitNotificationReceivedStatus(payload.appointmentId);
         voipAppointmentId.current = notification.getData().appointmentId;
         voipPatientId.current = notification.getData().patientId;
         voipCallType.current = notification.getData().isVideo ? 'Video' : 'Audio';
@@ -829,7 +850,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             text: 'CANCEL',
             onPress: () => {
               hideAphAlert!();
-              props.navigation.navigate(AppRoutes.ConsultRoom);
+              props.navigation.navigate(AppRoutes.HomeScreen);
             },
             type: 'white-button',
           },
@@ -926,12 +947,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setSavePatientDetails,
     setCovidVaccineCta,
     setLoginSection,
+    setHomeBannerOfferSection,
     setCovidVaccineCtaV2,
     setCartBankOffer,
     setUploadPrescriptionOptions,
     setExpectCallText,
     setNonCartTatText,
     setNonCartDeliveryText,
+    setOffersList,
+    setOffersListLoading,
+    setRecentGlobalSearchList,
     setSelectedPrescriptionType,
   } = useAppCommonData();
   const {
@@ -1062,6 +1087,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'Login_Section_QA',
       PROD: 'Login_Section',
     },
+    home_banner_offer_template: {
+      QA: 'home_banner_offer_template',
+      PROD: 'home_banner_offer_template',
+    },
     Covid_Vaccine_Cta_Key_V2: {
       QA: 'Covid_Vaccine_CTA_V3_QA',
       PROD: 'Covid_Vaccine_CTA_V3',
@@ -1141,6 +1170,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     Vacc_City_Rule: {
       QA: 'Vacc_City_Rule_QA',
       PROD: 'Vacc_City_Rule_Prod',
+    },
+    Vacc_Show_Booster: {
+      QA: 'Vacc_Show_Booster_QA',
+      PROD: 'Vacc_Show_Booster_Prod',
     },
     Enable_Diagnostics_COD: {
       QA: 'QA_Enable_Diagnostics_COD',
@@ -1238,6 +1271,22 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Free_Consult_Message',
       PROD: 'Free_Consult_Message',
     },
+    Payment_Processing_Timer: {
+      QA: 'Payment_Processing_Timer_QA',
+      PROD: 'Payment_Processing_Timer_Prod',
+    },
+    Show_COD_While_Retrying_Pharma_Payment: {
+      QA: 'Show_COD_While_Retrying_Pharma_Payment_QA',
+      PROD: 'Show_COD_While_Retrying_Pharma_Payment_Prod',
+    },
+    Show_COD_While_Retrying_Diag_Payment: {
+      QA: 'Show_COD_While_Retrying_Diag_Payment_QA',
+      PROD: 'Show_COD_While_Retrying_Diag_Payment_Prod',
+    },
+    WhatsApp_To_Order: {
+      QA: 'QA_WhatsApp_To_Order',
+      PROD: 'WhatsApp_To_Order',
+    },
     Diagnostics_Nudge_Message_Condition: {
       QA: 'QA_Diagnostics_Show_Nudge_Message',
       PROD: 'Diagnostics_Show_Nudge_Message',
@@ -1249,6 +1298,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     Diagnostics_Widget_Title: {
       QA: 'QA_Diagnostics_Widget_Title',
       PROD: 'Diagnostics_Widget_Title',
+    },
+    DeliveryIn_TAT_Text: {
+      QA: 'DeliveryIn_TAT_Text_QA',
+      PROD: 'DeliveryIn_TAT_Text_PROD',
     },
     Radiology_Url: {
       QA: 'QA_Radiology_Url',
@@ -1265,6 +1318,38 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     Diagnostics_UploadPrescription_Config: {
       QA: 'QA_Diagnostics_UploadPrescription',
       PROD: 'Diagnostics_UploadPrescription',
+    },
+    REFERRER_GLOBAL_CONTENT: {
+      QA: 'QA_REFERRER_GLOBAL_CONTENT',
+      PROD: 'REFERRER_GLOBAL_CONTENT',
+    },
+    REFERRER_MAIN_BANNER_CONTENT: {
+      QA: 'QA_REFERRER_MAIN_BANNER_CONTENT',
+      PROD: 'REFERRER_MAIN_BANNER_CONTENT',
+    },
+    SHARE_REFERRER_LINK_CONENT: {
+      QA: 'QA_SHARE_REFERRER_LINK_CONENT',
+      PROD: 'SHARE_REFERRER_LINK_CONENT',
+    },
+    YOUR_REWARD_SCREEN_DATA_CONTENT: {
+      QA: 'QA_YOUR_REWARD_SCREEN_DATA_CONTENT',
+      PROD: 'YOUR_REWARD_SCREEN_DATA_CONTENT',
+    },
+    REFERRER_CONGRATULATIONS_PAGE: {
+      QA: 'QA_REFERRER_CONGRATULATIONS_PAGE',
+      PROD: 'REFERRER_CONGRATULATIONS_PAGE',
+    },
+    REFERRER_TERMS_AND_CONDITION_DATA: {
+      QA: 'QA_REFERRER_TERMS_AND_CONDITION_DATA',
+      PROD: 'REFERRER_TERMS_AND_CONDITION_DATA',
+    },
+    REFERRER_FAQS_DATA: {
+      QA: 'QA_REFERRER_FAQS_DATA',
+      PROD: 'REFERRER_FAQS_DATA',
+    },
+    DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER: {
+      QA: 'QA_Diagnostic_Review_Disclaimer',
+      PROD: 'Diagnostic_Review_Disclaimer',
     },
   };
 
@@ -1305,6 +1390,40 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     updateAppConfig(appConfigKey, value);
   };
 
+  const getOffers = async () => {
+    setOffersListLoading && setOffersListLoading(true);
+    const authToken: string = await validateAndReturnAuthToken();
+    const apolloClient = buildApolloClient(authToken);
+    try {
+      const res = await apolloClient.query({
+        query: GET_PERSONALIZED_OFFERS,
+        fetchPolicy: 'no-cache',
+      });
+      const offers = res?.data?.getPersonalizedOffers?.response?.personalized_data?.offers_for_you;
+      const recent =
+        res?.data?.getPersonalizedOffers?.response?.personalized_data?.global_search_text
+          ?.search_text;
+
+      if (offers && offers.length > 0) {
+        setOffersList && setOffersList(offers);
+        appGlobalCache.set('offersList', JSON.stringify(offers));
+      } else if (offers && offers.length === 0) {
+        appGlobalCache.remove('offersList');
+      }
+
+      if (recent && recent.length > 0) {
+        setRecentGlobalSearchList && setRecentGlobalSearchList(recent.slice(0, 4));
+        appGlobalCache.set('recentList', JSON.stringify(recent));
+      } else if (recent && recent.length === 0) {
+        appGlobalCache.remove('recentList');
+      }
+
+      setOffersListLoading && setOffersListLoading(false);
+    } catch (error) {
+      setOffersListLoading && setOffersListLoading(false);
+    }
+  };
+
   const checkForVersionUpdate = async () => {
     try {
       // Note: remote config values will be cached for the specified duration in development mode, update below value if necessary.
@@ -1340,6 +1459,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.LOGIN_SECTION
       );
       loginSection && setLoginSection!(loginSection);
+
+      const homeBannerOfferSection = getRemoteConfigValue(
+        'home_banner_offer_template',
+        (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.LOGIN_SECTION
+      );
+      homeBannerOfferSection && setHomeBannerOfferSection!(homeBannerOfferSection);
 
       const needHelpReturnPharmaOrderSuccessMessage = getRemoteConfigValue(
         'Need_Help_Return_Pharma_Order_Success_Message',
@@ -1409,6 +1534,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       setAppConfig('Pharmacy_Packaging_Charges', 'PACKAGING_CHARGES', (key) =>
         config.getNumber(key)
       );
+
+      setAppConfig('Vacc_Show_Booster', 'Vacc_Show_Booster', (key) => config.getBoolean(key));
 
       setAppConfig('Doctor_Partner_Text', 'DOCTOR_PARTNER_TEXT', (key) => config.getString(key));
 
@@ -1541,6 +1668,21 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       setAppConfig('Consult_Free_Book_Key', 'Consult_Free_Book_Key', (key) =>
         config.getString(key)
       );
+      setAppConfig('Payment_Processing_Timer', 'Payment_Processing_Timer', (key) =>
+        config.getString(key)
+      );
+      setAppConfig(
+        'Show_COD_While_Retrying_Pharma_Payment',
+        'Show_COD_While_Retrying_Pharma_Payment',
+        (key) => config.getBoolean(key)
+      );
+      setAppConfig(
+        'Show_COD_While_Retrying_Diag_Payment',
+        'Show_COD_While_Retrying_Diag_Payment',
+        (key) => config.getBoolean(key)
+      );
+
+      setAppConfig('DeliveryIn_TAT_Text', 'DeliveryIn_TAT_Text', (key) => config.getString(key));
 
       const nudgeMessagePharmacyHome = getRemoteConfigValue(
         'Nudge_Message_Pharmacy_Home',
@@ -1596,6 +1738,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
 
       setAppConfig(
+        'WhatsApp_To_Order',
+        'WHATSAPP_TO_ORDER',
+        (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.WHATSAPP_TO_ORDER
+      );
+
+      setAppConfig(
         'Diagnostics_City_Level_Call_To_Order',
         'DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER',
         (key) =>
@@ -1645,6 +1793,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           AppConfig.Configuration.DIAGNOSTICS_UPLOAD_PRESCRIPTION
       );
 
+      setAppConfig(
+        'DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER',
+        'DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER_TEXT',
+        (key) => config.getString(key)
+      );
+
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';
       const appVersion = coerce(isIOS ? iOS_Version : Android_Version)?.version;
@@ -1664,6 +1818,61 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     } catch (error) {
       CommonBugFender('SplashScreen - Error processing remote config', error);
     }
+  };
+
+  const getAllReferrerDataOnInitialsLoad = async () => {
+    const minimumFetchIntervalMillis = __DEV__ ? 0 : 0;
+    await remoteConfig().setConfigSettings({ minimumFetchIntervalMillis });
+    await remoteConfig().fetchAndActivate();
+    const config = remoteConfig();
+    const globalData = getRemoteConfigValue(
+      'REFERRER_GLOBAL_CONTENT',
+      (key) =>
+        (config.getString(key) && JSON.parse(config.getString(key))) || string.refAndEarn.global
+    );
+    setReferralGlobalData?.(globalData);
+    const mainBannerContent = getRemoteConfigValue(
+      'REFERRER_MAIN_BANNER_CONTENT',
+      (key) =>
+        (config.getString(key) && JSON.parse(config.getString(key))) ||
+        string.refAndEarn.referralMainBanner
+    );
+    setReferralMainBanner?.(mainBannerContent);
+    const shareReferrerLinkScreenContent = getRemoteConfigValue(
+      'SHARE_REFERRER_LINK_CONENT',
+      (key) =>
+        (config.getString(key) && JSON.parse(config.getString(key))) ||
+        string.refAndEarn.shareReferrerLink
+    );
+    setShareReferrerLinkData?.(shareReferrerLinkScreenContent);
+    const yourRewardScreenContent = getRemoteConfigValue(
+      'YOUR_REWARD_SCREEN_DATA_CONTENT',
+      (key) =>
+        (config.getString(key) && JSON.parse(config.getString(key))) ||
+        string.refAndEarn.yourRewards
+    );
+    setYourRewardsScreenData?.(yourRewardScreenContent);
+    const congratulationsScreenContent = getRemoteConfigValue(
+      'REFERRER_CONGRATULATIONS_PAGE',
+      (key) =>
+        (config.getString(key) && JSON.parse(config.getString(key))) ||
+        string.refAndEarn.congratulationPage
+    );
+    setCongratulationPageData?.(congratulationsScreenContent);
+    const termsAndConditonsScreenContent = getRemoteConfigValue(
+      'REFERRER_TERMS_AND_CONDITION_DATA',
+      (key) =>
+        (config.getString(key) && JSON.parse(config.getString(key))) ||
+        string.refAndEarn.refererTermsAndCondition
+    );
+    setRefererTermsAndConditionData?.(termsAndConditonsScreenContent);
+    const faqScreenContent = getRemoteConfigValue(
+      'REFERRER_FAQS_DATA',
+      (key) =>
+        (config.getString(key) && JSON.parse(config.getString(key))) ||
+        string.refAndEarn.refererFAQs
+    );
+    setRefererFAQsData?.(faqScreenContent);
   };
 
   const showUpdateAlert = (mandatory: boolean) => {

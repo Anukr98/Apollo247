@@ -102,15 +102,10 @@ export const TabBar = createBottomTabNavigator(routeConfigMap, {
     inactiveTintColor: theme.colors.TAB_BAR_INACTIVE_TINT_COLOR,
     activeBackgroundColor: theme.colors.LIGHT_BLUE,
     style: {
-      borderTopColor: 'transparent',
-      shadowColor: 'black',
-      shadowOffset: { width: 0, height: -10 },
-      shadowOpacity: 0.2,
-      shadowRadius: 10,
-      elevation: 10,
-      borderTopWidth: 0,
-      top: 1,
       height: 57,
+      borderTopColor: '#D4D4D4',
+      borderTopWidth: 0.5,
+      backgroundColor: '#F8F8F8',
     },
     labelStyle: {
       borderTopColor: 'transparent',

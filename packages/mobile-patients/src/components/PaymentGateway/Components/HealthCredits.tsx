@@ -27,8 +27,15 @@ export const HealthCredits: React.FC<HealthCreditsProps> = (props) => {
   const renderOneApollo = () => {
     return (
       <View style={styles.subcontainer}>
-        <OneApollo style={{ height: 32, width: 42 }} />
-        <Text style={styles.hcs}>Available Health Credits</Text>
+        <OneApollo style={{ height: 28, width: 35 }} />
+        <View style={{ flexWrap: 'wrap' }}>
+          <Text style={styles.hcs}>
+            {HCSelected && amount != 0
+              ? `₹${credits} Health Credits Applied !`
+              : 'Available Health Credits'}
+          </Text>
+          {renderMsg()}
+        </View>
       </View>
     );
   };
@@ -36,10 +43,18 @@ export const HealthCredits: React.FC<HealthCreditsProps> = (props) => {
   const renderHcs = () => {
     return (
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <Text style={{ ...styles.hcs, marginRight: 8 }}>₹{credits}</Text>
+        {(!HCSelected || amount == 0) && (
+          <Text style={{ ...styles.hcs, marginRight: 8 }}>₹{credits}</Text>
+        )}
         {HCSelected ? <CheckIcon /> : <UnCheckIcon />}
       </View>
     );
+  };
+
+  const renderMsg = () => {
+    return HCSelected && amount != 0 ? (
+      <Text style={styles.hcMsg}>{`Now pay remaining ₹${amount} with other \npayment method`}</Text>
+    ) : null;
   };
 
   const renderPlaceorder = () => {
@@ -59,13 +74,20 @@ export const HealthCredits: React.FC<HealthCreditsProps> = (props) => {
     return (
       <View>
         <TouchableOpacity
-          style={styles.ChildComponent}
+          style={{
+            ...styles.ChildComponent,
+            backgroundColor: amount != 0 && HCSelected ? '#EBFFF8' : '#FAFEFF',
+            borderColor: amount != 0 && HCSelected ? '#50B08F' : '#D4D4D4',
+            paddingVertical: amount != 0 && HCSelected ? 12 : 15,
+          }}
           onPress={() => onPressHCoption(!HCSelected)}
         >
-          {renderOneApollo()}
-          {renderHcs()}
+          <View style={{ ...styles.subcontainer, justifyContent: 'space-between' }}>
+            {renderOneApollo()}
+            {renderHcs()}
+          </View>
+          {amount == 0 && burnHc && renderPlaceorder()}
         </TouchableOpacity>
-        {amount == 0 && burnHc && renderPlaceorder()}
       </View>
     );
   };
@@ -80,26 +102,25 @@ export const HealthCredits: React.FC<HealthCreditsProps> = (props) => {
 
 const styles = StyleSheet.create({
   header: {
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginHorizontal: 20,
-    flexDirection: 'row',
-    paddingBottom: 10,
-    marginTop: 20,
-    borderColor: 'rgba(0,0,0,0.1)',
+    marginHorizontal: 16,
+    paddingBottom: 12,
+    marginTop: 24,
   },
   heading: {
-    ...theme.fonts.IBMPlexSansBold(13),
-    lineHeight: 17,
+    ...theme.fonts.IBMPlexSansSemiBold(12),
+    lineHeight: 18,
     color: '#01475B',
+    marginLeft: 4,
   },
   ChildComponent: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 15,
+    flex: 1,
+    backgroundColor: '#FAFEFF',
+    marginHorizontal: 16,
+    borderWidth: 1,
+    borderColor: '#D4D4D4',
+    borderRadius: 4,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
   },
   subcontainer: {
     flexDirection: 'row',
@@ -111,14 +132,20 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     color: '#01475B',
   },
+  hcMsg: {
+    ...theme.fonts.IBMPlexSansRegular(12),
+    lineHeight: 16,
+    color: '#01475B',
+    marginLeft: 10,
+    marginTop: 4,
+    alignItems: 'flex-start',
+  },
   place: {
     fontSize: 14,
     lineHeight: 20,
     marginVertical: 10,
   },
   subcontainer2: {
-    paddingBottom: 16,
-    paddingHorizontal: 20,
-    backgroundColor: '#fff',
+    marginTop: 15,
   },
 });

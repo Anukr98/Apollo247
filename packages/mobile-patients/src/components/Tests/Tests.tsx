@@ -61,14 +61,16 @@ import {
   storagePermissions,
   getUserType,
   getCleverTapCircleMemberValues,
+  getAge,
+  postCleverTapEvent,
   showDiagnosticCTA,
   calculateDiagnosticCartItems,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Dimensions,
@@ -91,7 +93,7 @@ import {
   Animated,
 } from 'react-native';
 import { Image } from 'react-native-elements';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, NavigationEvents } from 'react-navigation';
 import {
   CALL_TO_ORDER_CTA_PAGE_ID,
   DIAGNOSTIC_ORDER_STATUS,
@@ -181,6 +183,8 @@ import { getUniqueId } from 'react-native-device-info';
 import {
   DiagnosticHomePageSource,
   DIAGNOSTICS_ITEM_TYPE,
+  CleverTapEvents,
+  CleverTapEventName,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 import DocumentPicker, { DocumentPickerResponse } from 'react-native-document-picker';
@@ -253,7 +257,11 @@ export interface TestsProps
   }> {}
 
 export const Tests: React.FC<TestsProps> = (props) => {
-  const { setAddresses: setMedAddresses, pharmacyCircleAttributes } = useShoppingCart();
+  const {
+    setAddresses: setMedAddresses,
+    pharmacyCircleAttributes,
+    circleSubscriptionId,
+  } = useShoppingCart();
   const {
     cartItems,
     isDiagnosticCircleSubscription,
@@ -268,7 +276,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     patientCartItems,
   } = useDiagnosticsCart();
   const {
-    cartItems: shopCartItems,
+    serverCartItems: shopCartItems,
     setCircleSubscriptionId,
     setHdfcSubscriptionId,
     setIsCircleSubscription,
@@ -292,15 +300,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
     bannerData,
     pharmacyLocation,
     notificationCount,
+    setIsRenew,
   } = useAppCommonData();
 
   type Address = savePatientAddress_savePatientAddress_patientAddress;
+  const { buildApolloClient, authToken } = useAuth();
   const client = useApolloClient();
   const movedFrom = props.navigation.getParam('movedFrom');
   const homeScreenAttributes = props.navigation.getParam('homeScreenAttributes');
   const phyPrescriptionUploaded = props.navigation.getParam('phyPrescriptionUploaded') || [];
   const ePresscriptionUploaded = props.navigation.getParam('ePresscriptionUploaded') || [];
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+  const apolloClientWithAuth = buildApolloClient(authToken);
 
   const hdfc_values = string.Hdfc_values;
   const [loading, setLoading] = useState<boolean>(false);
@@ -351,6 +362,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [pastOrderRecommendationShimmer, setPastOrderRecommendationShimmer] = useState<boolean>(
     false
   );
+  const scrollCount = useRef<number>(0);
   const [pastOrderRecommendations, setPastOrderRecommendations] = useState([] as any);
   const getCTADetails = showDiagnosticCTA(CALL_TO_ORDER_CTA_PAGE_ID.HOME, cityId);
   const hasLocation = locationDetails || diagnosticLocation || pharmacyLocation || defaultAddress;
@@ -558,7 +570,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setPatientOrdersShimmer(true);
     try {
       let openOrdersResponse: any = await getDiagnosticOpenOrders(
-        client,
+        apolloClientWithAuth,
         currentPatient?.mobileNumber,
         0,
         3
@@ -582,7 +594,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setPatientOrdersShimmer(true);
     try {
       let closedOrdersResponse: any = await getDiagnosticClosedOrders(
-        client,
+        apolloClientWithAuth,
         currentPatient?.mobileNumber,
         0,
         3
@@ -618,7 +630,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     try {
       setLoading?.(true);
       const getOrdersResponse = await getDiagnosticsOrder(
-        client,
+        apolloClientWithAuth,
         currentPatient.mobileNumber,
         1,
         currentOffset
@@ -1160,18 +1172,20 @@ export const Tests: React.FC<TestsProps> = (props) => {
       });
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
       if (data) {
-        if (data?.APOLLO?.[0]._id && data?.APOLLO?.[0]?.status !== 'disabled') {
-          AsyncStorage.setItem('circleSubscriptionId', data?.APOLLO?.[0]._id);
-          setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
+        const circleData = data?.APOLLO?.[0];
+        if (circleData._id && circleData?.status !== 'disabled') {
+          AsyncStorage.setItem('circleSubscriptionId', circleData._id);
+          setCircleSubscriptionId && setCircleSubscriptionId(circleData._id);
           setIsCircleSubscription && setIsCircleSubscription(true);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
           const planValidity = {
-            startDate: data?.APOLLO?.[0]?.start_date,
-            endDate: data?.APOLLO?.[0]?.end_date,
-            plan_id: data?.APOLLO?.[0]?.plan_id,
-            source_identifier: data?.APOLLO?.[0]?.source_meta_data?.source_identifier,
+            startDate: circleData?.start_date,
+            endDate: circleData?.end_date,
+            plan_id: circleData?.plan_id,
+            source_identifier: circleData?.source_meta_data?.source_identifier,
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
+          setIsRenew && setIsRenew(!!circleData?.renewNow);
         } else {
           setCircleSubscriptionId && setCircleSubscriptionId('');
           setIsCircleSubscription && setIsCircleSubscription(false);
@@ -1419,7 +1433,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
       18
     )} ${!!diagnosticLocation?.pincode ? diagnosticLocation?.pincode : ''}`;
     const hasDiagnosticLocationUndefinedValues =
-      !!diagnosticLocation?.state && !!diagnosticLocation?.state && !!diagnosticLocation?.pincode;
+      !!diagnosticLocation?.state || !!diagnosticLocation?.city || !!diagnosticLocation?.pincode;
+
     return (
       <View style={{ paddingLeft: 15, marginTop: 3.5 }}>
         {hasLocation ? (
@@ -2638,9 +2653,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderPastOrderRecommendations = (drupalRecommendations: any) => {
+    const topTenPastRecommendations =
+      pastOrderRecommendations?.length > 10
+        ? pastOrderRecommendations?.slice(0, 10)
+        : pastOrderRecommendations;
+
     const isPricesAvailable =
-      pastOrderRecommendations?.length > 0 &&
-      pastOrderRecommendations.find((item: any) => item?.diagnosticPricing);
+      topTenPastRecommendations?.length > 0 &&
+      topTenPastRecommendations.find((item: any) => item?.diagnosticPricing);
     const showViewAll = true;
     const widgetName =
       drupalRecommendations?.[0]?.diagnosticWidgetTitle! ||
@@ -2694,8 +2714,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
               renderDiagnosticWidgetShimmer(false) //load package card
             ) : (
               <ItemCard
-                data={pastOrderRecommendations}
-                diagnosticWidgetData={pastOrderRecommendations}
+                data={topTenPastRecommendations}
+                diagnosticWidgetData={topTenPastRecommendations}
                 isPriceAvailable={priceAvailable}
                 isCircleSubscribed={isDiagnosticCircleSubscription}
                 isServiceable={isDiagnosticLocationServiceable}
@@ -2814,8 +2834,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         currentPatient,
         getUserType(allCurrentPatients),
         'Dignostic Page',
-        circleMemberAtt,
-        deviceId
+        !!circleSubscriptionId ? 'True' : 'False'
       );
     };
 
@@ -3148,8 +3167,31 @@ export const Tests: React.FC<TestsProps> = (props) => {
     ) : null;
   };
 
+  const postScrollScreenEvent = () => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.SCREEN_SCROLLED] = {
+      User_Type: getUserType(allCurrentPatients),
+      'Patient Name': currentPatient?.firstName,
+      'Patient UHID': currentPatient?.uhid,
+      'Patient age': getAge(currentPatient?.dateOfBirth),
+      'Circle Member': 'circleSubscriptionId' ? 'True' : 'False',
+      'Customer ID': currentPatient?.id,
+      'Patient gender': currentPatient?.gender,
+      'Mobile number': currentPatient?.mobileNumber,
+      'Page name': 'Diagnostic page',
+      'Nav src': homeScreenAttributes?.Source,
+      Scrolls: scrollCount.current,
+    };
+    postCleverTapEvent(CleverTapEventName.SCREEN_SCROLLED, eventAttributes);
+  };
+
   return (
     <View style={{ flex: 1 }}>
+      <NavigationEvents
+        onDidFocus={() => {
+          scrollCount.current = 0;
+        }}
+        onDidBlur={postScrollScreenEvent}
+      />
       <SafeAreaView style={{ ...viewStyles.container }}>
         <>
           <View style={{ backgroundColor: colors.WHITE }}>
@@ -3208,8 +3250,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
               keyboardShouldPersistTaps="always"
               showsVerticalScrollIndicator={false}
               nestedScrollEnabled={true}
-              onScroll={() => {
+              onScroll={(event) => {
                 setSlideCallToOrder(true);
+                //increments only for down scroll
+                const currentOffset = event.nativeEvent.contentOffset?.y;
+                currentOffset > (this.offset || 0) && (scrollCount.current += 1);
+                this.offset = currentOffset;
               }}
             >
               {renderSections()}

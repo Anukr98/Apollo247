@@ -184,6 +184,7 @@ import {
   fileToBase64,
   getAsyncStorageValues,
   formatUrl,
+  updateCallKitNotificationReceivedStatus,
 } from '../../helpers/helperFunctions';
 import { mimeType } from '../../helpers/mimeType';
 import { FeedbackPopup } from '../FeedbackPopup';
@@ -237,6 +238,8 @@ import {
   createVonageSessionToken,
   createVonageSessionTokenVariables,
 } from '../../graphql/types/createVonageSessionToken';
+import InAppReview from 'react-native-in-app-review';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 interface OpentokStreamObject {
   connection: {
@@ -470,7 +473,7 @@ const styles = StyleSheet.create({
     width: 65,
     height: 60,
     position: 'absolute',
-    zIndex: 900,
+    zIndex: 3,
     left: 5,
     bottom: 20,
     alignItems: 'center',
@@ -1248,12 +1251,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     addMultipleCartItems: addMultipleTestCartItems,
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
   } = useDiagnosticsCart();
-  const {
-    setEPrescriptions,
-    addMultipleCartItems,
-    circleSubPlanId,
-    circleSubscriptionId,
-  } = useShoppingCart();
+  const { circleSubPlanId, circleSubscriptionId } = useShoppingCart();
+  const { uploadEPrescriptionsToServerCart } = useServerCart();
   const [name, setname] = useState<string>('');
   const [showRescheduleCancel, setShowRescheduleCancel] = useState<boolean>(false);
   const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
@@ -1433,14 +1432,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const typingThrottleTime = 200; //0.2 seconds
   const typingClearTime = 1000; //1 seconds
   const clearTimerId = useRef<NodeJS.Timeout>();
+  const [isVideoCallFeedback, setIsVideoCallFeedback] = useState<boolean>(false);
+  const [isCallEnded, setIsCallEnded] = useState<boolean>(false);
 
-  let cancelAppointmentTitle = '';
-  if (appointmentDiffMin >= 15) {
-    cancelAppointmentTitle =
-      "Since you're cancelling 15 minutes before your appointment, we'll issue you a full refund!";
-  } else {
-    cancelAppointmentTitle = 'We regret the inconvenience caused. We’ll issue you a full refund.';
-  }
+  let cancelAppointmentTitle = `${string.common.cancelAppointmentBody} ${
+    appointmentData?.appointmentType === APPOINTMENT_TYPE.PHYSICAL ? 'Physical' : 'Online'
+  } Appointment ${appointmentData?.displayId}. A full refund will be issued.`;
   const isAppointmentStartsInFifteenMin = appointmentDiffMin <= 15 && appointmentDiffMin > 0;
   const isAppointmentExceedsTenMin = appointmentDiffMin <= 0 && appointmentDiffMin > -10;
   type messageType = 'PDF' | 'Text' | 'Image';
@@ -1567,6 +1564,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setHideStatusBar(false);
   };
 
+  useEffect(() => {
+    if (isCallEnded) {
+      videoPerfectionfeedback(callDuration);
+    }
+  }, [isCallEnded]);
+
   const postAppointmentWEGEvent = (
     type:
       | WebEngageEventName.COMPLETED_AUTOMATED_QUESTIONS
@@ -1592,7 +1595,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       | WebEngageEvents[WebEngageEventName.VIEW_PRESCRIPTION_IN_CONSULT_DETAILS]
       | WebEngageEvents[WebEngageEventName.PATIENT_JOINED_CONSULT]
       | WebEngageEvents[WebEngageEventName.PATIENT_ENDED_CONSULT] = {
-      'Doctor Name': g(data, 'doctorInfo', 'fullName')!,
+      'Doctor Name': g(data, 'doctorInfo', 'displayName')!,
       'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
       'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,
       'Doctor Category': g(data, 'doctorInfo', 'doctorType')!,
@@ -1675,7 +1678,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
       'Patient Gender': g(currentPatient, 'gender'),
-      'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName')!,
+      'Doctor Name': g(appointmentData, 'doctorInfo', 'displayName')!,
       'Doctor ID': doctorId,
       'Speciality name': g(appointmentData, 'doctorInfo', 'specialty', 'name')!,
       'Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id')!,
@@ -1782,7 +1785,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       const eventAttributes:
         | WebEngageEvents[WebEngageEventName.CHAT_WITH_DOCTOR]
         | WebEngageEvents[WebEngageEventName.PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT] = {
-        'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName')!,
+        'Doctor Name': g(appointmentData, 'doctorInfo', 'displayName')!,
         'Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id')!,
         'Speciality Name': g(appointmentData, 'doctorInfo', 'specialty', 'name')!,
         'Doctor Category': g(appointmentData, 'doctorInfo', 'doctorType')!,
@@ -1844,7 +1847,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       'Appointment Date time': moment(g(appointmentData, 'appointmentDateTime')).toDate(),
       'Appointment display ID': g(appointmentData, 'displayId')!,
       'Appointment ID': g(appointmentData, 'id')!,
-      'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName')!,
+      'Doctor Name': g(appointmentData, 'doctorInfo', 'displayName')!,
       'Speciality Name': g(appointmentData, 'doctorInfo', 'specialty', 'name')!,
       'Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id')!,
       'Doctor Type': g(appointmentData, 'doctorInfo', 'doctorType')!,
@@ -1986,7 +1989,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   useEffect(() => {
     if (!disableChat && status.current !== STATUS.COMPLETED && isInFuture && !fromIncomingCall) {
-      callPermissions();
+      callPermissions(() => {}, 'Consult Chat Screen', currentPatient);
     }
   }, []);
 
@@ -2149,6 +2152,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       // on receive voip push
       const payload = notification && notification.getData();
       if (payload && payload.appointmentId) {
+        updateCallKitNotificationReceivedStatus(payload.appointmentId);
         isAudio.current = notification.getData().isVideo ? false : true;
         callKitAppointmentId.current = payload.appointmentId;
       }
@@ -2233,16 +2237,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (callType && !fromIncomingCall) {
       AsyncStorage.setItem('callDisconnected', 'false');
 
-      callPermissions(() => {
-        if (callType === 'VIDEO') {
-          isVoipCall || fromIncomingCall ? setOnSubscribe(false) : setOnSubscribe(true);
-          isAudio.current = false;
-        } else if (callType === 'AUDIO') {
-          isVoipCall || fromIncomingCall ? setOnSubscribe(false) : setOnSubscribe(true);
-          isAudio.current = true;
-          callhandelBack = false;
-        }
-      });
+      callPermissions(
+        () => {
+          if (callType === 'VIDEO') {
+            isVoipCall || fromIncomingCall ? setOnSubscribe(false) : setOnSubscribe(true);
+            isAudio.current = false;
+          } else if (callType === 'AUDIO') {
+            isVoipCall || fromIncomingCall ? setOnSubscribe(false) : setOnSubscribe(true);
+            isAudio.current = true;
+            callhandelBack = false;
+          }
+        },
+        'Consult Chat Screen',
+        currentPatient
+      );
     }
     if (prescription) {
       // write code for opening prescripiton
@@ -2825,39 +2833,43 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     } else if (nextAppState === 'active') {
       const permissionSettings: string | null = await AsyncStorage.getItem('permissionHandler');
       if (permissionSettings && permissionSettings === 'true') {
-        callPermissions(() => {
-          if (callType) {
-            if (callType === 'VIDEO') {
-              setOnSubscribe(true);
-              isAudio.current = false;
-            } else if (callType === 'AUDIO') {
-              setOnSubscribe(true);
-              isAudio.current = true;
-              callhandelBack = false;
-            }
-            !jrDoctorJoined.current && setDoctorJoinedChat && setDoctorJoinedChat(true);
-          } else {
-            if (onSubscribe) {
-              setOnSubscribe(false);
-              setCallAccepted(true);
-              setHideStatusBar(true);
-              setChatReceived(false);
-              Keyboard.dismiss();
-              setConvertVideo(false);
-              setDowngradeToAudio(false);
-              setCallerAudio(true);
-              setCallerVideo(true);
-              changeVideoStyles();
-              setDropdownVisible(false);
-              if (token) {
-                PublishAudioVideo();
-              } else {
-                makeUpdateAppointmentCall.current = true;
-                APICallAgain(true);
+        callPermissions(
+          () => {
+            if (callType) {
+              if (callType === 'VIDEO') {
+                setOnSubscribe(true);
+                isAudio.current = false;
+              } else if (callType === 'AUDIO') {
+                setOnSubscribe(true);
+                isAudio.current = true;
+                callhandelBack = false;
+              }
+              !jrDoctorJoined.current && setDoctorJoinedChat && setDoctorJoinedChat(true);
+            } else {
+              if (onSubscribe) {
+                setOnSubscribe(false);
+                setCallAccepted(true);
+                setHideStatusBar(true);
+                setChatReceived(false);
+                Keyboard.dismiss();
+                setConvertVideo(false);
+                setDowngradeToAudio(false);
+                setCallerAudio(true);
+                setCallerVideo(true);
+                changeVideoStyles();
+                setDropdownVisible(false);
+                if (token) {
+                  PublishAudioVideo();
+                } else {
+                  makeUpdateAppointmentCall.current = true;
+                  APICallAgain(true);
+                }
               }
             }
-          }
-        });
+          },
+          'Consult Chat Screen',
+          currentPatient
+        );
         AsyncStorage.removeItem('permissionHandler');
       }
     }
@@ -3292,7 +3304,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const postOpentokError = (errorName: string, errorData: any) => {
     const eventAttributes: CleverTapEvents[CleverTapEventName.OPENTOK_ERROR_RECEIVED] = {
       'Doctor ID': g(appointmentData, 'doctorInfo', 'id')!,
-      'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName'),
+      'Doctor Name': g(appointmentData, 'doctorInfo', 'displayName'),
       'Doctor Number': g(appointmentData, 'doctorInfo', 'mobileNumber'),
       'Doctor Type': g(appointmentData, 'doctorInfo', 'doctorType'),
       'Doctor Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id'),
@@ -3329,7 +3341,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const postOpentokEvent = (eventName: string, eventData: any) => {
     const eventAttributes: CleverTapEvents[CleverTapEventName.OPENTOK_EVENT_RECEIVED] = {
       'Doctor ID': g(appointmentData, 'doctorInfo', 'id')!,
-      'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName'),
+      'Doctor Name': g(appointmentData, 'doctorInfo', 'displayName'),
       'Doctor Number': g(appointmentData, 'doctorInfo', 'mobileNumber'),
       'Doctor Type': g(appointmentData, 'doctorInfo', 'doctorType'),
       'Doctor Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id'),
@@ -3368,6 +3380,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     currentCallRetryAttempt.current = 1;
   };
 
+  const videoPerfectionfeedback = (duration: number) => {
+    if (duration && duration >= 300) {
+      appReviewAndRating();
+    } else {
+      setIsVideoCallFeedback(true);
+      setShowFeedback(true);
+    }
+  };
+
   const callEndWebengageEvent = (
     source: WebEngageEvents[WebEngageEventName.CALL_ENDED]['Ended by'],
     data:
@@ -3375,7 +3396,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       | getPatinetAppointments_getPatinetAppointments_patinetAppointments = appointmentData
   ) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.CALL_ENDED] = {
-      'Doctor Name': g(data, 'doctorInfo', 'fullName')!,
+      'Doctor Name': g(data, 'doctorInfo', 'displayName')!,
       'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
       'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,
       'Consult Date Time': moment(g(data, 'appointmentDateTime')).toDate(),
@@ -4195,6 +4216,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   };
 
+  const appReviewAndRating = async () => {
+    try {
+      if (InAppReview.isAvailable()) {
+        await InAppReview.RequestInAppReview()
+          .then((hasFlowFinishedSuccessfully) => {})
+          .catch((error) => {
+            CommonBugFender('inAppReviewForDoctorConsult', error);
+          });
+      }
+    } catch (error) {
+      CommonBugFender('inAppRevireCallend', error);
+    }
+  };
+
   const fetchAppointmentData = async () => {
     try {
       const response = await client.query<getAppointmentData, getAppointmentDataVariables>({
@@ -4311,7 +4346,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             consultID: g(appointmentData, 'id')!,
             displayId: String(g(appointmentData, 'displayId')!),
             consultMode: ConsultMode.ONLINE,
-            doctorFullName: g(appointmentData, 'doctorInfo', 'fullName')!,
+            doctorFullName: g(appointmentData, 'doctorInfo', 'displayName')!,
             message,
             chatFormat: msgType,
             source: 'APP',
@@ -4635,31 +4670,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (isCartOrder) {
       try {
         setLoading(true);
-        const response: AxiosResponse<MedicineProductDetailsResponse>[] = await Promise.all(
-          medPrescription.map((item) => getMedicineDetailsApi(item?.id!))
-        );
-        const cartItems = response
-          .filter(({ data }) => {
-            const medicine = data?.productdp?.[0];
-            return medicine?.id && medicine?.sku;
-          })
-          .map(({ data }, index) => ({
-            ...formatToCartItem({ ...data?.productdp?.[0]!, image: '' }),
-            quantity: getPrescriptionItemQuantity(
-              medPrescription?.[index]?.medicineUnit,
-              medPrescription?.[index]?.medicineTimings,
-              medPrescription?.[index]?.medicineDosage,
-              medPrescription?.[index]?.medicineCustomDosage,
-              medPrescription?.[index]?.medicineConsumptionDurationInDays,
-              medPrescription?.[index]?.medicineConsumptionDurationUnit,
-              parseInt(data?.productdp?.[0]?.mou || '1', 10)
-            ),
-          }));
-        addMultipleCartItems?.(cartItems);
-        setEPrescriptions?.([presToAdd]);
+        let cartItemsToAdd: any[] = [];
+        medPrescription?.forEach((item) => {
+          cartItemsToAdd.push({
+            medicineSKU: item?.id,
+            quantity: 1,
+          });
+        });
+        uploadEPrescriptionsToServerCart([presToAdd], cartItemsToAdd);
         setLoading(false);
         postCleverTapUploadPrescriptionEvents('Consult Room', 'Cart');
-        props.navigation.push(AppRoutes.MedicineCart);
+        props.navigation.push(AppRoutes.ServerCart);
       } catch (error) {
         setLoading(false);
         showAphAlert?.({
@@ -4670,7 +4691,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
       return;
     }
-    setEPrescriptions?.([presToAdd]);
+    uploadEPrescriptionsToServerCart([presToAdd]);
     postCleverTapUploadPrescriptionEvents('Consult Room', 'Non-Cart');
     props.navigation.navigate(AppRoutes.UploadPrescription, {
       ePrescriptionsProp: [presToAdd],
@@ -4683,6 +4704,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     postCleverTapEvent(CleverTapEventName.CONSULT_ORDER_MEDICINES_IN_CHATROOM_CLICKED, {
       ...UserInfo,
       'Order Type': isCartOrder ? 'Cart' : 'Non-Cart',
+      'Patient name': `${currentPatient?.firstName} ${currentPatient?.lastName}` || '',
+      'Patient age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
     });
   };
 
@@ -5561,7 +5584,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       const mobileKey = Object.keys(metaData).find((key) => metaData[key] === el);
       if (mobileKey) {
         const eventAttributes = {
-          'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName')!,
+          'Doctor Name': g(appointmentData, 'doctorInfo', 'displayName')!,
           'Doctor Number': g(appointmentData, 'doctorInfo', 'mobileNumber')!,
           'Doctor ID': doctorId,
           'Display Speciality Name': g(appointmentData, 'doctorInfo', 'specialty', 'name')!,
@@ -5892,7 +5915,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <Text style={styles.externalMeetingLinkText}>
             {strings.externalMeetingLink.click_to_open.replace(
               'XYZ',
-              g(appointmentData, 'doctorInfo', 'fullName')
+              g(appointmentData, 'doctorInfo', 'displayName')
             )}
           </Text>
 
@@ -5918,7 +5941,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       Linking.openURL(rowData.url);
 
       postWebEngageEvent(WebEngageEventName.PATIENT_EXTERNAL_MEETING_LINK_CLICKED, {
-        'Doctor name': appointmentData?.doctorInfo?.fullName,
+        'Doctor name': appointmentData?.doctorInfo?.displayName,
         'Patient name': `${appointmentData?.patientInfo?.firstName} ${appointmentData?.patientInfo?.lastName}`,
         'Patient ID': appointmentData?.patientInfo?.id,
         'Doctor ID': appointmentData?.doctorInfo?.id,
@@ -6120,7 +6143,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         AsyncStorage.setItem('showSchduledPopup', 'true');
         const params = {
           Data: data?.data?.bookRescheduleAppointment?.appointmentDetails,
-          DoctorName: props.navigation.state.params?.data?.doctorInfo?.fullName,
+          DoctorName: props.navigation.state.params?.data?.doctorInfo?.displayName,
         };
         navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar, params);
       })
@@ -6235,21 +6258,25 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const joinCallHandler = () => {
-    callPermissions(() => {
-      AsyncStorage.setItem('leftSoundPlayed', 'false');
-      callStatus.current = '';
-      callToastStatus.current = '';
-      setLoading(true);
-      setCallAccepted(true);
-      setHideStatusBar(true);
-      setChatReceived(false);
-      Keyboard.dismiss();
-      changeVideoStyles();
-      setDropdownVisible(false);
-      setCallerVideo(true);
-      makeUpdateAppointmentCall.current = true;
-      APICallAgain(true);
-    });
+    callPermissions(
+      () => {
+        AsyncStorage.setItem('leftSoundPlayed', 'false');
+        callStatus.current = '';
+        callToastStatus.current = '';
+        setLoading(true);
+        setCallAccepted(true);
+        setHideStatusBar(true);
+        setChatReceived(false);
+        Keyboard.dismiss();
+        changeVideoStyles();
+        setDropdownVisible(false);
+        setCallerVideo(true);
+        makeUpdateAppointmentCall.current = true;
+        APICallAgain(true);
+      },
+      'Consult Chat Screen',
+      currentPatient
+    );
     //startCallConnectionUpdate();
   };
 
@@ -6316,7 +6343,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
       'Doctor ID': g(item, 'doctorId') || '',
-      'Doctor Name': g(item, 'doctorInfo', 'fullName') || '',
+      'Doctor Name': g(item, 'doctorInfo', 'displayName') || '',
       'Doctor Category': g(item, 'doctorInfo', 'doctorType'),
       'Doctor City': g(item, 'doctorInfo', 'city') || '',
       'Speciality ID': g(item, 'doctorInfo', 'specialty', 'id') || '',
@@ -6338,7 +6365,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
       'Doctor ID': g(item, 'doctorId') || undefined,
-      'Doctor name': g(item, 'doctorInfo', 'fullName') || undefined,
+      'Doctor name': g(item, 'doctorInfo', 'displayName') || undefined,
       'Doctor city': g(item, 'doctorInfo', 'city') || undefined,
       'Speciality ID': g(item, 'doctorInfo', 'specialty', 'id') || undefined,
       'Speciality name': g(item, 'doctorInfo', 'specialty', 'name') || undefined,
@@ -6815,7 +6842,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setChatReceived(false);
       postAppointmentWEGEvent(WebEngageEventName.PATIENT_ENDED_CONSULT);
       callEndWebengageEvent('Patient');
-
+      setIsCallEnded(true);
       if (publishPubnub && patientId == currentPatient?.id) {
         pubnub.publish(
           {
@@ -6872,6 +6899,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setCameraPosition('front');
       postAppointmentWEGEvent(WebEngageEventName.PATIENT_ENDED_CONSULT);
       callEndWebengageEvent('Patient');
+      setIsCallEnded(true);
+
       if (publishPubnub && patientId == currentPatient?.id) {
         pubnub.publish(
           {
@@ -7342,25 +7371,25 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const eventAttributes:
       | WebEngageEvents[WebEngageEventName.CONSULT_FEEDBACK_GIVEN]
       | CleverTapEvents[CleverTapEventName.CONSULT_FEEDBACK_GIVEN] = {
-      'Doctor Name': g(data, 'doctorInfo', 'fullName')!,
+      'Doctor Name': g(data, 'doctorInfo', 'displayName')!,
       'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
-      'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,
-      'Doctor Category': g(data, 'doctorInfo', 'doctorType')!,
-      'Consult Date Time': moment(g(data, 'appointmentDateTime')).toDate(),
-      'Consult Mode': g(data, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
-      'Hospital Name': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name')!,
-      'Hospital City': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'city')!,
+      'Speciality name': g(data, 'doctorInfo', 'specialty', 'name')!,
+      'Doctor category': g(data, 'doctorInfo', 'doctorType')!,
+      'Appointment datetime': moment(g(data, 'appointmentDateTime')).toDate(),
+      'Consult mode': g(data, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
+      'Hospital name': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name')!,
+      'Hospital city': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'city')!,
       'Consult ID': g(data, 'id')!,
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
-      'Patient Age': Math.round(
+      'Patient age': Math.round(
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
-      'Patient Gender': g(currentPatient, 'gender'),
+      'Patient gender': g(currentPatient, 'gender'),
       'Customer ID': g(currentPatient, 'id'),
       Rating: rating,
-      'Rating Reason': reason,
+      'Rating reason': reason,
     };
     postWebEngageEvent(WebEngageEventName.CONSULT_FEEDBACK_GIVEN, eventAttributes);
     postCleverTapEvent(CleverTapEventName.CONSULT_FEEDBACK_GIVEN, eventAttributes);
@@ -7380,7 +7409,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       | WebEngageEvents[WebEngageEventName.CONTINUE_CONSULTATION_CLICKED]
       | WebEngageEvents[WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER]
       | WebEngageEvents[WebEngageEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER] = {
-      'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName')!,
+      'Doctor Name': g(appointmentData, 'doctorInfo', 'displayName')!,
       'Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id')!,
       'Speciality Name': g(appointmentData, 'doctorInfo', 'specialty', 'name')!,
       'Doctor Category': g(appointmentData, 'doctorInfo', 'doctorType')!,
@@ -7551,6 +7580,23 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   return (
     <View style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
       <StatusBar hidden={hideStatusBar} />
+      {isCancelVisible && (
+        <CancelReasonPopup
+          isCancelVisible={isCancelVisible}
+          closePopup={() => setCancelVisible(false)}
+          data={appointmentData}
+          cancelSuccessCallback={() => {
+            postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER);
+            postAppointmentCleverTapEvents(
+              CleverTapEventName.CONSULT_CANCELLED_BY_PATIENT,
+              appointmentData,
+              currentPatient,
+              secretaryData
+            );
+          }}
+          navigation={props.navigation}
+        />
+      )}
       {Platform.OS === 'ios' ? (
         <View
           style={{
@@ -7678,23 +7724,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         ) : null}
         {renderChatHeader()}
         {callMinimize && renderTapToReturnToCallView()}
-        {isCancelVisible && (
-          <CancelReasonPopup
-            isCancelVisible={isCancelVisible}
-            closePopup={() => setCancelVisible(false)}
-            data={appointmentData}
-            cancelSuccessCallback={() => {
-              postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER);
-              postAppointmentCleverTapEvents(
-                CleverTapEventName.CONSULT_CANCELLED_BY_PATIENT,
-                appointmentData,
-                currentPatient,
-                secretaryData
-              );
-            }}
-            navigation={props.navigation}
-          />
-        )}
         {doctorJoined ? (
           <View
             style={{
@@ -7972,6 +8001,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           data={appointmentData}
           navigation={props.navigation}
           title={cancelAppointmentTitle}
+          customTitle={string.common.cancelAppointmentTitleHeading}
           onPressBack={() => setShowCancelPopup(false)}
           onPressReschedule={() => {
             postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
@@ -7999,7 +8029,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               CleverTapEventName.CONSULT_CANCEL_CLICKED_BY_PATIENT,
               appointmentData,
               currentPatient,
-              secretaryData
+              secretaryData,
+              {
+                circleSubscriptionId: circleSubscriptionId,
+                circleSubPlanId: circleSubPlanId,
+              }
             );
             CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'CANCEL CONSULT_CLICKED');
             setShowCancelPopup(false);
@@ -8272,20 +8306,25 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       {showweb && showWeimageOpen()}
       <FeedbackPopup
         onComplete={(ratingStatus, ratingOption) => {
-          fetchAppointmentData();
+          if (!isVideoCallFeedback) {
+            fetchAppointmentData();
+          }
           postRatingGivenWEGEvent(ratingStatus!, ratingOption);
           setShowFeedback(false);
           showAphAlert!({
             title: 'Thanks :)',
             description: 'Your feedback has been submitted. Thanks for your time.',
           });
+          setIsVideoCallFeedback(false);
         }}
         transactionId={apptId}
         title="We value your feedback! :)"
         description="How was your overall experience with the following consultation —"
         info={{
           title: `${g(appointmentData, 'doctorInfo', 'displayName') || ''}`,
-          description: `Today, ${moment(appointmentData.appointmentDateTime).format('hh:mm A')}`,
+          description: isVideoCallFeedback
+            ? moment(appointmentData.appointmentDateTime).format('D MMM YYYY, hh:mm A')
+            : `Today, ${moment(appointmentData.appointmentDateTime).format('hh:mm A')}`,
           photoUrl: `${g(appointmentData, 'doctorInfo', 'photoUrl') || ''}`,
         }}
         type={FEEDBACKTYPE.CONSULT}

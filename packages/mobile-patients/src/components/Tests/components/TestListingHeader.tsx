@@ -21,14 +21,13 @@ export interface Props {
 
 export const TestListingHeader: React.FC<Props> = ({ navigation, movedFrom, headerText }) => {
   const { cartItems: diagnosticCartItems, modifiedOrder, patientCartItems } = useDiagnosticsCart();
-  const { cartItems } = useShoppingCart();
   const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
 
   const onBackPress = () => {
     if (movedFrom === 'registration') {
-      navigation.replace(AppRoutes.ConsultRoom);
+      navigation.replace(AppRoutes.HomeScreen);
     } else if (movedFrom == 'deeplink') {
-      navigation.replace(AppRoutes.ConsultRoom);
+      navigation.replace(AppRoutes.HomeScreen);
     } else {
       navigation.goBack();
     }
@@ -38,9 +37,10 @@ export const TestListingHeader: React.FC<Props> = ({ navigation, movedFrom, head
 
   const renderHeaderCenterView = () => {
     return (
-      <>
+      <View style={styles.centerView}>
         {headerText ? (
           <Text
+            numberOfLines={1}
             style={[
               styles.titleTextStyle,
               { textAlign: movedFrom == 'testDetails' ? 'center' : 'left' },
@@ -49,7 +49,7 @@ export const TestListingHeader: React.FC<Props> = ({ navigation, movedFrom, head
             {headerText}
           </Text>
         ) : null}
-      </>
+      </View>
     );
   };
 
@@ -105,17 +105,12 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
     zIndex: 1,
   },
-  apolloLogo: {
-    resizeMode: 'contain',
-    height: 50,
-    width: 50,
-    marginLeft: '-75%',
-  },
-  headerRightView: { justifyContent: 'flex-end', flexDirection: 'row' },
-  paddingView: { width: 20, height: 0 },
+  headerRightView: { flexDirection: 'row', justifyContent: 'flex-end', marginLeft: -16 },
+  paddingView: { width: 13, height: 0 },
   titleTextStyle: {
     color: theme.colors.SHERPA_BLUE,
     ...theme.fonts.IBMPlexSansSemiBold(13),
     letterSpacing: 0.5,
   },
+  centerView: { width: '86%', marginLeft: 8 },
 });

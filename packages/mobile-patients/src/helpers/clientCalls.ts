@@ -1364,6 +1364,18 @@ export const diagnosticSaveBookHcCollectionV2 = (
   });
 };
 
+export const saveModifyOrder = (
+  client: ApolloClient<object>,
+  orderInfo: saveModifyDiagnosticOrderInput
+) =>
+  client.mutate<saveModifyDiagnosticOrder, saveModifyDiagnosticOrderVariables>({
+    mutation: MODIFY_DIAGNOSTIC_ORDERS,
+    context: {
+      sourceHeaders,
+    },
+    variables: { saveModifyDiagnosticOrder: orderInfo },
+  });
+
 export const createInternalOrder = (client: ApolloClient<object>, orders: OrderCreate) => {
   return client.mutate<createOrderInternal, createOrderInternalVariables>({
     mutation: CREATE_INTERNAL_ORDER,
@@ -1525,8 +1537,7 @@ export const getReportTAT = (
   pincode: number,
   itemIds: number[],
   source?: REPORT_TAT_SOURCE
-) =>
-{
+) => {
   return client.query<getConfigurableReportTAT, getConfigurableReportTATVariables>({
     query: GET_DIAGNOSTIC_REPORT_TAT,
     context: {
@@ -1537,7 +1548,7 @@ export const getReportTAT = (
       cityId: cityId,
       pincode: pincode,
       itemIds: itemIds,
-      source: source
+      source: source,
     },
     fetchPolicy: 'no-cache',
   });

@@ -261,8 +261,8 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
     userName &&
     phoneNumber &&
     phoneNumber.length >= 10 &&
-    addressLine1 &&
-    areaDetails &&
+    !!addressLine1 &&
+    !!areaDetails &&
     pincode &&
     pincode.length === 6 &&
     isValidPincode(pincode) &&
@@ -270,12 +270,12 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
     city.length > 1 &&
     state &&
     state.length > 1 &&
-    ((!!source && source == 'Diagnostics Cart') || (!!source && source == 'Tests'))
+    ((!!source && source == 'Diagnostics Cart') || (!!source && source == 'Tests')
       ? true
       : addressType !== undefined &&
         (addressType !== PATIENT_ADDRESS_TYPE.OTHER ||
           (addressType === PATIENT_ADDRESS_TYPE.OTHER && optionalAddress)) &&
-        isValidPincode(pincode);
+        isValidPincode(pincode));
 
   const saveAddress = (addressInput: PatientAddressInput) =>
     client.mutate<savePatientAddress, savePatientAddressVariables>({

@@ -9,7 +9,7 @@ import {
   formatOrders,
   MedOrder,
   getOrderTitle,
-} from '@aph/mobile-patients/src/components/YourOrdersScene';
+} from '@aph/mobile-patients/src/components/MyOrders/YourOrdersScene';
 import { GET_MEDICINE_ORDERS_OMS__LIST } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getMedicineOrdersOMSList,

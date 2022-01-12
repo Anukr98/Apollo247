@@ -90,6 +90,7 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
         setLoading?.(false);
         setCouponsList(getCoupons);
       } else {
+        setLoading?.(false);
         setCouponsList([]);
       }
     } catch (error) {
@@ -314,7 +315,7 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
             onChangeText={(text) => {
               if (/^\S*$/.test(text)) {
                 couponError && setCouponError('');
-                setCouponText(text?.toUpperCase());
+                setCouponText(text);
               }
             }}
             textInputprops={{

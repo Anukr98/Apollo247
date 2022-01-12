@@ -68,6 +68,7 @@ import {
   OrderCreate,
   OrderVerticals,
   patientObjWithLineItems,
+  PlanPurchaseType,
   SaveBookHomeCollectionOrderInputv2,
   saveModifyDiagnosticOrderInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -123,10 +124,6 @@ import {
   saveModifyDiagnosticOrderVariables,
   saveModifyDiagnosticOrder_saveModifyDiagnosticOrder_attributes_conflictedItems,
 } from '@aph/mobile-patients/src/graphql/types/saveModifyDiagnosticOrder';
-import {
-  createOrderInternalVariables,
-  createOrderInternal,
-} from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
 import { TestPremiumSlotOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestPremiumSlotOverlay';
 import {
   SCREEN_NAMES,
@@ -149,7 +146,8 @@ import {
   CleverTapEvents,
   DIAGNOSTICS_ITEM_TYPE,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
-import { PaymentInitiated } from '../../PaymentGateway/Events';
+import { PaymentInitiated } from '@aph/mobile-patients/src/components/PaymentGateway/Events';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
@@ -255,6 +253,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     hdfcPlanId,
     circleStatus,
     circlePlanId,
+    isRenew,
   } = useAppCommonData();
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
@@ -1858,7 +1857,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const renderPolicyDisclaimer = () => {
     return (
       <View style={{ margin: 16, marginTop: anyCartSaving > 0 ? 16 : 0 }}>
-        <Text style={styles.disclaimerText}>{string.diagnosticsCartPage.reviewPagePolicyText}</Text>
+        <Text style={styles.disclaimerText}>
+          {AppConfig.Configuration.DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER_TEXT}
+        </Text>
       </View>
     );
   };
@@ -2129,6 +2130,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         subscriptionInclusionId: null,
         userSubscriptionId: circleSubscriptionId != '' ? circleSubscriptionId : localCircleSubId,
       };
+      AsyncStorage.setItem('bookingOrderInfo', JSON.stringify({ bookingOrderInfo }));
       if (!!coupon) {
         bookingOrderInfo.couponCode = coupon?.coupon;
       }
@@ -2571,6 +2573,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           );
         } else {
           setLoading?.(false);
+          AsyncStorage.setItem('orderInfo', JSON.stringify(orderInfo));
           props.navigation.navigate(AppRoutes.PaymentMethods, {
             paymentId: payId!,
             amount: toPayPrice,
@@ -2747,14 +2750,15 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     verticalSpecificData: any
   ) {
     setLoading?.(false);
-    props.navigation.navigate(AppRoutes.OrderStatus, {
-      isModify: isModifyFlow ? modifiedOrder : null,
+
+    props.navigation.navigate(AppRoutes.PaymentStatusDiag, {
+      paymentId: paymentId,
       orderDetails: orderInfo,
       isCOD: isCOD,
       eventAttributes,
       paymentStatus: paymentStatus,
-      paymentId: paymentId,
       verticalSpecificData,
+      isModify: isModifyFlow ? modifiedOrder : null,
     });
   }
 
@@ -2792,6 +2796,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       subscriptionInclusionId: null,
       amountToPay: grandTotal, //total amount to pay
     };
+    AsyncStorage.setItem('modifyBookingInput', JSON.stringify({ modifyBookingInput }));
     saveModifyOrder?.(modifyBookingInput)
       .then((data) => {
         const getModifyResponse = data?.data?.saveModifyDiagnosticOrder;
@@ -2855,7 +2860,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const storeCode =
       Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
 
-    const purchaseInput = {
+    const purchaseInput: CreateUserSubscriptionVariables = {
       userSubscription: {
         mobile_number: currentPatient?.mobileNumber,
         plan_id: planId,
@@ -2864,6 +2869,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           : defaultCirclePlan?.subPlanId,
         storeCode,
         transaction_date_time: new Date().toISOString(),
+        source_meta_data: {
+          purchase_type: isRenew ? PlanPurchaseType.renew : PlanPurchaseType.first_time,
+        },
       },
     };
 
@@ -3251,7 +3259,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   savingsTitleText: { ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 1, 20) },
-  disclaimerText: { ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 0.7, 14) },
   mediumGreenText: { ...theme.viewStyles.text('M', 12, theme.colors.APP_GREEN, 1, 16) },
   mediumText: { ...theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE, 1, 16), width: '90%' },
   circleIcon: { height: 35, width: 35, resizeMode: 'contain' },
@@ -3265,4 +3272,5 @@ const styles = StyleSheet.create({
   circleText: { flexDirection: 'column' },
   circleTextPrice: { padding: 10 },
   circleTextStyle: { ...theme.viewStyles.text('M', 14, colors.SHERPA_BLUE, 1) },
+  disclaimerText: { ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1, 18, 0.04) },
 });

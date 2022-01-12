@@ -1096,8 +1096,7 @@ export function DiagnosticHomePageClicked(
   currentPatient: any,
   userType: any,
   navSrc: string,
-  circleMember: any,
-  deviceId: any
+  circleMember: any
 ) {
   try {
     const eventAttributes = {
@@ -1111,7 +1110,6 @@ export function DiagnosticHomePageClicked(
       User_Type: userType,
       'Nav src': navSrc,
       'Circle Member': circleMember,
-      'Device Id': deviceId,
     };
     postCleverTapEvent(CleverTapEventName.HOME_ICON_CLICKED, eventAttributes);
   } catch (error) {}
