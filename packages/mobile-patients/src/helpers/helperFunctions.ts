@@ -3305,7 +3305,6 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
   switch (status) {
     case DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED:
     case 'ORDER_CANCELLED_AFTER_REGISTRATION':
-    case DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED_REQUEST:
       statusString = 'Order cancelled';
       break;
     case DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED:
@@ -3378,6 +3377,10 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
       break;
     case DIAGNOSTIC_ORDER_STATUS.REFUND_INITIATED:
       statusString = 'Partial Refund Initiated';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.CANCELLATION_REQUESTED:
+    case DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED_REQUEST:
+      statusString = 'Cancellation Requested';
       break;
     default:
       statusString = '';
@@ -4403,6 +4406,37 @@ export const showDiagnosticCTA = (pageName: CALL_TO_ORDER_CTA_PAGE_ID, cityId: s
       return null;
     }
   });
+}
+
+export const calculateDiagnosticCartItems = (
+  cartItem: DiagnosticsCartItem[],
+  patientCartItem: DiagnosticPatientCartItem[]
+) => {
+  
+  let selectedCartItems;
+  if (!!patientCartItem && patientCartItem?.length > 0) {
+    const getPatientCartItems = patientCartItem
+      ?.map((item) => item?.cartItems?.filter((idd) => idd?.id))
+      ?.flat();
+    const getUniquePatientItems = (selectedCartItems = [
+      ...getPatientCartItems
+        ?.reduce((item: any, obj: any) => item?.set(obj?.id, obj), new Map())
+        .values(),
+    ]);
+    const getItemsInCartNotInPatientCart = cartItem?.filter(
+      ({ id: cId }) => !getUniquePatientItems?.some(({ id: pId }) => cId === pId)
+    );
+    const getSelectedItems = getPatientCartItems?.filter(
+      (i: DiagnosticsCartItem) => i?.isSelected
+    );
+    const unionArray = getSelectedItems?.concat(getItemsInCartNotInPatientCart);
+    selectedCartItems = [
+      ...unionArray?.reduce((item: any, obj: any) => item?.set(obj?.id, obj), new Map()).values(),
+    ];
+  } else {
+    selectedCartItems = cartItem?.filter((i: DiagnosticsCartItem) => i?.isSelected);
+  }
+  return selectedCartItems;
 };
 
 export const isTodaysDate = (time: string) => moment(time).isSame(new Date(), 'date');

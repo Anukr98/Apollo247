@@ -27,6 +27,7 @@ import {
   DIAGNOSTIC_STATUS_BEFORE_SUBMITTED,
   DIAGNOSTIC_PAYMENT_MODE_STATUS_ARRAY,
   AppConfig,
+  DIAGNOSTIC_ORDER_CANCELLED_STATUS,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -89,7 +90,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   const [showCurrCard, setShowCurrCard] = useState<boolean>(true);
   const [passportNo, setPassportNo] = useState<string>('');
   const [newPassValue, setNewPassValue] = useState<string>(passportNo);
-  const [passportData, setPassportData] = useState<any>([])
+  const [passportData, setPassportData] = useState<any>([]);
 
   useEffect(() => {
     DiagnosticOrderSummaryViewed(
@@ -715,16 +716,47 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       ? orderDetails?.totalPrice
       : refundDetails?.[0]?.amount;
 
+    const getOffersResponse = orderDetails?.diagnosticOrderTransactions;
+    const getTotalEffectivePrice = !!getOffersResponse
+      ? getOffersResponse
+          ?.map((diag) => diag?.effectivePrepaidAmount)
+          ?.reduce((curr, prev) => prev! + curr!, 0)
+      : 0;
+
     return (
       <View>
         {renderHeading('Payment Mode')}
         <View style={styles.orderSummaryView}>
-          {renderPrices(txtToShow, orderDetails?.totalPrice, false)}
+          {renderPrices(
+            txtToShow,
+            !!getOffersResponse && getOffersResponse?.length > 0
+              ? getTotalEffectivePrice!
+              : orderDetails?.totalPrice,
+            false
+          )}
+          {!!getOffersResponse &&
+            getOffersResponse?.length > 0 &&
+            getOffersResponse?.map((item) => renderOffers(item))}
           {!!refundText && renderPrices(refundText, refundAmountToShow, false)}
         </View>
       </View>
     );
   };
+
+  function getOffersDetails(transaction: any) {
+    const offersDetails = transaction?.offers?.[0]?.offer_description?.title;
+    const offerAmount = transaction?.prepaidAmount - transaction?.effectivePrepaidAmount;
+    return {
+      offersDetails,
+      offerAmount,
+    };
+  }
+
+  const renderOffers = (transaction: any) => {
+    const { offersDetails, offerAmount } = getOffersDetails(transaction);
+    return !!offersDetails ? <View>{renderPrices(offersDetails, offerAmount, false)}</View> : null;
+  };
+
   const renderAddPassportView = () => {
     const itemIdArray = orderDetails?.diagnosticOrderLineItems?.filter((item: any) => {
       if (AppConfig.Configuration.DIAGNOSTICS_COVID_ITEM_IDS.includes(item?.itemId)) {
@@ -747,9 +779,14 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
             <Text style={styles.textlower}>{passportNo ? 'EDIT' : 'ADD'}</Text>
           </TouchableOpacity>
         </View>
-        {passportNo ? <View>
-          <Text style={styles.textmedium}>{string.diagnostics.passportNo}{passportNo}</Text>
-        </View> : null}
+        {passportNo ? (
+          <View>
+            <Text style={styles.textmedium}>
+              {string.diagnostics.passportNo}
+              {passportNo}
+            </Text>
+          </View>
+        ) : null}
       </View>
     ) : null;
   };
@@ -765,9 +802,9 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           updatePassportDetails(response);
           setShowPassportModal(false);
         }}
-        onChange={(res)=>{
-          setNewPassValue(res?.passportNo)
-          setPassportData(res)
+        onChange={(res) => {
+          setNewPassValue(res?.passportNo);
+          setPassportData(res);
         }}
         value={newPassValue}
         disableButton={!passportData?.[0]?.passportNo}
@@ -822,7 +859,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           : null}
         {isPrepaid && !!subscriptionDetails ? renderSubscriptionCard() : null}
         {renderPricesCard()}
-        {(orderDetails?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED && !isPrepaid) ||
+        {(DIAGNOSTIC_ORDER_CANCELLED_STATUS.includes(orderDetails?.orderStatus) && !isPrepaid) ||
         DIAGNOSTIC_PAYMENT_MODE_STATUS_ARRAY.includes(orderDetails?.orderStatus)
           ? null
           : renderPaymentCard()}

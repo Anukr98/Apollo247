@@ -5,11 +5,12 @@ import {
 import { SymptomsSpecialities } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   PharmaUserStatus,
-  UploadPrescSource,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { CircleEventSource, PAGE_ID_TYPE } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { ShoppingCartItem } from '../components/ShoppingCartProvider';
+import { ShoppingCartItem } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { DIAGNOSTIC_SLOT_TYPE } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
+import { DiagnosticsDetailsPageViewedSource } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { saveCart_saveCart_data_medicineOrderCartLineItems } from '@aph/mobile-patients/src/graphql/types/saveCart';
 
 type YesOrNo = 'Yes' | 'No';
@@ -232,6 +233,7 @@ export enum CleverTapEventName {
   PAYMENT_INITIATED = 'Payment Initiated',
   DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic payment initiated',
   DIAGNOSTIC_ORDER_PLACED = 'Diagnostic order placed',
+  DIAGNOSTIC_ORDER_PLACED_QA = 'Diagnostic order placed - qa',
   DIAGNOSTIC_TRACK_ORDER_VIEWED = 'Diagnostic track order viewed',
   DIAGNOSTIC_ORDER_RESCHEDULE = 'Diagnostic order rescheduled',
   DIAGNOSTIC_FEEDBACK_GIVEN = 'Diagnostic feedback submitted',
@@ -649,6 +651,10 @@ export enum CleverTapEventName {
   REFERRAL_TNC_FAQ_CLICKED = 'Referral TnC & FAQ Clicked',
 }
 
+export enum DIAGNOSTICS_ITEM_TYPE {
+  PACKAGE = 'Package',
+  TEST = 'Test'
+}
 export interface PatientInfo {
   'Patient name': string;
   'Patient UHID': string;
@@ -703,7 +709,7 @@ export interface CirclePurchaseInfo extends UserInfo {
   Source?: string;
 }
 export interface DiagnosticUserInfo {
-  'Patient UHID': string;
+  'Patient Uhid': string;
   'Patient Gender': string;
   'Patient Name': string;
   'Patient Age': number;
@@ -712,10 +718,11 @@ export interface DiagnosticUserInfo {
 export interface DiagnosticLandingPage extends DiagnosticUserInfo {
   Source: DiagnosticHomePageSource;
   'Circle user'?: string;
+  'Recommendation Shown'?: 'Yes' | 'No';
 }
 
 export interface DiagnosticServiceble {
-  'Patient UHID': string;
+  'Patient Uhid': string;
   State: string;
   City: string;
   'PinCode Entered': number;
@@ -923,6 +930,29 @@ export interface DiagnosticPinCode extends DiagnosticUserInfo {
   'Circle user'?: string;
 }
 
+export interface DiagnosticAddToCart extends DiagnosticUserInfo{
+  'Item Id': string | number;
+  'Item Name': string;
+  'Item Type': DIAGNOSTICS_ITEM_TYPE;
+  'Item Price': number | string;
+  Source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE;
+  'Section name'?: string;
+  'Circle user'?: string;
+  'Original Item ids'?: any;
+}
+
+export interface DiagnosticPaymentInitiated extends DiagnosticUserInfo{
+  'Order Amount': number;
+  LOB: string;
+  type?: string;
+  'Order id'?: string;
+  'Payment mode'?: string;
+  'Item Id': any,
+  'Item Name': any,
+  'Item Type': DIAGNOSTICS_ITEM_TYPE;
+  'Item Price': number | string;
+}
+
 export interface DoctorFilterClick {
   'Patient name': string;
   'Patient UHID': string;
@@ -1004,6 +1034,28 @@ interface LoginOtpAttributes {
   'Nav src': string;
   'Page Name': string;
   value?: YesOrNo;
+}
+
+interface DiagnosticOrderPlacedAttributes{
+  'Order id': any;
+  Pincode: string | number;
+  'Order amount': number; 
+  'Payment Mode'?: 'Cash' | 'Prepaid'; 
+  'Circle discount'?: number;
+  'Appointment Date'?: string;
+  'Appointment time'?: string;
+  'Item Id': any;
+  'Item Name': any,
+  'Item Type': DIAGNOSTICS_ITEM_TYPE;
+  'Item Price': number | string;
+  'Total items in order': number;
+  'Payment type'?: string; 
+  'Circle user': 'Yes' | 'No';
+  'No of patients': number;
+  'Patient Name': any;
+  'Patient Age': any;
+  'Patient Gender': any;
+  'Patient Uhid': any;
 }
 export interface CleverTapEvents {
   // ********** AppEvents ********** \\
@@ -1707,22 +1759,13 @@ export interface CleverTapEvents {
     'Category Name'?: string;
     'Circle user'?: string;
   };
+
   [CleverTapEventName.DIAGNOSTIC_TEST_DESCRIPTION]: {
-    Source:
-      | 'Full Search'
-      | 'Home Page'
-      | 'Cart Page'
-      | 'Partial Search'
-      | 'Deeplink'
-      | 'Popular search'
-      | 'Category page';
+    'Item Id': string | number;
     'Item Name': string;
-    'Item Type'?: string;
-    'Item Code': string;
-    'Patient Name': string;
-    'Patient UHID': string;
-    'Item ID': string | number;
-    'Item Price'?: number | string;
+    'Item Type': DIAGNOSTICS_ITEM_TYPE;
+    'Item Price': number | string;
+    Source: DiagnosticsDetailsPageViewedSource; 
     'Circle user'?: string;
     'Original Item ids'?: any;
     'Section name'?: string;
@@ -1799,48 +1842,15 @@ export interface CleverTapEvents {
     'Thing to Improve selected': string;
     'Circle user'?: string;
   };
-  [CleverTapEventName.DIAGNOSTIC_ADD_TO_CART]: {
-    'Item Name': string;
-    'Item ID': string; // (SKUID)
-    Source:
-      | 'Home page'
-      | 'Full search'
-      | 'Details page'
-      | 'Partial search'
-      | 'Listing page'
-      | 'Popular search'
-      | 'Category page'
-      | 'Prescription';
-    Section?: string;
-    'Circle user'?: string;
-    'Original Item ids'?: any;
-  };
-  [CleverTapEventName.DIAGNOSTIC_ORDER_PLACED]: {
-    'Order id': string | number;
-    Pincode: string | number;
-    'Patient UHID': string;
-    'Order amount': number; // Optional
-    'Payment Mode'?: 'Cash' | 'Prepaid'; // Optional
-    'Circle discount'?: number;
-    'Appointment Date'?: string;
-    'Appointment time'?: string;
-    'Item ids'?: any;
-    'Total items in order': number;
-    'Payment type'?: string; //for prepaid
-    'Circle user': 'Yes' | 'No';
-  };
+  [CleverTapEventName.DIAGNOSTIC_ADD_TO_CART]: DiagnosticAddToCart;
+  [CleverTapEventName.DIAGNOSTIC_ORDER_PLACED]: DiagnosticOrderPlacedAttributes;
+  [CleverTapEventName.DIAGNOSTIC_ORDER_PLACED_QA]: DiagnosticOrderPlacedAttributes;
   [CleverTapEventName.PAYMENT_INITIATED]: {
     Amount: number;
     LOB: string;
     type?: string;
   };
-  [CleverTapEventName.DIAGNOSTIC_PAYMENT_INITIATED]: {
-    'Order Amount': number;
-    LOB: string;
-    type?: string;
-    'Order id'?: string;
-    'Payment mode'?: string;
-  };
+  [CleverTapEventName.DIAGNOSTIC_PAYMENT_INITIATED]: DiagnosticPaymentInitiated;
   [CleverTapEventName.CONSULT_PAYMENT_INITIATED]: {
     Amount: number;
     LOB: string;
@@ -1865,6 +1875,8 @@ export interface CleverTapEvents {
     'Item name': string;
     Pincode: string | number;
     Mode: 'Customer' | 'Automated';
+    itemIdsInCart: any,
+    itemNamesinCart: any
   };
   [CleverTapEventName.DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE]: {
     'Item ID'?: string | number;

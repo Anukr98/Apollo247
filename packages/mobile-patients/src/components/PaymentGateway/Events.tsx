@@ -41,7 +41,8 @@ export function PaymentInitiated(
   type: string,
   paymentOrderId: string,
   instrument: string,
-  paymentModeName?: string
+  paymentModeName?: string,
+  verticalSpecificEventAttributes?: any
 ) {
   try {
     const eventAttributes: CleverTapEvents[CleverTapEventName.DIAGNOSTIC_PAYMENT_INITIATED] = {
@@ -50,6 +51,14 @@ export function PaymentInitiated(
       type: type,
       'Order id': paymentOrderId,
       'Payment mode': paymentModeName,
+      'Item Id': verticalSpecificEventAttributes?.itemId,
+      'Item Name': verticalSpecificEventAttributes?.itemName,
+      'Item Type': verticalSpecificEventAttributes.itemType,
+      'Item Price': verticalSpecificEventAttributes?.itemPrice,
+      'Patient Name': verticalSpecificEventAttributes?.patientName,
+      'Patient Uhid': verticalSpecificEventAttributes?.patientUhid,
+      'Patient Age': verticalSpecificEventAttributes?.patientAge,
+      'Patient Gender': verticalSpecificEventAttributes?.patientGender,
     };
     const consultEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PAYMENT_INITIATED] = {
       Amount: grandTotal,

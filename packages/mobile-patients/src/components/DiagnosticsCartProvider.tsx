@@ -1050,23 +1050,6 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     updateCartItemsFromStorage();
   }, []);
 
-  // useEffect(() => {
-  //   // updating coupon discount here on update in cart or new coupon code applied
-  //   const minimumOrderAmount = coupon && coupon.minimumOrderAmount;
-  //   if (!coupon || (minimumOrderAmount && cartTotal < minimumOrderAmount)) {
-  //     setCoupon(null);
-  //     setCouponDiscount(0);
-  //   } else {
-  //     let discountAmount = 0;
-  //     if (coupon.discountType == DiscountType.PERCENT) {
-  //       discountAmount = parseFloat(((coupon.discount / 100) * cartTotal).toFixed(2));
-  //     } else {
-  //       discountAmount = parseFloat((cartTotal - coupon.discount).toFixed(2));
-  //     }
-  //     setCouponDiscount(discountAmount);
-  //   }
-  // }, [cartTotal, coupon]);
-
   useEffect(() => {
     // updating prescription here on update in cart items
     if (cartTotal == 0) {

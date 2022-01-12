@@ -32,6 +32,7 @@ import {
   aphConsole,
   formatAddressWithLandmark,
   g,
+  getAge,
   getCircleNoSubscriptionText,
   getUserType,
   isDiagnosticSelectedCartEmpty,
@@ -104,7 +105,6 @@ import {
   DiagnosticModifyOrder,
   DiagnosticProceedToPay,
   DiagnosticRemoveFromCartClicked,
-  PaymentInitiated,
 } from '@aph/mobile-patients/src/components/Tests/Events';
 
 import moment from 'moment';
@@ -124,10 +124,6 @@ import {
   saveModifyDiagnosticOrderVariables,
   saveModifyDiagnosticOrder_saveModifyDiagnosticOrder_attributes_conflictedItems,
 } from '@aph/mobile-patients/src/graphql/types/saveModifyDiagnosticOrder';
-import {
-  createOrderInternalVariables,
-  createOrderInternal,
-} from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
 import { TestPremiumSlotOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestPremiumSlotOverlay';
 import {
   SCREEN_NAMES,
@@ -148,7 +144,9 @@ import { colors } from '@aph/mobile-patients/src/theme/colors';
 import {
   CleverTapEventName,
   CleverTapEvents,
+  DIAGNOSTICS_ITEM_TYPE,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { PaymentInitiated } from '@aph/mobile-patients/src/components/PaymentGateway/Events';
 import AsyncStorage from '@react-native-community/async-storage';
 
 const screenWidth = Dimensions.get('window').width;
@@ -318,6 +316,13 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
   const nonCircle_CircleEffectivePrice = Number(circleGrandTotal) + Number(circlePlanPurchasePrice);
   const anyCartSaving = isDiagnosticCircleSubscription ? cartSaving + circleSaving : cartSaving;
+  const showCirclePrice =
+    !!coupon && !couponCircleBenefits
+      ? false
+      : isDiagnosticCircleSubscription
+      ? true
+      : isCircleAddedToCart;
+
   const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   const addressText = isModifyFlow
     ? formatAddressWithLandmark(modifiedOrder?.patientAddressObj) || ''
@@ -1064,12 +1069,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   }
 
   const renderItemView = (item: DiagnosticsCartItem) => {
-    const showCirclePrice =
-      !!coupon && !couponCircleBenefits
-        ? false
-        : isDiagnosticCircleSubscription
-        ? true
-        : isCircleAddedToCart;
     const priceToShow = diagnosticsDisplayPrice(item, showCirclePrice)?.priceToShow;
     const mrpToDisplay = diagnosticsDisplayPrice(item, showCirclePrice)?.mrpToDisplay;
     const slashedPrice = diagnosticsDisplayPrice(item, showCirclePrice)?.slashedPrice;
@@ -1164,12 +1163,68 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       </View>
     );
   };
+  const renderAddCircleView = () => {
+    const upperLeftText = isCircleAddedToCart
+      ? string.diagnosticsCircle.you
+      : string.diagnosticsCircle.youCan;
+
+    const upperMiddleText = isCircleAddedToCart
+      ? string.diagnosticsCircle.saved
+      : string.diagnosticsCircle.save;
+
+    const upperRightText = string.diagnosticsCircle.orderCircle;
+    const defaultPlanPurchasePrice = !!selectedCirclePlan
+      ? selectedCirclePlan?.currentSellingPrice
+      : !!defaultCirclePlan && defaultCirclePlan?.currentSellingPrice;
+    const defaultPlanDurationInMonths = !!selectedCirclePlan
+      ? selectedCirclePlan?.durationInMonth
+      : !!defaultCirclePlan && defaultCirclePlan?.durationInMonth;
+    return (
+      <View style={styles.circleItemCartView}>
+        <View style={styles.circleIconView}>
+          <CircleLogo style={styles.circleIcon} />
+        </View>
+        <View style={styles.circleText}>
+          <Text style={styles.circleTextStyle}>
+            Circle membership ({defaultPlanDurationInMonths} month)
+          </Text>
+          <Text style={styles.mediumText}>
+            {upperLeftText}{' '}
+            <Text style={styles.mediumGreenText}>
+              {upperMiddleText} {string.common.Rs}
+              {circleSaving}
+            </Text>{' '}
+            {upperRightText}{' '}
+          </Text>
+        </View>
+        <View style={styles.circleTextPrice}>
+          <Text style={styles.leftTextPrice}>
+            {string.common.Rs}
+            {defaultPlanPurchasePrice}
+          </Text>
+          <TouchableOpacity
+            onPress={() => {
+              _onTogglePlans();
+            }}
+          >
+            <Text style={styles.yellowText}>ADD PLAN</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
 
   const renderCartItems = () => {
     return (
       <View>
         {renderCartHeading()}
         {renderCartItemCard()}
+        {!isCircleAddedToCart &&
+        (!isDiagnosticCircleSubscription && hideCirclePurchaseInModify
+          ? null
+          : allMembershipPlans?.length > 0 && !!!coupon)
+          ? renderAddCircleView()
+          : null}
       </View>
     );
   };
@@ -1898,7 +1953,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           props.navigation.push(AppRoutes.AddAddressNew, {
             KeyName: 'Update',
             addressDetails: address,
-            ComingFrom: AppRoutes.TestsCart,
+            ComingFrom: AppRoutes.CartPage,
             updateLatLng: true,
             source: 'Diagnostics Cart' as AddressSource,
           });
@@ -2302,7 +2357,10 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         itemIdsToRemove_global?.join(', '),
         itemNamesToRemove_global?.join(', '),
         addresses?.[selectedAddressIndex]?.zipcode!,
-        'Automated'
+        'Automated',
+        currentPatient,
+        isDiagnosticCircleSubscription,
+        cartItems
       );
       setDuplicateNameArray(conflictWithPatients);
       setDuplicateItemsArray?.(conflictWithPatients);
@@ -2494,7 +2552,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             (id: saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patientsObjWithOrderIDs) =>
               id?.orderID
           );
-        const eventAttributes = createCheckOutEventAttributes(
+        const { eventAttributes, verticalSpecificData } = createCheckOutEventAttributes(
           isModifyFlow ? getOrderDetails : createMultiOrderIds,
           slotStartTime
         );
@@ -2505,7 +2563,14 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           modifiedOrder?.paymentType !== DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT
         ) {
           //call the process wali api & success page (check for modify Order)
-          processModifiyCODOrder(getOrderDetails, grandTotal, eventAttributes, orderInfo, payId!);
+          processModifiyCODOrder(
+            getOrderDetails,
+            grandTotal,
+            eventAttributes,
+            orderInfo,
+            payId!,
+            verticalSpecificData
+          );
         } else {
           setLoading?.(false);
           AsyncStorage.setItem('orderInfo', JSON.stringify(orderInfo));
@@ -2519,6 +2584,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             businessLine: 'diagnostics',
             customerId: cusId,
             isCircleAddedToCart: isCircleAddedToCart,
+            verticalSpecificData,
           });
         }
       }
@@ -2534,8 +2600,77 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     }
   }
 
+  function createItemPatientDetails() {
+    let itemDetailsObj: {
+      itemId: string;
+      itemName: string;
+      itemType: DIAGNOSTICS_ITEM_TYPE;
+      itemPrice: string;
+    }[] = [];
+    let patientDetailsObj: {
+      patientName: string;
+      patientAge: number;
+      patientUhid: any;
+      patientGender: any;
+    }[] = [];
+    if (!!isCartEmpty) {
+      isCartEmpty?.map((item: DiagnosticPatientCartItem) =>
+        item?.cartItems?.map((cartItem: DiagnosticsCartItem) =>
+          itemDetailsObj.push({
+            itemId: String(cartItem?.id),
+            itemName: cartItem?.name,
+            itemType:
+              !!cartItem?.inclusions && cartItem?.inclusions?.length > 1
+                ? DIAGNOSTICS_ITEM_TYPE.PACKAGE
+                : DIAGNOSTICS_ITEM_TYPE.TEST,
+            itemPrice: String(diagnosticsDisplayPrice(cartItem, showCirclePrice)?.priceToShow),
+          })
+        )
+      );
+
+      isCartEmpty?.map((item: DiagnosticPatientCartItem) =>
+        allCurrentPatients?.find((patients: any) => {
+          if (patients?.id == item?.patientId) {
+            return patientDetailsObj.push({
+              patientName: `${patients?.firstName} ${patients?.lastName}`,
+              patientAge: getAge(patients?.dateOfBirth),
+              patientUhid: patients?.uhid,
+              patientGender: patients?.gender,
+            });
+          }
+        })
+      );
+    }
+    return {
+      itemDetailsObj,
+      patientDetailsObj,
+    };
+  }
+
   function createCheckOutEventAttributes(orderId: string, slotStartTime?: string) {
-    const attributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED] = {
+    const { itemDetailsObj, patientDetailsObj } = createItemPatientDetails();
+    let verticalSpecificData = {} as any;
+    if (!!itemDetailsObj && !!patientDetailsObj) {
+      verticalSpecificData.itemId = JSON.stringify(itemDetailsObj?.map((item) => item?.itemId));
+      verticalSpecificData.itemName = JSON.stringify(itemDetailsObj?.map((item) => item?.itemName));
+      verticalSpecificData.itemPrice = JSON.stringify(
+        itemDetailsObj?.map((item) => item?.itemPrice)
+      );
+      verticalSpecificData.itemType = JSON.stringify(itemDetailsObj?.map((item) => item?.itemType));
+      verticalSpecificData.patientName = JSON.stringify(
+        patientDetailsObj?.map((item) => item?.patientName)
+      );
+      verticalSpecificData.patientUhid = JSON.stringify(
+        patientDetailsObj?.map((item) => item?.patientUhid)
+      );
+      verticalSpecificData.patientAge = JSON.stringify(
+        patientDetailsObj?.map((item) => item?.patientAge)
+      );
+      verticalSpecificData.patientGender = JSON.stringify(
+        patientDetailsObj?.map((item) => item?.patientGender)
+      );
+    }
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED] = {
       'Order id': orderId,
       Pincode: parseInt(selectedAddr?.zipcode!),
       'Patient UHID': currentPatient?.id,
@@ -2550,7 +2685,10 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       'Item ids': cartItemsWithId,
       'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
     };
-    return attributes;
+    return {
+      eventAttributes,
+      verticalSpecificData,
+    };
   }
 
   async function processModifiyCODOrder(
@@ -2558,9 +2696,18 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     amount: number,
     eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED],
     orderInfo: any,
-    paymentId: string | number
+    paymentId: string | number,
+    verticalSpecificData: any
   ) {
-    PaymentInitiated(amount, 'Diagnostic', 'Cash');
+    PaymentInitiated(
+      amount,
+      'Diagnostic',
+      'Cash',
+      String(paymentId),
+      'COD',
+      string.common.Cash,
+      verticalSpecificData
+    );
     try {
       const array = [
         {
@@ -2576,7 +2723,14 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         if (!!isAnyFalse && isAnyFalse?.length > 0) {
           renderAlert(string.common.tryAgainLater);
         } else {
-          _navigatetoOrderStatus(true, 'success', eventAttributes, orderInfo, paymentId);
+          _navigatetoOrderStatus(
+            true,
+            'success',
+            eventAttributes,
+            orderInfo,
+            paymentId,
+            verticalSpecificData
+          );
         }
       } else {
         renderAlert(string.common.tryAgainLater);
@@ -2592,7 +2746,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     paymentStatus: string,
     eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED],
     orderInfo: any,
-    paymentId: string | number
+    paymentId: string | number,
+    verticalSpecificData: any
   ) {
     setLoading?.(false);
 
@@ -2602,6 +2757,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       isCOD: isCOD,
       eventAttributes,
       paymentStatus: paymentStatus,
+      verticalSpecificData,
       isModify: isModifyFlow ? modifiedOrder : null,
     });
   }
@@ -2875,7 +3031,8 @@ const styles = StyleSheet.create({
   totalChargesContainer: {
     backgroundColor: theme.colors.WHITE,
     marginBottom: 12,
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 16,
     marginTop: 6,
   },
   previousItemContainer: {
@@ -3102,5 +3259,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   savingsTitleText: { ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 1, 20) },
+  mediumGreenText: { ...theme.viewStyles.text('M', 12, theme.colors.APP_GREEN, 1, 16) },
+  mediumText: { ...theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE, 1, 16), width: '90%' },
+  circleIcon: { height: 35, width: 35, resizeMode: 'contain' },
+  yellowText: { ...theme.viewStyles.text('B', 12, theme.colors.APP_YELLOW, 1, 14), paddingTop: 5 },
+  leftTextPrice: {
+    ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 14),
+    alignSelf: 'flex-end',
+  },
+  circleItemCartView: { backgroundColor: 'white', flexDirection: 'row', paddingVertical: 10 },
+  circleIconView: { paddingHorizontal: 10 },
+  circleText: { flexDirection: 'column' },
+  circleTextPrice: { padding: 10 },
+  circleTextStyle: { ...theme.viewStyles.text('M', 14, colors.SHERPA_BLUE, 1) },
   disclaimerText: { ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1, 18, 0.04) },
 });
