@@ -28,6 +28,7 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
   getCheckoutCompletedEventAttributes,
   getCleverTapCheckoutCompletedEventAttributes,
+  getShipmentAndTatInfo,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { SAVE_MEDICINE_ORDER_V3 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -100,9 +101,9 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
       const isPrescriptionCartItem = serverCartItems?.findIndex(
         (item) => item?.isPrescriptionRequired == '1'
       );
+      const shipmentInfo = getShipmentAndTatInfo(shipmentArray);
       reviewCartPageViewClevertapEvent(
         cartLocationDetails?.pincode,
-        shipmentArray?.[0]?.tat,
         serverCartAmount?.isDeliveryFree ? 0 : serverCartAmount?.deliveryCharges,
         serverCartAmount?.cartTotal,
         isPrescriptionCartItem >= 0,
@@ -111,8 +112,8 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
         isPrescriptionCartItem >= 0 ? cartPrescriptionType : '',
         pharmacyUserType,
         currentPatient?.mobileNumber,
-        cartSubscriptionDetails?.currentSellingPrice,
-        shipmentArray?.[1]?.tat
+        shipmentInfo,
+        cartSubscriptionDetails?.currentSellingPrice
       );
     });
   }, []);
@@ -162,22 +163,16 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
 
   async function onPressProceedtoPay() {
     setloading(true);
-    let splitOrderDetails: any = {};
-    if (noOfShipments > 1) {
-      shipmentArray?.forEach((order: ShipmentArray, index: number) => {
-        splitOrderDetails['Shipment_' + (index + 1) + '_Value'] = order.estimatedAmount;
-        splitOrderDetails['Shipment_' + (index + 1) + '_Items'] = order?.items?.length;
-      });
-    }
+    const shipmentInfo = getShipmentAndTatInfo(shipmentArray);
     postwebEngageProceedToPayEvent(
       shoppingCart,
       false,
       deliveryTime,
       pharmacyCircleAttributes!,
       pharmacyUserTypeAttribute!,
+      shipmentInfo,
       JSON.stringify(serverCartItems),
-      noOfShipments > 1,
-      splitOrderDetails
+      noOfShipments > 1
     );
     initiateOrder();
   }

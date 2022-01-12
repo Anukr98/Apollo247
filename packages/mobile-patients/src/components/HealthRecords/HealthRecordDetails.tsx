@@ -36,7 +36,7 @@ import { Image } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -251,6 +251,8 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   const { currentPatient } = useAllCurrentPatients();
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
+  const { buildApolloClient, authToken } = useAuth();
+  const apolloClientWithAuth = buildApolloClient(authToken);
 
   //for deeplink
   const movedFrom = props.navigation.getParam('movedFrom');
@@ -355,7 +357,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   }, []);
 
   const getOrderDetails = async (displayId: string) => {
-    const res = await client.query<
+    const res = await apolloClientWithAuth.query<
       getDiagnosticOrderDetailsByDisplayID,
       getDiagnosticOrderDetailsByDisplayIDVariables
     >({

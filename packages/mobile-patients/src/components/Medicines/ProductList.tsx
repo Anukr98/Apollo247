@@ -4,7 +4,7 @@ import { Props as ProductCardProps } from '@aph/mobile-patients/src/components/M
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { availabilityApi247, MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   addPharmaItemToCart,
   formatToCartItem,
@@ -188,11 +188,11 @@ export const ProductList: React.FC<Props> = ({
       'Product name': item?.name,
       Discount: discountPercentage,
     };
-    setAddToCartSource?.({ source: addToCartSource, categoryId: item.category_id });
+    setAddToCartSource?.({ source: addToCartSource, categoryId: item?.category_id });
     setUserActionPayload?.({
       medicineOrderCartLineItems: [
         {
-          medicineSKU: item.sku,
+          medicineSKU: item?.sku,
           quantity: 1,
         },
       ],
@@ -219,12 +219,12 @@ export const ProductList: React.FC<Props> = ({
       cleverTapSearchSuccessEventAttributes
     );
     setCurrentProductIdInCart(item.sku);
-    item.pack_form ? setItemPackForm(item.pack_form) : setItemPackForm('');
-    item.suggested_qty ? setSuggestedQuantity(item.suggested_qty) : setSuggestedQuantity(null);
-    item.MaxOrderQty
-      ? setMaxOrderQty(item.MaxOrderQty)
-      : item.suggested_qty
-      ? setMaxOrderQty(+item.suggested_qty)
+    item?.pack_form ? setItemPackForm(item?.pack_form) : setItemPackForm('');
+    item?.suggested_qty ? setSuggestedQuantity(item?.suggested_qty) : setSuggestedQuantity(null);
+    item?.MaxOrderQty
+      ? setMaxOrderQty(item?.MaxOrderQty)
+      : item?.suggested_qty
+      ? setMaxOrderQty(+item?.suggested_qty)
       : setMaxOrderQty(0);
     setCurrentProductQuantityInCart(1);
   };
@@ -239,15 +239,15 @@ export const ProductList: React.FC<Props> = ({
   const renderItem = useCallback(
     (info: ListRenderItemInfo<MedicineProduct>) => {
       const { item, index } = info;
-      const id = item.sku;
+      const id = item?.sku;
       const qty = getCartItemQty(id);
       const onPressAddQty = () => {
-        if (qty < item.MaxOrderQty) {
+        if (qty < item?.MaxOrderQty) {
           setCurrentProductQuantityInCart(qty + 1);
           setUserActionPayload?.({
             medicineOrderCartLineItems: [
               {
-                medicineSKU: item.sku,
+                medicineSKU: item?.sku,
                 quantity: qty + 1,
               },
             ],
@@ -259,7 +259,7 @@ export const ProductList: React.FC<Props> = ({
         setUserActionPayload?.({
           medicineOrderCartLineItems: [
             {
-              medicineSKU: item.sku,
+              medicineSKU: item?.sku,
               quantity: qty - 1,
             },
           ],

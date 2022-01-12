@@ -253,10 +253,15 @@ export const handleOpenURL = (event: any) => {
         break;
 
       case 'order':
+      case 'orders':
         if (linkId) {
           return {
             routeName: 'Order',
             id: linkId,
+          };
+        } else {
+          return {
+            routeName: 'MyOrders',
           };
         }
         break;
@@ -361,6 +366,7 @@ export const handleOpenURL = (event: any) => {
         };
         break;
 
+      case 'lab-tests-category':
       case 'testlisting':
         return {
           routeName: 'TestListing',
@@ -415,36 +421,21 @@ export const handleOpenURL = (event: any) => {
           id: linkId ? linkId : undefined,
         };
         break;
+
       case 'testordersummary':
       case 'test-order-summary':
+      case 'orderdetails':
         return {
           routeName: 'TestOrderSummary',
           id: linkId ? linkId : undefined
         }
         break;
 
-      case 'testordersummary':
-      case 'test-order-summary':
+      case 'category-listing':
         return {
-          routeName: 'TestOrderSummary',
-          id: linkId ? linkId : undefined,
-        };
-        break;
-
-      case 'testordersummary':
-      case 'test-order-summary':
-        return {
-          routeName: 'TestOrderSummary',
-          id: linkId ? linkId : undefined,
-        };
-        break;
-
-      case 'testordersummary':
-      case 'test-order-summary':
-        return {
-          routeName: 'TestOrderSummary',
-          id: linkId ? linkId : undefined,
-        };
+          routeName :'TestWidgetListing',
+          id: linkId ? linkId : undefined
+        }
         break;
       case 'payment':
         return {
@@ -457,7 +448,6 @@ export const handleOpenURL = (event: any) => {
           routeName: 'ShareReferLink',
         };
         break;
-
       default:
         if (b === 0) {
           return {
@@ -497,7 +487,7 @@ export const pushTheView = (
   vaccinationCmsIdentifier?: string,
   vaccinationSubscriptionId?: string,
   params?: any,
-  movedFromBrandPages?: boolean,
+  movedFromBrandPages?: boolean
 ) => {
   setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
   switch (routeName) {
@@ -526,7 +516,7 @@ export const pushTheView = (
         navigation.navigate(AppRoutes.ProductDetailPage, {
           sku: isUrlKey ? null : id,
           urlKey: isUrlKey ? id : null,
-          movedFrom: ProductPageViewedSource.BRAND_PAGES
+          movedFrom: ProductPageViewedSource.BRAND_PAGES,
         });
       } else {
         navigateToView(navigation, AppRoutes.ProductDetailPage, {
@@ -623,7 +613,7 @@ export const pushTheView = (
       });
       break;
     case 'MyOrders':
-      navigateToView(navigation, AppRoutes.YourOrdersScene);
+      navigateToView(navigation, AppRoutes.YourOrdersScene, {source: 'deeplink'});
       break;
     case 'webview':
       navigateToView(navigation, AppRoutes.CommonWebView, { url: id });
@@ -776,6 +766,12 @@ export const pushTheView = (
         disableTrackOrder: true,
 
       })
+      break;
+    case 'TestWidgetListing':
+      navigateToView(navigation, AppRoutes.TestWidgetListing, {
+          movedFrom: 'deeplink',
+          widgetName: id,
+        });
       break;
     case 'ShareReferLink':
       firebaseRemoteConfigForReferrer().then((res) => {

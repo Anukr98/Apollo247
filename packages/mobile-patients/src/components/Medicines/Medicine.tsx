@@ -45,7 +45,7 @@ import {
 import { SearchInput } from '@aph/mobile-patients/src/components/ui/SearchInput';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { getBuyAgainSkuList } from '@aph/mobile-patients/src/components/YourOrdersScene';
+import { getBuyAgainSkuList } from '@aph/mobile-patients/src/components/MyOrders/YourOrdersScene';
 import {
   CommonBugFender,
   CommonLogEvent,
@@ -74,7 +74,6 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
-  availabilityApi247,
   Brand,
   callToExotelApi,
   DealsOfTheDaySection,
@@ -309,6 +308,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     serverCartLoading,
     serverCartErrorMessage,
     setServerCartErrorMessage,
+    serverCartMessage,
+    setServerCartMessage,
     cartPrescriptions,
     cartLocationDetails,
     newAddressAdded,
@@ -425,12 +426,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    if (serverCartErrorMessage) {
+    if (serverCartErrorMessage || serverCartMessage) {
       hideAphAlert?.();
       showAphAlert!({
         unDismissable: true,
         title: 'Hey',
-        description: serverCartErrorMessage,
+        description: serverCartErrorMessage || serverCartMessage,
         titleStyle: theme.viewStyles.text('SB', 18, '#890000'),
         ctaContainerStyle: { justifyContent: 'flex-end' },
         CTAs: [
@@ -439,13 +440,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             type: 'orange-link',
             onPress: () => {
               setServerCartErrorMessage?.('');
+              setServerCartMessage?.('');
               hideAphAlert?.();
             },
           },
         ],
       });
     }
-  }, [serverCartErrorMessage]);
+  }, [serverCartErrorMessage, serverCartMessage]);
 
   useEffect(() => {
     const addressLength = addresses?.length;

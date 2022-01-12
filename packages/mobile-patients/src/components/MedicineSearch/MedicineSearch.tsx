@@ -21,7 +21,6 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getPatientPastMedicineSearches';
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
-  availabilityApi247,
   getMedicineSearchSuggestionsApi,
   MedicineProduct,
 } from '@aph/mobile-patients/src/helpers/apiCalls';

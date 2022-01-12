@@ -1,14 +1,11 @@
-import { formatTestSlot, nameFormater } from '@aph/mobile-patients/src//helpers/helperFunctions';
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { ClockIcon, TestInfoWhiteIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { ClockIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-navigation';
 
 export interface TestProceedBarProps {
   onPressAddDeliveryAddress?: () => void;
@@ -29,12 +26,12 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
   const {
     onPressProceedtoPay,
     selectedTimeSlot,
-    showTime,
     disableProceedToPay,
     isModifyCOD,
     modifyOrderDetails,
     showReportTat,
     priceToShow,
+    phleboMin,
   } = props;
 
   function getButtonTitle() {
@@ -49,39 +46,31 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
     onPressProceedtoPay?.();
   }
 
-  const localFormatSlot = (slotTime: string) => moment(slotTime, 'hh:mm a')?.format('hh:mm A');
+  const localFormatSlot = (slotTime: string) => moment(slotTime, 'hh:mm a')?.format('hh:mm a');
 
   const renderTimeSlot = () => {
     const timeSlotText = modifyOrderDetails
       ? `${moment(modifyOrderDetails?.slotDateTimeInUTC)?.format('ddd, DD MMM YYYY') ||
-          ''}, ${`${moment(modifyOrderDetails?.slotDateTimeInUTC).format('hh:mm A') ||
+          ''}, ${`${moment(modifyOrderDetails?.slotDateTimeInUTC)?.format('hh:mm a') ||
           localFormatSlot(modifyOrderDetails?.slotTimings)}`}`
-      : //selectedTimeSlot?.slotInfo?.startTime  (if using selectedTimeSlot)
-        `${moment(selectedTimeSlot?.date).format('ddd, DD MMM YYYY') || ''}, ${
+      : `${moment(selectedTimeSlot?.date)?.format('ddd, DD MMM YYYY') || ''}, ${
           selectedTimeSlot?.slotStartTime
             ? `${localFormatSlot(selectedTimeSlot?.slotStartTime!)}`
             : string.diagnostics.noSlotSelectedText
         }`;
-    const showPhelboETA = modifyOrderDetails
-      ? !!timeSlotText
-      : !!timeSlotText && showTime && selectedTimeSlot?.slotStartTime;
+    const endSlotTime = moment(timeSlotText)
+      .add(props.phleboMin || 0, 'minutes')
+      .format('hh:mm a');
+
     return (
       <View style={styles.timeSlotMainViewStyle}>
         <View style={styles.timeSlotChangeViewStyle}>
           <Text style={styles.timeSlotTextStyle}>{string.diagnostics.timeSlotText}</Text>
         </View>
-        <Text style={styles.timeTextStyle}>{timeSlotText || ''}</Text>
-        {showPhelboETA ? (
-          <View style={styles.infoIconViewStyle}>
-            <TestInfoWhiteIcon style={styles.timeIconStyle} />
-            <Text style={styles.infoTextStyle}>
-              {`The sample collection executive will reach between ${moment(timeSlotText).format(
-                'hh:mm A'
-              )} - ${moment(timeSlotText)
-                .add(props.phleboMin, 'minutes')
-                .format('hh:mm A')} for collecting the samples`}
-            </Text>
-          </View>
+        {!!phleboMin ? (
+          <Text style={styles.timeTextStyle}>
+            {phleboMin == 0 ? timeSlotText || '' : `${timeSlotText} - ${endSlotTime}`}
+          </Text>
         ) : null}
       </View>
     );

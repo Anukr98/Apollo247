@@ -43,6 +43,7 @@ export const useServerCart = () => {
     setDeliveryAddressId,
     setNoOfShipments,
     setServerCartErrorMessage,
+    setServerCartMessage,
     serverCartLoading,
     setServerCartLoading,
     setCartSuggestedProducts,
@@ -56,8 +57,12 @@ export const useServerCart = () => {
     setTatDetailsForPrescriptionOptions,
     setCirclePlanSelected,
   } = useShoppingCart();
-  const { axdcCode, pharmacyUserTypeAttribute } = useAppCommonData();
-  const { setPharmacyLocation } = useAppCommonData();
+  const {
+    axdcCode,
+    pharmacyUserTypeAttribute,
+    setSelectedPrescriptionType,
+    setPharmacyLocation,
+  } = useAppCommonData();
   const [userActionPayload, setUserActionPayload] = useState<any>(null);
   const [userAgent, setUserAgent] = useState<string>('');
   const genericErrorMessage = 'Oops! Something went wrong.';
@@ -97,9 +102,12 @@ export const useServerCart = () => {
       })
       .then((result) => {
         const saveCartResponse = result?.data?.saveCart;
-        if (saveCartResponse?.errorMessage) {
-          setServerCartErrorMessage?.(saveCartResponse?.errorMessage || genericErrorMessage);
+        if (saveCartResponse?.errorMessage?.length) {
+          setServerCartErrorMessage?.(saveCartResponse?.errorMessage);
           return;
+        }
+        if (saveCartResponse?.cartMessage?.length) {
+          setServerCartMessage?.(saveCartResponse?.cartMessage);
         }
         if (saveCartResponse?.data?.patientId) {
           const cartResponse = saveCartResponse?.data;
@@ -164,9 +172,12 @@ export const useServerCart = () => {
       })
       .then((result) => {
         const reviewCartResponse = result?.data?.reviewCartPage;
-        if (reviewCartResponse?.errorMessage) {
-          setServerCartErrorMessage?.(reviewCartResponse?.errorMessage || genericErrorMessage);
+        if (reviewCartResponse?.errorMessage?.length) {
+          setServerCartErrorMessage?.(reviewCartResponse?.errorMessage);
           return;
+        }
+        if (reviewCartResponse?.cartMessage?.length) {
+          setServerCartMessage?.(reviewCartResponse?.cartMessage);
         }
         if (reviewCartResponse?.data?.patientId) {
           const cartResponse = reviewCartResponse?.data;
@@ -295,6 +306,7 @@ export const useServerCart = () => {
   ) => {
     try {
       setUserActionPayload?.(null);
+      setSelectedPrescriptionType?.(PrescriptionType.UPLOADED);
       if (physicalPrescriptions?.length) {
         setServerCartLoading?.(true);
         // upload physical prescriptions and get prism file id
@@ -341,6 +353,7 @@ export const useServerCart = () => {
     cartItemsToAdd?: any[]
   ) => {
     setUserActionPayload?.(null);
+    setSelectedPrescriptionType?.(PrescriptionType.UPLOADED);
     if (ePrescriptionsToBeUploaded?.length) {
       const prescriptionsToUpload =
         ePrescriptionsToBeUploaded.map((presToAdd: EPrescription) => {

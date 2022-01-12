@@ -143,6 +143,7 @@ export interface InsuranceScreenProps
   extends NavigationScreenProps<{
     onPressBack: () => void;
     authToken: string;
+    callDataBool: boolean;
   }> {}
 
 export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
@@ -166,6 +167,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
   const [prismAuthToken, setPrismAuthToken] = useState<string>(
     props.navigation?.getParam('authToken') || ''
   );
+  const callDataBool = props.navigation?.getParam('callDataBool') || false;
   const [searchQuery, setSearchQuery] = useState({});
   const { phrSession, setPhrSession } = useAppCommonData();
 
@@ -285,9 +287,13 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
     }
   }, [callApi]);
 
-  const gotoPHRHomeScreen = () => {
+  const navigateToHome = () => {
     props.navigation.state.params?.onPressBack();
     props.navigation.goBack();
+  };
+
+  const gotoPHRHomeScreen = () => {
+    callDataBool ? props.navigation.navigate('HEALTH RECORDS') : navigateToHome();
   };
 
   const getLatestMedicalInsuranceRecords = () => {

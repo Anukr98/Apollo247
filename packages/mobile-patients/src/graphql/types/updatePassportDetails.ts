@@ -3,28 +3,24 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
+import { PassportDetailsInput } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: updatePassportDetails
 // ====================================================
 
-
 export interface updatePassportDetails_updatePassportDetails {
   __typename: "PassportDetailsResponse";
-  status: boolean;
-  displayId: string | number | null;
+  status: boolean | null;
   message: string | null;
-  data: string | null
+  displayId: number | null;
+  data: string | null;
 }
 
 export interface updatePassportDetails {
-  updatePassportDetails: [updatePassportDetails_updatePassportDetails] | null;
-}
-export interface updatePassportDetails_updatePassportDetailsVariables {
-  passportNo: string | null;     
-  displayId: number | string | null;
+  updatePassportDetails: (updatePassportDetails_updatePassportDetails | null)[] | null;
 }
 
 export interface updatePassportDetailsVariables {
-  passportDetailsInput: updatePassportDetails_updatePassportDetailsVariables
+  passportDetailsInput?: (PassportDetailsInput | null)[] | null;
 }
