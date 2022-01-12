@@ -1446,18 +1446,16 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
   const renderOrderSummary = () => {
     return (
-      !!g(orderDetails, 'totalPrice') && (
-        <TestOrderSummaryView
-          orderDetails={orderDetails}
-          slotDuration={slotDuration}
-          onPressViewReport={_onPressViewReportAction}
-          onPressDownloadInvoice={onPressInvoice}
-          refundDetails={refundStatusArr}
-          refundTransactionId={refundTransactionId}
-          subscriptionDetails={orderSubscriptionDetails}
-          onPressViewAll={_onPressViewAll}
-        />
-      )
+      <TestOrderSummaryView
+        orderDetails={orderDetails}
+        slotDuration={slotDuration}
+        onPressViewReport={_onPressViewReportAction}
+        onPressDownloadInvoice={onPressInvoice}
+        refundDetails={refundStatusArr}
+        refundTransactionId={refundTransactionId}
+        subscriptionDetails={orderSubscriptionDetails}
+        onPressViewAll={_onPressViewAll}
+      />
     );
   };
 
