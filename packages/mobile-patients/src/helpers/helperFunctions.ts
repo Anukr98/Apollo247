@@ -2299,16 +2299,12 @@ export const InitiateAppsFlyer = (
   );
   let isFirstLaunch = false;
   onInstallConversionDataCanceller = appsFlyer.onInstallConversionData((res) => {
-    if (JSON.parse(res.data.is_first_launch || 'null') == true) {
+    if (JSON.parse(res?.data?.is_first_launch || 'null') == true) {
       isFirstLaunch = true;
       try {
-        if (res.data.af_dp !== undefined) {
-          AsyncStorage.setItem('deeplink', res.data.af_dp);
-        }
-        if (res.data.af_sub1 !== null) {
-          AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
-        }
-        if (res.data.linkToUse !== null && res.data.linkToUse === 'ForReferrarInstall') {
+        res?.data?.af_dp?.(AsyncStorage.setItem('deeplink', res.data.af_dp));
+        res?.data?.af_sub1?.(AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1));
+        if (res?.data?.linkToUse !== null && res?.data?.linkToUse === 'ForReferrarInstall') {
           const responseData = res.data;
           setAppReferralData({
             af_channel: responseData.af_channel,
@@ -2320,18 +2316,17 @@ export const InitiateAppsFlyer = (
           });
         }
 
-        setBugFenderLog('APPS_FLYER_DEEP_LINK', res.data.af_dp);
-        setBugFenderLog('APPS_FLYER_DEEP_LINK_Referral_Code', res.data.af_sub1);
+        res?.data?.af_dp?.(setBugFenderLog('APPS_FLYER_DEEP_LINK', res.data.af_dp));
+        res.data.af_sub1?.(setBugFenderLog('APPS_FLYER_DEEP_LINK_Referral_Code', res.data.af_sub1));
 
         setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
       } catch (error) {}
 
-      if (res.data.af_status === 'Non-organic') {
+      if (res?.data?.af_status === 'Non-organic') {
         const media_source = res.data.media_source;
         const campaign = res.data.campaign;
-      } else if (res.data.af_status === 'Organic') {
+      } else if (res?.data?.af_status === 'Organic') {
       }
-    } else {
     }
   });
 
@@ -2339,17 +2334,17 @@ export const InitiateAppsFlyer = (
     // for iOS universal links
     if (Platform.OS === 'ios') {
       try {
-        if (res.data.af_dp !== undefined) {
-          AsyncStorage.setItem('deeplink', res.data.af_dp);
-        }
-        if (res.data.af_sub1 !== null) {
-          AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
-        }
+        res?.data?.af_dp?.(AsyncStorage.setItem('deeplink', res.data.af_dp));
+        res?.data?.af_sub1?.(AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1));
 
-        setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK', res.data.af_dp);
-        setBugFenderLog(
-          'onAppOpenAttribution_APPS_FLYER_DEEP_LINK_Referral_Code',
-          res.data.af_sub1
+        res?.data?.af_dp?.(
+          setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK', res.data.af_dp)
+        );
+        res?.data?.af_sub1?.(
+          setBugFenderLog(
+            'onAppOpenAttribution_APPS_FLYER_DEEP_LINK_Referral_Code',
+            res.data.af_sub1
+          )
         );
 
         setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
@@ -2359,13 +2354,15 @@ export const InitiateAppsFlyer = (
   let isDeepLinked = false;
   onDeepLinkCanceller = appsFlyer.onDeepLink((res) => {
     isDeepLinked = true;
-    if (res.isDeferred) {
+    if (res?.isDeferred) {
       getInstallResources();
-      const url = handleOpenURL(res.data.deep_link_value);
-      AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
+      res?.data?.deep_link_value?.(() => {
+        const url = handleOpenURL(res?.data?.deep_link_value);
+        AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
+      });
     }
     try {
-      if (!res.isDeferred) {
+      if (!res?.isDeferred) {
         if (redirectUrl && checkUniversalURL(redirectUrl).universal) {
           if (Object.keys(res.data).length < 2) {
             clevertapEventForAppsflyerDeeplink(
@@ -2384,9 +2381,11 @@ export const InitiateAppsFlyer = (
           }
         } else {
           clevertapEventForAppsflyerDeeplink(filterAppLaunchSoruceAttributesByKey(res.data));
-          const url = handleOpenURL(res.data.deep_link_value);
-          AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
-          redirectWithOutDeferred(url);
+          res?.data?.deep_link_value?.(() => {
+            const url = handleOpenURL(res.data.deep_link_value);
+            AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
+            redirectWithOutDeferred(url);
+          });
         }
       }
       if (res.status == 'success') {
@@ -2872,8 +2871,7 @@ export const addPharmaItemToCart = (
     }
     addToCart();
     onAddedSuccessfully?.();
-  }
-  catch(error) {}
+  } catch (error) {}
 };
 
 export const dataSavedUserID = async (key: string) => {
@@ -3050,21 +3048,23 @@ export const calculateCashbackForItem = (
 ) => {
   try {
     const { circleCashback } = useShoppingCart();
-  const categoryLevelkey = type_id ? type_id?.toUpperCase() : '';
-  const subCategoryLevelkey = type_id && subcategory ? `${type_id?.toUpperCase()}~${subcategory}` : '';
-  const skuLevelkey = type_id && subcategory && sku ? `${type_id?.toUpperCase()}~${subcategory}~${sku}` : '';
-  let cashbackFactor = 0;
-  if (skuLevelkey !== '' && circleCashback?.[skuLevelkey] >= 0) {
-    cashbackFactor = circleCashback?.[skuLevelkey];
-  } else if (subCategoryLevelkey !== '' && circleCashback?.[subCategoryLevelkey] >= 0) {
-    cashbackFactor = circleCashback?.[subCategoryLevelkey];
-  } else if (categoryLevelkey !== '' && circleCashback?.[categoryLevelkey] >= 0) {
-    cashbackFactor = circleCashback?.[categoryLevelkey];
-  } else {
-    cashbackFactor = 0;
-  }
-  const cashback = cashbackFactor ? ((price * cashbackFactor) / 100).toFixed(2) : '0';
-  return parseInt(cashback, 10) || 0;
+    const categoryLevelkey = type_id ? type_id?.toUpperCase() : '';
+    const subCategoryLevelkey =
+      type_id && subcategory ? `${type_id?.toUpperCase()}~${subcategory}` : '';
+    const skuLevelkey =
+      type_id && subcategory && sku ? `${type_id?.toUpperCase()}~${subcategory}~${sku}` : '';
+    let cashbackFactor = 0;
+    if (skuLevelkey !== '' && circleCashback?.[skuLevelkey] >= 0) {
+      cashbackFactor = circleCashback?.[skuLevelkey];
+    } else if (subCategoryLevelkey !== '' && circleCashback?.[subCategoryLevelkey] >= 0) {
+      cashbackFactor = circleCashback?.[subCategoryLevelkey];
+    } else if (categoryLevelkey !== '' && circleCashback?.[categoryLevelkey] >= 0) {
+      cashbackFactor = circleCashback?.[categoryLevelkey];
+    } else {
+      cashbackFactor = 0;
+    }
+    const cashback = cashbackFactor ? ((price * cashbackFactor) / 100).toFixed(2) : '0';
+    return parseInt(cashback, 10) || 0;
   } catch {
     return 0;
   }
@@ -3244,8 +3244,8 @@ export const clearStackAndNavigate = (
       index: 1,
       key: null,
       actions: [
-        NavigationActions.navigate({ 
-          routeName: AppRoutes.HomeScreen 
+        NavigationActions.navigate({
+          routeName: AppRoutes.HomeScreen,
         }),
         NavigationActions.navigate({
           routeName: screenName,
@@ -4405,24 +4405,21 @@ export const isTomorrowsDate = (time: string) => {
 };
 
 export const getShipmentAndTatInfo = (shipments) => {
-  return shipments?.length ? shipments.map((shipment) => {
-    const { tat, estimatedAmount, items } = shipment;
-    const tatDate = tat ? tat : null;
-    const tatDayDifference = tatDate
-      ? moment(tatDate).diff(new Date(), 'd')
-      : null;
-    const tatHourDifference = tatDate
-      ? moment(tatDate).format('hh:mm a')
-      : null;
+  return shipments?.length
+    ? shipments.map((shipment) => {
+        const { tat, estimatedAmount, items } = shipment;
+        const tatDate = tat ? tat : null;
+        const tatDayDifference = tatDate ? moment(tatDate).diff(new Date(), 'd') : null;
+        const tatHourDifference = tatDate ? moment(tatDate).format('hh:mm a') : null;
 
-    const skuIds = items.map(({ sku }) => sku).join(" , ");
-    return {
-      tatDayDifference,
-      tatHourDifference,
-      estimatedAmount,
-      skuIds,
-      tat,
-    };
-  }) : [];
+        const skuIds = items.map(({ sku }) => sku).join(' , ');
+        return {
+          tatDayDifference,
+          tatHourDifference,
+          estimatedAmount,
+          skuIds,
+          tat,
+        };
+      })
+    : [];
 };
-
