@@ -412,7 +412,7 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
 
   return (
     <>
-      {animationfinished ? (
+      {animationfinished && !fetching ? (
         <SafeAreaView style={styles.container}>
           <ScrollView>
             {renderPaymentStatus()}
