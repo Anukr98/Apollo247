@@ -182,14 +182,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 50,
   },
-  iconStyle: {
-    height: 32,
-    width: 41,
-  },
-  iconContainer: {
-    paddingRight: 8,
-    paddingTop: 7,
-  },
 });
 
 export interface OrderSummaryViewProps {
@@ -1070,8 +1062,8 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
         {true ? (
           <View style={styles.creditsEarnedContainer}>
             {showCashbackCard && renderCashbackDetailsCard()}
-            <View style={styles.iconContainer}>
-              <OneApollo style={styles.iconStyle} />
+            <View style={{ paddingRight: 8, paddingTop: 7 }}>
+              <OneApollo style={{ height: 32, width: 41 }} />
             </View>
             <View style={{ paddingTop: 5 }}>
               <View style={{ marginBottom: 2 }}>

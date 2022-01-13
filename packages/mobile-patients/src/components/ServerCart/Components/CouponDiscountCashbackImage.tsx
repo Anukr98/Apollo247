@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ImageBackground } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import string from '@aph/mobile-patients/src/strings/strings.json';
 
 export interface CouponDiscountCashbackImageProps {
   setShowCouponImage: (showCouponImage: boolean) => void;
@@ -45,10 +44,7 @@ export const CouponDiscountCashbackImage: React.FC<CouponDiscountCashbackImagePr
                   </View>
                   {couponSavings ? (
                     <View style={{ marginHorizontal: 18 }}>
-                      <Text style={styles.discountAmount}>
-                        {string.common.Rs}
-                        {couponSavings} OFF
-                      </Text>
+                      <Text style={styles.discountAmount}>₹{couponSavings} OFF</Text>
                     </View>
                   ) : null}
                   {couponCashBack ? (
@@ -60,7 +56,7 @@ export const CouponDiscountCashbackImage: React.FC<CouponDiscountCashbackImagePr
                   <View style={styles.hcTextContainer}>
                     {couponCashBack ? (
                       <Text style={styles.hcText}>
-                        HCs will be credited after order delivery. 1HC = {string.common.Rs}1
+                        HCs will be credited after order delivery. 1HC = ₹1
                       </Text>
                     ) : (
                       <Text style={styles.hcText}>Glad we could help you save :)</Text>

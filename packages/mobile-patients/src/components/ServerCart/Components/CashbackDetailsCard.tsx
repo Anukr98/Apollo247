@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import string from '@aph/mobile-patients/src/strings/strings.json';
 
 export interface CashbackDetailsProps {
   savingsClicked: boolean;
@@ -80,8 +79,7 @@ export const CashbackDetailsCard: React.FC<CashbackDetailsProps> = (props) => {
           <Text style={styles.itemText}>{heading}</Text>
         )}
         <Text style={circleContent ? [styles.itemText, styles.circleText] : styles.itemText}>
-          {string.common.Rs}
-          {value}
+          ₹{value}
         </Text>
       </View>
     );
