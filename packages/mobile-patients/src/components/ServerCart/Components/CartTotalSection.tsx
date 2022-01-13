@@ -5,29 +5,28 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { OneApollo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { CashbackDetailsCard } from '@aph/mobile-patients/src/components/ServerCart/Components/CashbackDetailsCard';
+import { Overlay } from 'react-native-elements';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { CouponDiscountCashbackImage } from '@aph/mobile-patients/src/components/ServerCart/Components/CouponDiscountCashbackImage';
 
-export interface CartTotalSectionProps {
-  showTotalSavingsAndHCSection: boolean;
-}
+export interface CartTotalSectionProps {}
 
 export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
-  // total savings and credits earned are shown only on cart page and not on review order page
-  const { showTotalSavingsAndHCSection } = props;
   const { cartSubscriptionDetails, serverCartAmount, isCircleCart } = useShoppingCart();
   const { healthCredits } = useAppCommonData();
   const isCircleAddedToCart =
     !!cartSubscriptionDetails?.currentSellingPrice &&
     !!cartSubscriptionDetails?.subscriptionApplied;
-  const cartTotal = serverCartAmount?.cartTotal || 0;
-  const cartSavings = serverCartAmount?.cartSavings || 0;
-  const couponSavings = serverCartAmount?.couponSavings || 0;
-  const deliveryCharges = serverCartAmount?.deliveryCharges || 0;
-  const estimatedAmount = serverCartAmount?.estimatedAmount || 0;
+  const cartTotal = serverCartAmount?.cartTotal;
+  const cartSavings = serverCartAmount?.cartSavings;
+  const couponSavings = serverCartAmount?.couponSavings;
+  const deliveryCharges = serverCartAmount?.deliveryCharges;
+  const estimatedAmount = serverCartAmount?.estimatedAmount;
   const isDeliveryFree = serverCartAmount?.isDeliveryFree;
-  const totalCashBack = serverCartAmount?.totalCashBack || 0;
-  const couponCashBack = serverCartAmount?.couponCashBack || 0;
-  const packagingCharges = serverCartAmount?.packagingCharges || 0;
+  const totalCashBack = serverCartAmount?.totalCashBack;
+  const couponCashBack = serverCartAmount?.couponCashBack;
+  console.log('cashback coupon------', couponCashBack);
+  const packagingCharges = serverCartAmount?.packagingCharges;
   const circleDeliverySavings = isCircleCart
     ? serverCartAmount?.circleSavings?.circleDelivery || 0
     : 0;
@@ -37,7 +36,8 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
   const deliverySavings = isDeliveryFree || circleDeliverySavings > 0 ? deliveryCharges : 0;
   const totalSavings =
     cartSavings + couponSavings + deliverySavings + (isCircleCart ? totalCashBack : 0) || 0;
-  const isHealthCreditsAvailable = healthCredits ? true : false;
+  // const isHealthCreditsAvailable = healthCredits ? true : false;
+  const isHealthCreditsAvailable = true;
   const savingsAfterUsingHC =
     isHealthCreditsAvailable && estimatedAmount
       ? estimatedAmount - healthCredits > 0
@@ -47,24 +47,23 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
 
   const [showCashbackCard, setShowCashbackCard] = useState<boolean>(false);
   const [savingsSelected, setSavingsSelected] = useState<boolean>(false);
-  // separate onlySavingsSelected variable created for UI purpose - alignment of triangle in cashback details card
-  // when savings section is shown and health credits earned is not shown
-  const [onlySavingsSelected, setOnlySavingsSelected] = useState<boolean>(false);
   const [HCSectionSelected, setHCSectionSelected] = useState<boolean>(false);
 
   const savingsTextRef = useRef<Text>(null);
-  const onlySavingsTextRef = useRef<Text>(null);
+  const savingsText1Ref = useRef<Text>(null);
   const hcTextRef = useRef<Text>(null);
   const [savingsTextWidth, setSavingsTextWidth] = useState<number>(0);
-  const [onlySavingsTextWidth, setOnlySavingsTextWidth] = useState<number>(0);
+  const [savingsText1Width, setSavingsText1Width] = useState<number>(0);
   const [hcTextWidth, setHCTextWidth] = useState<number>(0);
+  // console.log(savingsTextWidth, hcTextWidth);
 
   const renderCartTotal = () => {
     const afterSavingsCartTotal = cartSavings && cartTotal ? cartTotal - cartSavings : 0;
+    // const afterSavingsCartTotal = 0;
     return cartTotal ? (
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <Text style={styles.text}>Cart total</Text>
-        {afterSavingsCartTotal >= 0 ? (
+        {afterSavingsCartTotal ? (
           <View style={{ flexDirection: 'row' }}>
             <Text style={styles.strikedThroughText}>₹{cartTotal?.toFixed(2)}</Text>
             <Text style={styles.text}>₹{afterSavingsCartTotal?.toFixed(2)}</Text>
@@ -72,6 +71,16 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
         ) : (
           <Text style={styles.text}>₹{cartTotal?.toFixed(2)}</Text>
         )}
+        {/* <Text style={styles.text}>₹{cartTotal?.toFixed(2)}</Text> */}
+      </View>
+    ) : null;
+  };
+
+  const renderProductDiscount = () => {
+    return cartSavings ? (
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+        <Text style={styles.text}>Product Discount</Text>
+        <Text style={styles.discount}>-₹{cartSavings?.toFixed(2)}</Text>
       </View>
     ) : null;
   };
@@ -120,7 +129,7 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
   };
 
   const renderToPay = () => {
-    return estimatedAmount >= 0 ? (
+    return estimatedAmount ? (
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <Text style={styles.toPay}>To Pay</Text>
         <Text style={styles.toPay}>₹{estimatedAmount?.toFixed(2)}</Text>
@@ -137,7 +146,7 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
     ) : null;
 
   const renderPayUsingHealthCredits = () => {
-    return isHealthCreditsAvailable && savingsAfterUsingHC ? (
+    return isHealthCreditsAvailable ? (
       <View style={styles.healthCreditsAvailableView}>
         <Text style={styles.healthCreditsAvailableBoldTextStyle}>
           Now pay only ₹{savingsAfterUsingHC.toFixed(2)}
@@ -151,24 +160,38 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
   };
 
   const renderTotalSavings = () => {
-    return estimatedAmount >= 0 ? (
-      <View style={styles.onlySavingsContainer}>
+    return estimatedAmount ? (
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'center',
+          marginTop: 14,
+          // marginBottom: -7,
+          // backgroundColor: '#00ff33',
+        }}
+      >
         <View style={{ paddingRight: 10, paddingTop: 2 }}>
           <Text style={styles.savingsText}>Total savings: </Text>
         </View>
+        {/* <View style={{}}> */}
         <TouchableOpacity
           onPress={() => {
             setShowCashbackCard(!showCashbackCard);
-            setOnlySavingsSelected(!onlySavingsSelected);
+            setSavingsSelected(!savingsSelected);
           }}
         >
-          <View style={{ alignSelf: 'center' }}>
+          <View
+            style={{
+              alignSelf: 'center',
+            }}
+          >
             <Text
-              style={styles.savingsAmount}
-              ref={onlySavingsTextRef}
+              style={[styles.savingsAmount, {}]}
+              ref={savingsText1Ref}
               onLayout={(event) => {
                 const layout = event.nativeEvent.layout;
-                setOnlySavingsTextWidth(layout.width);
+                // console.log('layout of savings', layout);
+                setSavingsText1Width(layout.width);
               }}
             >
               ₹{totalSavings?.toFixed(2)}
@@ -176,25 +199,53 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
             <Text
               numberOfLines={1}
               ellipsizeMode={'clip'}
-              style={[styles.textUnderline, { width: onlySavingsTextWidth }]}
+              style={[styles.textUnderline, { width: savingsText1Width }]}
             >
               ---------------------------------------------
             </Text>
           </View>
+          {/* <Text numberOfLines={1} ellipsizeMode={'clip'} style={styles.textUnderline}>
+              ------------------------------------
+            </Text> */}
         </TouchableOpacity>
+        {/* </View> */}
       </View>
     ) : null;
   };
 
   const renderTotalSavingsAndHealthCredits = () => {
-    return estimatedAmount >= 0 ? (
-      <View style={styles.savingsAndCreditsContainer}>
-        <View style={{ flexDirection: 'row', alignSelf: 'baseline' }}>
-          <View style={{ paddingRight: 5, paddingTop: 7 }}>
+    return estimatedAmount ? (
+      <View
+        style={{
+          flexDirection: 'row',
+          backgroundColor: '#00ff99',
+          marginTop: 14,
+          alignSelf: 'baseline',
+          paddingBottom: -5,
+        }}
+      >
+        <View
+          style={{
+            flexDirection: 'row',
+            alignSelf: 'baseline',
+            // backgroundColor: '#00ff33',
+          }}
+        >
+          {savingsSelected && renderCashbackDetailsCard(-155)}
+          <View
+            style={{
+              paddingRight: 5,
+              paddingTop: 7,
+            }}
+          >
             <Text style={styles.savingsText}>Total</Text>
             <Text style={styles.savingsText}>savings: </Text>
           </View>
-          <View style={{ paddingTop: 12 }}>
+          <View
+            style={{
+              paddingTop: 12,
+            }}
+          >
             <TouchableOpacity
               onPress={() => {
                 if (savingsSelected === false) {
@@ -217,6 +268,7 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
                 ref={savingsTextRef}
                 onLayout={(event) => {
                   const layout = event.nativeEvent.layout;
+                  console.log('layout of savings', layout);
                   setSavingsTextWidth(layout.width);
                 }}
               >
@@ -231,9 +283,11 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
               </Text>
             </TouchableOpacity>
           </View>
+          {/* {console.log('savingsTextWidth', savingsTextWidth, hcTextWidth)} */}
           <View style={styles.borderLine}></View>
         </View>
-        <View style={{ flexDirection: 'row', alignSelf: 'center' }}>
+        <View style={{ flexDirection: 'row', backgroundColor: '#00ff33', alignSelf: 'center' }}>
+          {!savingsSelected && renderCashbackDetailsCard(-107)}
           <View style={{ paddingLeft: 8, paddingRight: 8 }}>
             <OneApollo style={{ height: 43, width: 55 }} />
           </View>
@@ -258,16 +312,18 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
                     setHCSectionSelected(false);
                   }
                 }}
+                // style={{ alignItems: 'flex-start' }}
               >
                 <Text
                   style={styles.hcEarned}
                   ref={hcTextRef}
                   onLayout={(event) => {
                     const layout = event.nativeEvent.layout;
+                    // console.log('layout of HC', layout);
                     setHCTextWidth(layout.width);
                   }}
                 >
-                  {totalCashBack} HC
+                  79HC
                 </Text>
                 <Text
                   numberOfLines={1}
@@ -284,26 +340,30 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
     ) : null;
   };
 
-  const renderCashbackDetailsCard = (topValue?: number) => {
+  const renderCashbackDetailsCard = (topValue: number) => {
     return showCashbackCard ? (
       <View
         style={[
-          { zIndex: 1, position: 'absolute' },
-          savingsSelected ? { marginLeft: 10, bottom: 50 } : { marginLeft: 70, bottom: 45 },
+          {
+            zIndex: 1,
+            position: 'absolute',
+            marginLeft: 5,
+            marginRight: 5,
+            top: savingsSelected ? -75 : -45,
+            // top: topValue,
+            flexWrap: 'wrap',
+            flex: 1,
+            // width: '80%',
+            // backgroundColor: '#00ff33',
+            // flexDirection: 'row',
+          },
+          savingsSelected ? {} : { marginLeft: -70 },
         ]}
       >
-        {(savingsSelected || onlySavingsSelected) &&
-        (totalCashBack || couponSavings || cartSavings || isDeliveryFree) ? (
-          <CashbackDetailsCard
-            savingsClicked={savingsSelected || onlySavingsSelected ? true : false}
-            triangleAlignmentValue={savingsSelected ? 70 : 135}
-          />
-        ) : couponCashBack || circleMembershipCashback ? (
-          <CashbackDetailsCard
-            savingsClicked={savingsSelected ? true : false}
-            triangleAlignmentValue={savingsSelected ? 70 : 135}
-          />
-        ) : null}
+        <CashbackDetailsCard
+          savingsClicked={savingsSelected ? savingsSelected : false}
+          triangleAlignmentValue={savingsSelected ? 70 : 135}
+        />
       </View>
     ) : null;
   };
@@ -313,6 +373,7 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
       <View style={styles.card}>
         <View style={{ paddingHorizontal: 15 }}>
           {renderCartTotal()}
+          {/* {renderProductDiscount()} */}
           {renderCouponDiscount()}
           {!!isCircleAddedToCart && renderCircleMembershipCharges()}
           {!!deliveryCharges && renderDeliveryCharges()}
@@ -320,18 +381,24 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
           {renderSeparator()}
           {renderToPay()}
         </View>
-        {showTotalSavingsAndHCSection && renderPayUsingHealthCredits()}
-        {showTotalSavingsAndHCSection && (
-          <View style={{ paddingHorizontal: 15 }}>
-            {renderCashbackDetailsCard()}
-            {couponCashBack || circleMembershipCashback
-              ? renderTotalSavingsAndHealthCredits()
-              : renderTotalSavings()}
-          </View>
-        )}
+        {renderPayUsingHealthCredits()}
+        <View style={{ paddingHorizontal: 15 }}>
+          {/* {renderCashbackDetailsCard()} */}
+          {renderTotalSavings()}
+          {renderTotalSavingsAndHealthCredits()}
+        </View>
       </View>
     </View>
   );
+  // return (
+  //   <View style={{ height: 1000 }}>
+  //     <View style={styles.card}>
+  //       <View style={{ position: 'absolute', zIndex: 5 }}>
+  //         <CouponDiscountCashbackImage />
+  //       </View>
+  //     </View>
+  //   </View>
+  // );
 };
 
 const styles = StyleSheet.create({
@@ -341,6 +408,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginTop: 5,
     marginBottom: 5,
+    // paddingHorizontal: 15,
     paddingVertical: 12,
   },
   text: {
@@ -387,10 +455,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 135, 186, 0.1)',
     paddingVertical: 10,
     paddingHorizontal: 5,
+    // marginVertical: 12,
     marginTop: 12,
   },
   healthCreditsAvailableTextStyle: {
     ...theme.fonts.IBMPlexSansRegular(14),
+    // fontWeight: '600',
     lineHeight: 18,
     textAlign: 'center',
     color: theme.colors.LIGHT_BLUE,
@@ -413,6 +483,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     lineHeight: 21,
     color: theme.colors.PACIFIC_BLUE,
+    // textDecorationStyle: 'dashed',
+    // textDecorationLine: 'underline',
+    // textDecorationColor: theme.colors.PACIFIC_BLUE,
+    // textAlign: 'center',
   },
   hcEarned: {
     ...theme.fonts.IBMPlexSansBold(13),
@@ -429,18 +503,10 @@ const styles = StyleSheet.create({
   textUnderline: {
     color: theme.colors.LIGHT_BLUE,
     top: -7,
+    // borderBottomColor: '#FFFFFF',
+    // borderStyle: 'dashed',
+    // borderWidth: 1.25,
     opacity: 0.2,
-  },
-  savingsAndCreditsContainer: {
-    flexDirection: 'row',
-    marginTop: 14,
-    marginBottom: -14,
-    alignSelf: 'baseline',
-    justifyContent: 'center',
-  },
-  onlySavingsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 14,
+    // height: 5,
   },
 });

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ImageBackground } from 'react-native';
+import { Confetti } from '../../ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
@@ -14,66 +15,73 @@ export const CouponDiscountCashbackImage: React.FC<CouponDiscountCashbackImagePr
   const couponSavings = serverCartAmount?.couponSavings || 0;
   const bothDiscountAndCashbackAvailable = couponCashBack && couponSavings ? true : false;
   const eitherDiscountAndCashbackAvailable = couponCashBack || couponSavings ? true : false;
+  console.log(bothDiscountAndCashbackAvailable, eitherDiscountAndCashbackAvailable);
+  console.log('coupon.........', serverCartAmount);
 
   const renderDiscountCashback = () => {
     return (
-      <TouchableOpacity
-        onPress={() => {
-          setShowCouponImage(false);
-        }}
-        style={[styles.container]}
-      >
-        <View style={styles.couponContainer}>
+      <View style={styles.container}>
+        {/* <Confetti style={styles.confetti} /> */}
+        <View style={[styles.couponContainer]}>
+          {/* <Confetti style={styles.confetti} /> */}
           <ImageBackground
-            source={require('@aph/mobile-patients/src/components/ui/icons/Confetti.webp')}
-            style={{ width: 273, height: bothDiscountAndCashbackAvailable ? 311 : 275 }}
+            // source={require('@aph/mobile-patients/src/components/ui/icons/Discount-Cashback.webp')}
+            source={
+              bothDiscountAndCashbackAvailable
+                ? require('@aph/mobile-patients/src/components/ui/icons/CouponDiscountCashback.webp')
+                : require('@aph/mobile-patients/src/components/ui/icons/CashbackOrDiscount.webp')
+            }
+            style={{ width: 191, height: bothDiscountAndCashbackAvailable ? 311 : 275 }}
           >
-            <View style={[styles.couponContainer, { marginLeft: 15 }]}>
-              <ImageBackground
-                source={
-                  bothDiscountAndCashbackAvailable
-                    ? require('@aph/mobile-patients/src/components/ui/icons/CouponDiscountCashback.webp')
-                    : require('@aph/mobile-patients/src/components/ui/icons/CashbackOrDiscount.webp')
-                }
-                style={{ width: 191, height: bothDiscountAndCashbackAvailable ? 311 : 275 }}
-              >
-                <View style={{ flex: 1, justifyContent: 'space-between' }}>
-                  <View style={styles.textUnderline}>
-                    <Text style={styles.couponText}>{cartCoupon?.coupon}</Text>
-                    <Text style={styles.couponText}>Applied!</Text>
-                  </View>
-                  {couponSavings ? (
-                    <View style={{ marginHorizontal: 18 }}>
-                      <Text style={styles.discountAmount}>₹{couponSavings} OFF</Text>
-                    </View>
-                  ) : null}
-                  {couponCashBack ? (
-                    <View style={{ width: 160, marginLeft: 18 }}>
-                      <Text style={styles.hcAmount}>{couponCashBack} HC</Text>
-                      <Text style={styles.cashbackText}>cashback earned</Text>
-                    </View>
-                  ) : null}
-                  <View style={styles.hcTextContainer}>
-                    {couponCashBack ? (
-                      <Text style={styles.hcText}>
-                        HCs will be credited after order delivery. 1HC = ₹1
-                      </Text>
-                    ) : (
-                      <Text style={styles.hcText}>Glad we could help you save :)</Text>
-                    )}
-                  </View>
+            <View style={{ flex: 1, justifyContent: 'space-between' }}>
+              <View style={styles.textUnderline}>
+                <Text style={styles.couponText}>{cartCoupon?.coupon}</Text>
+                <Text style={styles.couponText}>Applied!</Text>
+              </View>
+              {couponSavings ? (
+                <View style={{ marginHorizontal: 18 }}>
+                  <Text style={styles.discountAmount}>₹{couponSavings} OFF</Text>
+                  {/* <Text style={styles.discountAmount}>OFF</Text> */}
                 </View>
-              </ImageBackground>
+              ) : null}
+              {couponCashBack ? (
+                <View style={{ width: 160, marginLeft: 18 }}>
+                  <Text style={styles.hcAmount}>{couponCashBack} HC</Text>
+                  <Text style={styles.cashbackText}>cashback earned</Text>
+                </View>
+              ) : null}
+              <View
+                style={{
+                  paddingLeft: 16,
+                  marginVertical: 10,
+                  width: 160,
+                }}
+              >
+                {couponCashBack ? (
+                  <Text style={styles.hcText}>
+                    HCs will be credited after order delivery. 1HC = ₹1
+                  </Text>
+                ) : (
+                  <Text style={styles.hcText}>Glad we could help you save :)</Text>
+                )}
+              </View>
             </View>
           </ImageBackground>
+          {/* <Confetti style={styles.confetti} /> */}
         </View>
-      </TouchableOpacity>
+      </View>
     );
   };
-
-  return bothDiscountAndCashbackAvailable || eitherDiscountAndCashbackAvailable
-    ? renderDiscountCashback()
-    : null;
+  // return (
+  //   <TouchableOpacity
+  //     onPress={() => {
+  //       setShowCouponImage(false);
+  //     }}
+  //   >
+  //     {renderDiscountCashback()}
+  //   </TouchableOpacity>
+  // );
+  return renderDiscountCashback();
 };
 
 const styles = StyleSheet.create({
@@ -90,6 +98,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignSelf: 'center',
+  },
+  confetti: {
+    // height: 400,
+    // width: 200,
   },
   couponText: {
     ...theme.fonts.IBMPlexSansBold(13),
@@ -129,10 +141,5 @@ const styles = StyleSheet.create({
     lineHeight: 13,
     fontWeight: '600',
     color: theme.colors.TURQUOISE_LIGHT_BLUE,
-  },
-  hcTextContainer: {
-    paddingLeft: 16,
-    marginVertical: 10,
-    width: 160,
   },
 });
