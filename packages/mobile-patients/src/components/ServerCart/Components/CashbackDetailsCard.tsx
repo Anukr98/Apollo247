@@ -8,7 +8,7 @@ import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAdd
 export interface CashbackDetailsProps {
   savingsClicked: boolean;
   triangleAlignmentValue: number;
-  cashbackDetails?: getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_amountBreakUp | null;
+  cashbackDetails?: getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_amountBreakUp;
 }
 
 export const CashbackDetailsCard: React.FC<CashbackDetailsProps> = (props) => {
@@ -57,15 +57,6 @@ export const CashbackDetailsCard: React.FC<CashbackDetailsProps> = (props) => {
     },
   };
 
-  const getRoundedOffAmount = (amount: string) => {
-    if (amount.endsWith('.00')) {
-      const roundedOffAmount = amount.split('.');
-      return roundedOffAmount[0];
-    } else {
-      return amount;
-    }
-  };
-
   const renderHealthCreditsText = () => {
     return (
       <View>
@@ -80,7 +71,6 @@ export const CashbackDetailsCard: React.FC<CashbackDetailsProps> = (props) => {
   };
 
   const renderDiscountCashbackValue = (heading: string, value: number, circleContent?: boolean) => {
-    const roundedOffValue = getRoundedOffAmount(value.toFixed(2));
     return (
       <View style={styles.individualItem}>
         {circleContent ? (
@@ -93,7 +83,7 @@ export const CashbackDetailsCard: React.FC<CashbackDetailsProps> = (props) => {
         )}
         <Text style={circleContent ? [styles.itemText, styles.circleText] : styles.itemText}>
           {string.common.Rs}
-          {roundedOffValue}
+          {value}
         </Text>
       </View>
     );
