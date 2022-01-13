@@ -3946,17 +3946,22 @@ export const downloadDocument = (
   orderId: number,
   isReport?: boolean
 ) => {
+  const dirs = RNFetchBlob.fs.dirs;
   let filePath: string | null = null;
-  let file_url_length = fileUrl.length;
+  let file_url_length = fileUrl?.length;
   let viewReportOrderId = orderId;
   const isReportApollo = isReport ? 'labreport' : 'labinvoice';
   const dynamicFileName = `Apollo247_${orderId}_${isReportApollo}.pdf`;
-  const configOptions = { fileCache: true };
+  const downloadPath =
+  Platform.OS === 'ios'
+    ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + dynamicFileName
+    : dirs.DownloadDir + '/' + dynamicFileName;
+  const configOptions = { fileCache: true, path: downloadPath };
   RNFetchBlob.config(configOptions)
-    .fetch('GET', fileUrl.replace(/\s/g, ''))
+    .fetch('GET', fileUrl?.replace(/\s/g, ''))
     .then((resp) => {
-      filePath = resp.path();
-      return resp.readFile('base64');
+      filePath = resp?.path();
+      return resp?.readFile('base64');
     })
     .then(async (base64Data) => {
       base64Data = `data:${type};base64,` + base64Data;
@@ -3970,6 +3975,7 @@ export const downloadDocument = (
 
   return viewReportOrderId;
 };
+
 export const getIsMedicine = (typeId: string) => {
   const medicineType = {
     fmcg: '0',
@@ -4322,12 +4328,17 @@ export const shareDocument = async (
   isReport?: boolean
 ) => {
   let result = Platform.OS === 'android' && (await requestReadSmsPermission());
+  const dirs = RNFetchBlob.fs.dirs;
   let filePath: string | null = null;
-  let file_url_length = fileUrl.length;
+  let file_url_length = fileUrl?.length;
   let viewReportOrderId = orderId;
   const isReportApollo = isReport ? 'labreport' : 'labinvoice';
   const dynamicFileName = `Apollo247_${orderId}_${isReportApollo}.pdf`;
-  const configOptions = { fileCache: true };
+  const downloadPath =
+  Platform.OS === 'ios'
+    ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + dynamicFileName
+    : dirs.DownloadDir + '/' + dynamicFileName;
+  const configOptions = { fileCache: true, path: downloadPath };
 
   try {
     if (
@@ -4340,10 +4351,10 @@ export const shareDocument = async (
       Platform.OS == 'ios'
     ) {
       RNFetchBlob.config(configOptions)
-        .fetch('GET', fileUrl.replace(/\s/g, ''))
+        .fetch('GET', fileUrl?.replace(/\s/g, ''))
         .then((resp) => {
-          filePath = resp.path();
-          return resp.readFile('base64');
+          filePath = resp?.path();
+          return resp?.readFile('base64');
         })
         .then(async (base64Data) => {
           base64Data = `data:${type};base64,` + base64Data;
