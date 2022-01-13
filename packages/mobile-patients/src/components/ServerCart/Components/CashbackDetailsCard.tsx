@@ -3,16 +3,14 @@ import { View, Text, StyleSheet } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_amountBreakUp } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetailsWithAddress';
 
 export interface CashbackDetailsProps {
   savingsClicked: boolean;
   triangleAlignmentValue: number;
-  cashbackDetails?: getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_amountBreakUp;
 }
 
 export const CashbackDetailsCard: React.FC<CashbackDetailsProps> = (props) => {
-  const { savingsClicked, triangleAlignmentValue, cashbackDetails } = props;
+  const { savingsClicked, triangleAlignmentValue } = props;
   const { serverCartAmount, isCircleCart } = useShoppingCart();
 
   const cartSavings = serverCartAmount?.cartSavings || 0;
@@ -101,18 +99,10 @@ export const CashbackDetailsCard: React.FC<CashbackDetailsProps> = (props) => {
         {savingsClicked && couponSavings
           ? renderDiscountCashbackValue('Coupon Discount', couponSavings)
           : null}
-        {cashbackDetails?.circleCashback
-          ? renderDiscountCashbackValue(
-              'Membership Cashback (HC)',
-              cashbackDetails?.circleCashback,
-              true
-            )
-          : circleMembershipCashback
+        {circleMembershipCashback
           ? renderDiscountCashbackValue('Membership Cashback (HC)', circleMembershipCashback, true)
           : null}
-        {cashbackDetails?.couponCashback
-          ? renderDiscountCashbackValue('Coupon Cashback (HC)', cashbackDetails?.couponCashback)
-          : couponCashBack
+        {couponCashBack
           ? renderDiscountCashbackValue('Coupon Cashback (HC)', couponCashBack)
           : null}
       </View>

@@ -22,7 +22,6 @@ import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUti
 import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { CashbackDetailsCard } from '@aph/mobile-patients/src/components/ServerCart/Components/CashbackDetailsCard';
-import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_amountBreakUp } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetailsWithAddress';
 
 const styles = StyleSheet.create({
   horizontalline: {
@@ -198,14 +197,12 @@ export interface OrderSummaryViewProps {
   isTest?: boolean;
   addressData?: string;
   onBillChangesClick?: () => void;
-  cashbackDetails?: getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_amountBreakUp;
 }
 
 export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
   orderDetails,
   addressData,
   onBillChangesClick,
-  cashbackDetails,
 }) => {
   const medicineOrderLineItems = orderDetails.medicineOrderLineItems || [];
   const medicineOrderShipments = orderDetails.medicineOrderShipments || [];
@@ -573,11 +570,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
   const renderCashbackDetailsCard = () => {
     return showCashbackCard ? (
       <View style={styles.cashbackDetailsCardContainer}>
-        <CashbackDetailsCard
-          savingsClicked={false}
-          triangleAlignmentValue={100}
-          cashbackDetails={cashbackDetails}
-        />
+        <CashbackDetailsCard savingsClicked={false} triangleAlignmentValue={100} />
       </View>
     ) : null;
   };
@@ -1098,7 +1091,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
                       setHCTextWidth(layout.width);
                     }}
                   >
-                    {cashbackDetails?.totalCashBack?.toFixed(2)} HC
+                    79HC
                   </Text>
                   <Text
                     numberOfLines={1}
