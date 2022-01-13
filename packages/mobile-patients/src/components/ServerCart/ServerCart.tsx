@@ -65,7 +65,6 @@ import {
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import AsyncStorage from '@react-native-community/async-storage';
-import { CouponDiscountCashbackImage } from '@aph/mobile-patients/src/components/ServerCart/Components/CouponDiscountCashbackImage';
 
 export interface ServerCartProps extends NavigationScreenProps {}
 
@@ -97,7 +96,6 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
     fetchProductSuggestions,
   } = useServerCart();
   const [loading, setLoading] = useState<boolean>(false);
-  const [showCouponImage, setShowCouponImage] = useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
 
   const circlePlanAddedToCart =
@@ -410,7 +408,6 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
 
   return (
     <View style={{ flex: 1 }}>
-      {showCouponImage && <CouponDiscountCashbackImage />}
       <SafeAreaView style={theme.viewStyles.container}>
         <CartHeader navigation={props.navigation} />
         <ScrollView

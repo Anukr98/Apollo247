@@ -53,7 +53,7 @@ export const useServerCart = () => {
     setAddToCartSource,
     pharmacyCircleAttributes,
   } = useShoppingCart();
-  const { axdcCode, isPharmacyLocationServiceable, authToken } = useAppCommonData();
+  const { axdcCode, isPharmacyLocationServiceable } = useAppCommonData();
   const { setPharmacyLocation } = useAppCommonData();
   const [userActionPayload, setUserActionPayload] = useState<any>(null);
   const [userAgent, setUserAgent] = useState<string>('');
@@ -78,8 +78,6 @@ export const useServerCart = () => {
   }, [userActionPayload]);
 
   const saveServerCart = (cartInputData: CartInputData) => {
-    console.log('savecart input>>>>>>>>>>>>>', cartInputData, userAgent);
-    console.log('authToken', authToken);
     setServerCartLoading?.(true);
     client
       .mutate({
@@ -96,7 +94,6 @@ export const useServerCart = () => {
       })
       .then((result) => {
         const saveCartResponse = result?.data?.saveCart;
-        console.log('savecart response>>>>>>>>>>>>>', saveCartResponse);
         if (saveCartResponse?.errorMessage) {
           setServerCartErrorMessage?.(saveCartResponse?.errorMessage || genericErrorMessage);
           return;
@@ -107,7 +104,6 @@ export const useServerCart = () => {
         }
       })
       .catch((error) => {
-        console.log('savecart error>>>>>>>>>>>>>', error);
         setServerCartErrorMessage?.(genericErrorMessage);
       })
       .finally(() => {
@@ -132,7 +128,6 @@ export const useServerCart = () => {
       })
       .then((result) => {
         const fetchCartResponse = result?.data?.fetchCart;
-        console.log('fetchcart response>>>>>>>>>>>>>', fetchCartResponse);
         if (fetchCartResponse?.errorMessage) {
           return;
         }
@@ -142,7 +137,6 @@ export const useServerCart = () => {
         }
       })
       .catch((error) => {
-        console.log('fetchcart error>>>>>>>>>>>>>', error);
         setServerCartErrorMessage?.(genericErrorMessage);
       })
       .finally(() => {
@@ -167,7 +161,6 @@ export const useServerCart = () => {
       })
       .then((result) => {
         const reviewCartResponse = result?.data?.reviewCartPage;
-        console.log('reviewcart response>>>>>>>>>>>>>', reviewCartResponse);
         if (reviewCartResponse?.errorMessage) {
           setServerCartErrorMessage?.(reviewCartResponse?.errorMessage || genericErrorMessage);
           return;
@@ -178,7 +171,6 @@ export const useServerCart = () => {
         }
       })
       .catch((error) => {
-        console.log('reviewcart error>>>>>>>>>>>>>', error);
         setServerCartErrorMessage?.(genericErrorMessage);
       })
       .finally(() => {
