@@ -13,18 +13,14 @@ export interface CashbackDetailsProps {
 
 export const CashbackDetailsCard: React.FC<CashbackDetailsProps> = (props) => {
   const { savingsClicked, triangleAlignmentValue, cashbackDetails } = props;
-  const { serverCartAmount, isCircleCart, cartSubscriptionDetails } = useShoppingCart();
+  const { serverCartAmount, isCircleCart } = useShoppingCart();
 
   const cartSavings = serverCartAmount?.cartSavings || 0;
   const couponSavings = serverCartAmount?.couponSavings || 0;
   const deliveryCharges = serverCartAmount?.deliveryCharges || 0;
   const isDeliveryFree = serverCartAmount?.isDeliveryFree || 0;
-  const circleDeliverySavings = isCircleCart
-    ? serverCartAmount?.circleSavings?.circleDelivery || 0
-    : 0;
-  const deliverySavings = isDeliveryFree || circleDeliverySavings > 0 ? deliveryCharges : 0;
   const couponCashBack = serverCartAmount?.couponCashBack || 0;
-  const circleMembershipCashback = cartSubscriptionDetails?.subscriptionApplied
+  const circleMembershipCashback = isCircleCart
     ? serverCartAmount?.circleSavings?.membershipCashBack || 0
     : 0;
   const healthCreditText = 'HCs will be credited after order delivery.';
@@ -109,8 +105,8 @@ export const CashbackDetailsCard: React.FC<CashbackDetailsProps> = (props) => {
         {savingsClicked && cartSavings
           ? renderDiscountCashbackValue('Product Discount', cartSavings)
           : null}
-        {savingsClicked && deliverySavings
-          ? renderDiscountCashbackValue('Delivery Charges', deliverySavings)
+        {savingsClicked && deliveryCharges && isDeliveryFree
+          ? renderDiscountCashbackValue('Delivery Charges', deliveryCharges)
           : null}
         {savingsClicked && couponSavings
           ? renderDiscountCashbackValue('Coupon Discount', couponSavings)
