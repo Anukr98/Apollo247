@@ -152,11 +152,9 @@ export interface ViewCouponsProps extends NavigationScreenProps {
   movedFrom: 'consult' | 'pharma' | 'diagnostic' | 'subscription';
   onApplyCoupon: (value: string) => Promise<void>;
   coupon: string;
-  setShowCouponImage: (showCouponImage: boolean) => void;
 }
 
 export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
-  const setShowCouponImage = props.navigation.getParam('setShowCouponImage');
   const onApplyCoupon = props.navigation.getParam('onApplyCoupon');
   const movedFrom = props.navigation.getParam('movedFrom');
   const isFromConsult = movedFrom === 'consult';
@@ -247,7 +245,6 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
     if (!isFromConsult) {
       if (cartCoupon?.valid) {
         fireCouponAppliedEvents(cartCoupon?.coupon || '', cartCoupon?.valid);
-        setShowCouponImage(true);
         props.navigation.goBack();
       } else if (cartCoupon?.valid == false && cartCoupon?.reason) {
         fireCouponAppliedEvents(cartCoupon?.coupon || '', cartCoupon?.valid);

@@ -14,7 +14,15 @@ export interface CashbackDetailsProps {
 }
 
 export const CashbackDetailsCard: React.FC<CashbackDetailsProps> = (props) => {
-  const { savingsClicked, triangleAlignmentValue } = props;
+  const {
+    savingsClicked,
+    // productDiscount,
+    // deliveryCharges,
+    // couponDiscount,
+    // circleCashback,
+    couponCashback,
+    triangleAlignmentValue,
+  } = props;
 
   const { serverCartAmount, isCircleCart } = useShoppingCart();
 
@@ -23,8 +31,6 @@ export const CashbackDetailsCard: React.FC<CashbackDetailsProps> = (props) => {
   const deliveryCharges = serverCartAmount?.deliveryCharges || 0;
   const isDeliveryFree = serverCartAmount?.isDeliveryFree || 0;
   const totalCashBack = serverCartAmount?.totalCashBack || 0;
-  const couponCashBack = serverCartAmount?.couponCashBack || 0;
-  console.log(serverCartAmount);
   const circleMembershipCashback = isCircleCart
     ? serverCartAmount?.circleSavings?.membershipCashBack || 0
     : 0;
@@ -114,8 +120,8 @@ export const CashbackDetailsCard: React.FC<CashbackDetailsProps> = (props) => {
         {circleMembershipCashback
           ? renderDiscountCashbackValue('Membership Cashback (HC)', circleMembershipCashback, true)
           : null}
-        {couponCashBack
-          ? renderDiscountCashbackValue('Coupon Cashback (HC)', couponCashBack)
+        {couponCashback
+          ? renderDiscountCashbackValue('Coupon Cashback (HC)', couponCashback)
           : null}
       </View>
       {renderHealthCreditsText()}

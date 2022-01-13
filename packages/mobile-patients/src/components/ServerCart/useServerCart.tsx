@@ -18,16 +18,12 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import {
-  formatAddressToLocation,
-  setLocationCodeFromApi,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { formatAddressToLocation } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { getProductsByCategoryApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { Helpers } from '@aph/mobile-patients/src/components/MedicineCartPrescription';
 import { USER_AGENT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
 import AsyncStorage from '@react-native-community/async-storage';
-import moment from 'moment';
 
 export const useServerCart = () => {
   const client = useApolloClient();
@@ -56,12 +52,8 @@ export const useServerCart = () => {
     addToCartSource,
     setAddToCartSource,
     pharmacyCircleAttributes,
-    setTatDetailsForPrescriptionOptions,
-    setCirclePlanSelected,
-    setLocationCode,
-    locationCode,
   } = useShoppingCart();
-  const { axdcCode, pharmacyUserTypeAttribute } = useAppCommonData();
+  const { axdcCode, isPharmacyLocationServiceable, authToken } = useAppCommonData();
   const { setPharmacyLocation } = useAppCommonData();
   const [userActionPayload, setUserActionPayload] = useState<any>(null);
   const [userAgent, setUserAgent] = useState<string>('');
@@ -86,6 +78,8 @@ export const useServerCart = () => {
   }, [userActionPayload]);
 
   const saveServerCart = (cartInputData: CartInputData) => {
+    console.log('savecart input>>>>>>>>>>>>>', cartInputData, userAgent);
+    console.log('authToken', authToken);
     setServerCartLoading?.(true);
     client
       .mutate({
@@ -102,6 +96,7 @@ export const useServerCart = () => {
       })
       .then((result) => {
         const saveCartResponse = result?.data?.saveCart;
+        console.log('savecart response>>>>>>>>>>>>>', saveCartResponse);
         if (saveCartResponse?.errorMessage) {
           setServerCartErrorMessage?.(saveCartResponse?.errorMessage || genericErrorMessage);
           return;
@@ -112,6 +107,7 @@ export const useServerCart = () => {
         }
       })
       .catch((error) => {
+        console.log('savecart error>>>>>>>>>>>>>', error);
         setServerCartErrorMessage?.(genericErrorMessage);
       })
       .finally(() => {
@@ -136,6 +132,7 @@ export const useServerCart = () => {
       })
       .then((result) => {
         const fetchCartResponse = result?.data?.fetchCart;
+        console.log('fetchcart response>>>>>>>>>>>>>', fetchCartResponse);
         if (fetchCartResponse?.errorMessage) {
           return;
         }
@@ -145,6 +142,7 @@ export const useServerCart = () => {
         }
       })
       .catch((error) => {
+        console.log('fetchcart error>>>>>>>>>>>>>', error);
         setServerCartErrorMessage?.(genericErrorMessage);
       })
       .finally(() => {
@@ -169,6 +167,7 @@ export const useServerCart = () => {
       })
       .then((result) => {
         const reviewCartResponse = result?.data?.reviewCartPage;
+        console.log('reviewcart response>>>>>>>>>>>>>', reviewCartResponse);
         if (reviewCartResponse?.errorMessage) {
           setServerCartErrorMessage?.(reviewCartResponse?.errorMessage || genericErrorMessage);
           return;
@@ -179,6 +178,7 @@ export const useServerCart = () => {
         }
       })
       .catch((error) => {
+        console.log('reviewcart error>>>>>>>>>>>>>', error);
         setServerCartErrorMessage?.(genericErrorMessage);
       })
       .finally(() => {
@@ -204,25 +204,8 @@ export const useServerCart = () => {
         city: cartResponse?.city,
         state: cartResponse?.state,
       });
-      if (cartLocationDetails?.pincode !== cartResponse?.zipcode || !locationCode) {
-        setLocationCodeFromApi(cartResponse?.zipcode, setLocationCode, locationCode);
-      }
       setCartSubscriptionDetails?.(cartResponse?.subscriptionDetails);
-      if (
-        cartResponse?.subscriptionDetails?.currentSellingPrice &&
-        !cartResponse?.subscriptionDetails?.subscriptionApplied
-      ) {
-        setCirclePlanSelected?.(null);
-      }
       setNoOfShipments?.(cartResponse?.noOfShipments);
-      setTatDetailsForPrescriptionOptions?.({
-        patientid: currentPatient?.id,
-        userType: pharmacyUserTypeAttribute?.User_Type,
-        tatCity: cartResponse?.medicineOrderCartLineItems?.[0]?.tatCity,
-        tatType: cartResponse?.medicineOrderCartLineItems?.[0]?.storeType?.toUpperCase(),
-        tatHours: cartResponse?.medicineOrderCartLineItems?.[0]?.tatDuration,
-        items: cartResponse?.medicineOrderCartLineItems?.map((item) => item?.sku),
-      });
     } catch (error) {}
   };
 
@@ -317,10 +300,6 @@ export const useServerCart = () => {
               prescriptionImageUrl: prescription?.uploadedUrl,
               prismPrescriptionFileId: prescription?.prismPrescriptionFileId,
               uhid: currentPatient?.uhid,
-              meta: {
-                fileName: prescription?.title,
-                fileType: prescription?.fileType,
-              },
             };
           }
         );
@@ -393,7 +372,6 @@ export const useServerCart = () => {
   return {
     setUserActionPayload,
     fetchServerCart,
-    saveServerCart,
     fetchReviewCart,
     deleteServerCart,
     fetchAddress,
