@@ -4450,6 +4450,17 @@ export const calculateDiagnosticCartItems = (
   return selectedCartItems;
 };
 
+export const isTodaysDate = (time: string) => moment(time).isSame(new Date(), 'date');
+
+export const isTomorrowsDate = (time: string) => {
+  let tommorowDate = new Date();
+  tommorowDate.setDate(tommorowDate.getDate() + 1);
+  const difference = moment(tommorowDate)
+    .startOf('day')
+    .diff(moment(time).startOf('day'), 'days');
+  return difference == 0;
+};
+
 export const isRtpcrInCart = (cartItems: DiagnosticsCartItem[]) =>{
   return !!cartItems?.find((cartItem) =>  AppConfig.Configuration.DIAGNOSTICS_COVID_ITEM_IDS?.includes(Number(cartItem?.id)))
 }
