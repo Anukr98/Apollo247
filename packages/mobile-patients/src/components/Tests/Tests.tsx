@@ -39,7 +39,6 @@ import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
   GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
-  GET_PATIENT_ADDRESS_LIST,
   GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
   SET_DEFAULT_ADDRESS,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -119,6 +118,7 @@ import {
 import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
 import {
   diagnosticServiceability,
+  fetchPatientAddressList,
   getDiagnosticClosedOrders,
   getDiagnosticExpressSlots,
   getDiagnosticOpenOrders,
@@ -149,10 +149,6 @@ import {
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import ItemCard from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
 import PackageCard from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
-import {
-  getPatientAddressList,
-  getPatientAddressListVariables,
-} from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   AppConfig,
@@ -364,6 +360,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   );
   const scrollCount = useRef<number>(0);
   const [pastOrderRecommendations, setPastOrderRecommendations] = useState([] as any);
+  const [showPastRecommendations, setShowPastRecommendations] = useState<boolean>(false);
   const getCTADetails = showDiagnosticCTA(CALL_TO_ORDER_CTA_PAGE_ID.HOME, cityId);
   const hasLocation = locationDetails || diagnosticLocation || pharmacyLocation || defaultAddress;
   const showNudgeMessage = AppConfig.Configuration.DIAGNOSTICS_NUDGE_MESSAGE_CONDITION?.find(
@@ -436,7 +433,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   useEffect(() => {
     triggerLandingPageViewedEvent();
-  }, [pastOrderRecommendations]);
+  }, [showPastRecommendations]);
 
   //if new address is added on cart page
   useEffect(() => {
@@ -562,7 +559,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       movedFrom === string.diagnostics.deeplink
         ? DiagnosticHomePageSource.DEEPLINK
         : homeScreenAttributes?.Source,
-      !!pastOrderRecommendations && pastOrderRecommendations?.length > 0 ? 'Yes' : 'No'
+      !!pastOrderRecommendations && pastOrderRecommendations?.length >= 6 ? 'Yes' : 'No'
     );
   }
 
@@ -957,6 +954,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     showPastRecommendations?.length >= 6
       ? setPastOrderRecommendations(showPastRecommendations)
       : setPastOrderRecommendations([]);
+    setShowPastRecommendations(showPastRecommendations?.length >= 6);
     setPriceAvailable(true);
     setPastOrderRecommendationShimmer(false);
   }
@@ -1017,11 +1015,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }
       }
       setFetchAddressLoading?.(true);
-      const response = await client.query<getPatientAddressList, getPatientAddressListVariables>({
-        query: GET_PATIENT_ADDRESS_LIST,
-        variables: { patientId: currentPatient?.id },
-        fetchPolicy: 'no-cache',
-      });
+      const response = await fetchPatientAddressList(client, currentPatient?.id);
       const addressList = (response?.data?.getPatientAddressList?.addressList as Address[]) || [];
       setAddresses?.(addressList);
       setTestAddress?.(addressList);
@@ -2081,6 +2075,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     })
       .then((response) => {
         setLoading(true);
+        Platform.OS == 'ios' && setIsPrescriptionUpload(false);
         props.navigation.navigate(AppRoutes.PrescriptionCamera, {
           type: 'CAMERA_AND_GALLERY',
           responseData: formatResponse([response] as ImageCropPickerResponse[]),
@@ -2089,11 +2084,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
           title: 'Camera',
         });
       })
-      .catch((e: Error) => {});
+      .catch((e: Error) => {
+        Platform.OS == 'ios' && setIsPrescriptionUpload(false);
+      });
   };
 
   const openGallery = () => {
-    setIsPrescriptionUpload(false);
+    Platform.OS == 'android' && setIsPrescriptionUpload(false);
+
     ImagePicker.openPicker({
       cropping: true,
       hideBottomControls: true,
@@ -2113,6 +2111,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           return;
         }
         const uploadedImages = formatResponse(images);
+        Platform.OS == 'ios' && setIsPrescriptionUpload(false);
         props.navigation.navigate(AppRoutes.SubmittedPrescription, {
           type: 'Gallery',
           phyPrescriptionsProp: [...phyPrescriptionUploaded, ...uploadedImages],
@@ -2121,9 +2120,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
         });
       })
       .catch((e: Error) => {
+        Platform.OS == 'ios' && setIsPrescriptionUpload(false);
         CommonBugFender('Tests_onClickGallery', e);
       });
   };
+
   const getBase64 = (response: DocumentPickerResponse[]): Promise<string>[] => {
     return response.map(async ({ fileCopyUri: uri, name: fileName, type }) => {
       const isPdf = fileName.toLowerCase().endsWith('.pdf'); // TODO: check here if valid image by mime
@@ -3057,7 +3058,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   if (item.title == 'Choose from Gallery') {
                     setIsPrescriptionGallery(true);
                   } else if (item.title == 'Take a Picture') {
-                    setIsPrescriptionUpload(false);
+                    Platform.OS == 'android' && setIsPrescriptionUpload(false);
                     onClickTakePhoto();
                   } else {
                     setIsPrescriptionUpload(false);

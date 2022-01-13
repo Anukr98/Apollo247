@@ -110,7 +110,6 @@ export const postPharmacyAddNewAddressCompleted = (
     'TAT displayed': convertDateToEpochFormat(tat),
     'Delivery TAT': deliveryTat || undefined,
   };
-  console.log('add adress', cleverTapEventAttributes, tat);
   postCleverTapEvent(
     CleverTapEventName.PHARMACY_ADD_NEW_ADDRESS_COMPLETED,
     cleverTapEventAttributes

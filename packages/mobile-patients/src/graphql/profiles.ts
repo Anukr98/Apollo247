@@ -4425,21 +4425,6 @@ export const SEARCH_DIAGNOSTICS_BY_ID = gql`
   }
 `;
 
-export const SAVE_DIAGNOSTIC_ORDER_NEW = gql`
-  mutation saveDiagnosticBookHCOrder($diagnosticOrderInput: SaveBookHomeCollectionOrderInput) {
-    saveDiagnosticBookHCOrder(diagnosticOrderInput: $diagnosticOrderInput) {
-      orderId
-      displayId
-      status
-      errorMessageToDisplay
-      attributes {
-        itemids
-        refreshCart
-      }
-    }
-  }
-`;
-
 export const CREATE_INTERNAL_ORDER = gql`
   mutation createOrderInternal($order: OrderCreate) {
     createOrderInternal(order: $order) {
@@ -5587,16 +5572,6 @@ export const GET_ORDER_INFO = gql`
   }
 `;
 
-export const PROCESS_DIAG_COD_ORDER = gql`
-  mutation processDiagnosticHCOrder($processDiagnosticHCOrderInput: ProcessDiagnosticHCOrderInput) {
-    processDiagnosticHCOrder(processDiagnosticHCOrderInput: $processDiagnosticHCOrderInput) {
-      status
-      preBookingID
-      message
-    }
-  }
-`;
-
 export const VERIFY_VPA = gql`
   mutation verifyVPA($verifyVPA: VerifyVPA) {
     verifyVPA(verifyVPA: $verifyVPA) {
@@ -6716,6 +6691,8 @@ export const GET_DIAGNOSTICS_RECOMMENDATIONS = gql`
         itemId
         itemName
         diagnosticInclusions{
+          itemId
+          name
           observations{
             observationName
             mandatoryValue
@@ -7110,6 +7087,7 @@ export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS = gql`
     }
   }
 `;
+
 export const CANCELL_SUBSCRIPTION = gql`
   mutation CancelSubscription($CancelSubscriptionInput: CancelSubscriptionInput!) {
     CancelSubscription(CancelSubscriptionInput: $CancelSubscriptionInput) {
@@ -7514,6 +7492,20 @@ export const DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS = gql`
           }
         }
       }
+    }
+  }
+`
+
+export const FETCH_BLOB_URL_WITH_PRISM = gql`
+  mutation fetchBlobURLWithPRISMData(
+    $patientId: ID!
+    $fileUrl: String!
+  ) {
+    fetchBlobURLWithPRISMData(
+      patientId: $patientId
+      fileUrl: $fileUrl
+    ) {
+      blobUrl
     }
   }
 `;

@@ -8,14 +8,12 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { ArrowRight, DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
+import { ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   GET_MEDICINE_ORDER_OMS_DETAILS_SHIPMENT,
-  SEND_HELP_EMAIL,
   CREATE_HELP_TICKET,
   GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS,
   CANCEL_MEDICINE_ORDER_OMS,
-  GET_MEDICINE_ORDER_CANCEL_REASONS,
   GET_MEDICINE_ORDER_CANCEL_REASONS_V2,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -28,13 +26,8 @@ import {
   GetMedicineOrderCancelReasonsV2Input,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
-  SendHelpEmail,
-  SendHelpEmailVariables,
-} from '@aph/mobile-patients/src/graphql/types/SendHelpEmail';
-import {
   aphConsole,
   handleGraphQlError,
-  navigateToHome,
   g,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
@@ -57,7 +50,6 @@ import {
   View,
   BackHandler,
   Alert,
-  Linking,
 } from 'react-native';
 import { Divider } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
@@ -66,8 +58,6 @@ import { RefundDetails } from '@aph/mobile-patients/src/components/RefundDetails
 import {
   getMedicineOrderOMSDetailsWithAddress,
   getMedicineOrderOMSDetailsWithAddressVariables,
-  getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails,
-  getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
 } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import { needHelpCleverTapEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
@@ -76,7 +66,6 @@ import {
   TicketNumberMutation,
   TicketNumberMutationVariables,
 } from '@aph/mobile-patients/src/graphql/types/TicketNumberMutation';
-import { GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrderCancelReasons';
 import {
   CancelMedicineOrderOMS,
   CancelMedicineOrderOMSVariables,

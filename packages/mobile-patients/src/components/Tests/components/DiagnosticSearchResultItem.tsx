@@ -52,7 +52,6 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
   const getExisitingOrderItems = isModifyOrder
     ? !!modifiedOrderItemIds && modifiedOrderItemIds
     : [];
-
   const isAlreadyPartOfOrder =
     getExisitingOrderItems?.length > 0 &&
     getExisitingOrderItems?.find((id: number) => Number(id) == Number(data?.diagnostic_item_id));

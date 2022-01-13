@@ -101,10 +101,15 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
 
       const imageUrl = getItem?.itemImageUrl;
       const name = getItem?.itemTitle;
-      const inclusions = getItem?.inclusionData;
+      const isFromRecommendendation =
+        sourceScreen == AppRoutes.TestListing &&
+        props.widgetHeading?.toLowerCase() ==
+          string.diagnostics.homepagePastOrderRecommendations?.toLowerCase();
+      const inclusions = isFromRecommendendation ? getItem?.inclusions : getItem?.inclusionData;
       const numberOfParametersToShow = isDiagnosticCircleSubscription ? 3 : 2;
       var getMandatoryParamter = [] as any;
-      if (sourceScreen == AppRoutes.TestDetails) {
+
+      if (sourceScreen == AppRoutes.TestDetails || isFromRecommendendation) {
         getMandatoryParamter =
           !!inclusions &&
           inclusions?.length > 0 &&
@@ -463,7 +468,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
       mrpToDisplay, //mrp
       calculatePriceToShow(pricesForItem, packageCalculatedMrp)?.priceToShow, //actual selling price
       source,
-      item?.inclusionData == null || (!!inclusions && inclusions?.length < 1)
+      item?.inclusionData == null || (!!inclusions && inclusions?.length < 2)
         ? DIAGNOSTICS_ITEM_TYPE.TEST
         : DIAGNOSTICS_ITEM_TYPE.PACKAGE,
       widgetType === string.diagnosticCategoryTitle.categoryGrid ||
@@ -535,6 +540,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
       navigation.replace(AppRoutes.TestDetails, {
         itemId: item?.itemId,
         comingFrom: sourceScreen,
+        widgetTitle: widgetTitle,
         testDetails: ({
           Rate: price,
           specialPrice: specialPrice! || price,
@@ -556,6 +562,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
       navigation.navigate(AppRoutes.TestDetails, {
         itemId: item?.itemId,
         comingFrom: sourceScreen,
+        widgetTitle: widgetTitle,
         testDetails: {
           Rate: price,
           specialPrice: specialPrice! || price,
