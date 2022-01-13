@@ -3379,7 +3379,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     currentCallRetryAttempt.current = 1;
   };
 
-
   const videoPerfectionfeedback = (duration: number) => {
     if (duration && duration >= 300) {
       appReviewAndRating();
@@ -6161,11 +6160,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       // Consult in Progress
       currentProgressBarPosition.current = 1;
     } else {
-      if (status.current === STATUS.COMPLETED) {
+      if (status.current === STATUS.PRESCRIPTION_PENDING) {
+        currentProgressBarPosition.current = 2;
+      } else if (status.current === STATUS.COMPLETED) {
         if (!isProgressBarVisible.current) {
           time = `Consult is completed`;
         }
-        currentProgressBarPosition.current = 2;
       } else if (appointmentDiffMin <= 0) {
         time = `Joining soon. Please wait!`;
       } else if (appointmentDiffMin > 0 && appointmentDiffMin < 60 && diffHours <= 1) {
