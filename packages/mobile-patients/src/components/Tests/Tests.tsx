@@ -2621,8 +2621,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
     _navigateToPatientsPage()
   }
 
+  const singleItem = AppConfig.Configuration.DIAGNOSTICS_HOME_SINGLE_ITEM;
   const renderSingleItem = () => {
-    const singleItem = AppConfig.Configuration.DIAGNOSTICS_HOME_SINGLE_ITEM;
     return (
       <>
         <View style={styles.singleItemContainer}>
@@ -2695,7 +2695,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       >
         {widgetsData?.length == 0 && reloadWidget && renderLowNetwork()}
         {renderWidgetItems(widget1)} {/**1 */}
-        {renderSingleItem()}
+        {!!singleItem?.id && renderSingleItem()}
         {currentPatient && renderOrderAndPrescriptionPanel()}
         {latestPrescriptionShimmer
           ? renderDiagnosticCardShimmer()
