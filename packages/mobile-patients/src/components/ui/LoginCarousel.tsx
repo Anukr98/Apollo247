@@ -32,15 +32,15 @@ export const LoginCarousel: React.FC<Props> = ({ focused }) => {
       setdata([
         {
           image: require('@aph/mobile-patients/src/images/home/loginBanner1.webp'),
-          text: consult?.title,
+          text: pharma?.title,
         },
         {
           image: require('@aph/mobile-patients/src/images/home/loginBanner2.webp'),
-          text: diagnostic?.title,
+          text: consult?.title,
         },
         {
           image: require('@aph/mobile-patients/src/images/home/loginBanner3.webp'),
-          text: pharma?.title,
+          text: diagnostic?.title,
         },
       ]);
     } catch (err) {
