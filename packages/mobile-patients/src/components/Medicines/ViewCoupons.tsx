@@ -383,8 +383,8 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
               activeOpacity={1}
               disabled={!isEnableApplyBtn}
               onPress={() => {
+                Keyboard.dismiss();
                 if (isFromConsult) {
-                  Keyboard.dismiss();
                   applyConsultCoupon(couponText, false);
                 } else if (isFromSubscription) {
                   applySubscriptionCoupon(couponText, false);
@@ -393,7 +393,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
                   setUserActionPayload?.({
                     coupon: couponText || '',
                     subscription: {
-                      subscriptionApplied: isCircleCart ? true : false,
+                      subscriptionApplied: false,
                     },
                   });
                 }
