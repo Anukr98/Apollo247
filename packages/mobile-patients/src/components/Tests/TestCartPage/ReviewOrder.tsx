@@ -439,6 +439,13 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     triggerCartPageViewed();
   }, [toPayPrice]);
 
+  const paitentTotalCart: any[] = [];
+    patientCartItemsCopy?.map((item: any) => {
+      item?.cartItems?.map((_item: any) => {
+        paitentTotalCart?.push(_item);
+      });
+    });
+
   function triggerCartPageViewed() {
     const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
     const pinCodeFromAddress = addressToUse?.zipcode!;
@@ -460,7 +467,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       cityFromAddress,
       coupon,
       false,
-      []
+      [],
+      paitentTotalCart
     );
     //add coupon code + coupon discount
   }
