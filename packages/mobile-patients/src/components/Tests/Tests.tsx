@@ -33,6 +33,11 @@ import {
   CrossPopup,
   CircleLogo,
   ArrowUpGreen,
+  ArrowRight,
+  BagBlue,
+  VirusGreen,
+  HomeBlue,
+  ClockBlue
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
@@ -312,7 +317,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
 
   const [bannerLoading, setBannerLoading] = useState(true);
-  const [imgHeight, setImgHeight] = useState(200);
+  const [imgHeight, setImgHeight] = useState(120);
   const [slideIndex, setSlideIndex] = useState(0);
   const [banners, setBanners] = useState([]);
   const [cityId, setCityId] = useState('');
@@ -1134,21 +1139,23 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderYourOrders = () => {
     return (
-      <ListCard
-        onPress={() => {
-          postMyOrdersClicked('Diagnostics', currentPatient);
-          props.navigation.push(AppRoutes.YourOrdersTest, {
-            isTest: true,
-            cityId: cityId,
-          });
-        }}
-        container={{
-          marginBottom: 24,
-        }}
-        titleStyle={styles.ordersTitleStyle}
-        title={'MY ORDERS'}
-        leftIcon={null}
-      />
+        <ListCard
+          onPress={() => {
+            postMyOrdersClicked('Diagnostics', currentPatient);
+            props.navigation.push(AppRoutes.YourOrdersTest, {
+              isTest: true,
+              cityId: cityId,
+            });
+          }}
+          container={{
+            marginBottom: 24,
+            marginTop: 24,
+            width: '92%',
+          }}
+          titleStyle={styles.ordersTitleStyle}
+          title={'MY ORDERS'}
+          leftIcon={null}
+        />
     );
   };
 
@@ -1235,6 +1242,19 @@ export const Tests: React.FC<TestsProps> = (props) => {
         <Text style={styles.searchTextStyle}>Search tests &amp; packages</Text>
         {rigthIconView}
       </TouchableOpacity>
+    );
+  };
+
+  const renderSeperator = () => {
+    return (
+      <View
+        style={{
+          borderColor: 'rgba(0, 0, 0, 0.1)',
+          borderWidth: 0.5,
+          width: '92%',
+          alignSelf: 'center'
+        }}
+      ></View>
     );
   };
 
@@ -1594,7 +1614,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             autoplayDelay={AUTO_SCROLL_INTERVAL}
             autoplayInterval={AUTO_SCROLL_INTERVAL}
           />
-          <View style={styles.landingBannerInnerView}>
+          <View style={[styles.landingBannerInnerView, { bottom: -15 }]}>
             {banners?.length > 1 &&
               banners?.map((_, index) =>
                 index == slideIndex ? renderDot(true) : renderDot(false)
@@ -1691,7 +1711,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <TouchableOpacity activeOpacity={1} onPress={handleOnPress}>
         <ImageNative
-          resizeMode="stretch"
+          resizeMode="cover"
           style={{ width: '100%', minHeight: imgHeight }}
           source={{ uri: item?.bannerImage }}
         />
@@ -2243,6 +2263,40 @@ export const Tests: React.FC<TestsProps> = (props) => {
       </View>
     );
   };
+  const renderMiniPrescriptionCard = () => {
+    return (
+      <View style={styles.precriptionMiniContainer}>
+        <TouchableOpacity
+          style={styles.precriptionContainerMiniUpload}
+          onPress={() => _onPressUpload()}
+        >
+          <PrescriptionColored style={{ height: 35 }} />
+          <Text style={styles.prescriptionText}>Upload Prescription</Text>
+          <ArrowRight style={{ alignSelf: 'center' }} />
+        </TouchableOpacity>
+      </View>
+    );
+  };
+  const renderMiniMyOrder = () => {
+    return (
+      <View style={styles.precriptionMiniContainer}>
+        <TouchableOpacity
+          style={styles.precriptionContainerMiniUpload}
+          onPress={() => {
+            postMyOrdersClicked('Diagnostics', currentPatient);
+            props.navigation.push(AppRoutes.YourOrdersTest, {
+              isTest: true,
+              cityId: cityId,
+            });
+          }}
+        >
+          <BagBlue style={{ height: 35 }} />
+          <Text style={styles.prescriptionText}>View My Orders</Text>
+          <ArrowRight style={{ alignSelf: 'center' }} />
+        </TouchableOpacity>
+      </View>
+    );
+  };
   const renderEPrescriptionModal = () => {
     return (
       <SelectEPrescriptionModal
@@ -2559,6 +2613,66 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return widgetType?.length > 0 && widgetType?.map((wid: any) => renderWidgetType(wid));
   }
 
+  const renderSingleItem = () => {
+    return (
+      <>
+        <View style={styles.singleItemContainer}>
+          <View style={styles.itemFirst}>
+            <View style={{ flexDirection: 'row' }}>
+              <VirusGreen style={{ height: 24 }} />
+              <Text style={styles.singleItemName}>Covid 19 RTPCR Test</Text>
+            </View>
+            <Text style={styles.singleItemPrice}>₹750</Text>
+          </View>
+          <View style={styles.viewSecond}>
+            <View style={{ marginLeft: 45 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <ClockBlue style={styles.blueIcon} />
+                <Text style={styles.blueText}>Same Day Reports</Text>
+              </View>
+              <View style={{ flexDirection: 'row', marginTop: 5, alignItems: 'center' }}>
+                <HomeBlue style={styles.blueIcon} />
+                <Text style={styles.blueText}>Free Home Collection</Text>
+              </View>
+            </View>
+            <Button
+              title={'BOOK NOW'}
+              style={{ width: '35%', marginRight: 10 }}
+              onPress={() => {
+                console.log(`object book now`);
+              }}
+            />
+          </View>
+          <View
+            style={styles.bottomGreenView}
+          >
+            <Text style={{ ...theme.viewStyles.text('SB', 16, '#46B29D', 1), alignSelf: 'center' }}>
+              Book for Family Members in Same Order
+            </Text>
+          </View>
+        </View>
+      </>
+    );
+  };
+
+  const renderOrderAndPrescriptionPanel = () => {
+    const isOrderAvailable = true;
+    const isPrescriptionAvailable = false;
+    if (isOrderAvailable && isPrescriptionAvailable) {
+      return (
+        <View
+          style={styles.orderPrescriptionPanel}
+        >
+          {renderMiniPrescriptionCard()}
+          {renderMiniMyOrder()}
+        </View>
+      );
+    } else if (isOrderAvailable) {
+      return renderYourOrders();
+    } else if (isPrescriptionAvailable) {
+      return renderUploadPrescriptionCard();
+    }
+  };
   const renderSections = () => {
     const widget1 = getRanking('1');
     const recommendationWidget = getRanking('0'); //this position will always be 0th.
@@ -2570,17 +2684,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
           setSearchText('');
           setDiagnosticResults([]);
         }}
-        style={{ flex: 1 }}
+        style={{ flex: 1, backgroundColor: colors.WHITE }}
       >
         {widgetsData?.length == 0 && reloadWidget && renderLowNetwork()}
         {renderWidgetItems(widget1)} {/**1 */}
-        {renderYourOrders()}
+        {renderSingleItem()}
+        {renderOrderAndPrescriptionPanel()}
         {latestPrescriptionShimmer
           ? renderDiagnosticCardShimmer()
           : latestPrescription?.length > 0
           ? renderPrescriptionCard()
           : null}
-        {renderUploadPrescriptionCard()}
         {patientOrdersShimmer ? renderDiagnosticCardShimmer() : renderOrderStatusCard()}
         {/** keep 0th position for recommendations, should come before first widget */}
         {recommendationWidget &&
@@ -3194,6 +3308,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         <>
           <View style={{ backgroundColor: colors.WHITE }}>
             {renderDiagnosticHeader()}
+            {renderSeperator()}
             {renderSearchBar()}
             {expressSlotMsg != '' ? renderExpressSlots() : null}
             <Modal
@@ -3251,9 +3366,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
               onScroll={(event) => {
                 setSlideCallToOrder(true);
                 //increments only for down scroll
-                const currentOffset = event.nativeEvent.contentOffset?.y;
-                currentOffset > (this.offset || 0) && (scrollCount.current += 1);
-                this.offset = currentOffset;
+                // const currentOffset = event.nativeEvent.contentOffset?.y;
+                // currentOffset > (this.offset || 0) && (scrollCount.current += 1);
+                // this.offset = currentOffset;
               }}
             >
               {renderSections()}
@@ -3310,6 +3425,75 @@ const styles = StyleSheet.create({
     marginLeft: 16,
     marginRight: 16,
     marginBottom: 24,
+  },
+  precriptionMiniContainer: {
+    borderRadius: 10,
+    backgroundColor: colors.WHITE,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 16,
+    marginHorizontal: 16,
+    width: '50%',
+    justifyContent: 'center',
+    padding: 5,
+  },
+  precriptionContainerMiniUpload: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    borderRadius: 10,
+  },
+  blueText: {
+    ...theme.viewStyles.text('M', 12, '#2A71DB', 1),
+    paddingLeft: 5,
+    alignSelf: 'center'
+  },
+  singleItemContainer: {
+    flex: 1,
+    width: '92%',
+    height: 120,
+    backgroundColor: '#EDFAFD',
+    borderRadius: 10,
+    alignSelf: 'center',
+    marginVertical: 20,
+  },
+  itemFirst: {
+    flexDirection: 'row',
+    width: '100%',
+    marginVertical: 10,
+    paddingHorizontal: 10,
+    justifyContent: 'space-between',
+  },
+  singleItemName: {
+    ...theme.viewStyles.text('SB', 16, colors.SHERPA_BLUE, 1),
+    marginHorizontal: 10,
+  },
+  singleItemPrice: {
+    ...theme.viewStyles.text('SB', 16, colors.SHERPA_BLUE, 1),
+    alignSelf: 'flex-end',
+  },
+  viewSecond: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  blueIcon: { width: 18, height: 18 },
+  bottomGreenView: {
+    backgroundColor: '#D7FAF3',
+    justifyContent: 'flex-end',
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+    marginTop: 15,
+    paddingVertical: 5,
+  },
+  orderPrescriptionPanel: {
+    flexDirection: 'row',
+    width: '90%',
+    alignSelf: 'center',
+    alignContent: 'center',
+    alignItems: 'center',
+    justifyContent: 'space-evenly',
+    marginBottom: 15,
   },
   precriptionContainerUpload: {
     flexDirection: 'row',
