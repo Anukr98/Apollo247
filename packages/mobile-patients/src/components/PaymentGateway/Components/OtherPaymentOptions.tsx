@@ -48,21 +48,30 @@ export const OtherPaymentOptions: React.FC<OtherPaymentOptionsProps> = (props) =
   const renderOtherPaymentOption = (item: any) => {
     return item?.item?.name != 'OTHER_BANKS' ? (
       item?.item?.name == 'CRED' && !cred?.isEligible ? null : (
-        <TouchableOpacity
-          style={{ ...styles.paymentOption, borderTopWidth: item?.index == 0 ? 0 : 1 }}
-          onPress={() => onPressOtherPaymentOption(item?.item)}
-        >
-          <Image source={otherPaymentMethodsInfo[item?.item?.name]['icon']} style={styles.icon} />
-          <View style={styles.subCont}>
-            <View>
-              <Text style={styles.name}>{otherPaymentMethodsInfo[item?.item?.name]['name']}</Text>
-              {item?.item?.banner_text && (
-                <Text style={styles.bannerTxt}>{item?.item?.banner_text}</Text>
-              )}
-            </View>
-            <BlackArrowUp style={{ width: 15, height: 7, transform: [{ rotate: '90deg' }] }} />
-          </View>
-        </TouchableOpacity>
+        <>
+          {!!otherPaymentMethodsInfo?.[item?.item?.name] ? (
+            <TouchableOpacity
+              style={{ ...styles.paymentOption, borderTopWidth: item?.index == 0 ? 0 : 1 }}
+              onPress={() => onPressOtherPaymentOption(item?.item)}
+            >
+              <Image
+                source={otherPaymentMethodsInfo[item?.item?.name]['icon']}
+                style={styles.icon}
+              />
+              <View style={styles.subCont}>
+                <View>
+                  <Text style={styles.name}>
+                    {otherPaymentMethodsInfo[item?.item?.name]['name']}
+                  </Text>
+                  {item?.item?.banner_text && (
+                    <Text style={styles.bannerTxt}>{item?.item?.banner_text}</Text>
+                  )}
+                </View>
+                <BlackArrowUp style={{ width: 15, height: 7, transform: [{ rotate: '90deg' }] }} />
+              </View>
+            </TouchableOpacity>
+          ) : null}
+        </>
       )
     ) : null;
   };
