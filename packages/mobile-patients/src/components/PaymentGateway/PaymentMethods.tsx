@@ -1091,7 +1091,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const renderHealthCredits = () => {
-    return healthCredits ? (
+    return healthCredits && businessLine != 'diagnostics' ? (
       <HealthCredits
         credits={healthCredits}
         HCSelected={HCSelected}
