@@ -85,6 +85,15 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
   let actualItemsToShow = diagnosticWidgetData?.length > 0 && diagnosticWidgetData;
   const { currentPatient } = useAllCurrentPatients();
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
+
+  function getCount(array: any) {
+    return array?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
+  }
+
+  function getMandatoryParamterResults(arr: any) {
+    return arr?.filter((item: any) => item?.mandatoryValue === '1');
+  }
+
   const renderItemCard = useCallback(
     (item: any) => {
       const getItem = item?.item;
@@ -113,30 +122,26 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
         getMandatoryParamter =
           !!inclusions &&
           inclusions?.length > 0 &&
-          inclusions?.map((inclusion: any) =>
-            inclusion?.observations?.filter((item: any) => item?.mandatoryValue === '1')
-          );
+          inclusions?.map((inclusion: any) => getMandatoryParamterResults(inclusion?.observations));
       } else {
         getMandatoryParamter =
           !!inclusions &&
           inclusions?.length > 0 &&
           inclusions?.map((inclusion: any) =>
-            inclusion?.incObservationData?.filter((item: any) => item?.mandatoryValue === '1')
+            getMandatoryParamterResults(inclusion?.incObservationData)
           );
       }
 
-      const getMandatoryParameterCount =
-        !!getMandatoryParamter &&
-        getMandatoryParamter?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
+      const getMandatoryParameterCount = !!getMandatoryParamter && getCount(getMandatoryParamter);
 
       const getParamterData =
         !!getMandatoryParamter && getMandatoryParamter?.length > 0 && getMandatoryParamter?.flat(1);
 
       const dataToShow = getMandatoryParameterCount > 0 ? getParamterData : inclusions;
       const nonInclusionTests =
-        !!inclusions &&
-        inclusions?.length > 0 &&
-        inclusions?.filter((inclusion: any) => inclusion?.incObservationData?.length == 0);
+        !!inclusions && inclusions?.length > 0
+          ? inclusions?.filter((inclusion: any) => inclusion?.incObservationData?.length == 0)
+          : [];
       return (
         <TouchableOpacity
           activeOpacity={1}

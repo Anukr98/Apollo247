@@ -6508,6 +6508,10 @@ export const GET_DIAGNOSTICS_RECOMMENDATIONS = gql`
       itemsData {
         itemId
         itemName
+        observations{
+          observationName
+          mandatoryValue
+        }
         diagnosticInclusions{
           itemId
           name
@@ -7302,6 +7306,10 @@ export const DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS = gql`
       itemsData {
         itemId
         itemName
+        observations{
+          observationName
+          mandatoryValue
+        }
         diagnosticInclusions{
           observations{
             observationName

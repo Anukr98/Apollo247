@@ -7,6 +7,12 @@
 // GraphQL query operation: getDiagnosticItemRecommendationsByPastOrders
 // ====================================================
 
+export interface getDiagnosticItemRecommendationsByPastOrders_getDiagnosticItemRecommendationsByPastOrders_itemsData_observations {
+  __typename: "Observation";
+  observationName: string | null;
+  mandatoryValue: string | null;
+}
+
 export interface getDiagnosticItemRecommendationsByPastOrders_getDiagnosticItemRecommendationsByPastOrders_itemsData_diagnosticInclusions_observations {
   __typename: "Observation";
   observationName: string | null;
@@ -22,6 +28,7 @@ export interface getDiagnosticItemRecommendationsByPastOrders_getDiagnosticItemR
   __typename: "AffinityData";
   itemId: number;
   itemName: string;
+  observations: (getDiagnosticItemRecommendationsByPastOrders_getDiagnosticItemRecommendationsByPastOrders_itemsData_observations | null)[] | null;
   diagnosticInclusions: (getDiagnosticItemRecommendationsByPastOrders_getDiagnosticItemRecommendationsByPastOrders_itemsData_diagnosticInclusions | null)[] | null;
 }
 
