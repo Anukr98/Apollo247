@@ -16,7 +16,7 @@ import {
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Keyboard, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { useUIElements } from '../UIElementsProvider';
@@ -384,6 +384,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
               disabled={!isEnableApplyBtn}
               onPress={() => {
                 if (isFromConsult) {
+                  Keyboard.dismiss();
                   applyConsultCoupon(couponText, false);
                 } else if (isFromSubscription) {
                   applySubscriptionCoupon(couponText, false);
@@ -603,7 +604,11 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
           container={{ borderBottomWidth: 0 }}
           onPressLeftIcon={goBackToPreviousScreen}
         />
-        <ScrollView bounces={false} contentContainerStyle={{ padding: 15 }}>
+        <ScrollView
+          keyboardShouldPersistTaps={'handled'}
+          bounces={false}
+          contentContainerStyle={{ padding: 15 }}
+        >
           {renderInputWithValidation()}
           {shimmerLoading && renderCouponViewShimmer()}
           {renderNoCouponsFound()}
