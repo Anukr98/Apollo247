@@ -760,7 +760,10 @@
       "whatsappPhoneNumber": "4048218743",
       "message": "I want to place a Lab Test Order with prescription"
     },
-    "cancelRequestedText": "Cancellation Request In Progress. Apollo agent will contact you soon."
+    "cancelRequestedText": "Cancellation Request In Progress. Apollo agent will contact you soon.",
+    "sameDayReports": "Same Day Reports",
+    "freeHomeCollection": "Free Home Collection",
+    "bookNow": "BOOK NOW"
   },
   "diagnosticCategoryTitle": {
     "category": "category",

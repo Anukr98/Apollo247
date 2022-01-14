@@ -265,6 +265,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   } = useShoppingCart();
   const {
     cartItems,
+    addCartItem,
     isDiagnosticCircleSubscription,
     setIsDiagnosticCircleSubscription,
     setDeliveryAddressId,
@@ -332,6 +333,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [isPrescriptionGallery, setIsPrescriptionGallery] = useState<boolean>(false);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const [isUploaded, setIsUploaded] = useState(false);
+  const [diagnosticStateUserType, setDiagnosticStateUserType] = useState<string>('');
   const [widgetsData, setWidgetsData] = useState([] as any);
   const [drupalWidgetData, setDrupalWidgetData] = useState([] as any);
   const [reloadWidget, setReloadWidget] = useState<boolean>(false);
@@ -618,6 +620,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const fetchUserType = async () => {
     try {
       const diagnosticUserType = await AsyncStorage.getItem('diagnosticUserType');
+      setDiagnosticStateUserType(diagnosticUserType || '')
       if (diagnosticUserType == null) {
         fetchOrders();
       }
@@ -641,6 +644,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           getOrdersResponse?.data?.getDiagnosticOrdersListByMobile?.ordersList || [];
         const diagnosticUserType =
           ordersList?.length > 0 ? string.user_type.REPEAT : string.user_type.NEW;
+          setDiagnosticStateUserType(diagnosticUserType || '')
         AsyncStorage.setItem('diagnosticUserType', JSON.stringify(diagnosticUserType));
       }
       setLoading?.(false);
@@ -1149,7 +1153,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           }}
           container={{
             marginBottom: 24,
-            marginTop: 24,
+            marginTop: 20,
             width: '92%',
           }}
           titleStyle={styles.ordersTitleStyle}
@@ -2612,40 +2616,43 @@ export const Tests: React.FC<TestsProps> = (props) => {
   function renderWidgetItems(widgetType: any) {
     return widgetType?.length > 0 && widgetType?.map((wid: any) => renderWidgetType(wid));
   }
+  function onPressSingleBookNow(item: any) {
+    addCartItem?.(item);
+    _navigateToPatientsPage()
+  }
 
   const renderSingleItem = () => {
+    const singleItem = AppConfig.Configuration.DIAGNOSTICS_HOME_SINGLE_ITEM;
     return (
       <>
         <View style={styles.singleItemContainer}>
           <View style={styles.itemFirst}>
             <View style={{ flexDirection: 'row' }}>
               <VirusGreen style={{ height: 24 }} />
-              <Text style={styles.singleItemName}>Covid 19 RTPCR Test</Text>
+              <Text style={styles.singleItemName}>{singleItem?.name}</Text>
             </View>
-            <Text style={styles.singleItemPrice}>₹750</Text>
+            <Text style={styles.singleItemPrice}>₹{singleItem?.price}</Text>
           </View>
           <View style={styles.viewSecond}>
             <View style={{ marginLeft: 45 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={styles.blueFirst}>
                 <ClockBlue style={styles.blueIcon} />
-                <Text style={styles.blueText}>Same Day Reports</Text>
+                <Text style={styles.blueText}>{string.diagnostics.sameDayReports}</Text>
               </View>
-              <View style={{ flexDirection: 'row', marginTop: 5, alignItems: 'center' }}>
+              <View style={styles.blueSecond}>
                 <HomeBlue style={styles.blueIcon} />
-                <Text style={styles.blueText}>Free Home Collection</Text>
+                <Text style={styles.blueText}>{string.diagnostics.freeHomeCollection}</Text>
               </View>
             </View>
             <Button
-              title={'BOOK NOW'}
-              style={{ width: '35%', marginRight: 10 }}
+              title={string.diagnostics.bookNow}
+              style={styles.buttonTop}
               onPress={() => {
-                console.log(`object book now`);
+                onPressSingleBookNow(singleItem);
               }}
             />
           </View>
-          <View
-            style={styles.bottomGreenView}
-          >
+          <View style={styles.bottomGreenView}>
             <Text style={{ ...theme.viewStyles.text('SB', 16, '#46B29D', 1), alignSelf: 'center' }}>
               Book for Family Members in Same Order
             </Text>
@@ -2656,8 +2663,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderOrderAndPrescriptionPanel = () => {
-    const isOrderAvailable = true;
-    const isPrescriptionAvailable = false;
+    const isPrescriptionAvailable = AppConfig.Configuration.DIAGNOSTICS_SHOW_UPLOAD_PRESCRIPTION_SECTION;
+    const isOrderAvailable = diagnosticStateUserType ==`"${string.user_type.REPEAT}"`;
     if (isOrderAvailable && isPrescriptionAvailable) {
       return (
         <View
@@ -2689,7 +2696,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         {widgetsData?.length == 0 && reloadWidget && renderLowNetwork()}
         {renderWidgetItems(widget1)} {/**1 */}
         {renderSingleItem()}
-        {renderOrderAndPrescriptionPanel()}
+        {currentPatient && renderOrderAndPrescriptionPanel()}
         {latestPrescriptionShimmer
           ? renderDiagnosticCardShimmer()
           : latestPrescription?.length > 0
@@ -3425,6 +3432,7 @@ const styles = StyleSheet.create({
     marginLeft: 16,
     marginRight: 16,
     marginBottom: 24,
+    marginTop: 20,
   },
   precriptionMiniContainer: {
     borderRadius: 10,
@@ -3449,6 +3457,9 @@ const styles = StyleSheet.create({
     paddingLeft: 5,
     alignSelf: 'center'
   },
+  blueFirst: { flexDirection: 'row', alignItems: 'center' },
+  blueSecond: { flexDirection: 'row', marginTop: 5, alignItems: 'center' },
+  buttonTop: { width: '35%', marginRight: 10 },
   singleItemContainer: {
     flex: 1,
     width: '92%',
@@ -3494,6 +3505,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-evenly',
     marginBottom: 15,
+    marginTop: 20,
   },
   precriptionContainerUpload: {
     flexDirection: 'row',
