@@ -11,7 +11,11 @@ import {
 } from 'react-native';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { isSmallDevice, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  checkPatientAge,
+  isSmallDevice,
+  nameFormater,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { DIAGNOSTIC_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import moment from 'moment';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -38,7 +42,10 @@ import {
   DIAGNOSTIC_SHOW_OTP_STATUS,
   DIAGNOSTIC_STATUS_BEFORE_SUBMITTED,
 } from '@aph/mobile-patients/src/strings/AppConfig';
-import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
+import {
+  getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems,
+  getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientObj,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { DiagnosticTrackPhleboClicked } from '@aph/mobile-patients/src/components/Tests/Events';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
@@ -50,6 +57,7 @@ interface OrderTestCardProps {
   orderLevelStatus: DIAGNOSTIC_ORDER_STATUS;
   patientName: string;
   gender: string;
+  patientDetails: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientObj | null;
   showAddTest: boolean;
   ordersData: any;
   showPretesting: boolean;
@@ -93,8 +101,13 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     );
 
   const bookedOn = moment(props?.createdOn)?.format('Do MMM') || null;
+  //minor age -> can switch to any patient
+  //major age  -> will have resriction
+
   const { currentPatient } = useAllCurrentPatients();
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
+  const isMinorAge = !!props.patientDetails ? checkPatientAge(props.patientDetails) : true;
+
   const renderTopView = () => {
     return (
       <View style={styles.horizontalRow}>
@@ -108,8 +121,9 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
   };
 
   const renderMidView = () => {
+    const showAddTest = props.showAddTest && !isMinorAge;
     return (
-      <View style={styles.midViewContainer}>
+      <View style={[styles.midViewContainer, !showAddTest && { justifyContent: 'flex-start' }]}>
         {!!props.patientName && (
           <View style={styles.patientNameView}>
             <Text style={styles.testForText}>
@@ -128,7 +142,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
             </TouchableOpacity>
           </View>
         ) : null}
-        {props.showAddTest ? (
+        {showAddTest ? (
           <TouchableOpacity
             activeOpacity={1}
             onPress={props.onPressAddTest}
@@ -647,10 +661,6 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     );
   };
 
-  if (props.orderId == 8775) {
-    console.log({ props });
-  }
-
   return (
     <TouchableOpacity
       activeOpacity={1}
@@ -948,7 +958,11 @@ const styles = StyleSheet.create({
     maxWidth: '60%',
   },
   vaccinationText: { ...theme.viewStyles.text('M', 12, colors.WHITE, 1, 15) },
-  editIconView: { justifyContent: 'center', marginHorizontal: 3, marginRight: 6 },
+  editIconView: {
+    justifyContent: 'center',
+    marginHorizontal: 3,
+    marginRight: 6,
+  },
   editIconTouch: {
     width: 20,
     height: 20,

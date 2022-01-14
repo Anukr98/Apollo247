@@ -34,6 +34,7 @@ import {
   g,
   getAge,
   getCircleNoSubscriptionText,
+  getPackageIds,
   getUserType,
   isDiagnosticSelectedCartEmpty,
   isEmptyObject,
@@ -85,11 +86,8 @@ import {
   initiateSDK,
   terminateSDK,
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
-import { findDiagnosticSettings } from '@aph/mobile-patients/src/graphql/types/findDiagnosticSettings';
 import {
-  CREATE_INTERNAL_ORDER,
   CREATE_USER_SUBSCRIPTION,
-  FIND_DIAGNOSTIC_SETTINGS,
   GET_PLAN_DETAILS_BY_PLAN_ID,
   MODIFY_DIAGNOSTIC_ORDERS,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -97,6 +95,7 @@ import {
   createInternalOrder,
   diagnosticGetPhleboCharges,
   diagnosticSaveBookHcCollectionV2,
+  getDiagnosticSettings,
   getReportTAT,
   processDiagnosticsCODOrderV2,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
@@ -147,6 +146,8 @@ import {
   DIAGNOSTICS_ITEM_TYPE,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { PaymentInitiated } from '@aph/mobile-patients/src/components/PaymentGateway/Events';
+import { useFetchHealthCredits } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useFetchHealthCredits';
+import { HealthCreditsCard } from '@aph/mobile-patients/src/components/Tests/components/HealthCreditsCard';
 import AsyncStorage from '@react-native-community/async-storage';
 
 const screenWidth = Dimensions.get('window').width;
@@ -193,7 +194,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     pinCode,
     ePrescriptions,
     diagnosticSlot,
-    setDiagnosticSlot,
     setHcCharges,
     hcCharges,
     cartSaving,
@@ -211,7 +211,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setDuplicateItemsArray,
     modifiedPatientCart,
     setModifiedPatientCart,
-    setPatientCartItems,
     phleboETA,
     removeDuplicatePatientCartItems,
     deliveryAddressCityId,
@@ -233,6 +232,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setCouponCircleBenefits,
     couponOnMrp,
     setCouponOnMrp,
+    waiveOffCollectionCharges,
+    setWaiveOffCollectionCharges,
   } = useDiagnosticsCart();
 
   const {
@@ -247,12 +248,13 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     hdfcSubscriptionId,
   } = useShoppingCart();
 
+  const { healthCredits } = useFetchHealthCredits('diagnostics');
   const {
-    diagnosticServiceabilityData,
     hdfcStatus,
     hdfcPlanId,
     circleStatus,
     circlePlanId,
+    activeUserSubscriptions,
     isRenew,
   } = useAppCommonData();
 
@@ -522,6 +524,19 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     return Math.round(Number(value));
   }
 
+  function createPackageId() {
+    const activeSubPackageId = getPackageIds(activeUserSubscriptions);
+    const circlePackageId =
+      isCircleAddedToCart || (circleSubscriptionId && circleStatus === 'active')
+        ? `APOLLO:${circlePlanId}`
+        : null;
+    if (!!circlePackageId && !activeSubPackageId.includes(circlePackageId)) {
+      //if not included, then add..
+      activeSubPackageId?.push(circlePackageId);
+    }
+    return activeSubPackageId;
+  }
+
   const revalidateAppliedCoupon = (
     coupon: string,
     cartItemsWithQuan: DiagnosticsCartItem[], //with quantity
@@ -553,7 +568,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       coupon: coupon,
       pinCode: String(pinCode),
       diagnostics: createLineItemsForPayload?.pricesForItemArray?.map((item: any) => item), //define type
-      packageIds: setSubscription != undefined ? [] : packageId, //array of all subscriptions of user
+      packageIds: createPackageId(), //array of all subscriptions of user
     };
     validateConsultCoupon(data)
       .then((resp: any) => {
@@ -562,6 +577,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             const responseData = resp?.data?.response;
             const getCircleBenefits = responseData?.circleBenefits;
             const hasOnMrpTrue = responseData?.diagnostics?.filter((item: any) => item?.onMrp);
+            const isFreeHomeCollection = responseData?.diagnostics?.filter(
+              (item: any) => item?.freeHomeCollection
+            );
             /**
              * case for if user is claiming circle benefits, but coupon => circleBenefits as false
              */
@@ -580,6 +598,12 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
               );
             } else {
               const successMessage = responseData?.successMessage || '';
+              //if any sku has freeCollection as true => waive off
+              if (isFreeHomeCollection?.length > 0) {
+                setWaiveOffCollectionCharges?.(true);
+                clearCollectionCharges();
+              }
+
               setCoupon?.({
                 ...responseData,
                 successMessage: successMessage,
@@ -630,6 +654,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         setCouponCircleBenefits?.(false);
       });
   };
+
   const initiateHyperSDK = async (cusId: any) => {
     try {
       const merchantId = AppConfig.Configuration.merchantId;
@@ -732,13 +757,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
   const fetchFindDiagnosticSettings = async () => {
     try {
-      const response = await client.query<findDiagnosticSettings>({
-        query: FIND_DIAGNOSTIC_SETTINGS,
-        variables: {
-          phleboETAInMinutes: 0,
-        },
-        fetchPolicy: 'no-cache',
-      });
+      const response = await getDiagnosticSettings(client, 0);
       const phleboMin = response?.data?.findDiagnosticSettings?.phleboETAInMinutes || 45;
       setPhleboMin(phleboMin);
     } catch (error) {
@@ -1574,7 +1593,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const showCirclePurchaseAmount = isDiagnosticCircleSubscription || isCircleAddedToCart;
     const showCircleRelatedSavings =
       showCirclePurchaseAmount && circleSaving > 0 && (!!coupon ? couponCircleBenefits : true);
-
+    const showOneApollo = isModifyFlow
+      ? modifiedOrder?.paymentType === DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT
+      : true;
     return (
       <>
         <View
@@ -1659,6 +1680,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             )}
           <Spearator style={{ marginBottom: 6, marginTop: 6 }} />
           {renderPrices(string.common.toPay, toPayPrice?.toFixed(2), true)}
+          {healthCredits != 0 && showOneApollo && <Spearator style={{ marginBottom: 15 }} />}
+          {showOneApollo && renderOneApollo()}
           {isCircleAddedToCart && renderCODDisableText()}
         </View>
 
@@ -1676,6 +1699,10 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         <Text style={styles.codDisableText}>{string.diagnostics.codDisableTextForCircle}</Text>
       </View>
     );
+  };
+
+  const renderOneApollo = () => {
+    return <HealthCreditsCard availableHC={healthCredits} />;
   };
 
   const getHcCharges = (): number => {
@@ -1855,10 +1882,16 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   };
 
   const renderPolicyDisclaimer = () => {
+    const getRemoteText = AppConfig.Configuration.DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER_TEXT;
+    const getTexts = getRemoteText?.split('<b>');
+    const firstText = getTexts?.[0];
+    const secondText = getTexts?.[1];
+    const thirdText = getTexts?.[2];
     return (
       <View style={{ margin: 16, marginTop: anyCartSaving > 0 ? 16 : 0 }}>
         <Text style={styles.disclaimerText}>
-          {AppConfig.Configuration.DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER_TEXT}
+          {firstText} {!!secondText && <Text style={styles.disclaimerText1}>{secondText}</Text>}
+          {!!thirdText && thirdText}
         </Text>
       </View>
     );
@@ -2124,6 +2157,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           charges: hcCharges,
           distanceCharges:
             !!diagnosticSlot?.isPaidSlot && diagnosticSlot?.isPaidSlot ? distanceCharges : 0,
+          couponDiscApplied: !!coupon && waiveOffCollectionCharges,
         },
         bookingSource: DiagnosticsBookingSource.MOBILE,
         deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
@@ -2750,15 +2784,14 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     verticalSpecificData: any
   ) {
     setLoading?.(false);
-
     props.navigation.navigate(AppRoutes.PaymentStatusDiag, {
       paymentId: paymentId,
       orderDetails: orderInfo,
       isCOD: isCOD,
       eventAttributes,
       paymentStatus: paymentStatus,
-      verticalSpecificData,
       isModify: isModifyFlow ? modifiedOrder : null,
+      verticalSpecificData,
     });
   }
 
@@ -3259,6 +3292,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   savingsTitleText: { ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 1, 20) },
+  disclaimerText: { ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1, 18, 0.04) },
+  disclaimerText1: { ...theme.viewStyles.text('B', 12, colors.SKY_BLUE, 1, 18, 0.04) },
   mediumGreenText: { ...theme.viewStyles.text('M', 12, theme.colors.APP_GREEN, 1, 16) },
   mediumText: { ...theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE, 1, 16), width: '90%' },
   circleIcon: { height: 35, width: 35, resizeMode: 'contain' },
@@ -3267,10 +3302,12 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 14),
     alignSelf: 'flex-end',
   },
-  circleItemCartView: { backgroundColor: 'white', flexDirection: 'row', paddingVertical: 10 },
+  circleItemCartView: {
+    backgroundColor: 'white',
+    flexDirection: 'row',
+  },
   circleIconView: { paddingHorizontal: 10 },
   circleText: { flexDirection: 'column' },
   circleTextPrice: { padding: 10 },
   circleTextStyle: { ...theme.viewStyles.text('M', 14, colors.SHERPA_BLUE, 1) },
-  disclaimerText: { ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1, 18, 0.04) },
 });

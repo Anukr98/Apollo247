@@ -61,6 +61,10 @@ import {
   GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
   DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS,
   GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
+  FETCH_BLOB_URL_WITH_PRISM,
+  FIND_DIAGNOSTIC_SETTINGS,
+  GET_PATIENT_ADDRESS_LIST,
+  GET_RESCHEDULE_AND_CANCELLATION_REASONS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -112,8 +116,6 @@ import {
   MedicalRecordType,
   UserState,
   BannerDisplayType,
-  ProcessDiagnosticHCOrderInput,
-  DIAGNOSTIC_ORDER_PAYMENT_TYPE,
   SaveBookHomeCollectionOrderInputv2,
   patientObjWithLineItems,
   patientAddressObj,
@@ -258,10 +260,6 @@ import {
   savePhleboFeedback_savePhleboFeedback,
 } from '@aph/mobile-patients/src/graphql/types/savePhleboFeedback';
 import {
-  processDiagnosticHCOrder,
-  processDiagnosticHCOrderVariables,
-} from '@aph/mobile-patients/src/graphql/types/processDiagnosticHCOrder';
-import {
   getDiagnosticPaymentSettings,
   getDiagnosticPaymentSettingsVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticPaymentSettings';
@@ -289,6 +287,13 @@ import { getDiagnosticPackageRecommendations, getDiagnosticPackageRecommendation
 import { getDiagnosticOrdersListByMobile, getDiagnosticOrdersListByMobileVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { getDiagnosticItemRecommendationsByPastOrders, getDiagnosticItemRecommendationsByPastOrdersVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticItemRecommendationsByPastOrders';
 import { findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsByItemIDsAndCityID';
+import { fetchBlobURLWithPRISMData, fetchBlobURLWithPRISMDataVariables } from '@aph/mobile-patients/src/graphql/types/fetchBlobURLWithPRISMData';
+import { findDiagnosticSettings } from '@aph/mobile-patients/src/graphql/types/findDiagnosticSettings';
+import {
+  getPatientAddressList,
+  getPatientAddressListVariables,
+} from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
+import { getRescheduleAndCancellationReasons, getRescheduleAndCancellationReasonsVariables } from '@aph/mobile-patients/src/graphql/types/getRescheduleAndCancellationReasons';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -1265,22 +1270,6 @@ export const savePhleboFeedback = (
   });
 };
 
-export const processDiagnosticsCODOrder = (
-  client: ApolloClient<object>,
-  orderId: string,
-  amount: number
-) => {
-  const processDiagnosticHCOrderInput: ProcessDiagnosticHCOrderInput = {
-    orderID: orderId,
-    paymentMode: DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD,
-    amount: amount,
-  };
-  return client.mutate<processDiagnosticHCOrder, processDiagnosticHCOrderVariables>({
-    mutation: PROCESS_DIAG_COD_ORDER,
-    variables: { processDiagnosticHCOrderInput: processDiagnosticHCOrderInput },
-    fetchPolicy: 'no-cache',
-  });
-};
 
 export const diagnosticPaymentSettings = (client: ApolloClient<object>, paymentId: string) => {
   return client.query<getDiagnosticPaymentSettings, getDiagnosticPaymentSettingsVariables>({
@@ -1693,3 +1682,46 @@ export const getDiagnosticsByItemIdCityId = (
     fetchPolicy: 'no-cache',
   });
 };
+
+export const convertPrismUrlToBlob = (client:  ApolloClient<object>, patientId: string, prismUrl:string) => {
+  return client.mutate<fetchBlobURLWithPRISMData, fetchBlobURLWithPRISMDataVariables>({
+    mutation: FETCH_BLOB_URL_WITH_PRISM,
+    variables: {
+      patientId: patientId,
+      fileUrl: prismUrl
+    },
+    fetchPolicy: 'no-cache',
+  });
+}
+
+export const getDiagnosticSettings = (client: ApolloClient<object>, phleboETAInMinutes : number) =>{
+  return client.query<findDiagnosticSettings>({
+    query: FIND_DIAGNOSTIC_SETTINGS,
+    context: {
+      sourceHeaders,
+    },
+    variables: {
+     phleboETAInMinutes,
+    },
+    fetchPolicy: 'no-cache',
+  });
+}
+
+export const fetchPatientAddressList = (client: ApolloClient<object>, patientId: string) =>{
+  return client.query<getPatientAddressList, getPatientAddressListVariables>({
+    query: GET_PATIENT_ADDRESS_LIST,
+    variables: { patientId: patientId },
+    fetchPolicy: 'no-cache',
+  });
+}
+
+export const getDiagnosticReasons = (client: ApolloClient<object>, orderTime: string) =>{
+  return  client.query<getRescheduleAndCancellationReasons, getRescheduleAndCancellationReasonsVariables>({
+    query: GET_RESCHEDULE_AND_CANCELLATION_REASONS,
+    context: {
+      sourceHeaders,
+    },
+    variables: { appointmentDateTimeInUTC: orderTime },
+    fetchPolicy: 'no-cache',
+  })
+}

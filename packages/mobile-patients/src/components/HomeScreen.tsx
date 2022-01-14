@@ -1403,10 +1403,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     updateAppVersion(currentPatient);
   }, [currentPatient]);
 
-  useEffect(() => {
-    checkCleverTapLoginStatus(currentPatient);
-  }, [currentPatient]);
-
   //to be called only when the user lands via app launch
   const logHomePageViewed = async (attributes: any) => {
     const isAppOpened = await AsyncStorage.getItem('APP_OPENED');
@@ -1459,6 +1455,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       saveDeviceNotificationToken(currentPatient.id);
     }
   }, [currentPatient]);
+
   const phrNotificationCount = getPhrNotificationAllCount(phrNotificationData!);
 
   const askLocationPermission = () => {

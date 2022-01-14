@@ -21,11 +21,7 @@ import { useGetDiagOrderInfo } from '@aph/mobile-patients/src/components/Payment
 import { TabBar } from '@aph/mobile-patients/src/components/PaymentGateway/Components/TabBar';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import {
-  goToConsultRoom,
-  postWebEngageEvent,
-  postCleverTapEvent,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { goToConsultRoom } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { apiCallEnums } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -53,14 +49,15 @@ import {
   firePaymentOrderStatusEvent,
 } from '@aph/mobile-patients/src/components/PaymentGateway/Events';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import {
+  DiagnosticOrderPlaced,
+  firePurchaseEvent,
+} from '@aph/mobile-patients/src/components/Tests/Events';
 import LottieView from 'lottie-react-native';
 const paymentSuccess =
   '@aph/mobile-patients/src/components/PaymentGateway/AnimationFiles/Animation_2/tick.json';
-import { firePurchaseEvent } from '@aph/mobile-patients/src/components/Tests/Events';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { InfoIconRed } from '@aph/mobile-patients/src/components/ui/Icons';
-import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 export interface PaymentStatusDiagProps extends NavigationScreenProps {}
 
@@ -75,6 +72,9 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
   const eventAttributes = props.navigation.getParam('eventAttributes');
   const isCOD = props.navigation.getParam('isCOD');
   const isCircleAddedToCart = props.navigation.getParam('isCircleAddedToCart');
+  const verticalSpecificEventAttributes = props.navigation.getParam(
+    'verticalSpecificEventAttributes'
+  );
   const {
     orderInfo,
     fetching,
@@ -189,16 +189,18 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
   };
 
   const postwebEngageCheckoutCompletedEvent = () => {
-    try {
-      let attributes = {
-        ...eventAttributes,
-        'Payment Mode': isCOD ? 'Cash' : 'Prepaid',
-        'Circle discount': circleSubscriptionId && orderCircleSaving ? orderCircleSaving : 0,
-        'Circle user': isDiagnosticCircleSubscription || isCircleAddedToCart ? 'Yes' : 'No',
-      };
-      postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED, attributes);
-      postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ORDER_PLACED, attributes);
-    } catch (error) {}
+    const circleDiscount = circleSubscriptionId && orderCircleSaving ? orderCircleSaving : 0;
+    const circleUser = isDiagnosticCircleSubscription || isCircleAddedToCart ? 'Yes' : 'No';
+    const mode = isCOD ? 'Cash' : 'Prepaid';
+    DiagnosticOrderPlaced(
+      currentPatient,
+      isDiagnosticCircleSubscription,
+      circleDiscount,
+      circleUser,
+      mode,
+      eventAttributes,
+      verticalSpecificEventAttributes
+    );
   };
 
   const requestInAppReview = async () => {
@@ -410,7 +412,7 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
 
   return (
     <>
-      {animationfinished ? (
+      {animationfinished && !fetching ? (
         <SafeAreaView style={styles.container}>
           <ScrollView>
             {renderPaymentStatus()}

@@ -1348,8 +1348,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       PROD: 'REFERRER_FAQS_DATA',
     },
     DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER: {
-      QA: 'QA_Diagnostic_Review_Disclaimer',
-      PROD: 'Diagnostic_Review_Disclaimer',
+      QA: 'QA_Diagnostic_Review_Disclaimer_New',
+      PROD: 'Diagnostic_Review_Disclaimer_New',
     },
   };
 

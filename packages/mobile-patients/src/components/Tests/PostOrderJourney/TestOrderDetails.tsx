@@ -89,7 +89,6 @@ import {
   DiagnosticTrackOrderViewed,
   DiagnosticViewReportClicked,
 } from '@aph/mobile-patients/src/components/Tests/Events';
-import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import {
   getHCOrderFormattedTrackingHistory,
   getHCOrderFormattedTrackingHistoryVariables,
@@ -113,6 +112,7 @@ import {
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
+import { Helpers as NeedHelpHelpers } from '@aph/mobile-patients/src/components/NeedHelp';
 const DROP_DOWN_ARRAY_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
@@ -149,6 +149,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const { buildApolloClient, authToken, getPatientApiCall } = useAuth();
   const apolloClientWithAuth = buildApolloClient(authToken);
   const client = useApolloClient();
+  const { getHelpSectionQueries } = NeedHelpHelpers;
   const [selectedTab, setSelectedTab] = useState<string>(
     showOrderSummaryTab ? string.orders.viewBill : string.orders.trackOrder
   );
@@ -169,6 +170,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const scrollViewRef = React.useRef<ScrollView | null>(null);
   const [orderDetails, setOrderDetails] = useState([] as any);
   const [orderSubscriptionDetails, setOrderSubscriptionDetails] = useState(null);
+  const [queries, setQueries] = useState<NeedHelpHelpers.HelpSectionQuery[]>([]);
+
   const scrollToSlots = (yValue?: number) => {
     const setY = yValue == undefined ? scrollYValue : yValue;
     scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: setY, animated: true });
@@ -1443,18 +1446,16 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
   const renderOrderSummary = () => {
     return (
-      !!g(orderDetails, 'totalPrice') && (
-        <TestOrderSummaryView
-          orderDetails={orderDetails}
-          slotDuration={slotDuration}
-          onPressViewReport={_onPressViewReportAction}
-          onPressDownloadInvoice={onPressInvoice}
-          refundDetails={refundStatusArr}
-          refundTransactionId={refundTransactionId}
-          subscriptionDetails={orderSubscriptionDetails}
-          onPressViewAll={_onPressViewAll}
-        />
-      )
+      <TestOrderSummaryView
+        orderDetails={orderDetails}
+        slotDuration={slotDuration}
+        onPressViewReport={_onPressViewReportAction}
+        onPressDownloadInvoice={onPressInvoice}
+        refundDetails={refundStatusArr}
+        refundTransactionId={refundTransactionId}
+        subscriptionDetails={orderSubscriptionDetails}
+        onPressViewAll={_onPressViewAll}
+      />
     );
   };
 
@@ -1484,31 +1485,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     }
   };
 
-  const renderMoreMenu = () => {
-    return (
-      <MaterialMenu
-        options={['Help'].map((item) => ({
-          key: item,
-          value: item,
-        }))}
-        menuContainerStyle={{
-          alignItems: 'center',
-          marginTop: 30,
-        }}
-        lastContainerStyle={{ borderBottomWidth: 0 }}
-        bottomPadding={{ paddingBottom: 0 }}
-        itemTextStyle={{ ...theme.viewStyles.text('M', 14, '#01475b') }}
-        onPress={({ value }) => {
-          if (value === 'Help') {
-            props.navigation.navigate(AppRoutes.MobileHelp);
-          }
-        }}
-      >
-        <More />
-      </MaterialMenu>
-    );
-  };
-
   const renderCallToOrder = () => {
     return getCTADetails?.length ? (
       <CallToOrderView
@@ -1526,6 +1502,56 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     ) : null;
   };
 
+  function _navigateToHelpSection(queries: any) {
+    const helpSectionQueryId = AppConfig.Configuration.HELP_SECTION_CUSTOM_QUERIES;
+    const currentStatusDate = orderDetails?.diagnosticOrdersStatus?.find(
+      (i: any) => i?.orderStatus === orderDetails?.orderStatus
+    )?.statusDate;
+
+    props.navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
+      isOrderRelatedIssue: true,
+      medicineOrderStatus: orderDetails?.orderStatus,
+      medicineOrderStatusDate: currentStatusDate,
+      orderId: orderDetails?.displayId,
+      queryIdLevel1: helpSectionQueryId.diagnostic,
+      queries: queries,
+      email: null,
+      sourcePage: 'My Orders',
+    });
+  }
+
+  const fetchQueries = async () => {
+    try {
+      setLoading?.(true);
+      const queries = await getHelpSectionQueries(client);
+      setQueries(queries);
+      _navigateToHelpSection(queries);
+      setLoading?.(false);
+    } catch (error) {
+      setLoading?.(false);
+      showAphAlert?.({
+        title: string.common.uhOh,
+        description: string.genericError,
+      });
+    }
+  };
+
+  const onPressHelp = () => {
+    if (queries?.length > 0) {
+      _navigateToHelpSection(queries);
+    } else {
+      fetchQueries();
+    }
+  };
+
+  const renderHeaderRightComponent = () => {
+    return (
+      <TouchableOpacity activeOpacity={1} style={{ paddingLeft: 10 }} onPress={onPressHelp}>
+        <Text style={styles.helpTextStyle}>{string.help.toUpperCase()}</Text>
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
@@ -1538,7 +1564,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             onPressLeftIcon={() => {
               handleBack();
             }}
-            rightComponent={renderMoreMenu()}
+            rightComponent={renderHeaderRightComponent()}
           />
         </View>
         <TabsComponent
@@ -1845,4 +1871,5 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 8,
   },
+  helpTextStyle: { ...theme.viewStyles.text('B', 13, colors.APP_YELLOW, 1, 24) },
 });

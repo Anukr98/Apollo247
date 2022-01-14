@@ -26,6 +26,7 @@ import {
   isDiagnosticSelectedCartEmpty,
   distanceBwTwoLatLng,
   extractPatientDetails,
+  isRtpcrInCart,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   DiagnosticPatientCartItem,
@@ -46,7 +47,11 @@ import {
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { diagnosticServiceability } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  diagnosticServiceability,
+  fetchPatientAddressList,
+  getDiagnosticSettings,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   findDiagnosticsByItemIDsAndCityID,
@@ -55,9 +60,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsByItemIDsAndCityID';
 import {
   EDIT_PROFILE,
-  FIND_DIAGNOSTIC_SETTINGS,
   GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
-  GET_PATIENT_ADDRESS_LIST,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   diagnosticsDisplayPrice,
@@ -67,10 +70,6 @@ import {
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
-import {
-  getPatientAddressList,
-  getPatientAddressListVariables,
-} from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
@@ -81,7 +80,6 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { DiagnosticPatientSelected } from '@aph/mobile-patients/src/components/Tests/Events';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import { findDiagnosticSettings } from '@aph/mobile-patients/src/graphql/types/findDiagnosticSettings';
 import { Gender, TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { PatientDetailsOverlay } from '@aph/mobile-patients/src/components/Tests/components/PatientDetailsOverlay';
 import {
@@ -89,7 +87,6 @@ import {
   editProfileVariables,
 } from '@aph/mobile-patients/src/graphql/types/editProfile';
 import moment from 'moment';
-import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 
 const screenHeight = Dimensions.get('window').height;
 const { SHERPA_BLUE, WHITE, APP_GREEN, NEWGRAY } = theme.colors;
@@ -103,8 +100,6 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const {
     setCartItems,
-    updateCartItem,
-    updatePatientCartItem,
     cartItems,
     isDiagnosticCircleSubscription,
     showSelectedPatient,
@@ -140,8 +135,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   );
   var isCartEmpty = isDiagnosticSelectedCartEmpty(patientCartItems);
 
-  const { setLoading, showAphAlert, hideAphAlert, loading } = useUIElements();
-  const [isServiceable, setIsServiceable] = useState<boolean>(false);
+  const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const [isFocus, setIsFocus] = useState<boolean>(false);
   const [itemsSelected, setItemsSelected] = useState(patientCartItems);
   const [patientLimit, setPatientLimit] = useState<number>(0);
@@ -175,13 +169,6 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    if (isFocus) {
-      //remove iterate over patients and remove the items not present in cartItems
-      const newPatientCartItems = patientCartItems?.map((pCartItems) =>
-        pCartItems?.cartItems?.map((cItem) => !cartItems?.includes(cItem))
-      );
-      // setPatientCartItems?.(newPatientCartItems);
-    }
     if (isFocus && cartItems?.length > 0) {
       const getExisitngItems = patientCartItems
         ?.map((item) => item?.cartItems?.filter((idd) => idd?.id))
@@ -204,11 +191,6 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
       removeMultiPatientCartItems?.();
     }
   }, [cartItems, isFocus]);
-
-  function handleBack() {
-    props.navigation.goBack();
-    return true;
-  }
 
   useEffect(() => {
     addresses?.length == 0 && fetchAddress();
@@ -245,18 +227,14 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     }
   }, []);
 
+  function handleBack() {
+    props.navigation.goBack();
+    return true;
+  }
+
   const fetchFindDiagnosticSettings = async () => {
     try {
-      const response = await client.query<findDiagnosticSettings>({
-        query: FIND_DIAGNOSTIC_SETTINGS,
-        context: {
-          sourceHeaders,
-        },
-        variables: {
-          phleboETAInMinutes: 0,
-        },
-        fetchPolicy: 'no-cache',
-      });
+      const response = await getDiagnosticSettings(client, 0);
       if (!response?.errors && response?.data?.findDiagnosticSettings) {
         const getResponse = response?.data?.findDiagnosticSettings;
         const phleboMin =
@@ -297,11 +275,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   async function fetchAddress() {
     try {
       setLoading?.(true);
-      const response = await client.query<getPatientAddressList, getPatientAddressListVariables>({
-        query: GET_PATIENT_ADDRESS_LIST,
-        variables: { patientId: currentPatient?.id },
-        fetchPolicy: 'no-cache',
-      });
+      const response = await fetchPatientAddressList(client, currentPatient?.id);
       const addressList = (response?.data?.getPatientAddressList?.addressList as Address[]) || [];
       setAddresses?.(addressList);
       setTestAddress?.(addressList);
@@ -571,7 +545,6 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
       }
     } catch (error) {
       CommonBugFender('AddPatients_getAddressServiceability', error);
-      setIsServiceable(false);
       setLoading?.(false);
       setDeliveryAddressCityId?.('');
       setDeliveryAddressId?.('');
@@ -733,7 +706,8 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   function _onPressPatient(patient: any, index: number) {
     const isInvalidUser = checkPatientAge(patient);
     const hasEmptyValues = checkEmptyPatientValues(patient, index);
-    if (isInvalidUser) {
+    const hasRtpcrInCart = isRtpcrInCart(cartItems);
+    if (isInvalidUser && !!!hasRtpcrInCart) {
       renderBelowAgePopUp();
     } else if (hasEmptyValues) {
       setShowPatientDetailsOverlay(true);
@@ -900,13 +874,16 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
       isPresent && isPresent?.cartItems?.filter((item) => item?.isSelected);
 
     const showGreenBg = !!patientSelectedItems && patientSelectedItems?.length > 0;
+    const isMinorAge = checkPatientAge(item);
 
     const itemViewStyle = [
       styles.patientItemViewStyle,
       index === 0 && { marginTop: 12 },
+      isMinorAge && { backgroundColor: 'rgb(252,252,251)' },
       showGreenBg && { backgroundColor: APP_GREEN },
     ];
 
+    const minorAgeTextOpacity = isMinorAge && { opacity: 0.6 };
     return (
       <View
         style={[
@@ -921,21 +898,51 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
           style={itemViewStyle}
           onPress={() => _onPressPatient(item, index)}
         >
-          <Text style={[styles.patientNameTextStyle, showGreenBg && { color: WHITE }]}>
-            {patientSalutation} {patientName}
-          </Text>
-          <Text style={[styles.genderAgeTextStyle, showGreenBg && { color: WHITE }]}>
-            {genderAgeText}
-          </Text>
-          <View style={styles.arrowIconView}>
-            {!showGreenBg ? (
-              <MinusPatientCircleIcon style={[styles.arrowStyle]} />
-            ) : (
-              <AddPatientCircleIcon style={[styles.arrowStyle]} />
-            )}
+          <View
+            style={[
+              { flexDirection: 'row' },
+              isMinorAge
+                ? { marginLeft: -20, marginRight: -16 }
+                : { marginLeft: -8, marginRight: -4 },
+            ]}
+          >
+            <Text
+              style={[
+                styles.patientNameTextStyle,
+                minorAgeTextOpacity,
+                showGreenBg && { color: WHITE },
+              ]}
+            >
+              {patientSalutation} {patientName}
+            </Text>
+            <Text
+              style={[
+                styles.genderAgeTextStyle,
+                minorAgeTextOpacity,
+                showGreenBg && { color: WHITE },
+              ]}
+            >
+              {genderAgeText}
+            </Text>
+            <View style={styles.arrowIconView}>
+              {!showGreenBg ? (
+                <MinusPatientCircleIcon style={[styles.arrowStyle]} />
+              ) : (
+                <AddPatientCircleIcon style={[styles.arrowStyle]} />
+              )}
+            </View>
           </View>
+          {isMinorAge ? renderMinorPatientText() : null}
         </TouchableOpacity>
         {renderCartItems(item)}
+      </View>
+    );
+  };
+
+  const renderMinorPatientText = () => {
+    return (
+      <View style={styles.minorAgeTextView}>
+        <Text style={styles.minorAgeText}>{string.diagnosticsCartPage.minorAgeTestText}</Text>
       </View>
     );
   };
@@ -1143,7 +1150,6 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   patientItemViewStyle: {
-    flexDirection: 'row',
     flex: 1,
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -1157,11 +1163,10 @@ const styles = StyleSheet.create({
   },
   patientNameTextStyle: {
     ...text('SB', 14, SHERPA_BLUE, 1, 19, 0),
-    width: '70%',
+    width: '68%',
   },
   genderAgeTextStyle: {
     ...text('M', 12, SHERPA_BLUE, 1, 15.6, -0.36),
-    width: '18%',
     textAlign: 'right',
   },
   arrowStyle: {
@@ -1229,4 +1234,8 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   mainContainerView: { marginVertical: 16, flex: 1, padding: 10 },
+  minorAgeText: {
+    ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 1, 16),
+  },
+  minorAgeTextView: { marginTop: 4, marginBottom: 4 },
 });

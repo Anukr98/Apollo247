@@ -845,6 +845,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           ? packageRecommendations > 2
             ? 'Recommendations'
             : 'You can also order'
+          : !!widgetTitle
+          ? widgetTitle
           : ''
       );
     }
@@ -1578,19 +1580,14 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         ? testInfo?.inclusions
         : [Number(testInfo?.inclusions)];
     const priceToShow = calculatePriceToShow();
-
     DiagnosticAddToCartEvent(
       cmsTestDetails?.diagnosticItemName || testInfo?.itemName,
       itemId!,
       mrpToDisplay, //mrp
       priceToShow, //actual price
       DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS,
-      testInclusions < 1 ? DIAGNOSTICS_ITEM_TYPE.TEST : DIAGNOSTICS_ITEM_TYPE.PACKAGE,
-      originalItemIds
-        ? packageRecommendations > 2
-          ? 'Recommendations'
-          : 'You can also order'
-        : '',
+      testInclusions?.length < 2 ? DIAGNOSTICS_ITEM_TYPE.TEST : DIAGNOSTICS_ITEM_TYPE.PACKAGE,
+      '',
       currentPatient,
       isDiagnosticCircleSubscription,
       originalItemIds
@@ -1677,6 +1674,23 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       frequentlyBroughtRecommendations?.length > 0
         ? getWidgetTitle?.frequentlyBrought
         : getWidgetTitle?.topBookedTests;
+    const dataToShow =
+      frequentlyBroughtRecommendations?.length > 0
+        ? frequentlyBroughtRecommendations
+        : topBookedTests;
+
+    const inclusionIdArray: any[] = [];
+    const inclusionIds =
+      !!testInfo &&
+      !!testInfo?.inclusions?.length &&
+      testInfo?.inclusions?.map((_item: any) => {
+        inclusionIdArray?.push(_item);
+      });
+    const dataToRender = dataToShow?.filter((item: any) => {
+      if (item?.itemId != itemId || !inclusionIdArray?.includes(item?.itemId)) {
+        return item;
+      }
+    });
     return (
       <>
         {frequentlyBroughtShimmer ? (
@@ -1689,17 +1703,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               style={{ borderBottomWidth: 0, borderColor: 'transparent' }}
             />
             <ItemCard
-              diagnosticWidgetData={
-                frequentlyBroughtRecommendations?.length > 0
-                  ? frequentlyBroughtRecommendations
-                  : topBookedTests
-              }
+              diagnosticWidgetData={dataToRender}
               onPressRemoveItemFromCart={(item) => {}}
-              data={
-                frequentlyBroughtRecommendations?.length > 0
-                  ? frequentlyBroughtRecommendations
-                  : topBookedTests
-              }
+              data={dataToRender}
               isCircleSubscribed={isDiagnosticCircleSubscription}
               isServiceable={true}
               isVertical={false}

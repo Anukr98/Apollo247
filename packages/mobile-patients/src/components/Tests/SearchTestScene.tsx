@@ -82,7 +82,7 @@ import { searchDiagnosticItem_searchDiagnosticItem_data } from '@aph/mobile-pati
 import { DiagnosticsSearchResultItem } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticSearchResultItem';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { DIAGNOSTICS_ITEM_TYPE } from '../../helpers/CleverTapEvents';
+import { DIAGNOSTICS_ITEM_TYPE } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 type searchResults = searchDiagnosticItem_searchDiagnosticItem_data;
 
@@ -192,7 +192,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     if (!popularArray?.length) {
       fetchPopularDetails();
     }
-    setWebEngageEventOnSearchItem('', []);
+    //for time being removing Diagnostic search clicked ct event from here required for ticket https://apollogarage.atlassian.net/browse/APP-18205
   }, []);
 
   useEffect(() => {
@@ -293,7 +293,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         const products = res?.data?.searchDiagnosticItem?.data || [];
         setDiagnosticResults(products as searchDiagnosticItem_searchDiagnosticItem_data[]);
         setSearchResult(products?.length == 0);
-        setWebEngageEventOnSearchItem(_searchText, products);
+        if (_searchText?.length > 0) {
+          setWebEngageEventOnSearchItem(_searchText, products);
+        }
       } else {
         setDiagnosticResults([]);
         setSearchResult(true);
@@ -375,8 +377,11 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     const addedItem = {
       id: `${itemId}`,
       name: stripHtml(itemName),
-      price: pricesObject?.rate || 0,
-      specialPrice: pricesObject?.specialPrice! || pricesObject?.rate || 0,
+      price: !!pricesObject?.rate ? pricesObject?.rate : pricesObject?.price || 0,
+      specialPrice:
+        pricesObject?.specialPrice! || !!pricesObject?.rate
+          ? pricesObject?.rate
+          : pricesObject?.price || 0,
       circlePrice: pricesObject?.circlePrice,
       circleSpecialPrice: pricesObject?.circleSpecialPrice,
       discountPrice: pricesObject?.discountPrice,
@@ -536,7 +541,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
                   setDiagnosticResults([]);
                   return;
                 }
-                const search = _.debounce(onSearchTest, 300);
+                const search = _.debounce(onSearchTest, 500);
                 setSearchQuery((prevSearch: any) => {
                   if (prevSearch?.cancel) {
                     prevSearch?.cancel();

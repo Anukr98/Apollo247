@@ -323,7 +323,6 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       !isModal && fireCirclePlanToCartEvent(membershipPlan);
       onSelectMembershipPlan && onSelectMembershipPlan();
     } else {
-      console.log('po');
       setIsCircleSubscription && setIsCircleSubscription(true);
       setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
       !isModal && fireCirclePlanToCartEvent(membershipPlan);

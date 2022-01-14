@@ -8,6 +8,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { InfoMessage } from '@aph/mobile-patients/src/components/Tests/components/InfoMessage';
 import { SavingsIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { ELIGIBLE_HC_VERTICALS } from '@aph/mobile-patients/src/strings/AppConfig';
 export interface PayByCashProps {
   onPressPlaceOrder: () => void;
   HCselected: boolean;
