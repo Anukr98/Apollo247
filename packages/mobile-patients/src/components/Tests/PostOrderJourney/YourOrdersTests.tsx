@@ -386,7 +386,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                     allowCallingETAText: null,
                     isPhleboChanged: null,
                     diagnosticPhlebotomists: {
-                      id: null,
                       name: null,
                       mobile: null,
                       vaccinationStatus: null,
