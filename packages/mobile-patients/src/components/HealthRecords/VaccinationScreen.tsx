@@ -253,6 +253,12 @@ export const VaccinationScreen: React.FC<VaccinationScreenProps> = (props) => {
   };
 
   const onHealthCardItemPress = (selectedItem: any) => {
+    postCleverTapPHR(
+      currentPatient,
+      CleverTapEventName.PHR_CLICK_VACCINATION_REPORT,
+      'Vaccination Screen',
+      selectedItem
+    );
     props.navigation.navigate(AppRoutes.VaccinationDoseScreen, {
       data: selectedItem,
     });
@@ -331,10 +337,6 @@ export const VaccinationScreen: React.FC<VaccinationScreenProps> = (props) => {
           style={{ width: '100%' }}
           title={'ADD VACCINATION'}
           onPress={() => {
-            const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {
-              Source: 'Vaccination',
-            };
-            postWebEngageEvent(WebEngageEventName.ADD_VACCINATION_RECORD, eventAttributes);
             setCallApi(false);
             props.navigation.navigate(AppRoutes.AddVaccinationRecord, {
               navigatedFrom: 'Vaccination ',

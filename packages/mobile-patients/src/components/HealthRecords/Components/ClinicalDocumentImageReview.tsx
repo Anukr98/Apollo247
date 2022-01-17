@@ -27,6 +27,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getClinicalDocuments';
 import { getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_prescriptions_response } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V3';
 import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import {
   deletePatientPrismMedicalRecords,
   getPatientPrismMedicalRecordsApi,
@@ -35,6 +36,7 @@ import {
   g,
   handleGraphQlError,
   phrSortByDate,
+  postCleverTapPHR,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -359,6 +361,12 @@ export const ClinicalDocumentImageReview: React.FC<ClinicalDocumentImageReviewPr
     )
       .then((status) => {
         if (status) {
+          postCleverTapPHR(
+            currentPatient,
+            CleverTapEventName.PHR_DELETE_CLINICAL_DOCUMENT,
+            'Clinical Documents Image Review',
+            status
+          );
           navigateToListingPage(false);
         } else {
           setShowSpinner(false);

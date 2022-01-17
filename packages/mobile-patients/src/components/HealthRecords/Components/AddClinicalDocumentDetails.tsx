@@ -39,7 +39,12 @@ import {
   saveClinicalDocuments,
   saveClinicalDocumentsVariables,
 } from '@aph/mobile-patients/src/graphql/types/saveClinicalDocuments';
-import { handleGraphQlError, isValidText } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import {
+  handleGraphQlError,
+  isValidText,
+  postCleverTapPHR,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -1580,6 +1585,12 @@ export const AddClinicalDocumentDetails: React.FC<AddClinicalDocumentDetailsProp
         })
         .then((response: any) => {
           setShowSpinner(false);
+          postCleverTapPHR(
+            currentPatient,
+            CleverTapEventName.PHR_UPDATE_CLINICAL_DOCUMENT,
+            'Add Clinical Documents Details',
+            response
+          );
           props.navigation.navigate(AppRoutes.ClinicalDocumentListing, { apiCall: true });
         })
         .catch((error: any) => {

@@ -42,7 +42,11 @@ import { SAVE_CLINICAL_DOCUMENTS } from '@aph/mobile-patients/src/graphql/profil
 import { AddClinicalDocumentDetails } from '@aph/mobile-patients/src/components/HealthRecords/Components/AddClinicalDocumentDetails';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  handleGraphQlError,
+  postCleverTapPHR,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const styles = StyleSheet.create({
   phrOverlayStyle: {
@@ -347,6 +351,12 @@ export const ClinicalDocumentPreview: React.FC<ClinicalDocumentPreviewProps> = (
           },
         })
         .then((response: any) => {
+          postCleverTapPHR(
+            currentPatient,
+            CleverTapEventName.PHR_ADD_CLINICAL_DOCUMENT,
+            'Clinical Documents Preview',
+            response
+          );
           props.navigation.navigate(AppRoutes.ClinicalDocumentImageReview, {
             imageArray: Images,
             imageTitle: pdfStringHandler,

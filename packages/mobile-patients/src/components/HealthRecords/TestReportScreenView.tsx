@@ -51,6 +51,7 @@ import {
   handleGraphQlError,
   isSmallDevice,
   postCleverTapPHR,
+  removeObjectProperty,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import {
@@ -804,6 +805,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
             </Text>
           </View>
           {data?.labTestResults?.map((item: any) => {
+            const eventInputData = removeObjectProperty(item, data?.labTestName);
             const unit = item?.unit;
             let minNum: number;
             let maxNum: number;
@@ -903,6 +905,12 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                       <TouchableOpacity
                         activeOpacity={1}
                         onPress={() => {
+                          postCleverTapPHR(
+                            currentPatient,
+                            CleverTapEventName.PHR_INFO_CONTENT,
+                            'PHR Info content tracking',
+                            eventInputData
+                          );
                           handleOnClickForGraphPopUp(
                             item?.parameterName,
                             data?.labTestName,
