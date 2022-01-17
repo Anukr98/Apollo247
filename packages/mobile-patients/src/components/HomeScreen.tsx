@@ -1429,7 +1429,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     try {
       const responseCampaign = await client.query({
         query: GET_CAMPAIGN_ID_FOR_REFERRER,
-        variables: { camp: 'HC_CAMPAIGN' },
         fetchPolicy: 'no-cache',
       });
       const responseReward = await client.query({
@@ -1437,9 +1436,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         variables: { reward: 'HC' },
         fetchPolicy: 'no-cache',
       });
-      if (responseCampaign?.data?.getCampaignInfoByCampaignType?.id) {
-        const campaignId = responseCampaign?.data?.getCampaignInfoByCampaignType?.id;
-        const campaignName = responseCampaign?.data?.getCampaignInfoByCampaignType?.campaignType;
+      if (responseCampaign?.data?.getCampaignInfo?.id) {
+        const campaignId = responseCampaign?.data?.getCampaignInfo?.id;
+        const campaignName = responseCampaign?.data?.getCampaignInfo?.campaignType;
         setCampaignId?.(campaignId);
         setCampaignName?.(campaignName);
       }
