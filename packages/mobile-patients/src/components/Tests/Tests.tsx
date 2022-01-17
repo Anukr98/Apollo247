@@ -2631,7 +2631,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               <VirusGreen style={{ height: 24 }} />
               <Text style={styles.singleItemName}>{singleItem?.name}</Text>
             </View>
-            <Text style={styles.singleItemPrice}>₹{singleItem?.price}</Text>
+            <Text style={styles.singleItemPrice}>{string.common.Rs}{singleItem?.price}</Text>
           </View>
           <View style={styles.viewSecond}>
             <View style={{ marginLeft: 45 }}>
