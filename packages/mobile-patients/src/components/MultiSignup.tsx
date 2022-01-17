@@ -403,7 +403,11 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                     AsyncStorage.setItem('userLoggedIn', 'true'),
                     AsyncStorage.setItem('multiSignUp', 'false'),
                     AsyncStorage.setItem('gotIt', 'false'),
-                    onCleverTapUserLogin(!whatsAppOptIn ? data?.updatePatient?.patient : {...data?.updatePatient?.patient, 'Msg-whatsapp': true}),
+                    onCleverTapUserLogin(
+                      !whatsAppOptIn
+                        ? data?.updatePatient?.patient
+                        : { ...data?.updatePatient?.patient, 'Msg-whatsapp': true }
+                    ),
                     createOneApolloUser(data?.updatePatient?.patient?.id!),
                     handleOpenURLs())
                   : null}
@@ -684,8 +688,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   headerLogo: {
-    width: 43,
-    height: 32,
+    width: 66,
+    height: 48,
     marginBottom: 14,
   },
   headerHeadingContainer: {

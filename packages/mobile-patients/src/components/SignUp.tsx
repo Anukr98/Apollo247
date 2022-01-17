@@ -573,6 +573,9 @@ const SignUp: React.FC<SignUpProps> = (props) => {
         )}
         sliderWidth={Dimensions.get('window').width}
         itemWidth={Dimensions.get('window').width - 70}
+        autoplayDelay={3000}
+        autoplay={true}
+        autoplayInterval={3000}
       />
     );
   };
@@ -852,7 +855,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
         : null;
       let patientDetails: any = {
         id: mePatient.id,
-        whatsappOptIn: whatsAppOptIn,
+        // whatsappOptIn: whatsAppOptIn,
         mobileNumber: mePatient.mobileNumber,
         firstName: firstName.trim(),
         lastName: lastName.trim(),
@@ -1112,7 +1115,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   stickyHeaderOfferContain: {
-    height: 100,
+    height: 70,
     paddingTop: 10,
     marginBottom: 15,
   },
@@ -1187,14 +1190,14 @@ const styles = StyleSheet.create({
   offerCarouselImage: {
     width: '100%',
     height: '100%',
-    resizeMode: 'stretch',
+    resizeMode: 'contain',
   },
   dropdownCaret: {
     width: 10,
     height: 5,
   },
   appLogo: {
-    width: 44,
-    height: 33,
+    width: 66,
+    height: 48,
   },
 });
