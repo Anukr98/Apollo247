@@ -44,6 +44,7 @@ import {
   UPDATE_ORDER,
   VERIFY_VPA,
   INITIATE_DIAGNOSTIC_ORDER_PAYMENT_V2,
+  GET_ORDER_INFO,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -183,11 +184,24 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     availableHc: healthCredits,
   };
   const { deleteServerCart } = useServerCart();
+
+  const fetchTotalAmountToPay = async () => {
+    const response = await client.query({
+      query: GET_ORDER_INFO,
+      variables: { order_id: paymentId },
+      fetchPolicy: 'no-cache',
+    });
+    if (!!response?.data?.getOrderInternal?.total_amount) {
+      setAmount(response?.data?.getOrderInternal?.total_amount);
+    }
+  };
+
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
     const eventListener = eventEmitter.addListener('HyperEvent', (resp) => {
       handleEventListener(resp);
     });
+    fetchTotalAmountToPay();
     fecthPaymentOptions();
     isPhonePeReady();
     isGooglePayReady();
@@ -235,7 +249,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         ? (setburnHc(Number(Decimal.sub(healthCredits, 1))),
           setAmount(Number(Decimal.sub(amount, healthCredits).plus(1))))
         : (setburnHc(healthCredits), setAmount(Number(Decimal.sub(amount, healthCredits))))
-      : (setAmount(props.navigation.getParam('amount')), setburnHc(0));
+      : (setAmount(amount), setburnHc(0));
   };
 
   useEffect(() => {
