@@ -23,7 +23,6 @@ export interface saveCart_saveCart_data_amount {
   cartSavings: number | null;
   couponSavings: number | null;
   totalCashBack: number | null;
-  couponCashBack: number | null;
   cartTotal: number | null;
   packagingCharges: number | null;
   circleSavings: saveCart_saveCart_data_amount_circleSavings | null;
