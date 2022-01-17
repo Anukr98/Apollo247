@@ -393,7 +393,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
                   setUserActionPayload?.({
                     coupon: couponText || '',
                     subscription: {
-                      subscriptionApplied: isCircleCart ? true : false,
+                      subscriptionApplied: false,
                     },
                   });
                 }
