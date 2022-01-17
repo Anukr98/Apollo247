@@ -1078,7 +1078,7 @@ export function DiagnosticPrescriptionSubmitted(
   itemName: any,
   userType: string | null,
   isDiagnosticCircleSubscription?: boolean | undefined,
-  journeyType?: string | undefined
+  journeyType?: any
 ) {
   try {
     const getPatientAttributes = createPatientAttributes(currentPatient);
@@ -1089,7 +1089,7 @@ export function DiagnosticPrescriptionSubmitted(
       'User Type': userType,
       Source: 'Apollo247App',
       PrescriptionUrl: prescriptionUrl,
-      'Item Name': itemName,
+      'Item Name': JSON.stringify(itemName),
       "Journey Type": journeyType
     };
     postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_PRESCRIPTION_SUBMITTED, eventAttributes);
