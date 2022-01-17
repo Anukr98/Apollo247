@@ -304,7 +304,8 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
         prescriptionUrl ? prescriptionUrl : '',
         inputData?.prescriptionName ? inputData?.prescriptionName : '',
         userType,
-        isDiagnosticCircleSubscription
+        isDiagnosticCircleSubscription,
+        'Upload Prescription'
       );
     } else {
       let uploadUrl;
@@ -320,7 +321,8 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
         !!uploadUrl ? uploadUrl : '',
         inputData?.prescriptionName ? inputData?.prescriptionName : '',
         userType,
-        isDiagnosticCircleSubscription
+        isDiagnosticCircleSubscription,
+        'Upload Prescription'
       );
     }
     setOnSumbitSuccess(true);
@@ -366,7 +368,8 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
       !!newUrl ? newUrl : '',
       inputData?.prescriptionName ? inputData?.prescriptionName : '',
       userType,
-      isDiagnosticCircleSubscription
+      isDiagnosticCircleSubscription,
+      'Upload Prescription'
     );
     setOnSumbitSuccess(true);
   }

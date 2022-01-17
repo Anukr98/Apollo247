@@ -1940,6 +1940,7 @@ export interface CleverTapEvents {
     'Item Name': string;
     'Circle user': string;
     'User Type': any;
+    'Journey Type'?: string | undefined;
   };
   [CleverTapEventName.DIAGNOSTIC_PATIENT_SELECTED]: {
     'No. of patients': number;
