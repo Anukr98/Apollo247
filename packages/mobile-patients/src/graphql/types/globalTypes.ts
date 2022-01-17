@@ -2330,11 +2330,6 @@ export interface SaveMedicineOrderV3Input {
   showPrescriptionAtStore?: boolean | null;
 }
 
-export enum CANCELLATION_TIME {
-  POST_BILLING = "POST_BILLING",
-  PRE_BILLING = "PRE_BILLING",
-}
-
 //==============================================================
 // END Enums and Input Objects
 //==============================================================

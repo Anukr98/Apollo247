@@ -16,7 +16,7 @@ import {
   CartInputData,
   PrescriptionType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   formatAddressToLocation,
@@ -30,6 +30,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import moment from 'moment';
 
 export const useServerCart = () => {
+  const { buildApolloClient, validateAndReturnAuthToken } = useAuth();
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const {
@@ -120,8 +121,10 @@ export const useServerCart = () => {
       });
   };
 
-  const fetchServerCart = (userAgentInput?: string) => {
-    client
+  const fetchServerCart = async (userAgentInput?: string) => {
+    const authToken: string = await validateAndReturnAuthToken();
+    const apolloClient = buildApolloClient(authToken);
+    apolloClient
       .query({
         query: SERVER_CART_FETCH_CART,
         variables: {

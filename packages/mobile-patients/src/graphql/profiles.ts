@@ -2094,11 +2094,6 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
           state
           zipcode
         }
-        amountBreakUp {
-          totalCashBack
-          circleCashback
-          couponCashback
-        }
       }
     }
   }
@@ -6844,7 +6839,6 @@ export const SERVER_CART_SAVE_CART = gql`
           cartSavings
           couponSavings
           totalCashBack
-          couponCashBack
           cartTotal
           packagingCharges
           circleSavings {
@@ -6963,7 +6957,6 @@ export const SERVER_CART_FETCH_CART = gql`
           cartSavings
           couponSavings
           totalCashBack
-          couponCashback
           cartTotal
           packagingCharges
           circleSavings {

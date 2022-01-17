@@ -240,7 +240,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     );
   }, [data, refetch]);
   const order = g(data, 'getMedicineOrderOMSDetailsWithAddress', 'medicineOrderDetails');
-  const cashbackDetails = order?.amountBreakUp;
   const shipmentInfo = g(order, 'medicineOrderShipments');
   const shipmentTrackingNumber = shipmentInfo?.[0]?.trackingNo;
   const shipmentTrackingProvider = shipmentInfo?.[0]?.trackingProvider;
@@ -1922,7 +1921,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           orderDetails={orderDetails as any}
           addressData={addressData}
           onBillChangesClick={onBillChangesClick}
-          cashbackDetails={cashbackDetails}
         />
         <View style={{ marginTop: 30 }} />
       </View>

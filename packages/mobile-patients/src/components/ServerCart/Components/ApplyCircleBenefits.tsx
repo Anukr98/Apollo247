@@ -100,9 +100,7 @@ export const ApplyCircleBenefits: React.FC<ApplyCircleBenefitsProps> = (props) =
             {`Use your Circle membership instead & get `}
             <Text
               style={{ ...theme.viewStyles.text('SB', 12, '#02475B', 1, 17) }}
-            >{`₹${serverCartAmount?.circleSavings?.membershipCashBack?.toFixed(
-              2
-            )} Cashback and Free delivery `}</Text>
+            >{`₹${serverCartAmount?.totalCashBack?.toFixed(2)} Cashback and Free delivery `}</Text>
             <Text>on this order</Text>
           </Text>
         </TouchableOpacity>
