@@ -3930,7 +3930,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       <View style={styles.menuOptionsContainer}>
         <TouchableOpacity
           activeOpacity={1}
-          onPress={() => textForNotch !== 'Offer Expired' && onOfferCtaPressed(item, 1)}
+          onPress={() => {
+            postOfferCardClickEvent(item, '1', textForNotch == 'Offer Expired');
+            textForNotch !== 'Offer Expired' && onOfferCtaPressed(item, 1);
+          }}
         >
           <LinearGradientVerticalComponent
             colors={[
