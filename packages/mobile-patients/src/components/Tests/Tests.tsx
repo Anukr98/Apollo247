@@ -2653,8 +2653,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
             />
           </View>
           <View style={styles.bottomGreenView}>
-            <Text style={{ ...theme.viewStyles.text('SB', 16, '#46B29D', 1), alignSelf: 'center' }}>
-              Book for Family Members in Same Order
+            <Text style={styles.bottomText}>
+              {string.diagnostics.forFamily}
             </Text>
           </View>
         </View>
@@ -3516,6 +3516,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 10,
     paddingVertical: 10,
   },
+  bottomText: { ...theme.viewStyles.text('SB', 16, '#46B29D', 1), alignSelf: 'center' },
   closeContainer: {
     alignSelf: 'flex-end',
     margin: 10,
