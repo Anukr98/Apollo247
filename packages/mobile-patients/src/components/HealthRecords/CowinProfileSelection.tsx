@@ -20,6 +20,7 @@ import _ from 'lodash';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
+  g,
   handleGraphQlError,
   postCleverTapEvent,
   postCleverTapPHR,
@@ -34,6 +35,7 @@ import {
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import moment from 'moment';
 
 const styles = StyleSheet.create({
   cardViewStyle: {
@@ -209,12 +211,14 @@ export const CowinProfileSelection: React.FC<CowinProfileSelectionProps> = (prop
     )
       .then((data: any) => {
         setSpinner!(false);
-        postCleverTapPHR(
-          currentPatient,
-          CleverTapEventName.PHR_DOWNLOAD_VACCINATION_REPORT,
-          'Cowin Profile Selection',
-          data
-        );
+        let dateOfBirth = g(currentPatient, 'dateOfBirth');
+        let attributes = {
+          'Nav src': 'Vaccination',
+          'Patient UHID': g(currentPatient, 'uhid'),
+          'Patient gender': g(currentPatient, 'gender'),
+          'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+        };
+        postCleverTapEvent(CleverTapEventName.PHR_DOWNLOAD_RECORD, attributes);
         downloadDocument(data?.url);
       })
       .catch((error) => {

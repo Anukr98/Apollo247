@@ -48,6 +48,7 @@ import {
   isValidSearch,
   phrSearchCleverTapEvents,
   postCleverTapPHR,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -521,11 +522,16 @@ export const ClinicalDocumentListing: React.FC<ClinicalDocumentListingProps> = (
                     onPress={() => {
                       const dateFormat = new Date(Number(mainItem?.createddate));
                       const formatToMoment = moment(dateFormat).format('YYYY-MM-DD');
-                      postCleverTapPHR(
-                        currentPatient,
-                        CleverTapEventName.PHR_CLICK_CLINICAL_DOCUMENT,
-                        'Clinical Documents Listing Page',
-                        mainItem
+                      let dateOfBirth = g(currentPatient, 'dateOfBirth');
+                      let doctorConsultationAttributes = {
+                        'Nav src': 'Clinical Documents',
+                        'Patient UHID': g(currentPatient, 'uhid'),
+                        'Patient gender': g(currentPatient, 'gender'),
+                        'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+                      };
+                      postCleverTapEvent(
+                        CleverTapEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS,
+                        doctorConsultationAttributes
                       );
                       props.navigation.navigate(AppRoutes.ClinicalDocumentImageReview, {
                         imageArray: mainItem?.fileInfoList,

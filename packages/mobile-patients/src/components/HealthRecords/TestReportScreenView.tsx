@@ -50,6 +50,7 @@ import {
   g,
   handleGraphQlError,
   isSmallDevice,
+  postCleverTapEvent,
   postCleverTapPHR,
   removeObjectProperty,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -1283,12 +1284,18 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
       Platform.OS === 'ios'
         ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + (fileName || 'Apollo_TestReport.pdf')
         : dirs.DownloadDir + '/' + (fileName || 'Apollo_TestReport.pdf');
-    postCleverTapPHR(
-      currentPatient,
+    let dateOfBirth = g(currentPatient, 'dateOfBirth');
+    let testReportAttributes = {
+      'Nav src': 'Test Reports',
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+    };
+    postCleverTapEvent(
       fileShare
         ? CleverTapEventName.PHR_SHARE_LAB_TEST_REPORT
-        : CleverTapEventName.PHR_DOWNLOAD_TEST_REPORT,
-      'Test Report Screen View'
+        : CleverTapEventName.PHR_DOWNLOAD_RECORD,
+      testReportAttributes
     );
     setLoading && setLoading(true);
     RNFetchBlob.config({
