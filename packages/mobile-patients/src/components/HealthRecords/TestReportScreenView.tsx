@@ -729,7 +729,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
       currentPatient,
       fileShare
         ? CleverTapEventName.PHR_SHARE_LAB_TEST_REPORT
-        : CleverTapEventName.PHR_DOWNLOAD_TEST_REPORT,
+        : CleverTapEventName.PHR_DOWNLOAD_RECORD,
       'Test Report Screen View'
     );
     setLoading && setLoading(true);
@@ -1412,12 +1412,13 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
       minNumber = Number(rangeDecider[0]);
       maxNumber = Number(rangeDecider[1]);
     }
-    postCleverTapPHR(
-      currentPatient,
-      CleverTapEventName.PHR_BAR_CHART_VISUALISATION,
-      'Test Report Screen View',
-      resonseData
-    );
+    let attributes = {
+      'Nav src': 'Bar Chart',
+      'Parameter name': sendTestReportName,
+      'Service Name': sendParamName,
+      'LONIC CODE': lonicCode,
+    };
+    postCleverTapEvent(CleverTapEventName.PHR_DOWNLOAD_RECORD, attributes);
     const lineData = arrResult?.map((i) => Number(i));
     const dateForRanges = arrDate?.map((i) => Number(i));
     const imgArray: [] = [];

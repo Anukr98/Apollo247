@@ -285,6 +285,7 @@ export enum CleverTapEventName {
   PHR_UPDATE_PERSONAL_DETAILS = 'PHR Update Personal Details',
   PHR_ADD_PERSONAL_DETAILS = 'PHR Add Personal Details',
   PHR_DELETE_RECORD = 'PHR Delete Record',
+  PHR_DOWNLOAD_RECORD = 'PHR Download Record',
   PHR_LOAD_HEALTH_RECORDS = 'PHR Load Health Record',
   PHR_USER_LINKING = 'PHR User Linking',
   PHR_USER_DELINKING = 'PHR User DeLinking',
