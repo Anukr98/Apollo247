@@ -84,6 +84,7 @@ export const UPICollectPopup: React.FC<UPICollectProps> = (props) => {
         <View style={{ ...styles.inputCont, borderColor: isVPAvalid ? '#00B38E' : '#FF748E' }}>
           <TextInputComponent
             conatinerstyles={styles.conatinerstyles}
+            autoFocus={true}
             inputStyle={styles.inputStyle}
             value={VPA}
             onChangeText={(text) => {

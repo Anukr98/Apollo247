@@ -66,6 +66,8 @@ export const ShowBottomPopUp: React.FC<ShowBottomPopUpProps> = (props) => {
           style={{ marginHorizontal: 0, marginBottom: 0 }}
           backdropColor="rgba(0,0,0,0.75)"
           // swipeDirection={'down'}
+          animationOut={'slideOutDown'}
+          animationOutTiming={500}
         >
           <View style={{ flex: 1 }}>
             <TouchableWithoutFeedback onPress={() => onDismissPopUp()}>

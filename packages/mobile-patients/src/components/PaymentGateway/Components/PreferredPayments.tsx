@@ -220,7 +220,16 @@ export const PreferredPayments: React.FC<PreferredPaymentsProps> = (props) => {
     );
   };
 
-  return !!preferredPayments ? (
+  const showPreferred = () => {
+    return !!usedWallets ||
+      !!filterUPIApps()?.length ||
+      !!saved_cards?.cards?.length ||
+      !!linked_wallets?.length
+      ? true
+      : false;
+  };
+
+  return showPreferred() ? (
     <View>
       {renderHeader()}
       {renderPayments()}
