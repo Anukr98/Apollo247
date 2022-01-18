@@ -131,6 +131,11 @@ import {
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { NavigationActions, StackActions } from 'react-navigation';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
+import { GET_MEDICINE_ORDER_LIVE_TAT } from '@aph/mobile-patients/src/graphql/orders';
+import {
+  getMedicineOrderLiveTat,
+  getMedicineOrderLiveTatVariables,
+} from '@aph/mobile-patients/src/graphql/types/getMedicineOrderLiveTat';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -204,6 +209,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const [selectedReasonBucket, setSelectedReasonBucket] = useState<
     getMedicineOrderCancelReasonsV2_getMedicineOrderCancelReasonsV2_cancellationReasonBuckets[]
   >([]);
+  const [orderTat, setOrderTat] = useState<any>(null);
 
   const vars: getMedicineOrderOMSDetailsWithAddressVariables = {
     patientId: currentPatient && currentPatient.id,
@@ -306,6 +312,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
 
   useEffect(() => {
     updateRateDeliveryBtnVisibility();
+    setOrderTat(orderDetails?.orderTat);
   }, [orderDetails]);
 
   const updateRateDeliveryBtnVisibility = async () => {
@@ -410,6 +417,21 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   useEffect(() => {
     !loading && orderDetails && AutoreOrder && reOrder();
   }, [loading]);
+
+  useEffect(() => {
+    getUpdatedLiveTat();
+  }, [loading, data, refetch]);
+
+  const getUpdatedLiveTat = async () => {
+    const Tat = await client.query<getMedicineOrderLiveTat, getMedicineOrderLiveTatVariables>({
+      query: GET_MEDICINE_ORDER_LIVE_TAT,
+      variables: {
+        orderAutoId: Number(orderAutoId),
+      },
+      fetchPolicy: 'no-cache',
+    });
+    setOrderTat(Tat?.data?.getMedicineOrderLiveTat?.orderTat);
+  };
 
   const handleBack = async () => {
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
@@ -588,8 +610,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const orderAutoId: string = `${orderDetails.orderAutoId}`;
     const orderId: string = orderDetails.id;
     const title: string = `Medicines — #${orderAutoId}`;
-    const subtitle: string = `Delivered On: ${orderDetails.orderTat &&
-      moment(orderDetails.orderTat).format('D MMM YYYY')}`;
+    const subtitle: string = `Delivered On: ${orderTat && moment(orderTat).format('D MMM YYYY')}`;
     return (
       <>
         <FeedbackPopup
@@ -662,11 +683,11 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       capsuleTextColor = '#01475b';
       capsuleViewBGColor = 'rgba(0, 179, 142, 0.2)';
     }
-    const tatInfo = orderDetails.orderTat;
+    const tatInfo = orderTat;
     const showChangedBadge = orderDetails.oldOrderTat! ? true : false;
     const showDeliveryBadge =
-      orderDetails.orderTat! &&
-      orderDetails.medicineOrderLineItems!.length > 0 &&
+      orderTat &&
+      orderDetails.medicineOrderLineItems?.length! > 0 &&
       orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION &&
       statusToShowNewItems.includes(orderDetails.currentStatus!);
     const showHoldBadge =
@@ -866,7 +887,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                           : diffInTat == 1
                           ? `Delivery date extended by a day.`
                           : 'Delivery extended by few hours.'
-                        : orderDetails.orderTat!
+                        : orderTat
                         ? orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD
                           ? string.medicine_cart.orderDetailsExpectedDeliverySubTextNonCartOrder
                           : orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER &&
@@ -891,7 +912,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
 
   const checkOrderTatDiff = () => {
     const olderTat = moment(orderDetails.oldOrderTat!).format('LL'); //MMMM D, YYYY
-    const newTat = moment(orderDetails.orderTat!).format('LL');
+    const newTat = moment(orderTat).format('LL');
     let diff = moment(newTat).diff(olderTat, 'days');
     return diff;
   };
@@ -901,7 +922,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       orderDetails.oldOrderTat! && statusToShowNewItems.includes(orderDetails.currentStatus!)
         ? true
         : false;
-    const isSKUPopulated = orderDetails?.medicineOrderLineItems?.length > 0;
+    const isSKUPopulated = orderDetails?.medicineOrderLineItems?.length! > 0;
 
     const colorOfBadge =
       orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD
@@ -920,7 +941,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       <>
         {(orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD &&
           reasonForOnHold.showOnHold!) ||
-        (orderDetails.orderTat! &&
+        (orderTat &&
           isSKUPopulated &&
           orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION &&
           statusToShowNewItems.includes(orderDetails.currentStatus!)) ||
@@ -930,7 +951,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               position: 'absolute',
               right: '5%',
               top:
-                isExpectedDateChanged || (orderDetails.orderTat && isSKUPopulated)
+                isExpectedDateChanged || (orderTat && isSKUPopulated)
                   ? screenWidth > 400 &&
                     orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER &&
                     orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD
@@ -957,7 +978,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED
     );
     const isDeliveryOrder = orderDetails.patientAddressId;
-    const tatInfo = orderDetails.orderTat;
+    const tatInfo = orderTat;
     const expectedDeliveryDiff = moment.duration(
       moment(tatInfo! /*'D-MMM-YYYY HH:mm a'*/).diff(moment())
     );
@@ -1006,7 +1027,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         </Text>
       );
       const isCartItemsUpdated =
-        orderDetails?.medicineOrderShipments?.length > 0 &&
+        orderDetails?.medicineOrderShipments?.length! > 0 &&
         !isEmptyObject(orderDetails?.medicineOrderShipments?.[0]?.itemDetails!) &&
         checkIsJSON(orderDetails?.medicineOrderShipments?.[0]?.itemDetails!) &&
         JSON.parse(orderDetails?.medicineOrderShipments?.[0]?.itemDetails!);
@@ -1572,10 +1593,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 }
                 showNewItemsDescription={
                   statusToShowNewItems.includes(orderDetails?.currentStatus!) &&
-                  orderDetails.orderTat! &&
+                  orderTat &&
                   (orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER
-                    ? orderDetails?.medicineOrderShipments?.length > 0
-                    : orderDetails?.medicineOrderLineItems?.length > 0)
+                    ? orderDetails?.medicineOrderShipments?.length! > 0
+                    : orderDetails?.medicineOrderLineItems?.length! > 0)
                     ? true
                     : false
                 }
@@ -1896,9 +1917,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         ? 'Non Cart'
         : 'Cart',
       customerId: currentPatient && currentPatient.id,
-      deliveryDate: orderDetails.orderTat
-        ? moment(orderDetails.orderTat).format('ddd, D MMMM, hh:mm A')
-        : '',
+      deliveryDate: orderTat ? moment(orderTat).format('ddd, D MMMM, hh:mm A') : '',
       mobileNumber: currentPatient && currentPatient.mobileNumber,
       orderStatus: orderDetails.currentStatus!,
     };
@@ -1912,9 +1931,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         ? 'Non Cart'
         : 'Cart',
       'Customer ID': currentPatient && currentPatient.id,
-      'Delivery Date': orderDetails.orderTat
-        ? moment(orderDetails.orderTat).format('ddd, D MMMM, hh:mm A')
-        : undefined,
+      'Delivery Date': orderTat ? moment(orderTat).format('ddd, D MMMM, hh:mm A') : undefined,
       'Mobile number': currentPatient && currentPatient.mobileNumber,
       'Order status': orderDetails.currentStatus!,
     };
@@ -2094,7 +2111,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       sourcePage: 'Order Details',
       refund: refundDetails,
       payment: paymentDetails,
-      etd: !!order?.orderTat ? getFormattedDateTimeWithBefore(order?.orderTat) : '',
+      etd: orderTat ? getFormattedDateTimeWithBefore(orderTat) : '',
       billNumber,
       refetchOrders,
     });
@@ -2258,7 +2275,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                   orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER
                     ? true
                     : orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION
-                    ? orderDetails.orderTat! && orderDetails?.medicineOrderLineItems!.length > 0
+                    ? orderTat && orderDetails?.medicineOrderLineItems!.length > 0
                       ? true
                       : isNonCartOrderBilled
                     : true;
@@ -2269,7 +2286,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               data={
                 offlineOrderBillNumber
                   ? [{ title: string.orders.viewBill }]
-                  : !orderDetails?.orderTat && orderDetails?.medicineOrderLineItems?.length === 0
+                  : !orderTat && orderDetails?.medicineOrderLineItems?.length === 0
                   ? [{ title: string.orders.trackOrder }]
                   : [{ title: string.orders.trackOrder }, { title: string.orders.viewBill }]
               }
