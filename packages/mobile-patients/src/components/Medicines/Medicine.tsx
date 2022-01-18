@@ -2501,6 +2501,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderCircleCartDetails = () => (
     <CircleBottomContainer
+      serverCartLoading={serverCartLoading}
       onPressGoToCart={() => props.navigation.navigate(AppRoutes.ServerCart)}
       onPressUpgradeTo={() => {
         setShowCirclePopup(true);
@@ -2615,9 +2616,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           keyboardShouldPersistTaps="always"
           onScroll={(event) => {
             //increments only for down scroll
-            const currentOffset = event.nativeEvent.contentOffset?.y;
-            currentOffset > (this.offset || 0) && (scrollCount.current += 1);
-            this.offset = currentOffset;
+            try{
+              const currentOffset = event.nativeEvent.contentOffset?.y;
+              currentOffset > (this.offset || 0) && (scrollCount.current += 1);
+              this.offset = currentOffset;
+            }catch(e){}
 
             bannerScrollRef.current &&
               bannerScrollRef.current.measure(
@@ -2637,7 +2640,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           </View>
         </KeyboardAwareScrollView>
       </SafeAreaView>
-      {!!serverCartItems?.length && renderCircleCartDetails()}
+
+      {(!!serverCartItems?.length || serverCartLoading) && renderCircleCartDetails()}
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
       {showCirclePopup && renderCircleMembershipPopup()}
       {showSuggestedQuantityNudge &&

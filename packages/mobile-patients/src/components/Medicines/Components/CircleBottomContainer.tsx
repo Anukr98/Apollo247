@@ -8,10 +8,12 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
+import { renderCircleBottomShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 
 export interface CircleBottomContainerProps {
   onPressUpgradeTo: () => void;
   onPressGoToCart: () => void;
+  serverCartLoading?: boolean;
 }
 
 export const CircleBottomContainer: React.FC<CircleBottomContainerProps> = (props) => {
@@ -135,17 +137,50 @@ export const CircleBottomContainer: React.FC<CircleBottomContainerProps> = (prop
     isCircleCart ? <View style={circleStyles.separator}></View> : null;
   };
 
-  return (
-    <View style={[circleStyles.container, { backgroundColor: 'white' }]}>
-      {renderNudgeMessageSection()}
-      <View style={circleStyles.content}>
-        {renderItemsCount()}
-        {renderSeparator()}
-        {totalCashback > 1 ? renderCashbackSection() : renderEstimatedAmount()}
-        {renderGoToCartCta()}
+  const renderCircleBottomContainerLoading = () => {
+    return (
+      <View style={[circleStyles.container, { backgroundColor: 'white' }]}>
+        {renderNudgeMessageSection()}
+
+        <View style={circleStyles.content}>
+          <View
+            style={{
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Text style={theme.viewStyles.text('R', 13, '#02475B', 1, 24, 0)}>
+              {!!isCircleCart ? 'Items' : 'Total items'}
+            </Text>
+            <Text style={theme.viewStyles.text('SB', 16, '#02475B', 1, 20, 0)}> -- </Text>
+          </View>
+
+          {renderSeparator()}
+
+          {renderCircleBottomShimmer()}
+
+          {renderGoToCartCta()}
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
+
+  if (props.serverCartLoading) {
+    return renderCircleBottomContainerLoading();
+  } else {
+    return (
+      <View style={[circleStyles.container, { backgroundColor: 'white' }]}>
+        {renderNudgeMessageSection()}
+
+        <View style={circleStyles.content}>
+          {renderItemsCount()}
+          {renderSeparator()}
+          {totalCashback > 1 ? renderCashbackSection() : renderEstimatedAmount()}
+          {renderGoToCartCta()}
+        </View>
+      </View>
+    );
+  }
 };
 
 const circleStyles = StyleSheet.create({
