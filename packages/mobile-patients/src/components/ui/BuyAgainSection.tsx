@@ -36,10 +36,7 @@ export const BuyAgainSection: React.FC<Props> = ({ products, ...props }) => {
     <View style={styles.subtitleContainer}>
       {renderProducts()}
       <View style={styles.subtitleContainer}>
-        <View>
-          <Text style={styles.subtitleStyle}>Buy</Text>
-          <Text style={styles.subtitleStyle}>Again</Text>
-        </View>
+        <Text style={styles.subtitleStyle}>{string.buyAgain}</Text>
         <RightArrowOrange style={styles.arrow} />
       </View>
     </View>
@@ -75,7 +72,6 @@ const styles = StyleSheet.create({
   subtitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
   },
   innerSubtitleContainer: {
     flexDirection: 'row',
