@@ -287,6 +287,9 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
             ? order?.slotDateTimeInUTC
             : getSlotStartTime(order?.slotTimings)
         }
+        slotDuration={
+          order?.attributesObj?.slotDurationInMinutes || AppConfig.Configuration.DEFAULT_PHELBO_ETA
+        }
         isPrepaid={order?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT}
         isCancelled={DIAGNOSTIC_ORDER_CANCELLED_STATUS.includes(currentStatus)}
         cancelledReason={
