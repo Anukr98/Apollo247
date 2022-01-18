@@ -406,5 +406,6 @@ export const useServerCart = () => {
     uploadPhysicalPrescriptionsToServerCart,
     uploadEPrescriptionsToServerCart,
     removePrescriptionFromCart,
+    userActionPayload,
   };
 };

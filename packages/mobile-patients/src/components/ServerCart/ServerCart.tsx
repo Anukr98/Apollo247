@@ -445,7 +445,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
         </ScrollView>
         {!!serverCartItems?.length && renderProceedBar()}
       </SafeAreaView>
-      {serverCartLoading && <Spinner />}
+      {/* {serverCartLoading && <Spinner />} */}
     </View>
   );
 };
