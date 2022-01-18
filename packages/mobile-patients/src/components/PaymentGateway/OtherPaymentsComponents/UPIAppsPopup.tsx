@@ -64,7 +64,7 @@ export const UPIAppsPopup: React.FC<UPIAppsPopupProps> = (props) => {
   };
 
   const upiApp = (item: any, index: number) => {
-    const marginLeft = index % 4 == 0 ? 0 : (newWidth - 192) * 0.32;
+    const marginLeft = index % 4 == 0 ? 0 : (newWidth - 220) * 0.32;
     const marginTop = index > 3 ? 12 : 0;
     const outageStatus = item?.outage_list?.[0]?.outage_status;
     return (
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     color: '#01475B',
   },
   AppCont: {
-    width: 48,
+    width: 55,
     alignItems: 'center',
     marginBottom: 15,
   },
