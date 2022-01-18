@@ -316,6 +316,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setNewAddressAdded,
     setAddToCartSource,
     cartCircleSubscriptionId,
+    setServerCartItems,
   } = useShoppingCart();
   const {
     setUserActionPayload,
@@ -2145,9 +2146,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const getItemQuantity = (id: string) => {
+  const getItemQuantity = (id: string): number => {
     const foundItem = serverCartItems?.find((item) => item?.sku == id);
-    return foundItem ? foundItem.quantity : 0;
+    return foundItem ? Number(foundItem.quantity) : 0;
   };
 
   const onNotifyMeClick = (name: string) => {
@@ -2174,7 +2175,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const { item, index } = data;
     const key = 'queryName';
     const keywordArr = [];
-    medicineList.map((obj) => {
+    medicineList.map((obj: any) => {
       if (Object.keys(obj).includes(key)) {
         keywordArr.push(obj?.queryName);
       }
@@ -2209,7 +2210,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               sku: item?.sku,
               movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
             });
-            const availability = getAvailabilityForSearchSuccess(pharmacyPincode, item?.sku);
+            const availability = getAvailabilityForSearchSuccess(pharmacyPincode || '', item?.sku);
             const discount = getDiscountPercentage(item?.price, item?.special_price);
             const discountPercentage = discount ? discount + '%' : '0%';
             const cleverTapEventAttributes = {
@@ -2233,6 +2234,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           }
         }}
         onPressAddToCart={() => {
+          updateServerCartLocally(1, item?.sku);
           const comingFromSearch = true;
           const discount = getDiscountPercentage(item?.price, item?.special_price);
           const discountPercentage = discount ? discount + '%' : '0%';
@@ -2274,43 +2276,79 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         onPressAdd={() => {
           setSearchItemAdded(item?.sku);
           setSearchItemLoading({ ...searchItemLoading, [item?.sku]: true });
-          const q = getItemQuantity(item?.sku);
-          if (q == getMaxQtyForMedicineItem(item?.MaxOrderQty)) return;
-          setCurrentProductQuantityInCart(q + 1);
-          setUserActionPayload?.({
-            medicineOrderCartLineItems: [
-              {
-                medicineSKU: item?.sku,
-                quantity: q + 1,
-              },
-            ],
-          });
+          let qty: number = getItemQuantity(item?.sku);
+          if (qty < getMaxQtyForMedicineItem(item?.MaxOrderQty)) {
+            qty = qty + 1;
+            updateServerCartLocally(1, item?.sku);
+            setCurrentProductQuantityInCart(qty);
+            setUserActionPayload?.({
+              medicineOrderCartLineItems: [
+                {
+                  medicineSKU: item?.sku,
+                  quantity: qty,
+                },
+              ],
+            });
+          } else {
+            setCurrentProductQuantityInCart(qty + 1);
+            setUserActionPayload?.({
+              medicineOrderCartLineItems: [
+                {
+                  medicineSKU: item?.sku,
+                  quantity: qty + 1,
+                },
+              ],
+            });
+          }
         }}
         onPressSubstract={() => {
+          updateServerCartLocally(-1, item?.sku);
           setSearchItemAdded(item?.sku);
           setSearchItemLoading({ ...searchItemLoading, [item?.sku]: true });
-          const q = getItemQuantity(item?.sku);
-          setCurrentProductQuantityInCart(q - 1);
+          let qty: number = getItemQuantity(item?.sku);
+          qty = qty - 1;
+          setCurrentProductQuantityInCart(qty);
           setUserActionPayload?.({
             medicineOrderCartLineItems: [
               {
                 medicineSKU: item?.sku,
-                quantity: q - 1,
+                quantity: qty,
               },
             ],
           });
         }}
-        quantity={getItemQuantity(item?.sku)}
+        quantity={getItemQuantity(item?.sku) || 0}
         data={item}
         loading={searchItemLoading[item?.sku]}
+        disableAction={serverCartLoading}
         showSeparator={index !== medicineList?.length - 1}
         style={{
           marginHorizontal: 20,
           paddingBottom: index == medicineList?.length - 1 ? 20 : 0,
         }}
-        disableAction={searchItemAdded ? true : false}
       />
     );
+  };
+
+  const updateServerCartLocally = (quantity: number = 0, id: string) => {
+    try {
+      const items = serverCartItems || [];
+      let doesExists = false;
+      items.forEach((i) => {
+        const qty = i?.quantity || 0;
+        if (i?.sku === id) {
+          i.quantity = qty + quantity;
+          doesExists = true;
+          return;
+        }
+      });
+
+      if (!doesExists) {
+        items.push({ sku: id, quantity: 1 });
+      }
+
+      setServerCartItems && setServerCartItems(items);
+    } catch (e) {}
   };
 
   const renderSearchResults = () => {
@@ -2619,11 +2657,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           keyboardShouldPersistTaps="always"
           onScroll={(event) => {
             //increments only for down scroll
-            try{
+            try {
               const currentOffset = event.nativeEvent.contentOffset?.y;
               currentOffset > (this.offset || 0) && (scrollCount.current += 1);
               this.offset = currentOffset;
-            }catch(e){}
+            } catch (e) {}
 
             bannerScrollRef.current &&
               bannerScrollRef.current.measure(

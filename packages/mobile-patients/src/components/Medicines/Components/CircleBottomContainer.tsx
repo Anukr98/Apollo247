@@ -122,16 +122,19 @@ export const CircleBottomContainer: React.FC<CircleBottomContainerProps> = (prop
     </View>
   );
 
-  const renderGoToCartCta = () => (
-    <TouchableOpacity style={circleStyles.cartButton} onPress={onPressGoToCart}>
-      <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 20, 0)}>GO TO CART</Text>
-      {!isCircleCart && totalCashback > 1 && (
-        <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0)}>
-          {`Buy for ${string.common.Rs}${serverCartAmount?.cartTotal}`}
-        </Text>
-      )}
-    </TouchableOpacity>
-  );
+  const renderGoToCartCta = () =>
+    !props.serverCartLoading ? (
+      <TouchableOpacity style={circleStyles.cartButton} onPress={onPressGoToCart}>
+        <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 20, 0)}>GO TO CART</Text>
+        {!isCircleCart && totalCashback > 1 && (
+          <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0)}>
+            {`Buy for ${string.common.Rs}${serverCartAmount?.cartTotal}`}
+          </Text>
+        )}
+      </TouchableOpacity>
+    ) : (
+      <View />
+    );
 
   const renderSeparator = () => {
     isCircleCart ? <View style={circleStyles.separator}></View> : null;
@@ -156,9 +159,7 @@ export const CircleBottomContainer: React.FC<CircleBottomContainerProps> = (prop
           </View>
 
           {renderSeparator()}
-
           {renderCircleBottomShimmer()}
-
           {renderGoToCartCta()}
         </View>
       </View>
