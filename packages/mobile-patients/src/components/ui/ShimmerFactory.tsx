@@ -193,6 +193,12 @@ const styles = StyleSheet.create({
     width: '90%',
     margin: 10,
   },
+  circleBottomLineSingle: {
+    borderRadius: 10,
+    height: 10,
+    width: '100%',
+    marginVertical: 7,
+  },
   diagnosticsCardBottom1: {
     borderRadius: 10,
     height: 190,
@@ -1391,6 +1397,28 @@ export const renderDiagnosticRecommendationShimmer = () => {
           />
         </View>
       </View>
+    </View>
+  );
+};
+
+export const renderCircleBottomShimmer = () => {
+  return (
+    <View style={{ marginLeft: -7 }}>
+      <ShimmerPlaceHolder
+        shimmerColors={[theme.colors.SHERPA_BLUE, '#F2F2F2']}
+        LinearGradient={LinearGradient}
+        shimmerStyle={{ borderRadius: 3, height: 15, width: '100%', marginVertical: 10 }}
+      />
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={{ borderRadius: 3, height: 10, width: '50%', marginBottom: 10 }}
+      />
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={{ borderRadius: 3, height: 10, width: '80%', marginBottom: 5 }}
+      />
     </View>
   );
 };

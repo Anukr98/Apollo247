@@ -30,7 +30,7 @@ export const CredPayPopup: React.FC<CredPayProps> = (props) => {
     return (
       <Button
         style={{ marginTop: 12, borderRadius: 5 }}
-        title={'PLACE ORDER'}
+        title={'PAY NOW'}
         onPress={() => onPressPayNow(paymentMethod?.payment_method_code)}
       />
     );

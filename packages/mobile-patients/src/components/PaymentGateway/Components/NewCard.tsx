@@ -188,6 +188,7 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
       <View>
         <TextInputComponent
           conatinerstyles={conatinerstyles}
+          autoFocus={true}
           inputStyle={styles.inputStyle}
           value={cardNumber}
           onChangeText={(text) => updateCard(text)}

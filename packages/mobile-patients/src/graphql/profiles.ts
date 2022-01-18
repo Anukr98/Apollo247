@@ -5566,6 +5566,7 @@ export const GET_ORDER_INFO = gql`
       DiagnosticsPaymentDetails {
         ordersList {
           allowPayment
+          paymentNotAllowedErrorString
         }
       }
     }
@@ -7051,8 +7052,8 @@ export const GET_REWARD_ID = gql`
 `;
 
 export const GET_CAMPAIGN_ID_FOR_REFERRER = gql`
-  query campaignInfo($camp: CAMPAIGN_TYPES!) {
-    getCampaignInfoByCampaignType(campaignType: $camp) {
+  query getCampaignInfo {
+    getCampaignInfo {
       id
       campaignType
     }
