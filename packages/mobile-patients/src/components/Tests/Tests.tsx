@@ -143,6 +143,7 @@ import {
   DiagnosticHomePageWidgetClicked,
   DiagnosticLandingPageViewedEvent,
   DiagnosticPinCodeClicked,
+  DiagnosticPrescriptionSubmitted,
   DiagnosticTrackOrderViewed,
   DiagnosticTrackPhleboClicked,
   DiagnosticViewReportClicked,
@@ -2182,7 +2183,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   };
 
-  function _navigateToUploadViaWhatsapp() {
+  async function _navigateToUploadViaWhatsapp() {
     try {
       const getMessage =
         getUploadPrescriptionConfigs?.textMessage ||
@@ -2190,8 +2191,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
       const getPhoneNumber =
         getUploadPrescriptionConfigs?.phoneNumber ||
         string.diagnostics.uploadPrescriptionWhatsapp.whatsappPhoneNumber;
+      const diagnosticUserType = await AsyncStorage.getItem('diagnosticUserType');
       Linking.openURL(
         `https://api.whatsapp.com/send/?text=${getMessage}&phone=91${getPhoneNumber}`
+      );
+      DiagnosticPrescriptionSubmitted(
+        currentPatient,
+        '',
+        '',
+        diagnosticUserType,
+        isDiagnosticCircleSubscription,
+        string.diagnostics.whatsapp
       );
     } catch (error) {
       CommonBugFender('Tests_navigateToUploadViaWhatsapp', error);
