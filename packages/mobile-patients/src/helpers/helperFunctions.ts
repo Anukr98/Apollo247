@@ -2298,16 +2298,12 @@ export const InitiateAppsFlyer = (
   );
   let isFirstLaunch = false;
   onInstallConversionDataCanceller = appsFlyer.onInstallConversionData((res) => {
-    if (JSON.parse(res.data.is_first_launch || 'null') == true) {
+    if (JSON.parse(res?.data?.is_first_launch || 'null') == true) {
       isFirstLaunch = true;
       try {
-        if (res.data.af_dp !== undefined) {
-          AsyncStorage.setItem('deeplink', res.data.af_dp);
-        }
-        if (res.data.af_sub1 !== null) {
-          AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
-        }
-        if (res.data.linkToUse !== null && res.data.linkToUse === 'ForReferrarInstall') {
+        res?.data?.af_dp?.(AsyncStorage.setItem('deeplink', res.data.af_dp));
+        res?.data?.af_sub1?.(AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1));
+        if (res?.data?.linkToUse !== null && res?.data?.linkToUse === 'ForReferrarInstall') {
           const responseData = res.data;
           setAppReferralData({
             af_channel: responseData.af_channel,
@@ -2319,18 +2315,17 @@ export const InitiateAppsFlyer = (
           });
         }
 
-        setBugFenderLog('APPS_FLYER_DEEP_LINK', res.data.af_dp);
-        setBugFenderLog('APPS_FLYER_DEEP_LINK_Referral_Code', res.data.af_sub1);
+        res?.data?.af_dp?.(setBugFenderLog('APPS_FLYER_DEEP_LINK', res.data.af_dp));
+        res.data.af_sub1?.(setBugFenderLog('APPS_FLYER_DEEP_LINK_Referral_Code', res.data.af_sub1));
 
         setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
       } catch (error) { }
 
-      if (res.data.af_status === 'Non-organic') {
+      if (res?.data?.af_status === 'Non-organic') {
         const media_source = res.data.media_source;
         const campaign = res.data.campaign;
-      } else if (res.data.af_status === 'Organic') {
+      } else if (res?.data?.af_status === 'Organic') {
       }
-    } else {
     }
   });
 
@@ -2338,17 +2333,17 @@ export const InitiateAppsFlyer = (
     // for iOS universal links
     if (Platform.OS === 'ios') {
       try {
-        if (res.data.af_dp !== undefined) {
-          AsyncStorage.setItem('deeplink', res.data.af_dp);
-        }
-        if (res.data.af_sub1 !== null) {
-          AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
-        }
+        res?.data?.af_dp?.(AsyncStorage.setItem('deeplink', res.data.af_dp));
+        res?.data?.af_sub1?.(AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1));
 
-        setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK', res.data.af_dp);
-        setBugFenderLog(
-          'onAppOpenAttribution_APPS_FLYER_DEEP_LINK_Referral_Code',
-          res.data.af_sub1
+        res?.data?.af_dp?.(
+          setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK', res.data.af_dp)
+        );
+        res?.data?.af_sub1?.(
+          setBugFenderLog(
+            'onAppOpenAttribution_APPS_FLYER_DEEP_LINK_Referral_Code',
+            res.data.af_sub1
+          )
         );
 
         setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
@@ -2360,8 +2355,10 @@ export const InitiateAppsFlyer = (
     isDeepLinked = true;
     if (res.is_deferred) {
       getInstallResources();
-      const url = handleOpenURL(res.data.deep_link_value);
-      AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
+      res?.data?.deep_link_value?.(() => {
+        const url = handleOpenURL(res?.data?.deep_link_value);
+        AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
+      });
     }
     try {
       if (!res.is_deferred) {
@@ -2383,9 +2380,11 @@ export const InitiateAppsFlyer = (
           }
         } else {
           clevertapEventForAppsflyerDeeplink(filterAppLaunchSoruceAttributesByKey(res.data));
-          const url = handleOpenURL(res.data.deep_link_value);
-          AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
-          redirectWithOutDeferred(url);
+          res?.data?.deep_link_value?.(() => {
+            const url = handleOpenURL(res.data.deep_link_value);
+            AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
+            redirectWithOutDeferred(url);
+          });
         }
       }
       if (res.status == 'success') {
@@ -2871,7 +2870,7 @@ export const addPharmaItemToCart = (
     }
     addToCart();
     onAddedSuccessfully?.();
-  } catch (error) { }
+  } catch (error) {}
 };
 
 export const dataSavedUserID = async (key: string) => {
