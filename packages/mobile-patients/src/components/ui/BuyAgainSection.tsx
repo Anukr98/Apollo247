@@ -36,7 +36,10 @@ export const BuyAgainSection: React.FC<Props> = ({ products, ...props }) => {
     <View style={styles.subtitleContainer}>
       {renderProducts()}
       <View style={styles.subtitleContainer}>
-        <Text style={styles.subtitleStyle}>{string.buyAgain}</Text>
+        <View>
+          <Text style={styles.subtitleStyle}>Buy</Text>
+          <Text style={styles.subtitleStyle}>Again</Text>
+        </View>
         <RightArrowOrange style={styles.arrow} />
       </View>
     </View>
