@@ -137,6 +137,13 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
     };
   }, []);
 
+  useEffect(() => {
+    //polling every 6 secs for updated status
+    if (remainingTime % 6 == 0) {
+      fetchOrderStatus(true, false);
+    }
+  }, [remainingTime]);
+
   const handleBack = () => {
     navigateToSpecialtyPage(props.navigation);
     return true;
@@ -536,10 +543,13 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
     });
   };
 
-  const fetchOrderStatus = async (autoBook: boolean) => {
+  const fetchOrderStatus = async (autoBook: boolean, showLoader: boolean = true) => {
     try {
-      setShowSpinner?.(true);
-      setOrderStatusLoading?.(true);
+      if (showLoader) {
+        setShowSpinner?.(true);
+        setOrderStatusLoading?.(true);
+      }
+
       setAutoBookTimerCount(10);
 
       const response = await getOrderInfo();
@@ -548,6 +558,14 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
         const txnStatus =
           response?.data?.getOrderInternal?.payment_status || PAYMENT_STATUS.PENDING;
         setPaymentStatus(txnStatus);
+
+        if (
+          oneTapPatient &&
+          (txnStatus == PAYMENT_STATUS.TXN_SUCCESS || txnStatus == PAYMENT_STATUS.TXN_FAILURE)
+        ) {
+          setShowWaitTimer(false);
+        }
+
         setPaymentAmount(response?.data?.getOrderInternal?.total_amount || 0);
         setOrderId(
           currentPatient?.mobileNumber +
@@ -610,8 +628,10 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
         "We could not confirm your payment at this moment. We apologize for the inconvenience caused. Please refresh this page or check your plan in the 'My Memberships' tab in the 'My Account' section."
       );
     } finally {
-      setShowSpinner?.(false);
-      setOrderStatusLoading?.(false);
+      if (showLoader) {
+        setShowSpinner?.(false);
+        setOrderStatusLoading?.(false);
+      }
     }
   };
 
@@ -919,7 +939,6 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
         <CountdownCircleTimer
           onComplete={() => {
             setShowWaitTimer(false);
-            fetchOrderStatus(true);
           }}
           isPlaying
           duration={timerTime}
