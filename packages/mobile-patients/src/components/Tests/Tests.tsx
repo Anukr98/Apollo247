@@ -152,7 +152,7 @@ import PackageCard from '@aph/mobile-patients/src/components/Tests/components/Pa
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   AppConfig,
-  DIAGNOSITC_PHELBO_TRACKING_STATUS,
+  DIAGNOSTIC_PHELBO_TRACKING_STATUS,
   DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY,
   DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
   stepsToBookArray,
@@ -2455,7 +2455,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         });
       }
     } else {
-      if (DIAGNOSITC_PHELBO_TRACKING_STATUS.includes(item?.orderStatus)) {
+      if (DIAGNOSTIC_PHELBO_TRACKING_STATUS.includes(item?.orderStatus)) {
         //track phlebo
         item?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED
           ? navigateToTrackingScreen(item)

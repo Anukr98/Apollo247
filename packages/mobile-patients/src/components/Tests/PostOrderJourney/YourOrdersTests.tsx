@@ -290,7 +290,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
     try {
       setLoading?.(true);
-      getDiagnosticsOrder(apolloClientWithAuth, currentPatient?.mobileNumber, 10, currentOffset)
+      getDiagnosticsOrder(apolloClientWithAuth, currentPatient?.mobileNumber, 200, currentOffset)
         .then((data) => {
           const ordersList = data?.data?.getDiagnosticOrdersListByMobile?.ordersList || [];
           const requestedCancelReason =

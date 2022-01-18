@@ -12,7 +12,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { isSmallDevice, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { DIAGNOSTIC_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
-  DIAGNOSITC_PHELBO_TRACKING_STATUS,
+  DIAGNOSTIC_PHELBO_TRACKING_STATUS,
   DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY,
   DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
 } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -75,7 +75,7 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
             '{{collectionTime}}',
             appointmentTime!
           );
-      options = DIAGNOSITC_PHELBO_TRACKING_STATUS.includes(status)
+      options = DIAGNOSTIC_PHELBO_TRACKING_STATUS.includes(status)
         ? status === DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED
           ? string.diagnostics.sampleCollectedText
           : string.diagnostics.trackPhleboText
