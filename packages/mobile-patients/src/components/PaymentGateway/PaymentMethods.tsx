@@ -934,7 +934,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       <Header
         container={styles.header}
         leftIcon={'backArrow'}
-        title={`AMOUNT TO PAY : ₹ ${amount}`}
+        title={`AMOUNT TO PAY : ₹ ${amount?.toFixed(2)}`}
         onPressLeftIcon={goBackToCart}
       />
     );

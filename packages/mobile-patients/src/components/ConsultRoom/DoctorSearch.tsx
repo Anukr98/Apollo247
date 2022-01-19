@@ -77,6 +77,7 @@ import {
   View,
   Platform,
   ImageBackground,
+  BackHandler,
 } from 'react-native';
 import { NavigationEvents, NavigationScreenProps, ScrollView } from 'react-navigation';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -504,11 +505,13 @@ export interface DoctorSearchProps
     movedFrom?: string;
     isOnlineConsultMode?: boolean;
     consultTypeCta?: string;
+    searchText?: string;
   }> {}
 
 export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
-  const [searchText, setSearchText] = useState<string>('');
-  const [pastSearch, setPastSearch] = useState<boolean>(true);
+  const homeSearchText = props.navigation.getParam('searchText') || '';
+  const [searchText, setSearchText] = useState<string>(homeSearchText);
+  const [pastSearch, setPastSearch] = useState<boolean>(!homeSearchText);
   const [needHelp, setNeedHelp] = useState<boolean>(true);
   const [displaySpeialist, setdisplaySpeialist] = useState<boolean>(true);
   const [Specialities, setSpecialities] = useState<getAllSpecialties_getAllSpecialties[]>([]);
@@ -558,6 +561,19 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   }, [currentPatient]);
 
   const client = useApolloClient();
+
+  useEffect(() => {
+    const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', backDataFunctionality);
+    });
+    const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
+    });
+    return () => {
+      _didFocusSubscription?.remove();
+      _willBlurSubscription?.remove();
+    };
+  }, []);
 
   const moveSelectedToTop = () => {
     if (currentPatient !== undefined) {

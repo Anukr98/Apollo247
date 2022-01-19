@@ -16,13 +16,18 @@ export interface LabTestsInfoProps {
   orderInfo: any;
   modifiedOrderId: any;
   modifiedOrders: any;
+  isModify: boolean;
 }
 
 export const LabTestsInfo: React.FC<LabTestsInfoProps> = (props) => {
-  const { orderInfo, modifiedOrderId, modifiedOrders } = props;
+  const { orderInfo, modifiedOrderId, modifiedOrders, isModify } = props;
   const { ordersList } = orderInfo;
-  const slotTime = orderInfo?.ordersList?.[0]?.slotDateTimeInUTC;
-  const slotDuration = orderInfo?.ordersList?.[0]?.attributesObj?.slotDurationInMinutes || 0;
+  const slotTime = isModify
+    ? modifiedOrders?.[0]?.slotDateTimeInUTC
+    : orderInfo?.ordersList?.[0]?.slotDateTimeInUTC;
+  const slotDuration = isModify
+    ? modifiedOrders?.[0]?.attributesObj?.slotDurationInMinutes
+    : orderInfo?.ordersList?.[0]?.attributesObj?.slotDurationInMinutes || 0;
   const [showMoreArray, setShowMoreArray] = useState([] as any);
 
   function _onPressMore(item: any) {
@@ -53,7 +58,7 @@ export const LabTestsInfo: React.FC<LabTestsInfoProps> = (props) => {
           Pickup Time :{' '}
           {!!date && !!year && (
             <Text style={styles.pickupDate}>
-              {date}, {year}
+              {date}, {year}{' '}
             </Text>
           )}
           {!!time && (
@@ -72,8 +77,7 @@ export const LabTestsInfo: React.FC<LabTestsInfoProps> = (props) => {
     const lineItems = order?.diagnosticOrderLineItems;
     const remainingItems = !!lineItemsLength && lineItemsLength - 1;
     const { patientName, patientSalutation } = extractPatientDetails(order?.patientObj);
-    const isNewlyModified =
-      lineItemsLength?.length > 0 && lineItems?.[0]?.editOrderID === modifiedOrderId;
+    const isNewlyModified = !!lineItemsLength && lineItems?.[0]?.editOrderID === modifiedOrderId;
     return (
       <>
         <Spearator style={styles.separator} />
@@ -145,7 +149,7 @@ export const LabTestsInfo: React.FC<LabTestsInfoProps> = (props) => {
   };
 
   const renderTests = () => {
-    const list = modifiedOrders?.length ? modifiedOrders : ordersList;
+    const list = isModify && modifiedOrders?.length ? modifiedOrders : ordersList;
     return (
       <View>
         {list?.map((order: any) => {
@@ -183,6 +187,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3FFFF',
     paddingVertical: 17,
     paddingHorizontal: 12,
+    alignItems: 'center',
   },
   timeIconStyle: {
     height: 20,

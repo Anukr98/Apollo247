@@ -366,6 +366,7 @@ export const handleOpenURL = (event: any) => {
         };
         break;
 
+      case 'lab-tests-category':
       case 'testlisting':
         return {
           routeName: 'TestListing',
@@ -420,36 +421,21 @@ export const handleOpenURL = (event: any) => {
           id: linkId ? linkId : undefined,
         };
         break;
+
       case 'testordersummary':
       case 'test-order-summary':
+      case 'orderdetails':
         return {
           routeName: 'TestOrderSummary',
           id: linkId ? linkId : undefined
         }
         break;
 
-      case 'testordersummary':
-      case 'test-order-summary':
+      case 'category-listing':
         return {
-          routeName: 'TestOrderSummary',
-          id: linkId ? linkId : undefined,
-        };
-        break;
-
-      case 'testordersummary':
-      case 'test-order-summary':
-        return {
-          routeName: 'TestOrderSummary',
-          id: linkId ? linkId : undefined,
-        };
-        break;
-
-      case 'testordersummary':
-      case 'test-order-summary':
-        return {
-          routeName: 'TestOrderSummary',
-          id: linkId ? linkId : undefined,
-        };
+          routeName :'TestWidgetListing',
+          id: linkId ? linkId : undefined
+        }
         break;
       case 'payment':
         return {
@@ -462,7 +448,6 @@ export const handleOpenURL = (event: any) => {
           routeName: 'ShareReferLink',
         };
         break;
-
       default:
         if (b === 0) {
           return {
@@ -781,6 +766,12 @@ export const pushTheView = (
         disableTrackOrder: true,
 
       })
+      break;
+    case 'TestWidgetListing':
+      navigateToView(navigation, AppRoutes.TestWidgetListing, {
+          movedFrom: 'deeplink',
+          widgetName: id,
+        });
       break;
     case 'ShareReferLink':
       firebaseRemoteConfigForReferrer().then((res) => {
