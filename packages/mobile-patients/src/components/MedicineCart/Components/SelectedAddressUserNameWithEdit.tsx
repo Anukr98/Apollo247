@@ -25,7 +25,6 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
-  Dimensions,
   Platform,
   StyleSheet,
   Text,
@@ -33,20 +32,17 @@ import {
   View,
   Keyboard,
   ActivityIndicator,
+  Dimensions,
 } from 'react-native';
 
 import { getPatientAddressList_getPatientAddressList_addressList } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-
-const { width } = Dimensions.get('window');
-const setCharLen = width < 380 ? 25 : 30; //smaller devices like se, nexus 5
 
 export const SelectedAddressUserNameWithEdit: React.FC<{
   address: getPatientAddressList_getPatientAddressList_addressList;
 }> = ({ address }) => {
   const [userName, setUserName] = useState<string>('');
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
-  const [isFocus, setIsFocus] = useState<boolean>(false);
   const [editName, setEditName] = useState<boolean>(false);
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { addresses = [], setAddresses } = useShoppingCart();
@@ -118,21 +114,9 @@ export const SelectedAddressUserNameWithEdit: React.FC<{
       });
   };
 
-  const _onFocus = () => {
-    setIsFocus(true);
-  };
-
-  const _onBlur = () => {
-    setIsFocus(false);
-  };
-
   const renderUserName = () => {
-    let beforeFocus =
-      Platform.OS == 'android' && userName.length > 32
-        ? userName.slice(0, setCharLen).concat('...')
-        : userName;
     return (
-      <View style={{ marginTop: 10, marginBottom: 5 }}>
+      <View style={styles.main}>
         <Text
           style={{
             color: editName ? theme.colors.LIGHT_BLUE : theme.colors.SHERPA_BLUE,
@@ -145,26 +129,16 @@ export const SelectedAddressUserNameWithEdit: React.FC<{
         <View style={[styles.viewRowStyle, editName && styles.viewRowStyleSelected]}>
           <View style={[{ height: 20 }, editName ? { flex: 1 } : { paddingRight: 10 }]}>
             {!editName ? (
-              <Text
-                numberOfLines={1}
-                ellipsizeMode="tail"
-                style={{
-                  color: theme.colors.SHERPA_BLUE,
-                  marginBottom: Platform.OS == 'android' ? '9%' : '0%',
-                  ...theme.fonts.IBMPlexSansMedium(14),
-                }}
-              >
+              <Text numberOfLines={1} style={styles.userNameStyle}>
                 {userName}
               </Text>
             ) : (
               <TextInputComponent
-                conatinerstyles={{ flex: 1, paddingTop: -16, paddingBottom: -16 }}
+                conatinerstyles={styles.input}
                 onChangeText={(userName) =>
                   userName.startsWith(' ') ? null : setUserName(userName)
                 }
-                onFocus={() => _onFocus()}
-                onBlur={() => _onBlur()}
-                value={isFocus ? userName : beforeFocus}
+                value={userName}
                 editable={editName}
                 placeholder={'Full Name'}
                 inputStyle={styles.textInputName}
@@ -178,11 +152,12 @@ export const SelectedAddressUserNameWithEdit: React.FC<{
           </View>
           {!editName ? (
             <TouchableOpacity
+              hitSlop={{ top: 10, left: 10, bottom: 10, right: 10 }}
               onPress={() => {
                 setEditName(true);
               }}
             >
-              <EditIconNewOrange style={{ height: 15, width: 15 }} />
+              <EditIconNewOrange style={styles.editIcon} />
             </TouchableOpacity>
           ) : (
             <View style={styles.userSave}>
@@ -190,7 +165,6 @@ export const SelectedAddressUserNameWithEdit: React.FC<{
                 <ActivityIndicator />
               ) : (
                 <TouchableOpacity
-                  style={{ width: '100%' }}
                   onPress={() => {
                     Keyboard.dismiss();
                     validateUserDetails('userName');
@@ -222,6 +196,7 @@ export const SelectedAddressUserNameWithEdit: React.FC<{
 };
 
 const styles = StyleSheet.create({
+  main: { marginTop: 10, marginBottom: 5 },
   viewRowStyle: {
     flexDirection: 'row',
   },
@@ -247,4 +222,12 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.LIGHT_BLUE,
     borderBottomWidth: 0,
   },
+  userNameStyle: {
+    color: theme.colors.SHERPA_BLUE,
+    marginBottom: Platform.OS == 'android' ? '9%' : '0%',
+    ...theme.fonts.IBMPlexSansMedium(14),
+    maxWidth: Dimensions.get('screen').width - 80,
+  },
+  editIcon: { height: 15, width: 15 },
+  input: { flex: 1, paddingTop: -16, paddingBottom: -16 },
 });
