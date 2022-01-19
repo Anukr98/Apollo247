@@ -37,7 +37,7 @@ import {
   BagBlue,
   VirusGreen,
   HomeBlue,
-  ClockBlue
+  ClockBlue,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
@@ -281,7 +281,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     newAddressAddedHomePage,
     setNewAddressAddedHomePage,
     patientCartItems,
-    modifiedOrder
+    modifiedOrder,
   } = useDiagnosticsCart();
   const {
     serverCartItems: shopCartItems,
@@ -628,7 +628,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const fetchUserType = async () => {
     try {
       const diagnosticUserType = await AsyncStorage.getItem('diagnosticUserType');
-      setDiagnosticStateUserType(diagnosticUserType || '')
+      setDiagnosticStateUserType(diagnosticUserType || '');
       if (diagnosticUserType == null) {
         fetchOrders();
       }
@@ -652,7 +652,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           getOrdersResponse?.data?.getDiagnosticOrdersListByMobile?.ordersList || [];
         const diagnosticUserType =
           ordersList?.length > 0 ? string.user_type.REPEAT : string.user_type.NEW;
-          setDiagnosticStateUserType(diagnosticUserType || '')
+        setDiagnosticStateUserType(diagnosticUserType || '');
         AsyncStorage.setItem('diagnosticUserType', JSON.stringify(diagnosticUserType));
       }
       setLoading?.(false);
@@ -1156,19 +1156,19 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderYourOrders = () => {
     return (
-        <ListCard
-          onPress={() => {
-            postMyOrdersClicked('Diagnostics', currentPatient);
-            props.navigation.push(AppRoutes.YourOrdersTest, {
-              isTest: true,
-              cityId: cityId,
-            });
-          }}
-          container={styles.yourOrderContainer}
-          titleStyle={styles.ordersTitleStyle}
-          title={'MY ORDERS'}
-          leftIcon={null}
-        />
+      <ListCard
+        onPress={() => {
+          postMyOrdersClicked('Diagnostics', currentPatient);
+          props.navigation.push(AppRoutes.YourOrdersTest, {
+            isTest: true,
+            cityId: cityId,
+          });
+        }}
+        container={styles.yourOrderContainer}
+        titleStyle={styles.ordersTitleStyle}
+        title={'MY ORDERS'}
+        leftIcon={null}
+      />
     );
   };
 
@@ -1259,11 +1259,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderSeperator = () => {
-    return (
-      <View
-        style={styles.seperatorContainer}
-      ></View>
-    );
+    return <View style={styles.seperatorContainer}></View>;
   };
 
   const renderLocationSearch = () => {
@@ -1780,23 +1776,24 @@ export const Tests: React.FC<TestsProps> = (props) => {
             {sectionLoading ? (
               renderDiagnosticWidgetShimmer(false) //to load package card
             ) : (
-              <PackageCard
-                data={data}
-                diagnosticWidgetData={data?.diagnosticWidgetData?.slice(
-                  0,
-                  data?.diagnosticWidgetData?.length >= listShowLength
-                    ? listShowLength
-                    : data?.diagnosticWidgetData?.length
-                )}
-                isPriceAvailable={isPriceAvailable}
-                isCircleSubscribed={isDiagnosticCircleSubscription}
-                isServiceable={isDiagnosticLocationServiceable}
-                isVertical={false}
-                navigation={props.navigation}
-                source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME}
-                sourceScreen={AppRoutes.Tests}
-                widgetHeading={data?.diagnosticWidgetTitle}
-              />
+              <Text>po</Text>
+              // <PackageCard
+              //   data={data}
+              //   diagnosticWidgetData={data?.diagnosticWidgetData?.slice(
+              //     0,
+              //     data?.diagnosticWidgetData?.length >= listShowLength
+              //       ? listShowLength
+              //       : data?.diagnosticWidgetData?.length
+              //   )}
+              //   isPriceAvailable={isPriceAvailable}
+              //   isCircleSubscribed={isDiagnosticCircleSubscription}
+              //   isServiceable={isDiagnosticLocationServiceable}
+              //   isVertical={false}
+              //   navigation={props.navigation}
+              //   source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME}
+              //   sourceScreen={AppRoutes.Tests}
+              //   widgetHeading={data?.diagnosticWidgetTitle}
+              // />
             )}
           </>
         }
@@ -2631,7 +2628,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }
   function onPressSingleBookNow(item: any) {
     addCartItem?.(item);
-    _navigateToPatientsPage()
+    _navigateToPatientsPage();
   }
 
   const singleItem = AppConfig.Configuration.DIAGNOSTICS_HOME_SINGLE_ITEM;
@@ -2711,13 +2708,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderOrderAndPrescriptionPanel = () => {
-    const isPrescriptionAvailable = AppConfig.Configuration.DIAGNOSTICS_SHOW_UPLOAD_PRESCRIPTION_SECTION;
-    const isOrderAvailable = diagnosticStateUserType ==`"${string.user_type.REPEAT}"`;
+    const isPrescriptionAvailable =
+      AppConfig.Configuration.DIAGNOSTICS_SHOW_UPLOAD_PRESCRIPTION_SECTION;
+    const isOrderAvailable = diagnosticStateUserType == `"${string.user_type.REPEAT}"`;
     if (isOrderAvailable && isPrescriptionAvailable) {
       return (
-        <View
-          style={styles.orderPrescriptionPanel}
-        >
+        <View style={styles.orderPrescriptionPanel}>
           {renderMiniPrescriptionCard()}
           {renderMiniMyOrder()}
         </View>
@@ -3559,7 +3555,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0, 0, 0, 0.1)',
     borderWidth: 0.5,
     width: '92%',
-    alignSelf: 'center'
+    alignSelf: 'center',
   },
   orderPrescriptionPanel: {
     flexDirection: 'row',
