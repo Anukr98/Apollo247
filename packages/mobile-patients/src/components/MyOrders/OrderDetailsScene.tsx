@@ -1683,7 +1683,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           setPrescriptionPopUp(false);
           if (selectedType == 'CAMERA_AND_GALLERY') {
             if (response.length == 0) return;
-            uploadPhysicalPrescriptionsToServerCart(response);
             props.navigation.navigate(AppRoutes.UploadPrescription, {
               phyPrescriptionsProp: response,
               type,
