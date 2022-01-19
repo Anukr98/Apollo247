@@ -101,6 +101,7 @@ import { NavigationScreenProps, NavigationEvents } from 'react-navigation';
 import {
   CALL_TO_ORDER_CTA_PAGE_ID,
   DIAGNOSTIC_ORDER_STATUS,
+  TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   useShoppingCart,
@@ -2623,41 +2624,78 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const singleItem = AppConfig.Configuration.DIAGNOSTICS_HOME_SINGLE_ITEM;
   const renderSingleItem = () => {
+    let singleItemFilterData: any[] = [];
+    for (let index = 0; index < widgetsData?.length; index++) {
+      const element = widgetsData?.[index];
+      element?.diagnosticWidgetData?.filter((item: any) => {
+        if (item?.itemId == singleItem?.id) {
+          singleItemFilterData?.push(item);
+        }
+      });
+    }
+    const singleItemData = singleItemFilterData?.[0];
+    let priceToShow = singleItemData?.diagnosticPricing?.map((item: any) => {
+      if (item?.groupPlan == 'ALL') {
+        return item;
+      }
+    });
     return (
       <>
-        <View style={styles.singleItemContainer}>
-          <View style={styles.itemFirst}>
-            <View style={{ flexDirection: 'row' }}>
-              <VirusGreen style={{ height: 24 }} />
-              <Text style={styles.singleItemName}>{singleItem?.name}</Text>
-            </View>
-            <Text style={styles.singleItemPrice}>{string.common.Rs}{singleItem?.price}</Text>
-          </View>
-          <View style={styles.viewSecond}>
-            <View style={{ marginLeft: 45 }}>
-              <View style={styles.blueFirst}>
-                <ClockBlue style={styles.blueIcon} />
-                <Text style={styles.blueText}>{string.diagnostics.sameDayReports}</Text>
+        {!!styles.singleItemPrice && !!singleItemData?.itemTitle ? (
+          <View style={styles.singleItemContainer}>
+            <View style={styles.itemFirst}>
+              <View style={{ flexDirection: 'row' }}>
+                <VirusGreen style={{ height: 24 }} />
+                <Text style={styles.singleItemName}>{singleItemData?.itemTitle}</Text>
               </View>
-              <View style={styles.blueSecond}>
-                <HomeBlue style={styles.blueIcon} />
-                <Text style={styles.blueText}>{string.diagnostics.freeHomeCollection}</Text>
-              </View>
+              <Text style={styles.singleItemPrice}>
+                {string.common.Rs}
+                {priceToShow?.[0]?.price}
+              </Text>
             </View>
-            <Button
-              title={string.diagnostics.bookNow}
-              style={styles.buttonTop}
-              onPress={() => {
-                onPressSingleBookNow(singleItem);
-              }}
-            />
+            <View style={styles.viewSecond}>
+              <View style={{ marginLeft: 45 }}>
+                <View style={styles.blueFirst}>
+                  <ClockBlue style={styles.blueIcon} />
+                  <Text style={styles.blueText}>{string.diagnostics.sameDayReports}</Text>
+                </View>
+                <View style={styles.blueSecond}>
+                  <HomeBlue style={styles.blueIcon} />
+                  <Text style={styles.blueText}>{string.diagnostics.freeHomeCollection}</Text>
+                </View>
+              </View>
+              <Button
+                title={string.diagnostics.bookNow}
+                style={styles.buttonTop}
+                onPress={() => {
+                  const singleItemObj = {
+                    circlePrice: 0,
+                    circleSpecialPrice: 0,
+                    collectionMethod: TEST_COLLECTION_TYPE.HC,
+                    discountPrice: 0,
+                    discountSpecialPrice: 0,
+                    groupPlan: 'ALL',
+                    id: singleItemData?.itemId,
+                    inclusions: singleItemData?.inclusionData?.map((item: any) => {
+                      return item?.incItemId;
+                    }),
+                    isSelected: true,
+                    mou: 1,
+                    name: singleItemData?.itemTitle,
+                    packageMrp: priceToShow?.[0]?.mrp,
+                    price: priceToShow?.[0]?.price,
+                    specialPrice: priceToShow?.[0]?.price,
+                    thumbnail: singleItemData?.itemImageUrl,
+                  };
+                  onPressSingleBookNow(singleItemObj);
+                }}
+              />
+            </View>
+            <View style={styles.bottomGreenView}>
+              <Text style={styles.bottomText}>{string.diagnostics.forFamily}</Text>
+            </View>
           </View>
-          <View style={styles.bottomGreenView}>
-            <Text style={styles.bottomText}>
-              {string.diagnostics.forFamily}
-            </Text>
-          </View>
-        </View>
+        ) : null}
       </>
     );
   };
@@ -3373,9 +3411,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
               onScroll={(event) => {
                 setSlideCallToOrder(true);
                 //increments only for down scroll
-                const currentOffset = event.nativeEvent.contentOffset?.y;
-                currentOffset > (this.offset || 0) && (scrollCount.current += 1);
-                this.offset = currentOffset;
+                // const currentOffset = event.nativeEvent.contentOffset?.y;
+                // currentOffset > (this.offset || 0) && (scrollCount.current += 1);
+                // this.offset = currentOffset;
               }}
             >
               {renderSections()}
@@ -3455,7 +3493,7 @@ const styles = StyleSheet.create({
   blueText: {
     ...theme.viewStyles.text('M', 12, '#2A71DB', 1),
     paddingLeft: 5,
-    alignSelf: 'center'
+    alignSelf: 'center',
   },
   blueFirst: { flexDirection: 'row', alignItems: 'center' },
   blueSecond: { flexDirection: 'row', marginTop: 5, alignItems: 'center' },
@@ -3478,11 +3516,14 @@ const styles = StyleSheet.create({
   },
   singleItemName: {
     ...theme.viewStyles.text('SB', 16, colors.SHERPA_BLUE, 1),
-    marginHorizontal: 10,
+    marginLeft: 5,
+    width: '75%',
   },
   singleItemPrice: {
     ...theme.viewStyles.text('SB', 16, colors.SHERPA_BLUE, 1),
-    alignSelf: 'flex-end',
+    alignSelf: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
   },
   viewSecond: {
     flexDirection: 'row',
