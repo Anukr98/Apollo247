@@ -128,7 +128,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
   const timerTime = AppConfig.Configuration.Payment_Processing_Timer || 10;
   const [remainingTime, setremainingTime] = useState(timerTime);
 
-  const [autoBookTimerCount, setAutoBookTimerCount] = useState(10);
+  const [autoBookTimerCount, setAutoBookTimerCount] = useState(6);
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBack);
