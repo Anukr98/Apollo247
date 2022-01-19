@@ -1,6 +1,6 @@
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { BackHandler, StyleSheet, Text, View, ScrollView } from 'react-native';
+import { BackHandler, StyleSheet, Text, View, ScrollView, ScrollViewBase } from 'react-native';
 import {
   addSlotDuration,
   g,
@@ -306,10 +306,10 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
 
   const renderMainView = () => {
     return (
-      <>
+      <ScrollView>
         <View style={{ marginLeft: 16 }}>{renderScheduleHeading()}</View>
         <View style={{ height: screenHeight }}>{renderSlotSelection()}</View>
-      </>
+      </ScrollView>
     );
   };
 
