@@ -43,6 +43,7 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import { addPatientPrescriptionRecord } from '@aph/mobile-patients/src/graphql/types/addPatientPrescriptionRecord';
 import {
   AddPrescriptionRecordInput,
+  DiagnosticCTJourneyType,
   MedicalRecordType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -308,7 +309,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
         inputData?.prescriptionName ? inputData?.prescriptionName : '',
         userType,
         isDiagnosticCircleSubscription,
-        string.diagnostics.uploadPrescription
+        DiagnosticCTJourneyType?.UPLOAD_PRESCRIPTION
       );
     } else {
       let uploadUrl;
@@ -325,7 +326,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
         inputData?.prescriptionName ? inputData?.prescriptionName : '',
         userType,
         isDiagnosticCircleSubscription,
-        string.diagnostics.uploadPrescription
+        DiagnosticCTJourneyType?.UPLOAD_PRESCRIPTION
       );
     }
     setOnSumbitSuccess(true);
@@ -378,7 +379,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
       !!itemNames ? itemNames : '',
       userType,
       isDiagnosticCircleSubscription,
-      string.diagnostics.uploadPrescription
+      DiagnosticCTJourneyType?.UPLOAD_PRESCRIPTION
     );
     setOnSumbitSuccess(true);
   }

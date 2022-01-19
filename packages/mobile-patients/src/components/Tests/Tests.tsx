@@ -95,6 +95,7 @@ import { Image } from 'react-native-elements';
 import { NavigationScreenProps, NavigationEvents } from 'react-navigation';
 import {
   CALL_TO_ORDER_CTA_PAGE_ID,
+  DiagnosticCTJourneyType,
   DIAGNOSTIC_ORDER_STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
@@ -2201,7 +2202,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         '',
         diagnosticUserType,
         isDiagnosticCircleSubscription,
-        string.diagnostics.whatsapp
+        DiagnosticCTJourneyType?.WHATSAPP
       );
     } catch (error) {
       CommonBugFender('Tests_navigateToUploadViaWhatsapp', error);

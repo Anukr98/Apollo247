@@ -756,8 +756,6 @@
     "phleboPleaseNote": "Please Note: Your personal number would not be shared with the agent",
     "phleboTextOne": "Answer the call from",
     "phleboTextTwo": "to connect",
-    "uploadPrescription": "Upload Prescription",
-    "whatsapp" : "Whatsapp",
     "uploadPrescriptionWhatsapp": {
       "whatsappPhoneNumber": "4048218743",
       "message": "I want to place a Lab Test Order with prescription"
