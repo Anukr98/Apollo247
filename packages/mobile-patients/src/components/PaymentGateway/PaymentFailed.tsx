@@ -470,9 +470,11 @@ export const PaymentFailed: React.FC<PaymentFailedProps> = (props) => {
         const newCartTotal = orders
           .reduce((currTotal: number, currItem: any) => currTotal + currItem.estimatedAmount, 0)
           .toFixed(2);
+        setLoading?.(false);
+        setauthToken?.('');
         props.navigation.navigate(AppRoutes.PaymentMethods, {
           paymentId: paymentOrderId,
-          amount: newCartTotal,
+          amount: Number(newCartTotal),
           orderDetails: orderInfo,
           businessLine: 'pharma',
           customerId: cusId,
