@@ -27,6 +27,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getClinicalDocuments';
 import { getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_prescriptions_response } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V3';
 import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import {
   deletePatientPrismMedicalRecords,
   getPatientPrismMedicalRecordsApi,
@@ -35,11 +36,14 @@ import {
   g,
   handleGraphQlError,
   phrSortByDate,
+  postCleverTapEvent,
+  postCleverTapPHR,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
+import moment from 'moment';
 import React, { Props, useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -366,6 +370,14 @@ export const ClinicalDocumentImageReview: React.FC<ClinicalDocumentImageReviewPr
     )
       .then((status) => {
         if (status) {
+          let dateOfBirth = g(currentPatient, 'dateOfBirth');
+          let attributes = {
+            'Nav src': 'Clinical Documents',
+            'Patient UHID': g(currentPatient, 'uhid'),
+            'Patient gender': g(currentPatient, 'gender'),
+            'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+          };
+          postCleverTapEvent(CleverTapEventName.PHR_DELETE_RECORD, attributes);
           navigateToListingPage(false);
         } else {
           setShowSpinner(false);
