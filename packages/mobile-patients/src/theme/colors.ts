@@ -171,6 +171,7 @@ const Common = {
   LIGHT_REFERRER_AQUA_ONE: '#85e2dc',
   LIGHT_REFERRER_AQUA_TWO: '#FFFCFF',
   BLUE_REFERRER_BORDER: '#74b9ed',
+  MERCURY_GRAY: '#e9e9e9',
 };
 
 const Header = {

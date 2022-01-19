@@ -56,8 +56,6 @@ export const PackageCheckout: React.FC<PackageCheckoutProps> = (props) => {
   const packageDetailData = props.navigation.getParam('packageDetailData');
   const selectedPlanIndex = props.navigation.getParam('selectedPlanIndex');
   const oneTapPatient = props.navigation.getParam('oneTapPatient');
-  const isOneTap = props.navigation.getParam('isOneTap');
-  const [isPackagePurchaseInitialized, setPackagePurchaseInitialized] = useState<boolean>(false);
 
   const storeCode =
     Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
@@ -72,12 +70,6 @@ export const PackageCheckout: React.FC<PackageCheckoutProps> = (props) => {
   useEffect(() => {
     !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
   }, [isfetchingId]);
-
-  useEffect(() => {
-    if (hyperSdkInitialized) {
-      initiatePackagePurchase();
-    }
-  }, [hyperSdkInitialized]);
 
   const initiateHyperSDK = async (cusId: any) => {
     try {
@@ -170,7 +162,6 @@ export const PackageCheckout: React.FC<PackageCheckoutProps> = (props) => {
   const initiatePackagePurchase = async () => {
     try {
       setLoading?.(true);
-      setPackagePurchaseInitialized(true);
 
       const response = await createUserSubscription();
       const subscriptionId = g(response, 'data', 'CreateUserSubscription', 'response', '_id');
@@ -186,11 +177,7 @@ export const PackageCheckout: React.FC<PackageCheckoutProps> = (props) => {
 
           setLoading!(false);
           if (res?.data?.createOrderV2?.payment_status == 'TXN_SUCCESS') {
-            if (isOneTap) {
-              props.navigation.replace(AppRoutes.PackagePaymentStatus, {});
-            } else {
-              props.navigation.navigate(AppRoutes.PackagePaymentStatus, {});
-            }
+            props.navigation.navigate(AppRoutes.PackagePaymentStatus, {});
           } else {
             renderErrorPopup();
           }
@@ -204,11 +191,7 @@ export const PackageCheckout: React.FC<PackageCheckoutProps> = (props) => {
             oneTapPatient: oneTapPatient,
           };
 
-          if (isOneTap) {
-            props.navigation.replace(AppRoutes.PaymentMethods, navigationParams);
-          } else {
-            props.navigation.navigate(AppRoutes.PaymentMethods, navigationParams);
-          }
+          props.navigation.navigate(AppRoutes.PaymentMethods, navigationParams);
 
           setLoading!(false);
         }
@@ -277,35 +260,31 @@ export const PackageCheckout: React.FC<PackageCheckoutProps> = (props) => {
     );
   };
 
-  if (isOneTap) {
-    return <SafeAreaView style={theme.viewStyles.container}>{renderHeader()}</SafeAreaView>;
-  } else {
-    return (
-      <SafeAreaView style={theme.viewStyles.container}>
-        <View style={styles.container}>
-          {renderHeader()}
-          <Image
-            style={styles.banner}
-            source={{ uri: packageDetailData?.Packagedata?.PackageMobileBanner }}
-          />
-          <Text style={styles.chargesHeading}>{string.common.totalCharges}</Text>
-          <View style={styles.separator} />
-          <View style={styles.chargesContainer}>
-            {renderPackagePrice()}
-            <View style={styles.priceSeparator} />
-            {renderTotalPrice()}
-          </View>
-
-          <View style={{ marginHorizontal: 16 }}>
-            {/* How does it work ?  */}
-            <ConsultPackageHowItWorks />
-          </View>
+  return (
+    <SafeAreaView style={theme.viewStyles.container}>
+      <View style={styles.container}>
+        {renderHeader()}
+        <Image
+          style={styles.banner}
+          source={{ uri: packageDetailData?.Packagedata?.PackageMobileBanner }}
+        />
+        <Text style={styles.chargesHeading}>{string.common.totalCharges}</Text>
+        <View style={styles.separator} />
+        <View style={styles.chargesContainer}>
+          {renderPackagePrice()}
+          <View style={styles.priceSeparator} />
+          {renderTotalPrice()}
         </View>
-        {renderProceedButton()}
-        {!hyperSdkInitialized && !isOneTap && <Spinner />}
-      </SafeAreaView>
-    );
-  }
+
+        <View style={{ marginHorizontal: 16 }}>
+          {/* How does it work ?  */}
+          <ConsultPackageHowItWorks />
+        </View>
+      </View>
+      {renderProceedButton()}
+      {!hyperSdkInitialized && <Spinner />}
+    </SafeAreaView>
+  );
 };
 
 const styles = StyleSheet.create({

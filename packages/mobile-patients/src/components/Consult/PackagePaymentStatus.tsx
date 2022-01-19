@@ -12,8 +12,10 @@ import {
   PermissionsAndroid,
   Platform,
   TextInput,
+  Animated,
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
+import { CountdownCircleTimer } from 'react-native-countdown-circle-timer';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -94,16 +96,11 @@ interface PackagePaymentStatusProps extends NavigationScreenProps {}
 export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props) => {
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [showPDF, setShowPDF] = useState<boolean>(false);
-  const fireLocationEvent = useRef<boolean>(false);
-  const userChangedLocation = useRef<boolean>(false);
-  const [locationSearchList, setlocationSearchList] = useState<{ name: string; placeId: string }[]>(
-    []
-  );
-  const [showLocationPopup, setShowLocationPopup] = useState<boolean>(false);
   const { locationDetails } = useAppCommonData();
   const client = useApolloClient();
 
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
+  const [orderStatusLoading, setOrderStatusLoading] = useState<boolean>(false);
 
   const [paymentStatus, setPaymentStatus] = useState<string>(
     props.navigation.getParam('paymentStatus')
@@ -127,16 +124,25 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
   const [email, setEmail] = useState<string>(currentPatient?.emailAddress || '');
   const [emailSent, setEmailSent] = useState<boolean>(false);
 
+  const [showWaitTimer, setShowWaitTimer] = useState<boolean>(true);
+  const timerTime = AppConfig.Configuration.Payment_Processing_Timer || 10;
+  const [remainingTime, setremainingTime] = useState(timerTime);
+
   const [autoBookTimerCount, setAutoBookTimerCount] = useState(10);
 
   useEffect(() => {
-    fetchOrderStatus();
-
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
   }, []);
+
+  useEffect(() => {
+    //polling every 6 secs for updated status
+    if (remainingTime % 6 == 0) {
+      fetchOrderStatus(true, false);
+    }
+  }, [remainingTime]);
 
   const handleBack = () => {
     navigateToSpecialtyPage(props.navigation);
@@ -183,7 +189,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
                     'Seems like the invoice is not generated and avialable to download.Press okay to recheck and download.',
                   onPressOk: () => {
                     hideAphAlert!();
-                    fetchOrderStatus();
+                    fetchOrderStatus(false);
                   },
                 });
               }
@@ -205,7 +211,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
                     'Seems like the invoice is not generated and avialable to send.Press okay to recheck.',
                   onPressOk: () => {
                     hideAphAlert!();
-                    fetchOrderStatus();
+                    fetchOrderStatus(false);
                   },
                 });
               }
@@ -251,7 +257,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
   const renderInputEmail = () => {
     return (
       <View style={styles.inputContainer}>
-        <View style={{ flex: 0.85 }}>
+        <View style={{}}>
           <TextInput
             value={`${email ? email : ''}`}
             onChangeText={(email) => setEmail(email)}
@@ -504,7 +510,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
             paymentStatus != PAYMENT_STATUS.TXN_FAILURE) ? (
             <TouchableOpacity
               onPress={() => {
-                fetchOrderStatus();
+                fetchOrderStatus(false);
               }}
             >
               <Text
@@ -537,9 +543,13 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
     });
   };
 
-  const fetchOrderStatus = async () => {
+  const fetchOrderStatus = async (autoBook: boolean, showLoader: boolean = true) => {
     try {
-      setShowSpinner?.(true);
+      if (showLoader) {
+        setShowSpinner?.(true);
+        setOrderStatusLoading?.(true);
+      }
+
       setAutoBookTimerCount(10);
 
       const response = await getOrderInfo();
@@ -548,6 +558,14 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
         const txnStatus =
           response?.data?.getOrderInternal?.payment_status || PAYMENT_STATUS.PENDING;
         setPaymentStatus(txnStatus);
+
+        if (
+          oneTapPatient &&
+          (txnStatus == PAYMENT_STATUS.TXN_SUCCESS || txnStatus == PAYMENT_STATUS.TXN_FAILURE)
+        ) {
+          setShowWaitTimer(false);
+        }
+
         setPaymentAmount(response?.data?.getOrderInternal?.total_amount || 0);
         setOrderId(
           currentPatient?.mobileNumber +
@@ -573,33 +591,47 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
           response?.data?.getOrderInternal?.SubscriptionOrderDetails?.payment_reference?.invoice_url
         );
 
-        if (oneTapPatient && txnStatus == PAYMENT_STATUS.TXN_SUCCESS) {
-          let interval = setInterval(() => {
-            setAutoBookTimerCount((lastTimerCount) => {
-              if (lastTimerCount <= 1) {
-                fetchOneTapPlanFromSubscriptionBenefits(
-                  response?.data?.getOrderInternal?.SubscriptionOrderDetails?.group_sub_plan
-                    ?.plan_id || ''
-                );
-                clearInterval(interval);
-              }
-              return lastTimerCount - 1;
-            });
-          }, 1000);
+        if (oneTapPatient && autoBook && txnStatus == PAYMENT_STATUS.TXN_SUCCESS) {
+          if (txnStatus == PAYMENT_STATUS.TXN_SUCCESS) {
+            let interval = setInterval(() => {
+              setAutoBookTimerCount((lastTimerCount) => {
+                if (lastTimerCount <= 1) {
+                  fetchOneTapPlanFromSubscriptionBenefits(
+                    response?.data?.getOrderInternal?.SubscriptionOrderDetails?.group_sub_plan
+                      ?.plan_id || ''
+                  );
+                  clearInterval(interval);
+                }
+                return lastTimerCount - 1;
+              });
+            }, 1000);
+          } else if (txnStatus == PAYMENT_STATUS.TXN_FAILURE) {
+            let interval = setInterval(() => {
+              setAutoBookTimerCount((lastTimerCount) => {
+                if (lastTimerCount <= 1) {
+                  navigateToSpecialtyPage(props.navigation);
+                  clearInterval(interval);
+                }
+                return lastTimerCount - 1;
+              });
+            }, 1000);
+          }
         }
       } else {
         renderErrorPopup(
           "We could not confirm your payment at this moment. We apologize for the inconvenience caused. Please refresh this page or check your plan in the 'My Memberships' tab in the 'My Account' section."
         );
       }
-
-      setShowSpinner?.(false);
     } catch (error) {
-      setShowSpinner?.(false);
       CommonBugFender('fetchingTxnStutus', error);
       renderErrorPopup(
         "We could not confirm your payment at this moment. We apologize for the inconvenience caused. Please refresh this page or check your plan in the 'My Memberships' tab in the 'My Account' section."
       );
+    } finally {
+      if (showLoader) {
+        setShowSpinner?.(false);
+        setOrderStatusLoading?.(false);
+      }
     }
   };
 
@@ -609,7 +641,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
       description: `${desc || ''}`.trim(),
       onPressOk: () => {
         hideAphAlert!();
-        fetchOrderStatus();
+        fetchOrderStatus(false);
       },
     });
 
@@ -749,7 +781,6 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
                     title: 'Uh oh.. :(',
                     description: "Seems like the plan dosen't exists anymore.",
                     onPressOk: () => {
-                      props.navigation.goBack();
                       hideAphAlert!();
                     },
                   });
@@ -763,7 +794,6 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
             title: 'Uh oh.. :(',
             description: "Couldn't load the plan details. Please check internet connection.",
             onPressOk: () => {
-              props.navigation.goBack();
               hideAphAlert!();
             },
           });
@@ -874,7 +904,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
             paymentStatus != PAYMENT_STATUS.TXN_FAILURE) ? (
             <TouchableOpacity
               onPress={() => {
-                fetchOrderStatus();
+                fetchOrderStatus(false);
               }}
             >
               <Text
@@ -893,6 +923,40 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
             </TouchableOpacity>
           ) : null}
         </View>
+      </View>
+    );
+  };
+
+  const renderWaitTimer = () => {
+    return (
+      <View
+        style={{
+          alignSelf: 'center',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        <CountdownCircleTimer
+          onComplete={() => {
+            setShowWaitTimer(false);
+          }}
+          isPlaying
+          duration={timerTime}
+          colors="#F89B2D"
+          size={102}
+          strokeWidth={7}
+        >
+          {({ remainingTime }) => {
+            setremainingTime(remainingTime);
+            return (
+              <Animated.Text style={{ color: '#01475B', ...theme.fonts.IBMPlexSansSemiBold(18) }}>
+                00:{remainingTime > 9 ? remainingTime : '0' + remainingTime}
+              </Animated.Text>
+            );
+          }}
+        </CountdownCircleTimer>
+        <Text style={styles.processing}>{'Please Wait'}</Text>
+        <Text style={styles.note}>{'We are checking your payment status'}</Text>
       </View>
     );
   };
@@ -931,18 +995,24 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
           ]}
           style={styles.oneTapcontainer}
         >
-          {renderCenteredCircle()}
+          {showWaitTimer && renderWaitTimer()}
 
-          {renderPaymentStatusHeaderOneTap()}
-
-          {renderPaymentCard()}
-
-          {/* Intentionally commented for future use case  */}
-          {/* {autoBookTimerCount != 0 ? (
-            <Text style={{ ...theme.viewStyles.text('R', 10, theme.colors.BLACK_COLOR, 0.7) }}>
-              Automatically booking your consultation in {autoBookTimerCount} secs
-            </Text>
-          ) : null} */}
+          {!showWaitTimer && !orderStatusLoading && (
+            <View>
+              {renderPaymentStatusHeaderOneTap()}
+              {renderPaymentCard()}
+              {autoBookTimerCount != 0 ? (
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('R', 15, theme.colors.RED, 0.7),
+                    alignSelf: 'center',
+                  }}
+                >
+                  Talk to a top doctor in {autoBookTimerCount} seconds
+                </Text>
+              ) : null}
+            </View>
+          )}
         </LinearGradient>
 
         {showSpinner ? <Spinner /> : null}
@@ -1018,15 +1088,11 @@ const styles = StyleSheet.create({
   },
   oneTapcontainer: {
     flex: 1,
-    alignItems: 'center',
     justifyContent: 'center',
     alignContent: 'center',
-    alignSelf: 'center',
-    marginHorizontal: -10,
-    paddingHorizontal: 26,
   },
   paymenStatusHeader: {
-    height: 270,
+    height: 280,
   },
   inputContainer: {
     flex: 1,
@@ -1035,11 +1101,11 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: '#fff',
     marginHorizontal: 5,
-    marginBottom: 12,
+    marginBottom: 30,
     paddingHorizontal: 10,
     alignItems: 'center',
     borderWidth: 0.5,
-    paddingVertical: 6,
+    minHeight: 30,
     marginTop: 5,
     borderColor: theme.colors.LIGHT_GRAY_2,
   },
@@ -1283,6 +1349,18 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 12, theme.colors.LIGHT_BLUE),
     paddingVertical: 10,
     paddingHorizontal: 14,
+  },
+  processing: {
+    ...theme.fonts.IBMPlexSansSemiBold(14),
+    textAlign: 'center',
+    color: '#01475B',
+    marginTop: 15,
+  },
+  note: {
+    ...theme.fonts.IBMPlexSansRegular(12),
+    color: '#01475B',
+    marginTop: 6,
+    textAlign: 'center',
   },
   savedLocationText: {
     marginLeft: 6,
