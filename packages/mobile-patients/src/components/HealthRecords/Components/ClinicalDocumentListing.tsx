@@ -528,6 +528,8 @@ export const ClinicalDocumentListing: React.FC<ClinicalDocumentListingProps> = (
                         comingFromListing: true,
                         selectedID: mainItem?.id,
                         documentType: mainItem?.fileType,
+                        isDigitized: mainItem?.documentStatus==='DIGITIZED',
+                        fileTypeId: mainItem?.fileTypeId
                       });
                     }}
                   >

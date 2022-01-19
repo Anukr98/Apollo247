@@ -178,7 +178,8 @@
     "cancelAppointmentBody": "Confirm if you would like to proceed with the cancellation of your",
     "cancelRefundBody": "We regret the inconvenience caused. We’ll issue you a full refund.",
     "goBack": "GO BACK",
-    "proceedCta": "PROCEED TO CONNECT"
+    "proceedCta": "PROCEED TO CONNECT",
+    "showDigitalData": "SHOW DIGITAL DATA"
   },
   "diagnosticsLocation": {
     "savedAddressText": "Saved Addresses",

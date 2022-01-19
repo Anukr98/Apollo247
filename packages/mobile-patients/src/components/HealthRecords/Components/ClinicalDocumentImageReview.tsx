@@ -37,6 +37,7 @@ import {
   phrSortByDate,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import React, { Props, useEffect, useState } from 'react';
@@ -171,6 +172,12 @@ export const ClinicalDocumentImageReview: React.FC<ClinicalDocumentImageReviewPr
   const documentType = props.navigation.state.params
     ? props.navigation.state.params.documentType
     : '';
+
+  const isDigitized = props.navigation.state.params
+    ? props.navigation.state.params.isDigitized
+    : false;
+
+  const fileTypeId = props.navigation.state.params ? props.navigation.state.params.fileTypeId : '';
 
   const imageID = props.navigation.state.params ? props.navigation.state.params.selectedID : '';
   const id = props.navigation.state.params ? props.navigation.state.params.id : '';
@@ -383,6 +390,23 @@ export const ClinicalDocumentImageReview: React.FC<ClinicalDocumentImageReviewPr
     );
   };
 
+  const renderDigitizedButton = () => {
+    return (
+      <StickyBottomComponent style={styles.bottomStyle}>
+        <Button
+          title={strings.common.showDigitalData}
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.TestReportViewScreen, {
+              healthrecordId: fileTypeId,
+              healthRecordType: MedicalRecordType.TEST_REPORT,
+              labResults: true,
+            });
+          }}
+        />
+      </StickyBottomComponent>
+    );
+  };
+
   return (
     <View style={styles.mainViewStyle}>
       <SafeAreaView style={styles.safeAreaViewStyle}>
@@ -396,7 +420,7 @@ export const ClinicalDocumentImageReview: React.FC<ClinicalDocumentImageReviewPr
           {renderTestTopDetailsView()}
           {renderUploadedImages(1)}
         </ScrollView>
-        {comingFromListing ? null : renderButton()}
+        {comingFromListing ? (isDigitized ? renderDigitizedButton() : null) : renderButton()}
         {showSpinner && <Spinner />}
         <StickyBottomComponent style={styles.stickyBottomComponentStyle}>
           <TouchableOpacity style={{ top: 10 }} onPress={() => renderDelete()}>

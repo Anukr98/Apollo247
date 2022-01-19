@@ -3394,6 +3394,8 @@ export const GET_MEDICAL_PRISM_RECORD_V3 = gql`
       labResults {
         response {
           id
+          documentId
+          isClinicalDocument
           labTestName
           labTestSource
           packageId

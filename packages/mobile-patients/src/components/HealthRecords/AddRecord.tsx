@@ -2163,7 +2163,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       <View style={[styles.addMoreImageViewStyle, { marginRight: 5 }]}>
         <View style={styles.imageViewStyle}>
           <TouchableOpacity onPress={deleteImage} style={styles.removeIconViewStyle}>
-            <PhrRemoveBlueIcon style={{ width: 16, height: 16 }} />
+            {selectedRecord?.isClinicalDocument ? null : <PhrRemoveBlueIcon style={{ width: 16, height: 16 }} />}
           </TouchableOpacity>
           {fileType === 'pdf' || fileType === 'application/pdf' ? (
             <FileBig style={styles.imageStyle} />
@@ -2210,6 +2210,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         </View>
       );
     };
+    const isClinicalDocument = selectedRecord?.isClinicalDocument
     return (
       <View
         style={[
@@ -2229,10 +2230,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           horizontal
           renderItem={({ item, index }) => renderImagesRow(item, index, id)}
           keyExtractor={(_, index) => index.toString()}
-          ListFooterComponent={() => (imagesArray?.length > 3 ? null : renderAddMorePagesCard())}
+          ListFooterComponent={() => (imagesArray?.length > 3 ? null : isClinicalDocument ? null : renderAddMorePagesCard())}
         />
         {/* UI for multiple images */}
-        {imagesArray?.length > 3 ? renderAddMorePagesCard() : null}
+        {imagesArray?.length > 3 ? isClinicalDocument ? null:  renderAddMorePagesCard() : null}
       </View>
     );
   };

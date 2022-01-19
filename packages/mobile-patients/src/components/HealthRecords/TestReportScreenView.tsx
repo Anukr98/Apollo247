@@ -357,7 +357,9 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
     Platform.OS === 'android' && requestReadSmsPermission();
     setLoading && setLoading(true);
     // This is for creating a new object after collecting the data from the api..
-    asyncFetchDailyData(data);
+    if (data) {
+      asyncFetchDailyData(data);
+    }
   }, []);
 
   const combineObjects = (arr: any) => {
