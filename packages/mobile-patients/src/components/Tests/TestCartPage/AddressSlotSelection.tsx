@@ -306,10 +306,10 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
 
   const renderMainView = () => {
     return (
-      <>
+      <ScrollView>
         <View style={{ marginLeft: 16 }}>{renderScheduleHeading()}</View>
         <View style={{ height: screenHeight }}>{renderSlotSelection()}</View>
-      </>
+      </ScrollView>
     );
   };
 
