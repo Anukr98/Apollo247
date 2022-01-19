@@ -1870,6 +1870,10 @@ export interface CleverTapEvents {
     Pincode: string | number;
     Source: 'Home page' | 'Cart page';
     'Circle user': string;
+    'latitude': number;
+    'longitude': number;
+    'state': string;
+    'city': string;
   };
   [CleverTapEventName.DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE]: {
     'Item ID': string | number;

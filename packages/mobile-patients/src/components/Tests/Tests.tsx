@@ -64,6 +64,7 @@ import {
   postCleverTapEvent,
   showDiagnosticCTA,
   calculateDiagnosticCartItems,
+  isEmptyObject,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
@@ -138,12 +139,12 @@ import {
 import Carousel from 'react-native-snap-carousel';
 import CertifiedCard from '@aph/mobile-patients/src/components/Tests/components/CertifiedCard';
 import {
+  DiagnosticAddresssSelected,
   DiagnosticAddToCartEvent,
   DiagnosticBannerClick,
   DiagnosticHomePageClicked,
   DiagnosticHomePageWidgetClicked,
   DiagnosticLandingPageViewedEvent,
-  DiagnosticPinCodeClicked,
   DiagnosticPrescriptionSubmitted,
   DiagnosticTrackOrderViewed,
   DiagnosticTrackPhleboClicked,
@@ -272,6 +273,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     newAddressAddedHomePage,
     setNewAddressAddedHomePage,
     patientCartItems,
+    modifiedOrder
   } = useDiagnosticsCart();
   const {
     serverCartItems: shopCartItems,
@@ -359,6 +361,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [pastOrderRecommendationShimmer, setPastOrderRecommendationShimmer] = useState<boolean>(
     false
   );
+  const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
+  const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
   const scrollCount = useRef<number>(0);
   const [pastOrderRecommendations, setPastOrderRecommendations] = useState([] as any);
   const [showPastRecommendations, setShowPastRecommendations] = useState<boolean>(false);
@@ -934,6 +938,24 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setSectionLoading(false);
   }
 
+  function triggerAddressSelected(servicable: 'Yes' | 'No') {
+    const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
+    const pinCodeFromAddress = addressToUse?.zipcode!;
+    DiagnosticAddresssSelected(
+      newAddressAddedHomePage != '' ? 'New' : 'Existing',
+      servicable,
+      pinCodeFromAddress,
+      'Home page',
+      currentPatient,
+      isDiagnosticCircleSubscription,
+      addressToUse?.latitude,
+      addressToUse?.longitude,
+      addressToUse?.state,
+      addressToUse?.city
+    );
+    newAddressAddedHomePage != '' && setNewAddressAddedHomePage?.('');
+  }
+
   function setPastOrderRecommendationPrices(widgets: any, widgetPricingArr: any) {
     let _recommendedBookings: any = [];
     widgets?.forEach((_widget: any) => {
@@ -1070,22 +1092,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setServiceabilityMsg('');
             setUnserviceablePopup(false);
             setShowNoLocationPopUp(false);
-            !!source &&
-              DiagnosticPinCodeClicked(
-                currentPatient,
-                pincode,
-                true,
-                source,
-                isDiagnosticCircleSubscription
-              );
+            triggerAddressSelected('Yes');
           } else {
             //null in case of non-serviceable
             obj = getNonServiceableObject();
             setNonServiceableValues(obj, pincode);
+            triggerAddressSelected('No');
           }
         } else {
           obj = getNonServiceableObject();
           setNonServiceableValues(obj, pincode);
+          triggerAddressSelected('No');
         }
         getExpressSlots(obj, selectedAddress);
         getDiagnosticBanner(Number(obj?.cityId));
@@ -1124,14 +1141,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setShowNoLocationPopUp(false);
     setUnserviceablePopup(true);
     setServiceabilityMsg(string.diagnostics.nonServiceableMsg1);
-    !!source &&
-      DiagnosticPinCodeClicked(
-        currentPatient,
-        pincode,
-        false,
-        source,
-        isDiagnosticCircleSubscription
-      );
   }
 
   const renderYourOrders = () => {

@@ -269,7 +269,11 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       pinCodeFromAddress,
       'Cart page',
       currentPatient,
-      isDiagnosticCircleSubscription
+      isDiagnosticCircleSubscription,
+      addressToUse?.latitude,
+      addressToUse?.longitude,
+      addressToUse?.state,
+      addressToUse?.city
     );
     newAddressAddedCartPage != '' && setNewAddressAddedCartPage?.('');
   }
