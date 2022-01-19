@@ -34,6 +34,7 @@ import {
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientObj } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { AppConfig, AppEnv } from '@aph/mobile-patients/src/strings/AppConfig';
+import { DiagnosticCTJourneyType } from '../../graphql/types/globalTypes';
 const { APP_ENV } = AppConfig;
 
 function createPatientAttributes(currentPatient: any) {
@@ -1078,7 +1079,7 @@ export function DiagnosticPrescriptionSubmitted(
   itemName: any,
   userType: string | null,
   isDiagnosticCircleSubscription?: boolean | undefined,
-  journeyType?: any
+  journeyType?:  DiagnosticCTJourneyType
 ) {
   try {
     const getPatientAttributes = createPatientAttributes(currentPatient);
