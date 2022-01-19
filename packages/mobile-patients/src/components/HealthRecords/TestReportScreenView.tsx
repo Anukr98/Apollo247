@@ -806,7 +806,6 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
             </Text>
           </View>
           {data?.labTestResults?.map((item: any) => {
-            const eventInputData = removeObjectProperty(item, data?.labTestName);
             const unit = item?.unit;
             let minNum: number;
             let maxNum: number;
@@ -906,12 +905,6 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                       <TouchableOpacity
                         activeOpacity={1}
                         onPress={() => {
-                          postCleverTapPHR(
-                            currentPatient,
-                            CleverTapEventName.PHR_INFO_CONTENT,
-                            'PHR Info content tracking',
-                            eventInputData
-                          );
                           handleOnClickForGraphPopUp(
                             item?.parameterName,
                             data?.labTestName,
@@ -1039,6 +1032,12 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
     };
 
     const pushToInformaticPage = (content: any, desc: any, title: any) => {
+      let attributes = {
+        'Nav src': 'Bar Chart Visualisation',
+        'Parameter Name': title,
+        'Service Name': data?.labTestName,
+      };
+      postCleverTapEvent(CleverTapEventName.PHR_INFO_CONTENT, attributes);
       props.navigation.navigate(AppRoutes.InformativeContent, {
         relatedFAQ: content,
         desc: desc,
@@ -1048,6 +1047,12 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
 
     const handleOnClickForGraphPopUp = (paramName: any, labTestName: any, lonCode: any) => {
       setLoading && setLoading(true);
+      let attributes = {
+        'Nav src': 'Bar Chart Visualisation',
+        'Parameter Name': paramName,
+        'Service Name': labTestName,
+      };
+      postCleverTapEvent(CleverTapEventName.PHR_BAR_CHART_VISUALISATION, attributes);
       client
         .query<getVisualizationData, getVisualizationDataVariables>({
           query: GET_VISUALIZATION_DATA,
