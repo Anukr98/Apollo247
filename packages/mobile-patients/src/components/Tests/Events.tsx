@@ -630,10 +630,10 @@ export async function DiagnosticAddresssSelected(
   source: 'Home page' | 'Cart page',
   currentPatient?: any,
   isDiagnosticCircleSubscription?: boolean | undefined,
-  latitude?: any,
-  longitude?: any,
-  state?: any,
-  city?: any
+  latitude?: number | undefined,
+  longitude?: number | undefined,
+  state?: string | undefined,
+  city?: string | undefined
 ) {
   try {
     const getPatientAttributes = await createPatientAttributes(currentPatient);
@@ -646,10 +646,10 @@ export async function DiagnosticAddresssSelected(
       Pincode: pincode,
       Source: source,
       'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
-      'latitude': latitude,
-      'longitude': longitude,
-      'state': state,
-      'city': city
+      'latitude': !!latitude ? latitude : 0,
+      'longitude': !!longitude ? longitude : 0,
+      'state': !!state ? state : '',
+      'city': !!city ? city : ''
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE, eventAttributes);
     postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE, eventAttributes);
