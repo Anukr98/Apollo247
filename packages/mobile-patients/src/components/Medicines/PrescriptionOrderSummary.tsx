@@ -518,7 +518,10 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
-        <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+        <ScrollView
+          keyboardShouldPersistTaps={'handled'}
+          contentContainerStyle={{ paddingBottom: 100 }}
+        >
           {renderHeader()}
           {renderAddress()}
           {renderTatCard()}
