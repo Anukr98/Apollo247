@@ -308,7 +308,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
         inputData?.prescriptionName ? inputData?.prescriptionName : '',
         userType,
         isDiagnosticCircleSubscription,
-        uploadViaWhatsapp ? `${string.diagnostics.whatsapp }` : `${string.diagnostics.uploadPrescription}`
+        string.diagnostics.uploadPrescription
       );
     } else {
       let uploadUrl;
@@ -325,7 +325,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
         inputData?.prescriptionName ? inputData?.prescriptionName : '',
         userType,
         isDiagnosticCircleSubscription,
-        uploadViaWhatsapp ? `${string.diagnostics.whatsapp }` : `${string.diagnostics.uploadPrescription}`
+        string.diagnostics.uploadPrescription
       );
     }
     setOnSumbitSuccess(true);
@@ -378,7 +378,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
       !!itemNames ? itemNames : '',
       userType,
       isDiagnosticCircleSubscription,
-      uploadViaWhatsapp ? `${string.diagnostics.whatsapp }` : `${string.diagnostics.uploadPrescription}`
+      string.diagnostics.uploadPrescription
     );
     setOnSumbitSuccess(true);
   }
