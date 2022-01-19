@@ -175,6 +175,12 @@ const styles = StyleSheet.create({
     width: '43%',
     margin: 10,
   },
+  diagnosticCard2Right: {
+    borderRadius: 10,
+    height: 20,
+    width: '23%',
+    margin: 10,
+  },
   diagnosticCard3: {
     borderRadius: 10,
     height: 179,
@@ -186,6 +192,12 @@ const styles = StyleSheet.create({
     height: 179,
     width: '90%',
     margin: 10,
+  },
+  circleBottomLineSingle: {
+    borderRadius: 10,
+    height: 10,
+    width: '100%',
+    marginVertical: 7,
   },
   diagnosticsCardBottom1: {
     borderRadius: 10,
@@ -360,7 +372,7 @@ const styles = StyleSheet.create({
   },
   itemPrice: {
     ...theme.viewStyles.cardViewStyle,
-    width: '90%',
+    width: '80%',
     marginRight: 5,
     marginTop: 5,
     height: 50,
@@ -416,6 +428,16 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     height: 60,
     width: '100%',
+  },
+  recommendationShimmerView: {
+    marginTop: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  recommendationLeftView: { height: 70, width: '50%', marginRight: 30 },
+  recommendationRightView: {
+    height: 50,
+    width: 70,
   },
 });
 
@@ -1113,7 +1135,7 @@ export const renderDiagnosticWidgetHeadingShimmer = () => {
       <ShimmerPlaceHolder
         LinearGradient={LinearGradient}
         shimmerColors={shimmerColors}
-        shimmerStyle={styles.diagnosticCard2}
+        shimmerStyle={styles.diagnosticCard2Right}
       />
     </View>
   );
@@ -1337,6 +1359,66 @@ export const renderDiagnosticWidgetTestShimmer = (showHeading: boolean) => {
           shimmerStyle={styles.diagnosticsCardBottom1}
         />
       </View>
+    </View>
+  );
+};
+
+export const renderDiagnosticCardShimmer = () => {
+  return (
+    <View style={{ marginLeft: 16 }}>
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.diagnosticsCardBottom}
+      />
+    </View>
+  );
+};
+
+export const renderDiagnosticRecommendationShimmer = () => {
+  return (
+    <View style={{ margin: 16 }}>
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={{ height: 30 }}
+      />
+      <View style={styles.recommendationShimmerView}>
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={styles.recommendationLeftView}
+        />
+        <View style={{ alignItems: 'flex-end' }}>
+          <ShimmerPlaceHolder
+            shimmerColors={shimmerColors}
+            LinearGradient={LinearGradient}
+            shimmerStyle={styles.recommendationRightView}
+          />
+        </View>
+      </View>
+    </View>
+  );
+};
+
+export const renderCircleBottomShimmer = () => {
+  return (
+    <View style={{ marginLeft: -7 }}>
+      <ShimmerPlaceHolder
+        shimmerColors={[theme.colors.SHERPA_BLUE, '#F2F2F2']}
+        LinearGradient={LinearGradient}
+        shimmerStyle={{ borderRadius: 3, height: 15, width: '100%', marginVertical: 10 }}
+      />
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={{ borderRadius: 3, height: 10, width: '50%', marginBottom: 10 }}
+      />
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={{ borderRadius: 3, height: 10, width: '80%', marginBottom: 5 }}
+      />
     </View>
   );
 };

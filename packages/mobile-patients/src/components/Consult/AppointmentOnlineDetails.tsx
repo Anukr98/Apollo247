@@ -43,6 +43,7 @@ import {
 import {
   APPOINTMENT_STATE,
   APPOINTMENT_TYPE,
+  ConsultMode,
   REQUEST_ROLES,
   STATUS,
   TRANSFER_INITIATED_TYPE,
@@ -85,6 +86,7 @@ import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments 
 import { CancelConsultation } from '../../strings/AppConfig';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { useShoppingCart } from '../ShoppingCartProvider';
 
 const OTHER_REASON = string.ReasonFor_Cancel_Consultation.otherReasons;
 const { width, height } = Dimensions.get('window');
@@ -290,6 +292,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const { showAphAlert, hideAphAlert } = useUIElements();
+  const { circleSubscriptionId, circleSubPlanId } = useShoppingCart();
 
   const isSubmitDisableForOther = selectedReason == OTHER_REASON && comment == '';
 
@@ -982,10 +985,10 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
         )}
         {showCancelPopup && (
           <BottomPopUp
-            title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
-            description={
-              "Since you're cancelling 15 minutes before your appointment, we'll issue you a full refund!"
-            }
+            title={string.common.cancelAppointmentTitleHeading}
+            description={`${string.common.cancelAppointmentBody} ${
+              data?.appointmentType === APPOINTMENT_TYPE.PHYSICAL ? 'Physical' : 'Online'
+            } Appointment ${data?.displayId}. A full refund will be issued.`}
           >
             <View
               style={{
@@ -1026,7 +1029,11 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                       CleverTapEventName.CONSULT_CANCEL_CLICKED_BY_PATIENT,
                       data,
                       currentPatient,
-                      secretaryData
+                      secretaryData,
+                      {
+                        circleSubscriptionId: circleSubscriptionId,
+                        circleSubPlanId: circleSubPlanId,
+                      }
                     );
                     CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'CANCEL CONSULT_CLICKED');
                     setShowCancelPopup(false);

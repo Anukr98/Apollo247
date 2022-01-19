@@ -78,12 +78,12 @@ export const DropdownGreen: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_dropdown_green.webp')} />
 );
 export const DropdownBlue: React.FC<IconProps> = (props) => (
-         <IconBase
-           size="sm"
-           {...props}
-           source={require('@aph/mobile-patients/src/images/signUp/dopdownCaretBlue.webp')}
-         />
-       );
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/images/signUp/dopdownCaretBlue.webp')}
+  />
+);
 
 export const Remove: React.FC<IconProps> = (props) => (
   <IconBase size={'sm'} {...props} source={require('./icons/ic_cross.webp')} />
@@ -344,6 +344,10 @@ export const SearchAreaIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_search_area_icon.webp')} />
 );
 
+export const StarClinicalDocument: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/star_clinical_doc.webp')} />
+);
+
 export const BarChar: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/barChart.webp')} />
 );
@@ -500,6 +504,10 @@ export const FilterDarkBlueIcon: React.FC<IconProps> = (props) => (
 
 export const FilterGreenIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" source={require('./icons/ic_filter_green.webp')} {...props} />
+);
+
+export const YellowCamera: React.FC<IconProps> = (props) => (
+  <IconBase size="md" source={require('./icons/camera_yellow.webp')} {...props} />
 );
 
 export const PreviousPrescriptionIcon: React.FC<IconProps> = (props) => (
@@ -2336,6 +2344,132 @@ export const Close: React.FC<IconProps> = (props) => (
   />
 );
 
+export const GreenCross: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/green2_cross.webp')}
+  />
+);
+
+export const DeleteBlue: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/delete_blue.webp')}
+  />
+);
+
+export const EditBlue: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/edit_blue.webp')}
+  />
+);
+
+export const ConsultGreen: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/green-consult.webp')}
+  />
+);
+
+export const UnSelectedPrescription: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/selected-prescription.webp')}
+  />
+);
+
+export const SelectedBills: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/selected-bills.webp')}
+  />
+);
+
+export const VectorBlue: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/vector-blue.webp')}
+  />
+);
+
+export const ClinicalDoc: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/document.webp')}
+  />
+);
+
+export const SelectedHospitalization: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/selected-hospitalization.webp')}
+  />
+);
+
+export const SelectedTestReport: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/selected-testreport.webp')}
+  />
+);
+
+export const SelectedInsurance: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/selected-insurance.webp')}
+  />
+);
+
+export const RedCross: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/red_cross.webp')}
+  />
+);
+
+export const BlackPlus: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/plus-black.webp')}
+  />
+);
+
+export const LabTestGreen: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/ic_labtest_green.webp')}
+  />
+);
+
+export const HospitalGreen: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/hospital-green.webp')}
+  />
+);
+
+export const BillGreen: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/ic_invoice-green.webp')}
+  />
+);
+
+export const InsuranceGreen: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/ic_insurance-green.webp')}
+  />
+);
+
+export const ClinicalPrescription: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/clinical_prescription.webp')}
+  />
+);
+
 export const TimeIcon: React.FC<IconProps> = (props) => (
   <IconBase
     size="sm"
@@ -2760,6 +2894,30 @@ export const DoctorConsultIcon: React.FC<IconProps> = (props) => (
   />
 );
 
+export const PaymentSuccess: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/SuccessIcon.webp')}
+  />
+);
+
+export const PaymentFailedIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/FailedIcon.webp')}
+  />
+);
+
+export const SavingsBlast: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/Blast.webp')}
+  />
+);
+
 export const WhatsAppBannerDoctorIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/whatsappBannerDoctorIcon.webp')} />
 );
@@ -2785,6 +2943,46 @@ export const OffersIconGreen: React.FC<IconProps> = (props) => (
     size="sm"
     {...props}
     source={require('@aph/mobile-patients/src/components/ui/icons/offersIconGreen.webp')}
+  />
+);
+
+export const AddNewCard: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/addNewCard.webp')}
+  />
+);
+
+export const UPI: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/UPI.webp')}
+  />
+);
+
+export const PayCash: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/PayCash.webp')}
+  />
+);
+
+export const GreyCrossIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/GreyCross.webp')}
+  />
+);
+
+export const CvvIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/Cvv.webp')}
   />
 );
 

@@ -153,6 +153,7 @@ export enum DIAGNOSTIC_ORDER_PAYMENT_TYPE {
 }
 
 export enum DIAGNOSTIC_ORDER_STATUS {
+  CANCELLATION_REQUESTED = "CANCELLATION_REQUESTED",
   ORDER_CANCELLED = "ORDER_CANCELLED",
   ORDER_CANCELLED_REQUEST = "ORDER_CANCELLED_REQUEST",
   ORDER_COMPLETED = "ORDER_COMPLETED",
@@ -476,6 +477,7 @@ export enum MedicalConditionIllnessTypes {
 
 export enum MedicalRecordType {
   ALLERGY = 'ALLERGY',
+  CLINICAL_DOCUMENTS = 'CLINICAL_DOCUMENTS',
   CONSULTATION = 'CONSULTATION',
   EHR = 'EHR',
   FAMILY_HISTORY = 'FAMILY_HISTORY',
@@ -721,6 +723,7 @@ export enum STATUS {
   PAYMENT_PENDING_PG = 'PAYMENT_PENDING_PG',
   PENDING = 'PENDING',
   UNAVAILABLE_MEDMANTRA = 'UNAVAILABLE_MEDMANTRA',
+  PRESCRIPTION_PENDING = 'PRESCRIPTION_PENDING',
 }
 
 export enum SiteType {
@@ -857,6 +860,19 @@ export interface AddAllergyRecordInput {
   reactionToAllergy?: string | null;
   notes?: string | null;
   attachmentList?: (AllergyFileProperties | null)[] | null;
+}
+
+export interface AddClinicalDocumentInput {
+  id?: string | null;
+  createdDate?: string | null;
+  lastmodifieddate?: string | null;
+  mobileNumber?: string | null;
+  uhid?: string | null;
+  uploadedVia?: string | null;
+  documentName?: string | null;
+  fileType?: string | null;
+  fileInfoList?: (fileUploadType | null)[] | null;
+  source?: string | null;
 }
 
 export interface AddCommentHelpdeskTicketInput {
@@ -1117,6 +1133,7 @@ export interface CancellationDiagnosticsInputv2 {
   orderIds: (string | null)[];
   patientId: string;
   reason: string;
+  allowCancellationRequest?: boolean | null;
 }
 
 export interface ChargeDetailsInput {
@@ -1412,6 +1429,12 @@ export interface LabTestParameters {
   minimum?: number | null;
   parameterName?: string | null;
   result?: number | null;
+  unit?: string | null;
+}
+
+export interface PrescriptionParameters {
+  medication?: string | null;
+  dosage?: number | null;
   unit?: string | null;
 }
 
@@ -1871,28 +1894,6 @@ export interface SUBSCRIPTION_DETAILS_PHARMA {
   userSubscriptionId?: string | null;
 }
 
-export interface SaveBookHomeCollectionOrderInput {
-  patientId: string;
-  patientAddressId: string;
-  totalPrice: number;
-  prescriptionUrl: string;
-  diagnosticDate: any;
-  bookingSource?: DiagnosticsBookingSource | null;
-  deviceType?: DEVICETYPE | null;
-  items?: (DiagnosticLineItem | null)[] | null;
-  slotId: string;
-  areaId?: number | null;
-  collectionCharges: number;
-  uniqueID?: string | null;
-  slotDateTimeInUTC: any;
-  totalPriceExcludingDiscounts?: number | null;
-  userSubscriptionId?: string | null;
-  subscriptionInclusionId?: string | null;
-  attachmentData?: (Attachments | null)[] | null;
-  caseSheets?: (string | null)[] | null;
-  agentLoginID?: string | null;
-}
-
 export interface SaveBookHomeCollectionOrderInputv2 {
   patientAddressID: string;
   patientObjWithLineItems?: (patientObjWithLineItems | null)[] | null;
@@ -2084,6 +2085,12 @@ export interface fileProperties {
   base64FileInput?: string | null;
 }
 
+export interface fileUploadType {
+  fileName?: string | null;
+  mimeType?: string | null;
+  content?: string | null;
+}
+
 export interface patientAddressObj {
   patientAddressID: string;
   latitude: number;
@@ -2105,6 +2112,7 @@ export interface patientObjWithLineItems {
 export interface phleboCharges {
   charges: number;
   distanceCharges?: number | null;
+  couponDiscApplied?: boolean | null;
 }
 
 export interface prescriptionPrismFileProperties {
@@ -2153,6 +2161,7 @@ export enum APPOINTMENT_STATUS {
 export enum DOSE_NUMBER {
   FIRST = 'FIRST',
   SECOND = 'SECOND',
+  BOOSTER_DOSE = 'BOOSTER_DOSE'
 }
 /** * payment type for appointment */
 export enum PAYMENT_TYPE {

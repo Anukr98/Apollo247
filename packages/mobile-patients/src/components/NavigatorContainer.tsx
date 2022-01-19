@@ -41,13 +41,13 @@ import { UploadPrescriptionView } from '@aph/mobile-patients/src/components/Uplo
 import { SamplePrescription } from '@aph/mobile-patients/src/components/UploadPrescription/SamplePrescription';
 import { PharmacyPaymentStatus } from '@aph/mobile-patients/src/components/Medicines/PharmacyPaymentStatus';
 import { MultiSignup } from '@aph/mobile-patients/src/components/MultiSignup';
-import { OrderDetailsScene } from '@aph/mobile-patients/src/components/OrderDetailsScene';
+import { OrderDetailsScene } from '@aph/mobile-patients/src/components/MyOrders/OrderDetailsScene';
 import { OrderModifiedScreen } from '@aph/mobile-patients/src/components/OrderModifiedScreen';
 import { OTPVerification } from '@aph/mobile-patients/src/components/OTPVerification';
 import SignUp from '@aph/mobile-patients/src/components/SignUp';
 import { SplashScreen } from '@aph/mobile-patients/src/components/SplashScreen';
 import { TabBar } from '@aph/mobile-patients/src/components/TabBar';
-import { YourOrdersScene } from '@aph/mobile-patients/src/components/YourOrdersScene';
+import { YourOrdersScene } from '@aph/mobile-patients/src/components/MyOrders/YourOrdersScene';
 import { ReturnMedicineOrder } from '@aph/mobile-patients/src/components/ReturnMedicineOrder';
 import { AppointmentOnlineDetails } from '@aph/mobile-patients/src/components/Consult/AppointmentOnlineDetails';
 import { ChooseDoctor } from '@aph/mobile-patients/src/components/Consult/ChooseDoctor';
@@ -75,13 +75,11 @@ import { HelpChatScreen } from '@aph/mobile-patients/src/components/NeedHelp/Hel
 import { ShopByBrand } from '@aph/mobile-patients/src/components/Medicines/ShopByBrand';
 import { ImageSliderScreen } from '@aph/mobile-patients/src/components/ui/ImageSiderScreen';
 import AsyncStorage from '@react-native-community/async-storage';
-import { TestsCart } from '@aph/mobile-patients/src/components/Tests/TestsCart';
 import { MedAndTestCart } from '@aph/mobile-patients/src/components/Tests/MedAndTestCart';
 import { TestDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
 
 import { SearchTestScene } from '@aph/mobile-patients/src/components/Tests/SearchTestScene';
 import { YourOrdersTest } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/YourOrdersTests';
-import { OrderedTestStatus } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/OrderedTestStatus';
 import { TestOrderDetails } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/TestOrderDetails';
 import {
   CommonLogEvent,
@@ -168,8 +166,17 @@ import { RefererFAQ } from '@aph/mobile-patients/src/components/ReferAndEarn/Ref
 import { BrandPages } from '@aph/mobile-patients/src/components/BrandPages/BrandPages';
 import { CouponScreen } from '@aph/mobile-patients/src/components/Tests/TestCartPage/CouponScreen';
 import { InformativeContent } from '@aph/mobile-patients/src/components/HealthRecords/InformationContent';
+import { PaymentStatusPharma } from '@aph/mobile-patients/src/components/PaymentGateway/PaymentStatusPharma';
+import { PaymentStatusDiag } from '@aph/mobile-patients/src/components/PaymentGateway/PaymentStatusDiag';
+import { PaymentStatusConsult } from '@aph/mobile-patients/src/components/PaymentGateway/PaymentStatusConsult';
+import { PaymentFailed } from '@aph/mobile-patients/src/components/PaymentGateway/PaymentFailed';
 import { ServerCart } from '@aph/mobile-patients/src/components/ServerCart/ServerCart';
 import { ReviewCart } from '@aph/mobile-patients/src/components/ServerCart/ReviewCart';
+import { ShowWelcomeMessage } from '@aph/mobile-patients/src/components/HealthRecords/Components/ShowWelcomeMessage';
+import { ClinicalDocumentPreview } from '@aph/mobile-patients/src/components/HealthRecords/Components/ClinicalDocumentPreview';
+import { ClinicalDocumentImageReview } from '@aph/mobile-patients/src/components/HealthRecords/Components/ClinicalDocumentImageReview';
+import { AddClinicalDocumentDetails } from '@aph/mobile-patients/src/components/HealthRecords/Components/AddClinicalDocumentDetails';
+import { ClinicalDocumentListing } from '@aph/mobile-patients/src/components/HealthRecords/Components/ClinicalDocumentListing';
 
 export enum AppRoutes {
   Login = 'Login',
@@ -241,7 +248,6 @@ export enum AppRoutes {
   ShopByBrand = 'ShopByBrand',
   ImageSliderScreen = 'ImageSliderScreen',
   TestsByCategory = 'TestsByCategory',
-  TestsCart = 'TestsCart',
   MedAndTestCart = 'MedAndTestCart',
   TestDetails = 'TestDetails',
   EditProfile = 'EditProfile',
@@ -251,7 +257,6 @@ export enum AppRoutes {
   MyMembership = 'MyMembership',
   MembershipDetails = 'MembershipDetails',
   YourOrdersTest = 'YourOrdersTest',
-  OrderedTestStatus = 'OrderedTestStatus',
   TestOrderDetails = 'TestOrderDetails',
   RenderPdf = 'RenderPdf',
   Tests = 'Tests',
@@ -329,8 +334,17 @@ export enum AppRoutes {
   BrandPages = 'BrandPages',
   CouponScreen = 'CouponScreen',
   InformativeContent = 'InformativeContent',
+  PaymentStatusPharma = 'PaymentStatusPharma',
+  PaymentStatusDiag = 'PaymentStatusDiag',
+  PaymentStatusConsult = 'PaymentStatusConsult',
+  PaymentFailed = 'PaymentFailed',
   ServerCart = 'ServerCart',
   ReviewCart = 'ReviewCart',
+  ShowWelcomeMessage = 'ShowWelcomeMessage',
+  ClinicalDocumentPreview = 'ClinicalDocumentPreview',
+  ClinicalDocumentImageReview = 'ClinicalDocumentImageReview',
+  AddClinicalDocumentDetails = 'AddClinicalDocumentDetails',
+  ClinicalDocumentListing = 'ClinicalDocumentListing',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -581,9 +595,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.TestsByCategory]: {
     screen: TestsByCategory,
   },
-  [AppRoutes.TestsCart]: {
-    screen: TestsCart,
-  },
   [AppRoutes.MedAndTestCart]: {
     screen: MedAndTestCart,
   },
@@ -612,9 +623,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.YourOrdersTest]: {
     screen: YourOrdersTest,
-  },
-  [AppRoutes.OrderedTestStatus]: {
-    screen: OrderedTestStatus,
   },
   [AppRoutes.TestOrderDetails]: {
     screen: TestOrderDetails,
@@ -842,11 +850,38 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.InformativeContent]: {
     screen: InformativeContent,
   },
+  [AppRoutes.PaymentStatusPharma]: {
+    screen: PaymentStatusPharma,
+  },
+  [AppRoutes.PaymentStatusDiag]: {
+    screen: PaymentStatusDiag,
+  },
+  [AppRoutes.PaymentStatusConsult]: {
+    screen: PaymentStatusConsult,
+  },
+  [AppRoutes.PaymentFailed]: {
+    screen: PaymentFailed,
+  },
   [AppRoutes.ServerCart]: {
     screen: ServerCart,
   },
   [AppRoutes.ReviewCart]: {
     screen: ReviewCart,
+  },
+  [AppRoutes.ShowWelcomeMessage]: {
+    screen: ShowWelcomeMessage,
+  },
+  [AppRoutes.ClinicalDocumentPreview]: {
+    screen: ClinicalDocumentPreview,
+  },
+  [AppRoutes.ClinicalDocumentImageReview]: {
+    screen: ClinicalDocumentImageReview,
+  },
+  [AppRoutes.AddClinicalDocumentDetails]: {
+    screen: AddClinicalDocumentDetails,
+  },
+  [AppRoutes.ClinicalDocumentListing]: {
+    screen: ClinicalDocumentListing,
   },
 };
 

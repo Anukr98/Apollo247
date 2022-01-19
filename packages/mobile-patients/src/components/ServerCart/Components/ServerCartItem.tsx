@@ -20,6 +20,7 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 import { saveCart_saveCart_data_medicineOrderCartLineItems } from '@aph/mobile-patients/src/graphql/types/saveCart';
 import { CouponApplicable } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { renderCircleBottomShimmer } from '../../ui/ShimmerFactory';
 
 export interface ServerCartItemProps {
   item: saveCart_saveCart_data_medicineOrderCartLineItems;
@@ -32,14 +33,28 @@ export interface ServerCartItemProps {
 const { width } = Dimensions.get('window');
 
 export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
-  const { isCircleCart, cartCoupon } = useShoppingCart();
+  const { isCircleCart, cartCoupon, serverCartLoading } = useShoppingCart();
   const couponApplied = cartCoupon?.coupon && cartCoupon?.valid;
-  const { item, onUpdateQuantity, onPressDelete, onPressProduct } = props;
+  const { item, onUpdateQuantity, onPressDelete, onPressProduct, userActionPayload } = props;
   const [discountedPrice, setDiscountedPrice] = useState<any>(undefined);
   const [mrp, setmrp] = useState<number>(item?.price || 0);
   const itemAvailable = item?.isShippable && item?.sellOnline;
   const isCouponApplied =
     item?.isCouponApplicable == CouponApplicable.APPLIED && item?.couponDiscountPrice != 0;
+
+  const [isLoading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (
+      serverCartLoading &&
+      userActionPayload?.medicineOrderCartLineItems?.length &&
+      userActionPayload?.medicineOrderCartLineItems[0].medicineSKU === item?.sku
+    ) {
+      setLoading(true);
+    } else {
+      setLoading(false);
+    }
+  }, [userActionPayload, serverCartLoading]);
 
   useEffect(() => {
     setmrp(item?.price);
@@ -73,7 +88,7 @@ export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
 
   const renderProduct = () => {
     return (
-      <View style={{ flex: 1 }}>
+      <View style={[{ flex: 1 }, isLoading && { opacity: 0 }]}>
         <View style={{ flexDirection: 'row', marginBottom: 5 }}>
           <View style={{ flex: 0.85 }}>
             <TouchableOpacity onPress={onPressProduct}>
@@ -265,13 +280,18 @@ export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
       <View style={{ ...styles.card, backgroundColor: itemAvailable ? '#fff' : '#F0F1EC' }}>
         {renderImage()}
         {renderProduct()}
+        {isLoading ? (
+          <View style={{ position: 'absolute', right: 50, top: 20 }}>
+            {renderCircleBottomShimmer()}
+          </View>
+        ) : null}
       </View>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-  cardContainer: { marginHorizontal: 13, marginBottom: 10 },
+  cardContainer: { marginHorizontal: 13, marginBottom: 10, position: 'relative' },
   card: {
     ...theme.viewStyles.cardViewStyle,
     borderRadius: 5,

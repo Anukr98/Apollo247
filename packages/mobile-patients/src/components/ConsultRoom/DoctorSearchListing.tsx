@@ -835,7 +835,18 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     const eventAttributes:
       | WebEngageEvents[WebEngageEventName.LOCATION_PERMISSION]
       | CleverTapEvents[CleverTapEventName.CONSULT_LOCATION_PERMISSION] = {
+      'Patient name': currentPatient.firstName,
+      Source: 'Doctor listing screen',
+      'Patient UHID': currentPatient.uhid,
+      'Patient age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
+      'Patient gender': currentPatient.gender,
+      'Patient ID': currentPatient.id,
+      'Mobile number': currentPatient?.mobileNumber || '',
+      'Circle Member': !!circleSubscriptionId,
+      'Circle Plan type': circleSubPlanId,
       'Location permission': permissionType,
+      Location: locationDetails?.displayName || locationDetails?.city || '',
+      User_Type: getUserType(allCurrentPatients),
     };
     postWebEngageEvent(WebEngageEventName.LOCATION_PERMISSION, eventAttributes);
     postCleverTapEvent(CleverTapEventName.CONSULT_LOCATION_PERMISSION, eventAttributes);
@@ -1163,7 +1174,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_DOH_Viewed] = {
       'Doctor ID': doctorData?.id,
       'Doctor name': doctorData?.displayName,
-      'Doctor type': doctorData?.doctorType,
+      'Doctor category': doctorData?.doctorType,
       'Speciality ID': props.navigation.getParam('specialityId') || '',
       'Speciality name': props.navigation.getParam('specialityName') || '',
       Zone: states || locationDetails?.state || '',
@@ -1217,7 +1228,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       'Media source': 'NA',
       User_Type: getUserType(allCurrentPatients),
       Languages: doctorDetails?.languages?.join(',') || '',
-      Fee: Number(doctorDetails?.onlineConsultationFees),
+      Fee: Number(doctorDetails?.onlineConsultationFees) || doctorDetails?.fee || undefined,
       Source: 'Doctor Card clicked',
       'Doctor card clicked': 'Yes',
       Rank: doctorDetails?.rowId,
@@ -1888,38 +1899,71 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const fireFilterWebengageEvent = (
     filterApplied: string,
     filterValue: string,
-    filterAppliedData?: any
+    filterAppliedData?: any,
+    isIconEvent: boolean = false
   ) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_LISTING_FILTER_APPLIED] = {
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Patient UHID': g(currentPatient, 'uhid'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
-      pincode: g(locationDetails, 'pincode') || '',
-      'Filter Applied': filterApplied || undefined,
-      'Filter Value': filterValue || undefined,
-      ...filterAppliedData,
-    };
-    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_FILTER_APPLIED] = {
-      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Patient UHID': g(currentPatient, 'uhid'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
-      'Patient age': Math.round(
-        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
-      ),
-      'Patient gender': g(currentPatient, 'gender'),
-      pincode: g(locationDetails, 'pincode') || undefined,
-      User_Type: getUserType(allCurrentPatients),
-      docCategoryTab: doctorsType || undefined,
-      selectedCity: g(locationDetails, 'city') || undefined,
-      filtersApplied: filterApplied || undefined,
-      'Filter Value': filterValue || undefined,
-      ...filterAppliedData,
-    };
-    postWebEngageEvent(WebEngageEventName.DOCTOR_LISTING_FILTER_APPLIED, eventAttributes);
-    postCleverTapEvent(CleverTapEventName.CONSULT_FILTER_APPLIED, cleverTapEventAttributes);
+    if (isIconEvent) {
+      const eventAttributesNew: CleverTapEvents[CleverTapEventName.CONSULT_FILTER_ICON_CLICKED] = {
+        'Patient name': `${currentPatient?.firstName} ${currentPatient?.lastName}`,
+        'Patient UHID': currentPatient?.uhid || '',
+        'Mobile number': currentPatient?.mobileNumber,
+        'Patient age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
+        'Patient gender': currentPatient?.gender || '',
+        User_Type: getUserType(allCurrentPatients),
+        'Speciality name': specialityName || '',
+        'Doctor tab': doctorsType || '',
+        'Circle member': !!circleSubscriptionId,
+        'Circle plan type': circleSubPlanId || '',
+        'Customer ID': currentPatient?.id || '',
+      };
+      postCleverTapEvent(CleverTapEventName.CONSULT_FILTER_ICON_CLICKED, eventAttributesNew);
+    } else {
+      const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_LISTING_FILTER_APPLIED] = {
+        'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+        'Patient UHID': g(currentPatient, 'uhid'),
+        'Mobile Number': g(currentPatient, 'mobileNumber'),
+        pincode: g(locationDetails, 'pincode') || '',
+        'Filter Applied': filterApplied || undefined,
+        'Filter Value': filterValue || undefined,
+        ...filterAppliedData,
+      };
+      const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_FILTER_APPLIED] = {
+        'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+        'Patient UHID': g(currentPatient, 'uhid'),
+        'Mobile number': g(currentPatient, 'mobileNumber'),
+        'Patient age': Math.round(
+          moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+        ),
+        'Patient gender': g(currentPatient, 'gender'),
+        Pincode: g(locationDetails, 'pincode') || undefined,
+        User_Type: getUserType(allCurrentPatients),
+        'Doctor tab': doctorsType || undefined,
+        'User city': g(locationDetails, 'city') || undefined,
+        'Filters applied': filterApplied || undefined,
+        'Filter Value': filterValue || undefined,
+        'Circle member': !!circleSubscriptionId,
+        'Circle plan type': circleSubPlanId || '',
+        ...filterAppliedData,
+      };
+      postWebEngageEvent(WebEngageEventName.DOCTOR_LISTING_FILTER_APPLIED, eventAttributes);
+      postCleverTapEvent(CleverTapEventName.CONSULT_FILTER_APPLIED, cleverTapEventAttributes);
+    }
   };
   const [nearbyPopup, setNearbyPopup] = useState<boolean>(false);
   const doctors_partners = doctorsType === 'PARTNERS' ? true : false;
+  const postSortEvent = (sort: any) => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_SORT] = {
+      'Sort names': sort,
+      'Patient UHID': currentPatient?.uhid,
+      'Patient name': `${currentPatient?.firstName} ${currentPatient?.lastName}` || '',
+      'Mobile number': currentPatient?.mobileNumber || '',
+      'Patient age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
+      'Patient gender': currentPatient?.gender || '',
+      'Speciality name': specialityName,
+      'Speciality ID': specialityId,
+    };
+    postCleverTapEvent(CleverTapEventName.CONSULT_SORT, eventAttributes);
+  };
   const onApplyingSortFilters = (sort: string) => {
     const attributes = {
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
@@ -1935,6 +1979,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       'Sort By': sort,
     };
     postWebEngageEvent(WebEngageEventName.CONSULT_SORT, attributes);
+    postSortEvent(sort);
     if (sort === 'distance') {
       setDoctorsList([]);
       if (locationDetails) {
@@ -2247,6 +2292,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               onPress={() => {
                 CommonLogEvent(AppRoutes.DoctorSearchListing, 'Filter view opened');
                 setDisplayFilter(true);
+                fireFilterWebengageEvent('', '', '', true);
               }}
             >
               <DoctorFilter />
@@ -2283,6 +2329,22 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   };
 
+  const postDoctorPartnerTabClickEvent = () => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_DOC_PARTNER_TAB_CLICKED] = {
+      'Patient name': `${currentPatient?.firstName} ${currentPatient?.lastName}` || '',
+      'Patient UHID': currentPatient?.uhid || '',
+      'Patient gender': currentPatient?.gender || '',
+      'Patient age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
+      User_Type: getUserType(allCurrentPatients),
+      'Speciality ID': specialityId,
+      'Customer ID': currentPatient?.id || '',
+      'Mobile number': currentPatient?.mobileNumber,
+      'Circle member': !!circleSubscriptionId,
+      'Circle plan type': circleSubPlanId || '',
+    };
+    postCleverTapEvent(CleverTapEventName.CONSULT_DOC_PARTNER_TAB_CLICKED, eventAttributes);
+  };
+
   const renderTopTabBar = () => {
     const doctor_partners_text = `${AppConfig.Configuration.DOCTOR_PARTNER_TEXT} (${partnerDocsNumber})`;
     const apollo_doctors_text = `Apollo Doctors (${apolloDocsNumber})`;
@@ -2313,7 +2375,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               borderBottomColor:
                 doctorsType == 'PARTNERS' ? theme.colors.SEARCH_UNDERLINE_COLOR : '#f7f8f5',
             }}
-            onPress={onPressDoctorPartnersTab}
+            onPress={() => {
+              onPressDoctorPartnersTab();
+              postDoctorPartnerTabClickEvent();
+            }}
           >
             <Text
               style={{

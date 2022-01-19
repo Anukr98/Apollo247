@@ -110,22 +110,28 @@ export const MultiSelectPatientListOverlay: React.FC<MultiSelectPatientListOverl
     const { patientName, genderAgeText, patientSalutation } = extractPatientDetails(item);
 
     const showGreenBg = selectedPatientArray?.find((items: any) => items?.id === item?.id);
-
+    const isMinorAge = checkPatientAge(item);
+    const minorAgeTextStyle = isMinorAge && { opacity: 0.6 };
     const itemViewStyle = [
       styles.patientItemViewStyle,
       index === 0 && { marginTop: 12 },
+      isMinorAge && { backgroundColor: theme.colors.BGK_GRAY },
       showGreenBg && { backgroundColor: APP_GREEN },
     ];
     return item?.id === '+ADD MEMBER' ? null : (
       <TouchableOpacity
         activeOpacity={1}
         style={itemViewStyle}
-        onPress={() => _onPressPatient(item)}
+        onPress={() => (isMinorAge ? null : _onPressPatient(item))}
       >
-        <Text style={[styles.patientNameTextStyle, showGreenBg && { color: WHITE }]}>
+        <Text
+          style={[styles.patientNameTextStyle, minorAgeTextStyle, showGreenBg && { color: WHITE }]}
+        >
           {patientSalutation} {patientName}
         </Text>
-        <Text style={[styles.genderAgeTextStyle, showGreenBg && { color: WHITE }]}>
+        <Text
+          style={[styles.genderAgeTextStyle, minorAgeTextStyle, showGreenBg && { color: WHITE }]}
+        >
           {genderAgeText}
         </Text>
         {!showGreenBg ? (

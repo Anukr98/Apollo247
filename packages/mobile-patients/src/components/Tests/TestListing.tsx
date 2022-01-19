@@ -9,7 +9,7 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { GET_WIDGETS_PRICING_BY_ITEMID_CITYID } from '@aph/mobile-patients/src/graphql/profiles';
 
-import { g, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { nameFormater, showDiagnosticCTA } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import React, { useEffect, useState } from 'react';
@@ -49,6 +49,11 @@ import { DiagnosticProductListingPageViewed } from './Events';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 import { CALL_TO_ORDER_CTA_PAGE_ID } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { DownO } from '@aph/mobile-patients/src/components/ui/Icons';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import {
+  getDiagnosticsByItemIdCityId,
+  getDiagnosticsPastOrderRecommendations,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 
 export interface TestListingProps
   extends NavigationScreenProps<{
@@ -64,7 +69,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     testListingBreadCrumbs,
     isDiagnosticCircleSubscription,
   } = useDiagnosticsCart();
-
+  const { currentPatient } = useAllCurrentPatients();
   const { isDiagnosticLocationServiceable, diagnosticServiceabilityData } = useAppCommonData();
 
   const movedFrom = props.navigation.getParam('movedFrom');
@@ -82,29 +87,19 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
   const client = useApolloClient();
-
   const [widgetsData, setWidgetsData] = useState([] as any);
   const [loading, setLoading] = useState<boolean>(true);
   const [isPriceAvailable, setIsPriceAvailable] = useState<boolean>(false);
-  const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
-  const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
-  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
-    CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING
-  );
-  const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
-    if (item?.ctaCityId == cityId) {
-      if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING)) {
-        return item;
-      } else {
-        return null;
-      }
-    } else if (isCtaDetailDefault) {
-      return callToOrderDetails?.ctaDetailsDefault;
-    } else {
-      return null;
-    }
-  });
   const errorStates = !loading && widgetsData?.length == 0;
+  const cityIdToUse =
+    movedFrom == 'deeplink'
+      ? (!!diagnosticServiceabilityData &&
+          Number(
+            diagnosticServiceabilityData?.cityId ||
+              AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
+          )) ||
+        AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
+      : Number(cityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID;
   let deepLinkWidgetName: string;
 
   //handle deeplinks as well here.
@@ -132,12 +127,24 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     }
   }, [movedFrom]);
 
+  useEffect(() => {
+    let source = movedFrom == 'Tests' ? '247 Home' : movedFrom == 'deeplink' ? 'Deeplink' : '';
+    DiagnosticProductListingPageViewed(widgetType, source, widgetName!, title);
+  }, []);
+
+  //commented for now
+  // useEffect(() => {
+  //   fetchWidgetsPrices(widgetsData);
+  // }, [widgetsData?.diagnosticWidgetData?.[0]]);
+
   const fetchWidgets = async (title: string) => {
     const createTitle = decodeURIComponent(title)
       ?.trim()
       ?.replace(/ /g, '-')
       ?.toLowerCase();
     let widgetName = movedFrom == AppRoutes.Tests ? `home-${createTitle}` : `${createTitle}`;
+    const titleFromProps = props.navigation.getParam('widgetName');
+
     if (widgetType == 'Category' || widgetType == 'Category_Scroll') {
       widgetName = createTitle.toLowerCase();
     }
@@ -145,23 +152,43 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       const result: any = await getDiagnosticListingWidget('diagnostic-list', widgetName);
       if (result?.data?.success && result?.data?.data?.diagnosticWidgetData?.length > 0) {
         const getWidgetsData = result?.data?.data;
-        setWidgetsData(getWidgetsData);
-        setLoading?.(false);
+        const isRecommended = getWidgetsData?.diagnosticwidgetsRankOrder === '0';
+        if (isRecommended) {
+          fetchPastOrderRecommendations(getWidgetsData);
+        } else {
+          if (
+            titleFromProps?.toLowerCase() ==
+            string.diagnostics.homepagePastOrderRecommendations?.toLowerCase()
+          ) {
+            fetchPastOrderRecommendations([]);
+          } else {
+            fetchWidgetsPrices(getWidgetsData);
+            setLoading?.(false);
+          }
+          setWidgetsData(getWidgetsData);
+        }
       } else {
+        callPastRecommendations(titleFromProps!);
         setWidgetsData([]);
-        setLoading?.(false);
-        setError(true);
       }
     } catch (error) {
       CommonBugFender('fetchWidgets_TestListing', error);
+      callPastRecommendations(titleFromProps!);
       setWidgetsData([]);
+    }
+  };
+
+  function callPastRecommendations(titleFromProps: string) {
+    if (
+      titleFromProps?.toLowerCase() ==
+      string.diagnostics.homepagePastOrderRecommendations?.toLowerCase()
+    ) {
+      fetchPastOrderRecommendations([]);
+    } else {
       setLoading?.(false);
       setError(true);
     }
-  };
-  useEffect(() => {
-    fetchWidgetsPrices(widgetsData);
-  }, [widgetsData?.diagnosticWidgetData?.[0]]);
+  }
 
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
     client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
@@ -170,63 +197,151 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         sourceHeaders,
       },
       variables: {
-        cityID:
-          movedFrom == 'deeplink'
-            ? (!!diagnosticServiceabilityData &&
-                Number(
-                  diagnosticServiceabilityData?.cityId ||
-                    AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
-                )) ||
-              AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
-            : Number(cityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
+        cityID: cityIdToUse,
         itemIDs: listOfId,
       },
       fetchPolicy: 'no-cache',
     });
 
-  useEffect(() => {
-    let source = movedFrom == 'Tests' ? '247 Home' : movedFrom == 'deeplink' ? 'Deeplink' : '';
-    DiagnosticProductListingPageViewed(widgetType, source, widgetName!, title);
-  }, []);
-
-  const fetchWidgetsPrices = async (widgetsData: any) => {
-    const itemIds = widgetsData?.diagnosticWidgetData?.map((item: any) => Number(item?.itemId));
-    setLoading?.(true);
-    const res = Promise.all(
-      itemIds?.map((item: any) =>
-        fetchPricesForCityId(
-          Number(cityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
-          item
-        )
-      )
-    );
-
+  async function getWidgetPricesWithInclusions(
+    widgetsData: any,
+    cityId: string | number,
+    source: string,
+    drupalWidgets: any
+  ) {
+    const { filterWidgets, itemIds } = getFilteredWidgets(widgetsData, source);
     try {
-      const response = (await res).map((item: any) =>
-        g(item, 'data', 'findDiagnosticsWidgetsPricing', 'diagnostics')
-      );
-
-      let newWidgetsData = widgetsData;
-
-      for (let i = 0; i < newWidgetsData?.diagnosticWidgetData?.length; i++) {
-        const findIndex = newWidgetsData?.diagnosticWidgetData?.findIndex(
-          (item: any) => Number(item?.itemId) === Number(response?.[i]?.[0]?.itemId)
-        );
-        if (findIndex !== -1) {
-          (newWidgetsData.diagnosticWidgetData[findIndex].packageCalculatedMrp =
-            response?.[i]?.[0]?.packageCalculatedMrp),
-            (newWidgetsData.diagnosticWidgetData[findIndex].diagnosticPricing =
-              response?.[i]?.[0]?.diagnosticPricing);
-        }
+      const res = await getDiagnosticsByItemIdCityId(client, cityIdToUse, itemIds);
+      let newWidgetsData = [...filterWidgets];
+      const priceResult = res?.data?.findDiagnosticsByItemIDsAndCityID;
+      if (!!priceResult && !!priceResult?.diagnostics && priceResult?.diagnostics?.length > 0) {
+        const widgetPricingArr = priceResult?.diagnostics;
+        setPastOrderRecommendationPrices(newWidgetsData, widgetPricingArr, drupalWidgets);
       }
-      setWidgetsData(newWidgetsData);
-      setIsPriceAvailable(true);
       setLoading?.(false);
     } catch (error) {
-      CommonBugFender('errorInFetchPricing api__Tests', error);
+      CommonBugFender('getWidgetPricesWithInclusions api__Tests', error);
       setLoading?.(false);
     }
+  }
+
+  const fetchPastOrderRecommendations = async (drupalWidgets: any) => {
+    const getRecommendationsFromDrupal = drupalWidgets?.diagnosticWidgetData;
+    try {
+      const getPastOrderRecommendation = await getDiagnosticsPastOrderRecommendations(
+        client,
+        currentPatient?.mobileNumber
+      );
+      const pastOrders =
+        getPastOrderRecommendation?.data?.getDiagnosticItemRecommendationsByPastOrders?.itemsData;
+      //showing both past recommendations api + drupal widgets
+      if (!!pastOrders) {
+        const appenedRecommendations = [
+          ...new Set(pastOrders?.concat(getRecommendationsFromDrupal)),
+        ];
+        getWidgetPricesWithInclusions(
+          appenedRecommendations,
+          cityIdToUse,
+          string.diagnostics.homepagePastOrderRecommendations,
+          drupalWidgets
+        );
+      } else {
+        setDrupalRecommendationsAsPastRecommendations(getRecommendationsFromDrupal);
+      }
+    } catch (error) {
+      setDrupalRecommendationsAsPastRecommendations(getRecommendationsFromDrupal);
+      CommonBugFender('fetchPastOrderRecommendations_Tests', error);
+    }
   };
+
+  function setDrupalRecommendationsAsPastRecommendations(drupalWidget: any) {
+    const getRecommendationsFromDrupal = drupalWidget;
+    //here inclusions will be there from drupal
+    fetchWidgetsPrices(
+      getRecommendationsFromDrupal,
+      string.diagnostics.homepagePastOrderRecommendations
+    );
+  }
+
+  function getFilteredWidgets(widgetsData: any, source?: string) {
+    var filterWidgets, itemIds;
+    if (source == string.diagnostics.homepagePastOrderRecommendations) {
+      filterWidgets = widgetsData;
+      itemIds = filterWidgets?.map((item: any) => Number(item?.itemId));
+    } else {
+      filterWidgets = widgetsData?.diagnosticWidgetData;
+      itemIds = widgetsData?.diagnosticWidgetData?.map((item: any) => Number(item?.itemId));
+    }
+    return {
+      filterWidgets,
+      itemIds,
+    };
+  }
+
+  const fetchWidgetsPrices = async (widgetsData: any, source?: string) => {
+    const { filterWidgets, itemIds } = getFilteredWidgets(widgetsData, source);
+    if (!!itemIds) {
+      setLoading?.(true);
+      const res = Promise.all(itemIds?.map((item: any) => fetchPricesForCityId(cityIdToUse, item)));
+      try {
+        const response = (await res).map(
+          (item: any) => item?.data?.findDiagnosticsWidgetsPricing?.diagnostics
+        );
+
+        let newWidgetsData = widgetsData;
+        setWidgetPrices(newWidgetsData, response);
+        setLoading?.(false);
+      } catch (error) {
+        CommonBugFender('errorInFetchPricing api__Tests', error);
+        setLoading?.(false);
+      }
+    }
+  };
+
+  function setWidgetPrices(newWidgetsData: any, response: any) {
+    for (let i = 0; i < newWidgetsData?.diagnosticWidgetData?.length; i++) {
+      const findIndex = newWidgetsData?.diagnosticWidgetData?.findIndex(
+        (item: any) => Number(item?.itemId) === Number(response?.[i]?.[0]?.itemId)
+      );
+      if (findIndex !== -1) {
+        (newWidgetsData.diagnosticWidgetData[findIndex].packageCalculatedMrp =
+          response?.[i]?.[0]?.packageCalculatedMrp),
+          (newWidgetsData.diagnosticWidgetData[findIndex].diagnosticPricing =
+            response?.[i]?.[0]?.diagnosticPricing);
+      }
+    }
+    setWidgetsData(newWidgetsData);
+    setIsPriceAvailable(true);
+  }
+
+  function setPastOrderRecommendationPrices(
+    overallWidgets: any,
+    widgetPricingArr: any,
+    drupalWidgets: any
+  ) {
+    let _recommendedBookings = JSON.parse(JSON.stringify(drupalWidgets));
+    let obj = [] as any;
+    overallWidgets?.forEach((_widget: any) => {
+      widgetPricingArr?.forEach((_diagItems: any) => {
+        if (Number(_widget?.itemId) == Number(_diagItems?.itemId)) {
+          obj?.push({
+            itemId: _widget?.itemId,
+            itemTitle: !!_widget?.itemName ? _widget?.itemName : _widget?.itemTitle,
+            diagnosticPricing: _diagItems?.diagnosticPricing,
+            packageCalculatedMrp: _diagItems?.packageCalculatedMrp,
+            inclusionData: _widget?.inclusionData || _diagItems?.inclusions,
+            inclusions: _widget?.diagnosticInclusions,
+          });
+        }
+      });
+    });
+
+    const filterItemsWithPrices =
+      !!obj && obj?.filter((items: any) => items?.hasOwnProperty('diagnosticPricing'));
+    _recommendedBookings.diagnosticWidgetData = filterItemsWithPrices;
+
+    setWidgetsData(_recommendedBookings);
+  }
 
   const homeBreadCrumb: TestBreadcrumbLink = {
     title: 'Home',
@@ -260,7 +375,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
           },
         });
       }
-      if (movedFrom === AppRoutes.TestsCart) {
+      if (movedFrom === AppRoutes.CartPage) {
         breadcrumb.push({
           title: 'Cart',
           onPress: () => {
@@ -387,11 +502,37 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     const actualItemsToShow = widgetsData?.diagnosticWidgetData;
     let itemPackages: any[] = [];
     let itemTests: any[] = [];
-    const newArray = widgetsData?.diagnosticWidgetData?.map((item: any) => {
-      const inclusions = item?.inclusionData;
-      //segregation of tests/packages
-      !!inclusions && inclusions?.length > 1 ? itemPackages.push(item) : itemTests.push(item);
-    });
+
+    const newArray =
+      !!actualItemsToShow &&
+      actualItemsToShow?.map((item: any) => {
+        const inclusions = item?.inclusionData;
+        //segregation of tests/packages
+        !!inclusions && inclusions?.length > 1 ? itemPackages.push(item) : itemTests.push(item);
+      });
+
+    const getActualPricePackages =
+      !!itemPackages && itemPackages?.length > 0
+        ? itemPackages?.filter((pckg: any) => pckg?.diagnosticPricing)
+        : [];
+    const getActualPriceTests =
+      !!itemTests && itemTests?.length > 0
+        ? itemTests?.filter((test: any) => test?.diagnosticPricing)
+        : [];
+
+    const packageItemsArray =
+      !!getActualPricePackages &&
+      getActualPricePackages?.length > 10 &&
+      widgetName?.toLowerCase() == string.diagnostics.homepagePastOrderRecommendations.toLowerCase()
+        ? getActualPricePackages?.slice(0, 10)
+        : itemPackages;
+
+    const testItemsArray =
+      !!getActualPriceTests &&
+      getActualPriceTests?.length > 10 &&
+      widgetName?.toLowerCase() == string.diagnostics.homepagePastOrderRecommendations.toLowerCase()
+        ? getActualPriceTests?.slice(0, 10)
+        : itemTests;
 
     return (
       <>
@@ -403,13 +544,20 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
             }}
             scrollEventThrottle={16}
           >
-            {!!itemPackages && itemPackages?.length > 0 && (
+            {!!packageItemsArray && packageItemsArray?.length > 0 && (
               <>
                 <Text style={styles.headingText}>
                   {nameFormater(deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle, 'upper')}{' '}
                   PACKAGES{' '}
-                  {itemPackages?.length > 0 && (
-                    <Text style={styles.itemCountText}>({itemPackages?.length})</Text>
+                  {!!getActualPricePackages && getActualPricePackages?.length > 0 && (
+                    <Text style={styles.itemCountText}>
+                      (
+                      {widgetName?.toLowerCase() ==
+                      string.diagnostics.homepagePastOrderRecommendations?.toLowerCase()
+                        ? packageItemsArray?.length
+                        : getActualPricePackages?.length}
+                      )
+                    </Text>
                   )}
                 </Text>
                 <PackageCard
@@ -428,19 +576,30 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
                   navigation={props.navigation}
                   source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.LISTING}
                   sourceScreen={AppRoutes.TestListing}
+                  widgetHeading={widgetsData?.diagnosticWidgetTitle}
                 />
               </>
             )}
-            {!error && !loading && itemPackages?.length && itemPackages?.length > packageOffset
-              ? renderLoadAll('packages', itemPackages?.length)
+            {!error &&
+            !loading &&
+            packageItemsArray?.length &&
+            packageItemsArray?.length > packageOffset
+              ? renderLoadAll('packages', packageItemsArray?.length)
               : null}
-            {!!itemTests && itemTests?.length > 0 && (
+            {!!testItemsArray && testItemsArray?.length > 0 && (
               <>
                 <Text style={styles.headingText}>
                   {nameFormater(deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle, 'upper')}{' '}
                   TESTS{' '}
-                  {itemTests?.length > 0 && (
-                    <Text style={styles.itemCountText}>({itemTests?.length})</Text>
+                  {!!getActualPriceTests && getActualPriceTests?.length > 0 && (
+                    <Text style={styles.itemCountText}>
+                      (
+                      {widgetName?.toLowerCase() ==
+                      string.diagnostics.homepagePastOrderRecommendations?.toLowerCase()
+                        ? testItemsArray?.length
+                        : getActualPriceTests?.length}
+                      )
+                    </Text>
                   )}
                 </Text>
                 <ItemCard
@@ -448,9 +607,9 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
                     diagnosticWidgetTitle: widgetsData?.diagnosticWidgetTitle,
                     diagnosticWidgetType: widgetsData?.diagnosticWidgetType,
                     diagnosticwidgetsRankOrder: widgetsData?.diagnosticwidgetsRankOrder,
-                    diagnosticWidgetData: itemTests,
+                    diagnosticWidgetData: testItemsArray,
                   }}
-                  diagnosticWidgetData={itemTests?.slice(0, testsOffset)}
+                  diagnosticWidgetData={testItemsArray?.slice(0, testsOffset)}
                   isCircleSubscribed={isDiagnosticCircleSubscription}
                   isServiceable={isDiagnosticLocationServiceable}
                   isVertical={true}
@@ -459,11 +618,15 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
                   navigation={props.navigation}
                   source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.LISTING}
                   sourceScreen={AppRoutes.TestListing}
+                  widgetHeading={widgetsData?.diagnosticWidgetTitle}
                 />
               </>
             )}
-            {!error && !loading && itemTests?.length != 0 && itemTests?.length > testsOffset
-              ? renderLoadAll('tests', itemTests?.length)
+            {!error &&
+            !loading &&
+            testItemsArray?.length != 0 &&
+            testItemsArray?.length > testsOffset
+              ? renderLoadAll('tests', testItemsArray?.length)
               : null}
           </ScrollView>
         ) : null}
@@ -471,7 +634,8 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     );
   };
   const renderCallToOrder = () => {
-    return ctaDetailMatched?.length ? (
+    const getCTADetails = showDiagnosticCTA(CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING, cityId!);
+    return getCTADetails?.length ? (
       <CallToOrderView
         cityId={cityId}
         customMargin={80}

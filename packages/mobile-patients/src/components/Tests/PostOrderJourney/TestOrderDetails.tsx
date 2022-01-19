@@ -22,6 +22,7 @@ import {
   DIAGNOSTIC_SAMPLE_COLLECTED_STATUS,
   DIAGNOSTIC_SUB_STATUS_TO_SHOW,
   DIAGNOSTIC_FAILURE_STATUS_ARRAY,
+  DIAGNOSTIC_ORDER_CANCELLED_STATUS,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
   GetPatientFeedback,
@@ -47,6 +48,7 @@ import {
   nameFormater,
   navigateToScreenWithEmptyStack,
   removeWhiteSpaces,
+  showDiagnosticCTA,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -87,7 +89,6 @@ import {
   DiagnosticTrackOrderViewed,
   DiagnosticViewReportClicked,
 } from '@aph/mobile-patients/src/components/Tests/Events';
-import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import {
   getHCOrderFormattedTrackingHistory,
   getHCOrderFormattedTrackingHistoryVariables,
@@ -111,6 +112,7 @@ import {
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
+import { Helpers as NeedHelpHelpers } from '@aph/mobile-patients/src/components/NeedHelp';
 const DROP_DOWN_ARRAY_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
@@ -144,8 +146,10 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const refundStatusArr = props.navigation.getParam('refundStatusArr');
   const source = props.navigation.getParam('comingFrom');
   const refundTransactionId = props.navigation.getParam('refundTransactionId');
-
+  const { buildApolloClient, authToken, getPatientApiCall } = useAuth();
+  const apolloClientWithAuth = buildApolloClient(authToken);
   const client = useApolloClient();
+  const { getHelpSectionQueries } = NeedHelpHelpers;
   const [selectedTab, setSelectedTab] = useState<string>(
     showOrderSummaryTab ? string.orders.viewBill : string.orders.trackOrder
   );
@@ -153,7 +157,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
-  const { getPatientApiCall } = useAuth();
   const [scrollYValue, setScrollYValue] = useState(0);
   const [slotDuration, setSlotDuration] = useState(0);
   const [loading1, setLoading] = useState<boolean>(true);
@@ -165,26 +168,10 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [dropDownItemListIndex, setDropDownItemListIndex] = useState([] as any);
   const [showViewReportModal, setShowViewReportModal] = useState<boolean>(false);
   const scrollViewRef = React.useRef<ScrollView | null>(null);
-  const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
-  const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
-  const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
-    CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY
-  );
-  const ctaDetailMatched = ctaDetailArray?.filter((item: any) => {
-    if (item?.ctaCityId == Number(diagnosticServiceabilityData?.cityId)) {
-      if (item?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY)) {
-        return item;
-      } else {
-        return null;
-      }
-    } else if (isCtaDetailDefault) {
-      return callToOrderDetails?.ctaDetailsDefault;
-    } else {
-      return null;
-    }
-  });
   const [orderDetails, setOrderDetails] = useState([] as any);
   const [orderSubscriptionDetails, setOrderSubscriptionDetails] = useState(null);
+  const [queries, setQueries] = useState<NeedHelpHelpers.HelpSectionQuery[]>([]);
+
   const scrollToSlots = (yValue?: number) => {
     const setY = yValue == undefined ? scrollYValue : yValue;
     scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: setY, animated: true });
@@ -192,6 +179,11 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const { diagnosticServiceabilityData } = useAppCommonData();
   const isPrepaid = selectedOrder?.paymentType === DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
+  const getCTADetails = showDiagnosticCTA(
+    CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY,
+    diagnosticServiceabilityData?.cityId!
+  );
+
   //for showing the order level status.
   const fetchOrderLevelStatus = (orderId: string) =>
     client.query<getHCOrderFormattedTrackingHistory, getHCOrderFormattedTrackingHistoryVariables>({
@@ -201,14 +193,14 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     });
 
   const fetchOrderDetails = (orderId: string) =>
-    client.query<getDiagnosticOrderDetails, getDiagnosticOrderDetailsVariables>({
+    apolloClientWithAuth.query<getDiagnosticOrderDetails, getDiagnosticOrderDetailsVariables>({
       query: GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
       variables: { diagnosticOrderId: orderId },
       fetchPolicy: 'no-cache',
     });
 
   const getOrderDetails = async (displayId: string) => {
-    const res = await client.query<
+    const res = await apolloClientWithAuth.query<
       getDiagnosticOrderDetailsByDisplayID,
       getDiagnosticOrderDetailsByDisplayIDVariables
     >({
@@ -227,7 +219,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     } else {
       callOrderLevelStatusApi(orderId);
       callOrderDetailsApi(orderId);
-      console.log({ selectedOrder });
       !!selectedOrder?.paymentOrderId &&
         isPrepaid &&
         callGetOrderInternal(selectedOrder?.paymentOrderId); //for getting the circle membership in case of prepaid
@@ -394,7 +385,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           : renderReportError(string.diagnostics.responseUnavailableForReport);
       })
       .catch((error) => {
-        CommonBugFender('OrderedTestStatus_fetchTestReportsData', error);
+        CommonBugFender('TestOrderDetails_fetchTestReportsData', error);
         currentPatient && handleGraphQlError(error);
       })
       .finally(() => setLoading?.(false));
@@ -420,7 +411,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   );
 
   const handleBack = () => {
-    if (goToHomeOnBack && source === AppRoutes.TestsCart) {
+    if (goToHomeOnBack && source === AppRoutes.CartPage) {
       navigateToScreenWithEmptyStack(props.navigation, AppRoutes.YourOrdersTest, {
         source: AppRoutes.OrderStatus,
       });
@@ -558,7 +549,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         ? orderLevelStatus?.statusHistory.concat(orderLevelStatus?.upcomingStatuses)
         : orderLevelStatus?.statusHistory;
     scrollToSlots();
-
     return (
       <View>
         <View style={{ margin: 20 }}>
@@ -595,11 +585,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
               order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_MODIFIED &&
               DIAGNOSTIC_SUB_STATUS_TO_SHOW?.includes(order?.subStatus!);
 
-            const slotDate = moment(selectedOrder?.slotDateTimeInUTC).format('Do MMM');
-            const slotTime1 = moment(selectedOrder?.slotDateTimeInUTC).format('hh:mm A');
-            const slotTime2 = moment(selectedOrder?.slotDateTimeInUTC)
-              .add(slotDuration, 'minutes')
-              .format('hh:mm A');
             return (
               <>
                 {!!showStatus && showStatus ? (
@@ -723,7 +708,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     if (orderStatus === DIAGNOSTIC_ORDER_STATUS.REFUND_INITIATED) {
       return renderPartialOrder(order, index);
     }
-    if (orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED) {
+    if (DIAGNOSTIC_ORDER_CANCELLED_STATUS.includes(orderStatus)) {
       return renderOrderCancelledView(order, index);
     }
   }
@@ -1461,18 +1446,16 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
   const renderOrderSummary = () => {
     return (
-      !!g(orderDetails, 'totalPrice') && (
-        <TestOrderSummaryView
-          orderDetails={orderDetails}
-          slotDuration={slotDuration}
-          onPressViewReport={_onPressViewReportAction}
-          onPressDownloadInvoice={onPressInvoice}
-          refundDetails={refundStatusArr}
-          refundTransactionId={refundTransactionId}
-          subscriptionDetails={orderSubscriptionDetails}
-          onPressViewAll={_onPressViewAll}
-        />
-      )
+      <TestOrderSummaryView
+        orderDetails={orderDetails}
+        slotDuration={slotDuration}
+        onPressViewReport={_onPressViewReportAction}
+        onPressDownloadInvoice={onPressInvoice}
+        refundDetails={refundStatusArr}
+        refundTransactionId={refundTransactionId}
+        subscriptionDetails={orderSubscriptionDetails}
+        onPressViewAll={_onPressViewAll}
+      />
     );
   };
 
@@ -1502,33 +1485,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     }
   };
 
-  const renderMoreMenu = () => {
-    return (
-      <MaterialMenu
-        options={['Help'].map((item) => ({
-          key: item,
-          value: item,
-        }))}
-        menuContainerStyle={{
-          alignItems: 'center',
-          marginTop: 30,
-        }}
-        lastContainerStyle={{ borderBottomWidth: 0 }}
-        bottomPadding={{ paddingBottom: 0 }}
-        itemTextStyle={{ ...theme.viewStyles.text('M', 14, '#01475b') }}
-        onPress={({ value }) => {
-          if (value === 'Help') {
-            props.navigation.navigate(AppRoutes.MobileHelp);
-          }
-        }}
-      >
-        <More />
-      </MaterialMenu>
-    );
-  };
-
   const renderCallToOrder = () => {
-    return ctaDetailMatched?.length ? (
+    return getCTADetails?.length ? (
       <CallToOrderView
         cityId={Number(diagnosticServiceabilityData?.cityId)}
         customMargin={80}
@@ -1544,6 +1502,56 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     ) : null;
   };
 
+  function _navigateToHelpSection(queries: any) {
+    const helpSectionQueryId = AppConfig.Configuration.HELP_SECTION_CUSTOM_QUERIES;
+    const currentStatusDate = orderDetails?.diagnosticOrdersStatus?.find(
+      (i: any) => i?.orderStatus === orderDetails?.orderStatus
+    )?.statusDate;
+
+    props.navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
+      isOrderRelatedIssue: true,
+      medicineOrderStatus: orderDetails?.orderStatus,
+      medicineOrderStatusDate: currentStatusDate,
+      orderId: orderDetails?.displayId,
+      queryIdLevel1: helpSectionQueryId.diagnostic,
+      queries: queries,
+      email: null,
+      sourcePage: 'My Orders',
+    });
+  }
+
+  const fetchQueries = async () => {
+    try {
+      setLoading?.(true);
+      const queries = await getHelpSectionQueries(client);
+      setQueries(queries);
+      _navigateToHelpSection(queries);
+      setLoading?.(false);
+    } catch (error) {
+      setLoading?.(false);
+      showAphAlert?.({
+        title: string.common.uhOh,
+        description: string.genericError,
+      });
+    }
+  };
+
+  const onPressHelp = () => {
+    if (queries?.length > 0) {
+      _navigateToHelpSection(queries);
+    } else {
+      fetchQueries();
+    }
+  };
+
+  const renderHeaderRightComponent = () => {
+    return (
+      <TouchableOpacity activeOpacity={1} style={{ paddingLeft: 10 }} onPress={onPressHelp}>
+        <Text style={styles.helpTextStyle}>{string.help.toUpperCase()}</Text>
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
@@ -1556,7 +1564,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             onPressLeftIcon={() => {
               handleBack();
             }}
-            rightComponent={renderMoreMenu()}
+            rightComponent={renderHeaderRightComponent()}
           />
         </View>
         <TabsComponent
@@ -1863,4 +1871,5 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 8,
   },
+  helpTextStyle: { ...theme.viewStyles.text('B', 13, colors.APP_YELLOW, 1, 24) },
 });

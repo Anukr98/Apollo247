@@ -7,6 +7,7 @@ import {
   getOneApolloUserVariables,
 } from '@aph/mobile-patients/src/graphql/types/getOneApolloUser';
 import { persistHealthCredits } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { ELIGIBLE_HC_VERTICALS } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export const useFetchHealthCredits = (
   businessLine: 'consult' | 'diagnostics' | 'pharma' | 'subscription' | 'vaccination'
@@ -34,7 +35,7 @@ export const useFetchHealthCredits = (
   };
 
   useEffect(() => {
-    businessLine == 'pharma' && initiate();
+    initiate();
   }, []);
 
   return { healthCredits };

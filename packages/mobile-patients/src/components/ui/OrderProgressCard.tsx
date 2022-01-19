@@ -118,6 +118,8 @@ export interface OrderProgressCardProps {
   index: number;
   cancellationRequestRaised: Boolean;
   cancellationRequestRejected: Boolean;
+  cancellationAllowed: Boolean;
+  message: string;
   length: number;
 }
 
@@ -266,13 +268,11 @@ export const OrderProgressCard: React.FC<OrderProgressCardProps> = (props) => {
             ) : null}
           </View>
         )}
-        <Text style={styles.descriptionSubtextText}>
-          {props.index + 1 == props.length && props.cancellationRequestRaised
-            ? string.orderDetailScreen.cancellationRequestRaised
-            : props.cancellationRequestRejected && props.status != MEDICINE_ORDER_STATUS.SHIPPED
-            ? string.orderDetailScreen.cancellationRequestRejected
-            : null}
-        </Text>
+        {props.index + 1 == props.length && !props.cancellationAllowed && (
+          <Text style={styles.descriptionSubtextText}>
+            {props.message ? `Note: ${props.message}` : ''}
+          </Text>
+        )}
       </View>
     </View>
   );

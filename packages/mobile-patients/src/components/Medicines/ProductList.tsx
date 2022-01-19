@@ -4,7 +4,7 @@ import { Props as ProductCardProps } from '@aph/mobile-patients/src/components/M
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { availabilityApi247, MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   addPharmaItemToCart,
   formatToCartItem,
@@ -54,7 +54,7 @@ export interface Props extends Omit<ListProps, 'renderItem'> {
   totalProducts?: number | undefined;
 }
 
-export const ProductList: React.FC<Props> = ({
+const ProductListFun: React.FC<Props> = ({
   addToCartSource,
   sectionName,
   productPageViewedEventProps,
@@ -90,6 +90,7 @@ export const ProductList: React.FC<Props> = ({
     setAddToCartSource,
     cartLocationDetails,
     pharmacyCircleAttributes,
+    setServerCartItems,
   } = useShoppingCart();
   const { setUserActionPayload } = useServerCart();
   const [showSuggestedQuantityNudge, setShowSuggestedQuantityNudge] = useState<boolean>(false);
@@ -171,7 +172,9 @@ export const ProductList: React.FC<Props> = ({
   };
 
   const onPressAddToCart = (item: MedicineProduct, index: number) => {
-    const { onAddedSuccessfully } = restOfProps;
+    updateServerCartLocally(1, item?.sku);
+
+    // const { onAddedSuccessfully } = restOfProps;// commenting that because this is unused
     const discount = getDiscountPercentage(item?.price, item?.special_price);
     const discountPercentage = discount ? discount + '%' : '0%';
     const cleverTapSearchSuccessEventAttributes = {
@@ -188,11 +191,11 @@ export const ProductList: React.FC<Props> = ({
       'Product name': item?.name,
       Discount: discountPercentage,
     };
-    setAddToCartSource?.({ source: addToCartSource, categoryId: item.category_id });
+    setAddToCartSource?.({ source: addToCartSource, categoryId: item?.category_id });
     setUserActionPayload?.({
       medicineOrderCartLineItems: [
         {
-          medicineSKU: item.sku,
+          medicineSKU: item?.sku,
           quantity: 1,
         },
       ],
@@ -219,12 +222,12 @@ export const ProductList: React.FC<Props> = ({
       cleverTapSearchSuccessEventAttributes
     );
     setCurrentProductIdInCart(item.sku);
-    item.pack_form ? setItemPackForm(item.pack_form) : setItemPackForm('');
-    item.suggested_qty ? setSuggestedQuantity(item.suggested_qty) : setSuggestedQuantity(null);
-    item.MaxOrderQty
-      ? setMaxOrderQty(item.MaxOrderQty)
-      : item.suggested_qty
-      ? setMaxOrderQty(+item.suggested_qty)
+    item?.pack_form ? setItemPackForm(item?.pack_form) : setItemPackForm('');
+    item?.suggested_qty ? setSuggestedQuantity(item?.suggested_qty) : setSuggestedQuantity(null);
+    item?.MaxOrderQty
+      ? setMaxOrderQty(item?.MaxOrderQty)
+      : item?.suggested_qty
+      ? setMaxOrderQty(+item?.suggested_qty)
       : setMaxOrderQty(0);
     setCurrentProductQuantityInCart(1);
   };
@@ -236,31 +239,56 @@ export const ProductList: React.FC<Props> = ({
     });
   };
 
+  const updateServerCartLocally = (quantity: number = 0, id: string) => {
+    try {
+      const items = serverCartItems || [];
+      let doesExists = false;
+      items.forEach((i) => {
+        const qty = i?.quantity || 0;
+        if (i?.sku === id) {
+          i.quantity = qty + quantity;
+          doesExists = true;
+          return;
+        }
+      });
+
+      if (!doesExists) {
+        items.push({ sku: id, quantity: 1 });
+      }
+
+      setServerCartItems && setServerCartItems(items);
+    } catch (e) {}
+  };
+
   const renderItem = useCallback(
     (info: ListRenderItemInfo<MedicineProduct>) => {
       const { item, index } = info;
-      const id = item.sku;
-      const qty = getCartItemQty(id);
+      const id = item?.sku;
+      let qty = getCartItemQty(id);
       const onPressAddQty = () => {
-        if (qty < item.MaxOrderQty) {
-          setCurrentProductQuantityInCart(qty + 1);
+        if (qty < item?.MaxOrderQty) {
+          qty = qty + 1;
+          setCurrentProductQuantityInCart(qty);
+          updateServerCartLocally(1, id);
           setUserActionPayload?.({
             medicineOrderCartLineItems: [
               {
-                medicineSKU: item.sku,
-                quantity: qty + 1,
+                medicineSKU: item?.sku,
+                quantity: qty,
               },
             ],
           });
         }
       };
       const onPressSubtractQty = () => {
-        setCurrentProductQuantityInCart(qty - 1);
+        qty = qty - 1;
+        setCurrentProductQuantityInCart(qty);
+        updateServerCartLocally(-1, id);
         setUserActionPayload?.({
           medicineOrderCartLineItems: [
             {
-              medicineSKU: item.sku,
-              quantity: qty - 1,
+              medicineSKU: item?.sku,
+              quantity: qty,
             },
           ],
         });
@@ -340,6 +368,8 @@ export const ProductList: React.FC<Props> = ({
     </View>
   );
 };
+
+export const ProductList = React.memo(ProductListFun);
 
 const styles = StyleSheet.create({
   flatListContainer: {},

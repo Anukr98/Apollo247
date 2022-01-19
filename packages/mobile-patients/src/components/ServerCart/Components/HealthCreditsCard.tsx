@@ -17,9 +17,9 @@ export const HealthCreditsCard: React.FC<HealthCreditsCardProps> = (props) => {
   const estimatedAmount = serverCartAmount?.estimatedAmount || 0;
 
   const amountToPay =
-    availableHC >= getFormattedAmount(cartTotal)
-      ? getFormattedAmount(estimatedAmount)
-      : getFormattedAmount(cartTotal - availableHC);
+    estimatedAmount && availableHC >= getFormattedAmount(estimatedAmount)
+      ? getFormattedAmount(availableHC - estimatedAmount)
+      : getFormattedAmount(estimatedAmount - availableHC);
 
   return availableHC != 0 ? (
     <View style={styles.card}>

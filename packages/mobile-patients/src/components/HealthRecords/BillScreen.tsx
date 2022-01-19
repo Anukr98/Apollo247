@@ -144,6 +144,7 @@ export interface BillScreenProps
   extends NavigationScreenProps<{
     onPressBack: () => void;
     authToken: string;
+    callDataBool: boolean;
   }> {}
 
 export const BillScreen: React.FC<BillScreenProps> = (props) => {
@@ -167,6 +168,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
   const [prismAuthToken, setPrismAuthToken] = useState<string>(
     props.navigation?.getParam('authToken') || ''
   );
+  const callDataBool = props.navigation?.getParam('callDataBool') || false;
   const [searchQuery, setSearchQuery] = useState({});
   const { phrSession, setPhrSession } = useAppCommonData();
 
@@ -287,9 +289,13 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
     }
   }, [callApi]);
 
-  const gotoPHRHomeScreen = () => {
+  const navigationToHome = () => {
     props.navigation.state.params?.onPressBack();
     props.navigation.goBack();
+  };
+
+  const gotoPHRHomeScreen = () => {
+    callDataBool ? props.navigation.navigate('HEALTH RECORDS') : navigationToHome();
   };
 
   const getLatestMedicalBillRecords = () => {
@@ -359,8 +365,17 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
   };
 
   const onHealthCardItemPress = (selectedItem: MedicalBillsType) => {
-    const eventInputData = removeObjectProperty(selectedItem, 'billFiles');
-    postCleverTapIfNewSession('Bills', currentPatient, eventInputData, phrSession, setPhrSession);
+    let dateOfBirth = g(currentPatient, 'dateOfBirth');
+    let doctorConsultationAttributes = {
+      'Nav src': 'Bills',
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+    };
+    postCleverTapEvent(
+      CleverTapEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS,
+      doctorConsultationAttributes
+    );
     props.navigation.navigate(AppRoutes.HealthRecordDetails, {
       data: selectedItem,
       medicalBill: true,
@@ -378,13 +393,14 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
       .then((status) => {
         if (status) {
           getLatestMedicalBillRecords();
-          const eventInputData = removeObjectProperty(selectedItem, 'billFiles');
-          postCleverTapPHR(
-            currentPatient,
-            CleverTapEventName.PHR_DELETE_BILLS,
-            'Bill',
-            eventInputData
-          );
+          let dateOfBirth = g(currentPatient, 'dateOfBirth');
+          let attributes = {
+            'Nav src': 'Bills',
+            'Patient UHID': g(currentPatient, 'uhid'),
+            'Patient gender': g(currentPatient, 'gender'),
+            'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+          };
+          postCleverTapEvent(CleverTapEventName.PHR_DELETE_RECORD, attributes);
         } else {
           setShowSpinner(false);
         }
@@ -408,7 +424,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
   };
 
   const renderMedicalBillItems = (item: any, index: number) => {
-    const prescriptionName = item?.data?.hospitalName || '';
+    const prescriptionName = item?.data?.hospitalName || 'Bill';
     const dateText = getPrescriptionDate(item?.data?.billDateTime);
     const soureName = getSourceName(item?.data?.source!) || '-';
     const selfUpload = true;

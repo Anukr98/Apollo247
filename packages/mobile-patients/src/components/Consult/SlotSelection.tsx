@@ -666,9 +666,11 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
             <Text style={[styles.date, { color: textColor }]}>
               {index < 2 ? item?.date : moment(item?.date).format('DD MMM')}
             </Text>
-            <Text style={[styles.dateSlots, { color: textColor }]}>
-              {item?.count === 0 ? 'No' : item?.count} slot{item?.count === 1 ? '' : 's'}
-            </Text>
+            {(!doctorDetails?.medmantraSync || isOnlineSelected) && (
+              <Text style={[styles.dateSlots, { color: textColor }]}>
+                {item?.count === 0 ? 'No' : item?.count} slot{item?.count === 1 ? '' : 's'}
+              </Text>
+            )}
           </View>
         )}
       </TouchableOpacity>
@@ -950,7 +952,9 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     return (
       <View style={styles.noSlotsContainer}>
         <Text style={styles.noSlotsAvailableText}>No slots available!</Text>
-        <Text style={styles.nextAvailabilityTitle}>Next availability - {availabilityTitle}</Text>
+        {(!doctorDetails?.medmantraSync || isOnlineSelected) && (
+          <Text style={styles.nextAvailabilityTitle}>Next availability - {availabilityTitle}</Text>
+        )}
         <Button
           title="VIEW AVAILABLE SLOTS"
           style={styles.viewAvailableSlotsBtn}

@@ -94,7 +94,6 @@ export interface locationResponseProps {
   state?: string;
 }
 export const AddAddressNew: React.FC<MapProps> = (props) => {
-  console.log({ props });
   const KeyName = props.navigation.getParam('KeyName');
   const addressDetails = props.navigation.getParam('addressDetails');
   const addOnly = props.navigation.getParam('addOnly');
@@ -464,8 +463,8 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
       setLongitude(Number(region?.longitude! || 0));
       //on map drag, hit the google api to get the address from lat-long
       fetchAdressFromLatLongGoogleApi(
-        Number(region?.latitude! + latitudeDelta || 0),
-        Number(region?.longitude! + longitudeDelta || 0)
+        Number(region?.latitude! || 0),
+        Number(region?.longitude! || 0)
       );
     }
 

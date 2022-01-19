@@ -166,8 +166,6 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
     setAddresses: setTestAddresses,
     setNewAddressAddedHomePage,
     setNewAddressAddedCartPage,
-    setDiagnosticAreas,
-    setAreaSelected,
     setDiagnosticSlot,
     setCartPagePopulated,
   } = useDiagnosticsCart();
@@ -378,8 +376,6 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
             if (source == 'Tests' || source == 'Diagnostics Cart') {
               setNewAddressAddedHomePage?.(String(address?.zipcode!) || '');
               setNewAddressAddedCartPage?.(String(address?.zipcode!));
-              setDiagnosticAreas?.([]);
-              setAreaSelected?.({});
               setDiagnosticSlot?.(null);
               setCartPagePopulated?.(false);
             }
@@ -647,7 +643,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
   ) => {
     const screenName = props.navigation.getParam('ComingFrom');
     if (screenName != '') {
-      if (sourceScreenName == AppRoutes.TestsCart) {
+      if (sourceScreenName == AppRoutes.CartPage) {
         if (
           addressList?.latitude != null &&
           addressList?.longitude != null &&
@@ -656,8 +652,6 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
         ) {
           setDiagnosticAddressId?.(addressList?.id || '');
         }
-        setDiagnosticAreas?.([]);
-        setAreaSelected?.({});
         setDiagnosticSlot?.(null);
         setCartPagePopulated?.(false);
       }
