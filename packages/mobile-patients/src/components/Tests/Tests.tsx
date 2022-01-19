@@ -2651,7 +2651,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
     return (
       <>
-        {!!singleItemData?.itemTitle ? (
+        {!!singleItemData?.itemTitle && !!pricesForItem?.price ? (
           <View style={styles.singleItemContainer}>
             <View style={styles.itemFirst}>
               <View style={{ flexDirection: 'row' }}>
