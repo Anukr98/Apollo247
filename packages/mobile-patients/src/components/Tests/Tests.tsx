@@ -3411,9 +3411,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
               onScroll={(event) => {
                 setSlideCallToOrder(true);
                 //increments only for down scroll
-                // const currentOffset = event.nativeEvent.contentOffset?.y;
-                // currentOffset > (this.offset || 0) && (scrollCount.current += 1);
-                // this.offset = currentOffset;
+                const currentOffset = event.nativeEvent.contentOffset?.y;
+                currentOffset > (this.offset || 0) && (scrollCount.current += 1);
+                this.offset = currentOffset;
               }}
             >
               {renderSections()}
