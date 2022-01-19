@@ -5,6 +5,7 @@ import {
   CALL_TO_ORDER_CTA_PAGE_ID,
   DIAGNOSTIC_ORDER_STATUS,
   REFUND_STATUSES,
+  TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { Platform } from 'react-native';
 
@@ -316,6 +317,10 @@ const appStaticVariables = {
       ctaPhoneNumber: '040-4821-3322',
       ctaText: 'Call to Order',
     },
+  },
+  DIAGNOSTICS_SHOW_UPLOAD_PRESCRIPTION_SECTION: true,
+  DIAGNOSTICS_HOME_SINGLE_ITEM: {
+    id: "2446",
   },
   DIAGNOSTICS_PHLEBO_CALL_NUMBER: '08046807674',
   DIAGNOSTICS_COVID_ITEM_IDS: [2446],

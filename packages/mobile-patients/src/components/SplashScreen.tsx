@@ -1351,6 +1351,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Diagnostic_Review_Disclaimer_New',
       PROD: 'Diagnostic_Review_Disclaimer_New',
     },
+    Diagnostics_Show_Upload_Prescription_Section: {
+      QA: 'QA_Diagnostics_Show_Upload_Prescription_Section',
+      PROD: 'Diagnostics_Show_Upload_Prescription_Section',
+    },
+    Diagnostics_Home_Single_Item: {
+      QA: 'QA_Diagnostics_Home_Single_Item',
+      PROD: 'Diagnostics_Home_Single_Item',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1797,6 +1805,19 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER',
         'DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER_TEXT',
         (key) => config.getString(key)
+      );
+      setAppConfig(
+        'Diagnostics_Show_Upload_Prescription_Section',
+        'DIAGNOSTICS_SHOW_UPLOAD_PRESCRIPTION_SECTION',
+        (key) => config.getBoolean(key)
+      );
+
+      setAppConfig(
+        'Diagnostics_Home_Single_Item',
+        'DIAGNOSTICS_HOME_SINGLE_ITEM',
+        (key) =>
+          JSON.parse(config.getString(key) || 'null') ||
+          AppConfig.Configuration.DIAGNOSTICS_HOME_SINGLE_ITEM
       );
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
