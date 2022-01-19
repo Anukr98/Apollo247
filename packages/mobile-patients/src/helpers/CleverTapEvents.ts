@@ -1,4 +1,5 @@
 import {
+  DiagnosticCTJourneyType,
   DoctorType,
   MEDICINE_ORDER_STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -1944,6 +1945,7 @@ export interface CleverTapEvents {
     'Item Name': string;
     'Circle user': string;
     'User Type': any;
+    'Journey Type'?: DiagnosticCTJourneyType;
   };
   [CleverTapEventName.DIAGNOSTIC_PATIENT_SELECTED]: {
     'No. of patients': number;

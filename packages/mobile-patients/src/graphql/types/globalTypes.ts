@@ -2298,6 +2298,11 @@ export enum PrescriptionType {
   UPLOADED = "UPLOADED",
 }
 
+export enum DiagnosticCTJourneyType {
+  UPLOAD_PRESCRIPTION = "Upload Prescription",
+  WHATSAPP = 'WhatsApp'
+}
+
 export interface CartInputData {
   patientId: string;
   medicineOrderCartLineItems?: (InputCartLineItems | null)[] | null;

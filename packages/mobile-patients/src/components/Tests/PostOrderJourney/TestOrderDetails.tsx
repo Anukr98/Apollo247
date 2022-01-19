@@ -23,6 +23,7 @@ import {
   DIAGNOSTIC_SUB_STATUS_TO_SHOW,
   DIAGNOSTIC_FAILURE_STATUS_ARRAY,
   DIAGNOSTIC_ORDER_CANCELLED_STATUS,
+  DIAGNOSTIC_PHELBO_TRACKING_STATUS,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
   GetPatientFeedback,
@@ -722,11 +723,13 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             <Text style={styles.statusSubTextStyle}>
               {`Apollo agent will arrive on ${slotDate}, ${slotTime1} - ${slotTime2}`}
             </Text>
-            {renderPhleboDetailsSection()}
+            {renderPhleboDetailsSection(isStatusDone)}
           </>
         );
       } else {
-        return renderExpandedPhleboDetails();
+        if (DIAGNOSTIC_PHELBO_TRACKING_STATUS.includes(orderDetails?.orderStatus)) {
+          return renderPhleboDetailsSection(isStatusDone);
+        }
       }
     }
     if (DIAGNOSTIC_SAMPLE_COLLECTED_STATUS?.includes(orderStatus)) {
@@ -767,11 +770,11 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     }
   }
 
-  const renderPhleboDetailsSection = () => {
+  const renderPhleboDetailsSection = (isStatusDone: boolean) => {
     return phleboDetailsShimmer
       ? renderItemPriceShimmer()
       : !!phleboDetails && !isEmptyObject(phleboDetails)
-      ? renderPhleboDetails()
+      ? renderPhleboDetails(isStatusDone)
       : null;
   };
 
@@ -808,30 +811,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     }
   }
 
-  const renderExpandedPhleboDetails = () => {
-    return (
-      <View style={{ marginBottom: 8 }}>
-        <View style={styles.lineSeparator} />
-        <View style={styles.inclusionContainer}>
-          <TouchableOpacity
-            onPress={() => setShowPhleboDetails(!showPhleboDetails)}
-            activeOpacity={1}
-            style={styles.viewRowStyle}
-          >
-            <Text style={styles.itemNameText}>{'PHLEBO DETAILS'}</Text>
-            <ArrowRight
-              style={{
-                transform: [{ rotate: showPhleboDetails ? '270deg' : '90deg' }],
-                tintColor: colors.LIGHT_BLUE,
-              }}
-            />
-          </TouchableOpacity>
-          {showPhleboDetails && renderPhleboDetailsSection()}
-        </View>
-      </View>
-    );
-  };
-
   const renderPhleboCallPopup = () => {
     return (
       <PhleboCallPopup
@@ -845,27 +824,33 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     );
   };
 
-  const renderPhleboDetails = () => {
+  const renderPhleboDetails = (isStatusDone: boolean) => {
+    const showDetails =
+      !!phleboDetails && !isEmptyObject(phleboDetails) && phleboDetails?.showPhleboDetails;
     return (
-      <View style={{ marginTop: 8 }}>
-        <AgentDetailsCard
-          orderId={orderDetails?.displayId}
-          phleboDetailsObject={phleboDetails}
-          orderLevelStatus={orderDetails?.orderStatus}
-          currentPatient={currentPatient}
-          isDiagnosticCircleSubscription={isDiagnosticCircleSubscription}
-          onPressCallOption={(name, number) => {
-            setShowPhleboCallPopUp(true);
-            const callObj = {
-              name: name,
-              number: number,
-              orderId: orderDetails?.id,
-            };
-            setCallPhleboObj(callObj);
-          }}
-          source={AppRoutes.TestOrderDetails}
-        />
-      </View>
+      showDetails && (
+        <View style={{ marginTop: 8 }}>
+          {isStatusDone && <Spearator />}
+          <AgentDetailsCard
+            orderId={orderDetails?.displayId}
+            phleboDetailsObject={phleboDetails}
+            orderLevelStatus={orderDetails?.orderStatus}
+            currentPatient={currentPatient}
+            isDiagnosticCircleSubscription={isDiagnosticCircleSubscription}
+            onPressCallOption={(name, number) => {
+              setShowPhleboCallPopUp(true);
+              const callObj = {
+                name: name,
+                number: number,
+                orderId: orderDetails?.id,
+              };
+              setCallPhleboObj(callObj);
+            }}
+            source={AppRoutes.TestOrderDetails}
+            showCardView={!isStatusDone}
+          />
+        </View>
+      )
     );
   };
 

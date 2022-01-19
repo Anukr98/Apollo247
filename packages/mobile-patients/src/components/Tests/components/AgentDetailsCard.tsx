@@ -22,6 +22,7 @@ interface AgentDetailsCardProps {
   currentPatient: any;
   isDiagnosticCircleSubscription: boolean;
   source: string;
+  showCardView?: boolean;
   onPressCallOption: (name: string, number: string) => void;
 }
 
@@ -32,6 +33,7 @@ export const AgentDetailsCard: React.FC<AgentDetailsCardProps> = (props) => {
     currentPatient,
     isDiagnosticCircleSubscription,
     source,
+    showCardView,
   } = props;
 
   /**
@@ -65,7 +67,14 @@ export const AgentDetailsCard: React.FC<AgentDetailsCardProps> = (props) => {
     return (
       <>
         <View
-          style={[styles.mainContainer, source == AppRoutes.TestOrderDetails && styles.shadowView]}
+          style={[
+            styles.mainContainer,
+            source == AppRoutes.TestOrderDetails
+              ? showCardView
+                ? styles.shadowView
+                : { borderColor: 'transparent' }
+              : {},
+          ]}
         >
           <View style={styles.detailContainer}>
             {phoneNumber ? (

@@ -96,6 +96,7 @@ import { Image } from 'react-native-elements';
 import { NavigationScreenProps, NavigationEvents } from 'react-navigation';
 import {
   CALL_TO_ORDER_CTA_PAGE_ID,
+  DiagnosticCTJourneyType,
   DIAGNOSTIC_ORDER_STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
@@ -144,6 +145,7 @@ import {
   DiagnosticHomePageClicked,
   DiagnosticHomePageWidgetClicked,
   DiagnosticLandingPageViewedEvent,
+  DiagnosticPrescriptionSubmitted,
   DiagnosticTrackOrderViewed,
   DiagnosticTrackPhleboClicked,
   DiagnosticViewReportClicked,
@@ -153,7 +155,7 @@ import PackageCard from '@aph/mobile-patients/src/components/Tests/components/Pa
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   AppConfig,
-  DIAGNOSITC_PHELBO_TRACKING_STATUS,
+  DIAGNOSTIC_PHELBO_TRACKING_STATUS,
   DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY,
   DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
   stepsToBookArray,
@@ -2191,7 +2193,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   };
 
-  function _navigateToUploadViaWhatsapp() {
+  async function _navigateToUploadViaWhatsapp() {
     try {
       const getMessage =
         getUploadPrescriptionConfigs?.textMessage ||
@@ -2199,8 +2201,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
       const getPhoneNumber =
         getUploadPrescriptionConfigs?.phoneNumber ||
         string.diagnostics.uploadPrescriptionWhatsapp.whatsappPhoneNumber;
+      const diagnosticUserType = await AsyncStorage.getItem('diagnosticUserType');
       Linking.openURL(
         `https://api.whatsapp.com/send/?text=${getMessage}&phone=91${getPhoneNumber}`
+      );
+      DiagnosticPrescriptionSubmitted(
+        currentPatient,
+        '',
+        '',
+        diagnosticUserType,
+        isDiagnosticCircleSubscription,
+        DiagnosticCTJourneyType?.WHATSAPP
       );
     } catch (error) {
       CommonBugFender('Tests_navigateToUploadViaWhatsapp', error);
@@ -2464,7 +2475,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         });
       }
     } else {
-      if (DIAGNOSITC_PHELBO_TRACKING_STATUS.includes(item?.orderStatus)) {
+      if (DIAGNOSTIC_PHELBO_TRACKING_STATUS.includes(item?.orderStatus)) {
         //track phlebo
         item?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED
           ? navigateToTrackingScreen(item)
