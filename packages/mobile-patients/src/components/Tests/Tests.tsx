@@ -138,6 +138,7 @@ import {
 import {
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   DIAGNOSTIC_PINCODE_SOURCE_TYPE,
+  getPricesForItem,
   sourceHeaders,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import Carousel from 'react-native-snap-carousel';
@@ -1152,11 +1153,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               cityId: cityId,
             });
           }}
-          container={{
-            marginBottom: 24,
-            marginTop: 20,
-            width: '92%',
-          }}
+          container={styles.yourOrderContainer}
           titleStyle={styles.ordersTitleStyle}
           title={'MY ORDERS'}
           leftIcon={null}
@@ -1253,12 +1250,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const renderSeperator = () => {
     return (
       <View
-        style={{
-          borderColor: 'rgba(0, 0, 0, 0.1)',
-          borderWidth: 0.5,
-          width: '92%',
-          alignSelf: 'center'
-        }}
+        style={styles.seperatorContainer}
       ></View>
     );
   };
@@ -2634,14 +2626,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
       });
     }
     const singleItemData = singleItemFilterData?.[0];
-    let priceToShow = singleItemData?.diagnosticPricing?.map((item: any) => {
-      if (item?.groupPlan == 'ALL') {
-        return item;
-      }
-    });
+    const packageMrpForItem = singleItemData?.packageCalculatedMrp!;
+    const getDiagnosticPricingForItem = singleItemData?.diagnosticPricing;
+    const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
     return (
       <>
-        {!!styles.singleItemPrice && !!singleItemData?.itemTitle ? (
+        {!!singleItemData?.itemTitle ? (
           <View style={styles.singleItemContainer}>
             <View style={styles.itemFirst}>
               <View style={{ flexDirection: 'row' }}>
@@ -2650,7 +2640,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               </View>
               <Text style={styles.singleItemPrice}>
                 {string.common.Rs}
-                {priceToShow?.[0]?.price}
+                {pricesForItem?.price}
               </Text>
             </View>
             <View style={styles.viewSecond}>
@@ -2669,22 +2659,22 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 style={styles.buttonTop}
                 onPress={() => {
                   const singleItemObj = {
-                    circlePrice: 0,
-                    circleSpecialPrice: 0,
+                    circlePrice: pricesForItem?.circlePrice!,
+                    circleSpecialPrice: pricesForItem?.circleSpecialPrice!,
                     collectionMethod: TEST_COLLECTION_TYPE.HC,
-                    discountPrice: 0,
-                    discountSpecialPrice: 0,
-                    groupPlan: 'ALL',
+                    discountPrice: pricesForItem?.discountPrice!,
+                    discountSpecialPrice: pricesForItem?.discountSpecialPrice!,
+                    groupPlan: pricesForItem?.planToConsider?.groupPlan!,
                     id: singleItemData?.itemId,
                     inclusions: singleItemData?.inclusionData?.map((item: any) => {
                       return item?.incItemId;
                     }),
-                    isSelected: true,
+                    isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
                     mou: 1,
                     name: singleItemData?.itemTitle,
-                    packageMrp: priceToShow?.[0]?.mrp,
-                    price: priceToShow?.[0]?.price,
-                    specialPrice: priceToShow?.[0]?.price,
+                    packageMrp: packageMrpForItem,
+                    price: pricesForItem?.price!,
+                    specialPrice: pricesForItem?.specialPrice!,
                     thumbnail: singleItemData?.itemImageUrl,
                   };
                   onPressSingleBookNow(singleItemObj);
@@ -3537,6 +3527,17 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 10,
     marginTop: 15,
     paddingVertical: 5,
+  },
+  yourOrderContainer: {
+    marginBottom: 24,
+    marginTop: 20,
+    width: '92%',
+  },
+  seperatorContainer: {
+    borderColor: 'rgba(0, 0, 0, 0.1)',
+    borderWidth: 0.5,
+    width: '92%',
+    alignSelf: 'center'
   },
   orderPrescriptionPanel: {
     flexDirection: 'row',
