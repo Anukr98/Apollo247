@@ -165,6 +165,7 @@ import {
   DIAGNOSTIC_PHELBO_TRACKING_STATUS,
   DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY,
   DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
+  DIANOSTIC_BANNER_VISIBLE_ARRAY,
   stepsToBookArray,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
@@ -739,7 +740,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
       //if true then only show it.
       if (res?.data?.success) {
         const bannerData = res?.data?.data;
-        setBanners(bannerData);
+        //filter banners to be shown on app/both
+        const getBannerToShow = bannerData?.filter((banner: any) =>
+          DIANOSTIC_BANNER_VISIBLE_ARRAY.includes(banner?.VisibleOn)
+        );
+        setBanners(getBannerToShow);
       } else {
         setBanners([]);
         setBannerLoading(false);
@@ -762,13 +767,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
           (a: any, b: any) =>
             Number(a.diagnosticwidgetsRankOrder) - Number(b.diagnosticwidgetsRankOrder)
         );
+        //filter wigets to be shown on homepage
+        const getWidgetsForHomePage = sortWidgets?.filter(
+          (widget: any) => widget?.shownOnHomePage || widget?.shownOnHomePage == 'true'
+        );
         setCityId(cityId);
         //call here the prices.
-        setDrupalWidgetData(sortWidgets);
-        setWidgetsData(sortWidgets);
+        setDrupalWidgetData(getWidgetsForHomePage);
+        setWidgetsData(getWidgetsForHomePage);
         setIsPriceAvailable(false);
         setShowItemCard(true);
-        fetchWidgetsPrices(sortWidgets, cityId);
+        fetchWidgetsPrices(getWidgetsForHomePage, cityId);
       } else {
         setDrupalWidgetData([]);
         setWidgetsData([]);

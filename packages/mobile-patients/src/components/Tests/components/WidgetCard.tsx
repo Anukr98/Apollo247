@@ -40,13 +40,12 @@ export const WidgetCard: React.FC<WidgetCardProps> = (props) => {
 
 const styles = StyleSheet.create({
   container: {
+    ...theme.viewStyles.card(12, 0, 5, theme.colors.HEX_WHITE, 5),
     width: screenWidth / 4.15,
-    backgroundColor: theme.colors.HEX_WHITE,
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'flex-start',
     margin: 5,
-    elevation: 5,
     padding: 16,
     paddingLeft: 12,
     paddingRight: 12,

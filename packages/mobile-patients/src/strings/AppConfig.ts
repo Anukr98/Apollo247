@@ -24,7 +24,7 @@ export enum AppEnv {
   QA8 = 'QA8',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA3 as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA5 as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -1596,7 +1596,7 @@ export const DIAGNOSTIC_STATUS_BEFORE_SUBMITTED = [
   DIAGNOSTIC_ORDER_STATUS.CANCELLATION_REQUESTED,
 ];
 
-export const DIAGNOSITC_PHELBO_TRACKING_STATUS = [
+export const DIAGNOSTIC_PHELBO_TRACKING_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
   DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED,
 ];
@@ -1621,6 +1621,16 @@ export const DIAGNOSTIC_SUB_STATUS_TO_SHOW = [
 export const ELIGIBLE_HC_VERTICALS = [
   'pharma',
   'diagnostics'
+]
+
+enum DiagnosticBannerVisible {
+  APP = 'app',
+  WEB = 'web',
+  Both = 'both',
+}
+
+export const DIANOSTIC_BANNER_VISIBLE_ARRAY = [
+  DiagnosticBannerVisible.APP, DiagnosticBannerVisible.Both
 ]
 
 export const TestsNewFeedbackData = {
