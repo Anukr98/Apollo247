@@ -2504,7 +2504,6 @@ const validateEventObject = (eventAttributes: any) => {
 
 export const postAppsFlyerEvent = (eventName: AppsFlyerEventName, attributes: Object) => {
   try {
-    debugger;
     const logContent = `[AppsFlyer Event] ${eventName}`;
     appsFlyer.logEvent(
       eventName,
