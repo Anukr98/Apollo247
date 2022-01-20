@@ -22,7 +22,7 @@ import {
 import { handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useEffect, useState } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Platform,
@@ -38,7 +38,7 @@ import {
 import { getPatientAddressList_getPatientAddressList_addressList } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
-export const SelectedAddressUserNameWithEdit: React.FC<{
+const UserNameWith: React.FC<{
   address: getPatientAddressList_getPatientAddressList_addressList;
 }> = ({ address }) => {
   const [userName, setUserName] = useState<string>('');
@@ -194,6 +194,10 @@ export const SelectedAddressUserNameWithEdit: React.FC<{
 
   return renderUserName();
 };
+
+const SelectedAddressUserNameWithEdit = memo(UserNameWith);
+
+export { SelectedAddressUserNameWithEdit };
 
 const styles = StyleSheet.create({
   main: { marginTop: 10, marginBottom: 5 },
