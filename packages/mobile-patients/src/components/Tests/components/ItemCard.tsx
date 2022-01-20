@@ -94,6 +94,14 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
       ? data?.length > 0 && data
       : diagnosticWidgetData?.length > 0 && diagnosticWidgetData;
 
+  function getCount(array: any) {
+    return array?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
+  }
+
+  function getMandatoryParamterResults(arr: any) {
+    return arr?.filter((item: any) => item?.mandatoryValue === '1');
+  }
+
   const renderItemCard = useCallback(
     (item: any) => {
       const getItem = item?.item;
@@ -115,25 +123,27 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
       const inclusions = getItem?.inclusionData || getItem?.diagnosticInclusions;
 
       const getMandatoryParamter =
-        !!inclusions &&
-        inclusions?.length > 0 &&
-        inclusions?.map((inclusion: any) =>
-          inclusion?.incObservationData?.filter((item: any) => item?.mandatoryValue === '1')
-        );
+        !!inclusions && inclusions?.length > 0
+          ? inclusions?.map((inclusion: any) =>
+              getMandatoryParamterResults(inclusion?.incObservationData)
+            )
+          : [];
 
       const getInclusionCount = !!inclusions && inclusions?.length > 0 ? inclusions?.length : 1;
 
       const getMandatoryParameterCount =
-        !!getMandatoryParamter &&
-        getMandatoryParamter?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
+        !!getMandatoryParamter && getMandatoryParamter?.length > 0
+          ? getCount(getMandatoryParamter)
+          : undefined;
 
       const isAddedToCart = !!cartItems?.find(
         (items) => Number(items?.id) == Number(getItem?.itemId)
       );
+
       const nonInclusionTests =
-        !!inclusions &&
-        inclusions?.length > 0 &&
-        inclusions?.filter((inclusion: any) => inclusion?.incObservationData?.length == 0);
+        !!inclusions && inclusions?.length > 0
+          ? inclusions?.filter((inclusion: any) => inclusion?.incObservationData?.length == 0)
+          : [];
 
       return (
         <TouchableOpacity
