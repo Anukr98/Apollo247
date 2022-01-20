@@ -7482,6 +7482,22 @@ export const SAVE_MEDICINE_ORDER_V3 = gql`
     }
   }
 `;
+
+export const FETCH_DIAGNOSTICS_ORDER_TAT_STATUS = gql`
+  query getTATStatus($GetTATStatusForDiagnosticOrderInput: GetTATStatusForDiagnosticOrderInput) {
+    getTATStatusForDiagnosticOrder(
+      getTATStatusForDiagnosticOrderInput: $GetTATStatusForDiagnosticOrderInput
+    ) {
+      TATBreached
+      KB {
+        contentType
+        content
+        categories
+      }
+    }
+  }
+`;
+
 export const DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS = gql`
   query getDiagnosticItemRecommendationsByPastOrders($mobileNumber: String!) {
     getDiagnosticItemRecommendationsByPastOrders(mobileNumber: $mobileNumber) {
