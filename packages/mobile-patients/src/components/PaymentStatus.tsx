@@ -380,7 +380,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   const renderStatusCard = () => {
     const refNumberText = String(refNo != '' && refNo != null ? refNo : '--');
     const orderIdText = 'Order ID: ' + String(orderAutoId);
-    const priceText = `${string.common.Rs} ` + totalAmount.toFixed(2);
+    const priceText = `${string.common.Rs} ` + String(totalAmount);
     return (
       <View style={[styles.statusCardStyle, { backgroundColor: statusCardColour() }]}>
         <View style={styles.statusCardSubContainerStyle}>{statusIcon()}</View>
