@@ -118,13 +118,13 @@ const styles = StyleSheet.create({
   },
   offerCont: {
     marginTop: 2,
+    flexDirection: 'row',
     flexWrap: 'wrap',
   },
   offerDescription: {
     ...theme.fonts.IBMPlexSansRegular(12),
     lineHeight: 18,
     color: '#01475B',
-    flex: 0.84,
     marginTop: 2,
   },
   showMore: {

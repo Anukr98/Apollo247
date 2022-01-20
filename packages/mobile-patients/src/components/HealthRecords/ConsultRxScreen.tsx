@@ -873,13 +873,16 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
   };
 
   const onHealthCardItemPress = (selectedItem: any) => {
-    const eventInputData = removeObjectProperty(selectedItem, 'prescriptionFiles');
-    postCleverTapIfNewSession(
-      'Doctor Consultations',
-      currentPatient,
-      eventInputData,
-      phrSession,
-      setPhrSession
+    let dateOfBirth = g(currentPatient, 'dateOfBirth');
+    let doctorConsultationAttributes = {
+      'Nav src': 'Doctor Consultations',
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+    };
+    postCleverTapEvent(
+      CleverTapEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS,
+      doctorConsultationAttributes
     );
     if (selectedItem?.patientId) {
       postConsultCardClickEvent(selectedItem?.id);
@@ -910,13 +913,14 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       .then((status) => {
         if (status) {
           getLatestPrescriptionRecords();
-          const eventInputData = removeObjectProperty(selectedItem, 'prescriptionFiles');
-          postCleverTapPHR(
-            currentPatient,
-            CleverTapEventName.PHR_DELETE_DOCTOR_CONSULTATION,
-            'Doctor Consultation',
-            eventInputData
-          );
+          let dateOfBirth = g(currentPatient, 'dateOfBirth');
+          let attributes = {
+            'Nav src': 'Doctor Consultations',
+            'Patient UHID': g(currentPatient, 'uhid'),
+            'Patient gender': g(currentPatient, 'gender'),
+            'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+          };
+          postCleverTapEvent(CleverTapEventName.PHR_DELETE_RECORD, attributes);
         } else {
           setShowSpinner(false);
         }

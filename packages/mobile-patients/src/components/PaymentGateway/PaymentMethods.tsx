@@ -46,6 +46,7 @@ import {
   CREATE_ORDER,
   UPDATE_ORDER,
   VERIFY_VPA,
+  GET_PAYMENT_METHODS,
   INITIATE_DIAGNOSTIC_ORDER_PAYMENT_V2,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -174,10 +175,17 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const paymentType = useRef<string>('');
   const { healthCredits } = useFetchHealthCredits(businessLine);
   const { paymentMethods, fetching } = useGetPaymentMethods(paymentId!, amount);
-  const { all_payment_modes, offers, saved_card_list, preferred_payment_methods } = paymentMethods;
+  const [fetchedPaymentMethods, setFetchedPaymentMethods] = useState(null);
+  const { all_payment_modes, offers, saved_card_list, preferred_payment_methods } =
+    fetchedPaymentMethods || paymentMethods;
   const linkedWallets = preferred_payment_methods?.linked_wallets;
   const closedPaymentModes = all_payment_modes?.filter((item: any) => item?.state == 'CLOSE');
-  const savedCards = saved_card_list?.cards || [];
+  const preferredSavedCards = preferred_payment_methods?.saved_cards?.cards || [];
+  const preferredCardTokens = preferredSavedCards?.map((item: any) => item?.card_token);
+  const savedCards =
+    saved_card_list?.cards?.filter(
+      (item: any) => !preferredCardTokens?.includes(item?.card_token)
+    ) || [];
   const cardTypes = all_payment_modes?.filter((item: any) => item?.name == 'CARD')?.[0]
     ?.payment_methods;
   const clientAuthToken = !!customerId
@@ -232,7 +240,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', () => {
-      // goBackToCart();
+      recreateCart();
       return !HyperSdkReact.isNull() && HyperSdkReact.onBackPressed();
     });
     return () => BackHandler.removeEventListener('hardwareBackPress', () => null);
@@ -271,8 +279,24 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   useEffect(() => {
-    !!paymentMethods && fetchOffers();
-  }, [paymentMethods, amount]);
+    refetchPaymentOptions();
+  }, [amount]);
+
+  const getPaymentOptions = () => {
+    return client.query({
+      query: GET_PAYMENT_METHODS,
+      variables: { is_mobile: true, payment_order_id: paymentId, prepaid_amount: amount },
+      fetchPolicy: 'no-cache',
+    });
+  };
+
+  async function refetchPaymentOptions() {
+    //this is to refetch offers when a user opts health credits
+    try {
+      const response = await getPaymentOptions();
+      setFetchedPaymentMethods(response?.data?.getPaymentMethodsV3);
+    } catch (error) {}
+  }
 
   async function fetchOffers(paymentInfo?: any) {
     try {
@@ -357,6 +381,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         break;
       case 'createWallet':
         setWalletLinking(null);
+        setOtherPaymentSelected(null);
         payload?.payload?.linked && setcreatedWallet(payload?.payload);
         break;
       case 'refreshWalletBalances':
@@ -627,7 +652,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressLinkWallet(wallet: string) {
-    setOtherPaymentSelected(null);
     setWalletLinking(wallet);
     firePaymentInitiatedEvent('WALLET', wallet, null, false, 'LinkWallet', false, false, 0);
     createAPayWallet(currentPatient?.id, clientAuthToken);
@@ -1023,10 +1047,12 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     ) : null;
   };
 
+  const recreateCart = () => {
+    businessLine == 'pharma' && deleteServerCart(false, paymentId);
+  };
+
   const goBackToCart = () => {
-    if (businessLine != 'diagnostics') {
-      deleteServerCart(false, paymentId);
-    }
+    businessLine == 'pharma' && deleteServerCart(false, paymentId);
     props.navigation.goBack();
   };
 

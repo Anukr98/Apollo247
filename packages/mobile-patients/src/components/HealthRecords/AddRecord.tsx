@@ -75,6 +75,7 @@ import {
   handleGraphQlError,
   postCleverTapIfNewSession,
   removeObjectProperty,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -1138,36 +1139,18 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .then(({ data }) => {
         setshowSpinner(false);
         const status = g(data, 'addPatientPrescriptionRecord', 'status');
-        const eventInputData = removeObjectProperty(inputData, 'prescriptionFiles');
         if (status) {
+          let dateOfBirth = g(currentPatient, 'dateOfBirth');
+          let attributes = {
+            'Nav src': 'Doctor Consultations',
+            'Patient UHID': g(currentPatient, 'uhid'),
+            'Patient gender': g(currentPatient, 'gender'),
+            'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+          };
           if (selectedRecord) {
-            postCleverTapPHR(
-              currentPatient,
-              CleverTapEventName.PHR_UPDATE_DOCTOR_CONSULTATION,
-              'Doctor Consultation',
-              eventInputData
-            );
-            postCleverTapIfNewSession(
-              'Doctor Consultations',
-              currentPatient,
-              eventInputData,
-              phrSession,
-              setPhrSession
-            );
+            postCleverTapEvent(CleverTapEventName.PHR_UPDATE_RECORD, attributes);
           } else {
-            postCleverTapPHR(
-              currentPatient,
-              CleverTapEventName.PHR_ADD_DOCTOR_CONSULTATIONS,
-              'Doctor Consultations',
-              eventInputData
-            );
-            postCleverTapIfNewSession(
-              'Doctor Consultation',
-              currentPatient,
-              eventInputData,
-              phrSession,
-              setPhrSession
-            );
+            postCleverTapEvent(CleverTapEventName.PHR_ADD_RECORD, attributes);
           }
           gotoHealthRecordsHomeScreen();
         }
@@ -1575,34 +1558,17 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         const status = g(data, 'addPatientLabTestRecord', 'status');
         const eventInputData = removeObjectProperty(inputData, 'testResultFiles');
         if (status) {
+          let dateOfBirth = g(currentPatient, 'dateOfBirth');
+          let attributes = {
+            'Nav src': 'Test Reports',
+            'Patient UHID': g(currentPatient, 'uhid'),
+            'Patient gender': g(currentPatient, 'gender'),
+            'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+          };
           if (selectedRecord) {
-            postCleverTapPHR(
-              currentPatient,
-              CleverTapEventName.PHR_UPDATE_TEST_REPORT,
-              'Test Report',
-              eventInputData
-            );
-            postCleverTapIfNewSession(
-              'Test Reports',
-              currentPatient,
-              eventInputData,
-              phrSession,
-              setPhrSession
-            );
+            postCleverTapEvent(CleverTapEventName.PHR_UPDATE_RECORD, attributes);
           } else {
-            postCleverTapPHR(
-              currentPatient,
-              CleverTapEventName.PHR_ADD_TEST_REPORT,
-              'Test Report',
-              eventInputData
-            );
-            postCleverTapIfNewSession(
-              'Test Reports',
-              currentPatient,
-              eventInputData,
-              phrSession,
-              setPhrSession
-            );
+            postCleverTapEvent(CleverTapEventName.PHR_ADD_RECORD, attributes);
           }
           gotoHealthRecordsHomeScreen();
         }
@@ -1640,36 +1606,18 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .then(({ data }) => {
         setshowSpinner(false);
         const status = g(data, 'addPatientHospitalizationRecord', 'status');
-        const eventInputData = removeObjectProperty(inputData, 'hospitalizationFiles');
         if (status) {
+          let dateOfBirth = g(currentPatient, 'dateOfBirth');
+          let attributes = {
+            'Nav src': 'Hospitalization',
+            'Patient UHID': g(currentPatient, 'uhid'),
+            'Patient gender': g(currentPatient, 'gender'),
+            'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+          };
           if (selectedRecord) {
-            postCleverTapPHR(
-              currentPatient,
-              CleverTapEventName.PHR_UPDATE_HOSPITALIZATIONS,
-              'Hospitalization',
-              eventInputData
-            );
-            postCleverTapIfNewSession(
-              'Hospitalizations',
-              currentPatient,
-              eventInputData,
-              phrSession,
-              setPhrSession
-            );
+            postCleverTapEvent(CleverTapEventName.PHR_UPDATE_RECORD, attributes);
           } else {
-            postCleverTapPHR(
-              currentPatient,
-              CleverTapEventName.PHR_ADD_HOSPITALIZATIONS,
-              'Hospitalization',
-              eventInputData
-            );
-            postCleverTapIfNewSession(
-              'Hospitalizations',
-              currentPatient,
-              eventInputData,
-              phrSession,
-              setPhrSession
-            );
+            postCleverTapEvent(CleverTapEventName.PHR_ADD_RECORD, attributes);
           }
           gotoHealthRecordsHomeScreen();
         }
@@ -1706,36 +1654,18 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .then(({ data }) => {
         setshowSpinner(false);
         const status = g(data, 'addPatientMedicalBillRecord', 'status');
-        const eventInputData = removeObjectProperty(inputData, 'billFiles');
         if (status) {
+          let dateOfBirth = g(currentPatient, 'dateOfBirth');
+          let attributes = {
+            'Nav src': 'Bills',
+            'Patient UHID': g(currentPatient, 'uhid'),
+            'Patient gender': g(currentPatient, 'gender'),
+            'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+          };
           if (selectedRecord) {
-            postCleverTapPHR(
-              currentPatient,
-              CleverTapEventName.PHR_UPDATE_BILLS,
-              'Bill',
-              eventInputData
-            );
-            postCleverTapIfNewSession(
-              'Bills',
-              currentPatient,
-              eventInputData,
-              phrSession,
-              setPhrSession
-            );
+            postCleverTapEvent(CleverTapEventName.PHR_UPDATE_RECORD, attributes);
           } else {
-            postCleverTapPHR(
-              currentPatient,
-              CleverTapEventName.PHR_ADD_BILLS,
-              'Bill',
-              eventInputData
-            );
-            postCleverTapIfNewSession(
-              'Bills',
-              currentPatient,
-              eventInputData,
-              phrSession,
-              setPhrSession
-            );
+            postCleverTapEvent(CleverTapEventName.PHR_ADD_RECORD, attributes);
           }
           gotoHealthRecordsHomeScreen();
         }
@@ -1778,36 +1708,18 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .then(({ data }) => {
         setshowSpinner(false);
         const status = g(data, 'addPatientMedicalInsuranceRecord', 'status');
-        const eventInputData = removeObjectProperty(inputData, 'insuranceFiles');
         if (status) {
+          let dateOfBirth = g(currentPatient, 'dateOfBirth');
+          let attributes = {
+            'Nav src': 'Insurance',
+            'Patient UHID': g(currentPatient, 'uhid'),
+            'Patient gender': g(currentPatient, 'gender'),
+            'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+          };
           if (selectedRecord) {
-            postCleverTapPHR(
-              currentPatient,
-              CleverTapEventName.PHR_UPDATE_INSURANCE,
-              'Insurance',
-              eventInputData
-            );
-            postCleverTapIfNewSession(
-              'Insurance',
-              currentPatient,
-              eventInputData,
-              phrSession,
-              setPhrSession
-            );
+            postCleverTapEvent(CleverTapEventName.PHR_UPDATE_RECORD, attributes);
           } else {
-            postCleverTapPHR(
-              currentPatient,
-              CleverTapEventName.PHR_ADD_INSURANCE,
-              'Insurance',
-              eventInputData
-            );
-            postCleverTapIfNewSession(
-              'Insurance',
-              currentPatient,
-              eventInputData,
-              phrSession,
-              setPhrSession
-            );
+            postCleverTapEvent(CleverTapEventName.PHR_ADD_RECORD, attributes);
           }
           gotoHealthRecordsHomeScreen();
         }
@@ -2163,7 +2075,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       <View style={[styles.addMoreImageViewStyle, { marginRight: 5 }]}>
         <View style={styles.imageViewStyle}>
           <TouchableOpacity onPress={deleteImage} style={styles.removeIconViewStyle}>
-            <PhrRemoveBlueIcon style={{ width: 16, height: 16 }} />
+            {selectedRecord?.isClinicalDocument ? null : <PhrRemoveBlueIcon style={{ width: 16, height: 16 }} />}
           </TouchableOpacity>
           {fileType === 'pdf' || fileType === 'application/pdf' ? (
             <FileBig style={styles.imageStyle} />
@@ -2210,6 +2122,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         </View>
       );
     };
+    const isClinicalDocument = selectedRecord?.isClinicalDocument
     return (
       <View
         style={[
@@ -2229,10 +2142,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           horizontal
           renderItem={({ item, index }) => renderImagesRow(item, index, id)}
           keyExtractor={(_, index) => index.toString()}
-          ListFooterComponent={() => (imagesArray?.length > 3 ? null : renderAddMorePagesCard())}
+          ListFooterComponent={() => (imagesArray?.length > 3 ? null : isClinicalDocument ? null : renderAddMorePagesCard())}
         />
         {/* UI for multiple images */}
-        {imagesArray?.length > 3 ? renderAddMorePagesCard() : null}
+        {imagesArray?.length > 3 ? isClinicalDocument ? null:  renderAddMorePagesCard() : null}
       </View>
     );
   };

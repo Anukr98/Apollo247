@@ -34,7 +34,7 @@ export interface Props extends MedicineProduct {
   onPressCashback?: () => void;
 }
 
-export const ProductCard: React.FC<Props> = ({
+const ProductCardFun: React.FC<Props> = ({
   name,
   price,
   special_price,
@@ -81,9 +81,13 @@ export const ProductCard: React.FC<Props> = ({
 
   const renderAddToCartButton = () =>
     !quantity ? (
-      <Text onPress={onPressAddToCart} style={styles.addToCart}>
-        {'ADD TO CART'}
-      </Text>
+      <TouchableOpacity
+        hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+        style={styles.addToCart}
+        onPress={onPressAddToCart}
+      >
+        <Text style={styles.addToCartText}>{'ADD TO CART'}</Text>
+      </TouchableOpacity>
     ) : (
       <AddToCartButtons
         numberOfItemsInCart={quantity}
@@ -177,6 +181,8 @@ export const ProductCard: React.FC<Props> = ({
   );
 };
 
+export const ProductCard = React.memo(ProductCardFun);
+
 const { text } = theme.viewStyles;
 const styles = StyleSheet.create({
   card: {
@@ -219,6 +225,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 15,
     left: 10,
+  },
+  addToCartText: {
     ...text('B', 12, '#FC9916', 1, 18),
   },
   imagePlaceHolder: { backgroundColor: 'transparent' },

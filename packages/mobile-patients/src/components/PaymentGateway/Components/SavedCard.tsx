@@ -90,9 +90,9 @@ export const SavedCard: React.FC<SavedCardProps> = (props) => {
   };
 
   const getOfferDescription = () => {
-    return parseFloat(bestOffer?.discount_amount) > 50
+    return parseFloat(bestOffer?.discount_amount) >= 50
       ? `Get ₹${bestOffer?.discount_amount} off with this card`
-      : parseFloat(bestOffer?.cashback_amount) > 50
+      : parseFloat(bestOffer?.cashback_amount) >= 50
       ? `Get ₹${bestOffer?.cashback_amount} cashback with this card`
       : bestOffer?.description?.description;
   };
@@ -111,6 +111,7 @@ export const SavedCard: React.FC<SavedCardProps> = (props) => {
       <TextInput
         style={styles.cvvInput}
         secureTextEntry={true}
+        autoFocus={true}
         keyboardType={'numeric'}
         placeholder={'CVV'}
         placeholderTextColor={'rgba(1,71,91,0.3)'}
@@ -127,8 +128,8 @@ export const SavedCard: React.FC<SavedCardProps> = (props) => {
           disabled={cvv?.length < 3}
           title={
             !!bestOffer?.discount_amount
-              ? `PAY  ₹${amount - bestOffer?.discount_amount}`
-              : `PAY  ₹${amount}`
+              ? `PAY  ₹${Number(amount - bestOffer?.discount_amount).toFixed(2)}`
+              : `PAY  ₹${Number(amount).toFixed(2)}`
           }
           titleTextStyle={styles.payNow}
           onPress={() => onPressSavedCardPayNow(cardInfo, cvv, bestOffer)}

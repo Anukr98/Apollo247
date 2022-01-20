@@ -3394,6 +3394,8 @@ export const GET_MEDICAL_PRISM_RECORD_V3 = gql`
       labResults {
         response {
           id
+          documentId
+          isClinicalDocument
           labTestName
           labTestSource
           packageId
@@ -5566,6 +5568,7 @@ export const GET_ORDER_INFO = gql`
       DiagnosticsPaymentDetails {
         ordersList {
           allowPayment
+          paymentNotAllowedErrorString
         }
       }
     }
@@ -7051,8 +7054,8 @@ export const GET_REWARD_ID = gql`
 `;
 
 export const GET_CAMPAIGN_ID_FOR_REFERRER = gql`
-  query campaignInfo($camp: CAMPAIGN_TYPES!) {
-    getCampaignInfoByCampaignType(campaignType: $camp) {
+  query getCampaignInfo {
+    getCampaignInfo {
       id
       campaignType
     }

@@ -763,7 +763,7 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
 
   const getDoseNumber = (doseNumber: string) => {
     if (doseNumber == DOSE_NUMBER.BOOSTER_DOSE) {
-      return 'BOOSTER DOSE';
+      return 'PRECAUTION DOSE';
     } else if (doseNumber == DOSE_NUMBER.FIRST) {
       return 'FIRST';
     } else {

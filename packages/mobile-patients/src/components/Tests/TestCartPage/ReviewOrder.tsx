@@ -291,6 +291,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const [showCirclePopup, setShowCirclePopup] = useState<boolean>(false);
   const [isClicked, setIsClicked] = useState<boolean>(false);
   const [reportTat, setReportTat] = useState<string>('');
+  const [isFocused, setIsFocused] = useState<boolean>(false);
 
   let lineItemWithQuantity: any = [];
   let itemNamesToRemove_global: string[] = [];
@@ -381,6 +382,21 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   }
 
   useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      setIsFocused(true);
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+    const willBlur = props.navigation.addListener('willBlur', (payload) => {
+      setIsFocused(false);
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      willBlur && willBlur.remove();
+    };
+  }, []);
+
+  useEffect(() => {
     calculateNormalSavings();
   }, [coupon]);
 
@@ -438,8 +454,10 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    triggerCartPageViewed();
-  }, [toPayPrice]);
+    if (isFocused) {
+      triggerCartPageViewed();
+    }
+  }, [toPayPrice, isFocused]);
 
   function triggerCartPageViewed() {
     const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;

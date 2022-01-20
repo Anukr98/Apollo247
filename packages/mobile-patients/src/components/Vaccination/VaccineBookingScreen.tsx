@@ -1094,7 +1094,7 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
               });
             } else if (dose == string.vaccineBooking.title_dose_booster) {
               showAphAlert!({
-                title: 'Alert!',
+                title: 'Disclaimer!',
                 showCloseIcon: true,
                 onCloseIconPress: () => {
                   hideAphAlert!();
