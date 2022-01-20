@@ -1105,7 +1105,7 @@ const ConfigurationVAPT = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
-  PATIENT_VITALS: 'https://aph-staging-web-patients.apollo247.com/patient-vitals',
+  PATIENT_VITALS: 'http://stagingpatients.apollo247.com/patient-vitals',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://stagingpatients.apollo247.com',
