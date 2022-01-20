@@ -351,6 +351,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [showCartSummary, setShowCartSummary] = useState<boolean>(false);
   const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
   const defaultAddress = addresses?.find((item) => item?.defaultAddress);
+  const currentAdd = addresses?.filter((item)=> {return  item?.defaultAddress});
   const [summaryRecommendationCount, setSummaryRecommendationCount] = useState<number>(0);
   const [showLocationPopup, setLocationPopup] = useState<boolean>(false);
   const [source, setSource] = useState<DIAGNOSTIC_PINCODE_SOURCE_TYPE>();
@@ -951,20 +952,23 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }
 
   function triggerAddressSelected(servicable: 'Yes' | 'No') {
-    const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
-    const pinCodeFromAddress = addressToUse?.zipcode!;
-    DiagnosticAddresssSelected(
-      newAddressAddedHomePage != '' ? 'New' : 'Existing',
-      servicable,
-      pinCodeFromAddress,
-      'Home page',
-      currentPatient,
-      isDiagnosticCircleSubscription,
-      addressToUse?.latitude,
-      addressToUse?.longitude,
-      addressToUse?.state,
-      addressToUse?.city
-    );
+    const addressUsed = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
+    const addressToUse = !!addressUsed ? addressUsed : diagnosticLocation
+    const pinCodeFromAddress = !!addressToUse?.zipcode ? addressToUse?.zipcode : addressToUse?.pincode;
+    if (!!addressToUse) {
+      DiagnosticAddresssSelected(
+        newAddressAddedHomePage != '' ? 'Manual' : 'Automation',
+        servicable,
+        pinCodeFromAddress,
+        'Home page',
+        currentPatient,
+        isDiagnosticCircleSubscription,
+        addressToUse?.latitude,
+        addressToUse?.longitude,
+        addressToUse?.state,
+        addressToUse?.city
+      );
+    }
     newAddressAddedHomePage != '' && setNewAddressAddedHomePage?.('');
   }
 
