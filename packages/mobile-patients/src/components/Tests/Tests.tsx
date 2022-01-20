@@ -324,7 +324,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
 
   const [bannerLoading, setBannerLoading] = useState(true);
-  const [imgHeight, setImgHeight] = useState(120);
+  const [imgHeight, setImgHeight] = useState<number>(AppConfig.Configuration.DIAGNOSTICS_HOME_PAGE_BANNER_HEIGHT | 160);
   const [slideIndex, setSlideIndex] = useState(0);
   const [banners, setBanners] = useState([]);
   const [cityId, setCityId] = useState('');
@@ -1618,7 +1618,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             autoplayDelay={AUTO_SCROLL_INTERVAL}
             autoplayInterval={AUTO_SCROLL_INTERVAL}
           />
-          <View style={[styles.landingBannerInnerView, { bottom: -15 }]}>
+          <View style={[styles.landingBannerInnerView, { bottom: -25 }]}>
             {banners?.length > 1 &&
               banners?.map((_, index) =>
                 index == slideIndex ? renderDot(true) : renderDot(false)
@@ -2284,7 +2284,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           style={styles.precriptionContainerMiniUpload}
           onPress={() => _onPressUpload()}
         >
-          <PrescriptionColored style={{ height: 35 }} />
+          <PrescriptionColored style={styles.miniIconsStyle} />
           <Text style={styles.prescriptionText}>Upload Prescription</Text>
           <ArrowRight style={{ alignSelf: 'center' }} />
         </TouchableOpacity>
@@ -2304,7 +2304,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             });
           }}
         >
-          <BagBlue style={{ height: 35 }} />
+          <BagBlue style={styles.miniIconsStyle} />
           <Text style={styles.prescriptionText}>View My Orders</Text>
           <ArrowRight style={{ alignSelf: 'center' }} />
         </TouchableOpacity>
@@ -2707,10 +2707,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
+
+  const isOrderAvailable =
+    diagnosticStateUserType == `"${string.user_type.REPEAT}"` ||
+    diagnosticStateUserType == string.user_type.REPEAT;
+  const isPrescriptionAvailable =
+    AppConfig.Configuration.DIAGNOSTICS_SHOW_UPLOAD_PRESCRIPTION_SECTION;
   const renderOrderAndPrescriptionPanel = () => {
-    const isPrescriptionAvailable =
-      AppConfig.Configuration.DIAGNOSTICS_SHOW_UPLOAD_PRESCRIPTION_SECTION;
-    const isOrderAvailable = diagnosticStateUserType == `"${string.user_type.REPEAT}"`;
     if (isOrderAvailable && isPrescriptionAvailable) {
       return (
         <View style={styles.orderPrescriptionPanel}>
@@ -3567,6 +3570,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     marginTop: 20,
   },
+  miniIconsStyle: { height: 21, alignSelf: 'center', width:15 },
   precriptionContainerUpload: {
     flexDirection: 'row',
     justifyContent: 'space-around',

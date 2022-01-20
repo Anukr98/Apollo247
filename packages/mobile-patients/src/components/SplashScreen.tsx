@@ -1359,6 +1359,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Diagnostics_Home_Single_Item',
       PROD: 'Diagnostics_Home_Single_Item',
     },
+    Diagnostics_Home_Page_Banner_Height: {
+      QA: 'QA_Diagnostics_Home_Page_Banner_Height',
+      PROD: 'Diagnostics_Home_Page_Banner_Height',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1810,6 +1814,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'Diagnostics_Show_Upload_Prescription_Section',
         'DIAGNOSTICS_SHOW_UPLOAD_PRESCRIPTION_SECTION',
         (key) => config.getBoolean(key)
+      );
+
+      setAppConfig('Diagnostics_Home_Page_Banner_Height', 'DIAGNOSTICS_HOME_PAGE_BANNER_HEIGHT', (key) =>
+        config.getNumber(key)
       );
 
       setAppConfig(
