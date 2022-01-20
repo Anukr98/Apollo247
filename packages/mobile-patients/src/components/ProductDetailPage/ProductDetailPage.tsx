@@ -906,7 +906,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         Input_long: longitude,
         Input_pincode: currentPincode,
         Input_MRP: medicineDetails?.price, // overriding this value after PDP API call
-        No_of_items_in_the_cart: cartItems?.length,
+        No_of_items_in_the_cart: serverCartItems?.length,
         Response_Exist: item.exist ? 'Yes' : 'No',
         Response_MRP: item.mrp, // overriding this value after PDP API call
         Response_Qty: item.qty,
