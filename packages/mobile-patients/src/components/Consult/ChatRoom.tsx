@@ -1470,7 +1470,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const externalMeetingLink = '^^#externalMeetingLink';
   const jdAutoAssign = '^^#JdInfoMsg';
   const delayedConsultReminder = '^^#DelayReminder';
-  const chatBotPatientVitalsSummary = '^^#chatBotPatientVitalsSummary';
 
   const disconnecting = 'Disconnecting...';
   const callConnected = 'Call Connected';
@@ -5719,6 +5718,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       fileName?: string;
       messageDate: Date;
       automatedText?: string;
+      isVisible?: boolean;
     },
     index: number
   ) => {
@@ -5764,7 +5764,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       callRelatedCodes.includes(rowData?.message) ||
       (!automatedCodesToRender.includes(rowData?.message) && rowData?.message?.startsWith('^^#')) ||
       (rowData?.automatedText === consultPatientStartedMsg && rowData?.message == 'welcome') ||
-      rowData?.automatedText === jdAutoAssign
+      (rowData?.automatedText === jdAutoAssign && !rowData?.isVisible)
     ) {
       return null;
     }
@@ -5835,7 +5835,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     } else {
       leftComponent = 0;
       rightComponent++;
-      if (rowData?.automatedText == chatBotPatientVitalsSummary) {
+      if (rowData?.automatedText == jdAutoAssign) {
         const finalSummary = JSON.parse(rowData?.message);
         const { age, Height, Weight, medicineAllergies, foodAllergies } =
           finalSummary?.[0]?.staticQuestions || {};
@@ -7735,10 +7735,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               channel: channel.current,
               message: {
                 message: JSON.stringify(data),
-                automatedText: chatBotPatientVitalsSummary,
+                automatedText: jdAutoAssign,
                 id: patientId,
-                isTyping: true,
+                isVisible: true,
                 messageDate: new Date(),
+                cardType: 'patient',
               },
               storeInHistory: true,
               sendByPost: true,
