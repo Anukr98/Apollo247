@@ -90,34 +90,7 @@ export function DiagnosticHomePageSearchItem(
   } catch (error) {}
 }
 
-export async function DiagnosticPinCodeClicked(
-  currentPatient: any,
-  pincode: string,
-  serviceable: boolean,
-  source: DIAGNOSTIC_PINCODE_SOURCE_TYPE,
-  isDiagnosticCircleSubscription?: boolean | undefined
-) {
-  try {
-    const getPatientAttributes = await createPatientAttributes(currentPatient);
-    const eventAttributes:
-      | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR]
-      | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR] = {
-      ...getPatientAttributes,
-      Pincode: Number(pincode!),
-      Serviceability: serviceable ? 'Yes' : 'No',
-      Source: source,
-      'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
-    };
-    postWebEngageEvent(
-      WebEngageEventName.DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR,
-      eventAttributes
-    );
-    postCleverTapEvent(
-      CleverTapEventName.DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR,
-      eventAttributes
-    );
-  } catch (error) {}
-}
+
 
 export function DiagnosticHomePageWidgetClicked(
   currentPatient: any,
@@ -625,7 +598,7 @@ export function DiagnosticAppointmentTimeSlot(
 }
 
 export async function DiagnosticAddresssSelected(
-  type: 'New' | 'Existing',
+  type: 'Manual' | 'Automation',
   serviceable: 'Yes' | 'No',
   pincode: string | number,
   source: 'Home page' | 'Cart page',

@@ -185,7 +185,6 @@ export enum WebEngageEventName {
   USER_CHANGED_LOCATION = 'Change location',
   // Diagnostics Events
   DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic landing page viewed',
-  DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR = 'Diagnostic pincode entered',
   DIAGNOSTIC_LANDING_ITEM_SEARCHED = 'Diagnostic partial search',
   DIAGNOSTIC_ITEM_SEARCHED = 'Diagnostic full search',
   DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED = 'Diagnostic home page widgets',
@@ -1247,7 +1246,6 @@ export interface WebEngageEvents {
     'Order id': string;
     'Order status'?: string;
   };
-  [WebEngageEventName.DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR]: DiagnosticPinCode;
   [WebEngageEventName.DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED]: {
     'Item Name'?: string;
     'Item ID'?: string;
@@ -1369,7 +1367,7 @@ export interface WebEngageEvents {
     'Banner title': string;
   };
   [WebEngageEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE]: {
-    'Selection type': 'New' | 'Existing';
+    'Selection type': 'Manual' | 'Automation';
     Serviceability: 'Yes' | 'No';
     Pincode: string | number;
     Source: 'Home page' | 'Cart page';

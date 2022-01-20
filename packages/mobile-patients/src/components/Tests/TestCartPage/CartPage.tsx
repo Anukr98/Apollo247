@@ -264,7 +264,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     const pinCodeFromAddress = addressToUse?.zipcode!;
     triggerCartPageViewed(false, cartItems); //required to triggered it when address is being selected
     DiagnosticAddresssSelected(
-      newAddressAddedCartPage != '' ? 'New' : 'Existing',
+      newAddressAddedCartPage != '' ? 'Manual' : 'Automation',
       servicable,
       pinCodeFromAddress,
       'Cart page',
