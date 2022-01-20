@@ -399,7 +399,10 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
-        <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+        <ScrollView
+          keyboardShouldPersistTaps={'handled'}
+          contentContainerStyle={{ paddingBottom: 100 }}
+        >
           {renderAddress()}
           {renderAmountSection()}
           {renderTatCard()}
