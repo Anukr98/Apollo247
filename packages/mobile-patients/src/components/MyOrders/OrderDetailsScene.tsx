@@ -560,9 +560,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         setReOrderDetails({ total: totalItemsCount, unavailable: unavailableItems });
       } else {
         const resetAction = StackActions.reset({
-          index: 2,
+          index: 1,
           actions: [
-            NavigationActions.navigate({ routeName: AppRoutes.HomeScreen }),
             NavigationActions.navigate({ routeName: AppRoutes.MyOrdersScreen }),
             NavigationActions.navigate({ routeName: AppRoutes.ServerCart }),
           ],
