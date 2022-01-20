@@ -1489,13 +1489,14 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       Alert.alert('No Image');
       CommonLogEvent('CONSULT_DETAILS', 'No image');
     } else {
-      postWEGEvent('download prescription');
-      postCleverTapPHR(
-        currentPatient,
-        CleverTapEventName.PHR_DOWNLOAD_DOCTOR_CONSULTATION,
-        'Doctor Consultation',
-        caseSheetDetails
-      );
+      let dateOfBirth = g(currentPatient, 'dateOfBirth');
+      let doctorConsultationAttributes = {
+        'Nav src': 'Doctor Consultations',
+        'Patient UHID': g(currentPatient, 'uhid'),
+        'Patient gender': g(currentPatient, 'gender'),
+        'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+      };
+      postCleverTapEvent(CleverTapEventName.PHR_DOWNLOAD_RECORD, doctorConsultationAttributes);
       const dirs = RNFetchBlob.fs.dirs;
 
       const fileName: string = getFileName();

@@ -120,9 +120,10 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const [medicineOrderStatus, setMedicineOrderStatus] = useState<MEDICINE_ORDER_STATUS>(
     navigation.getParam('medicineOrderStatus')!
   );
-  const { saveNeedHelpQuery, getQueryData, getQueryDataByOrderStatus } = Helpers;
+  const { saveNeedHelpQuery, getQueryData, getQueryDataByOrderStatus, getBuData } = Helpers;
   const [queries, setQueries] = useState<NeedHelpHelpers.HelpSectionQuery[]>(_queries || []);
   const subQueriesData = getQueryData(queries, queryIdLevel1, queryIdLevel2, queryIdLevel3);
+  const buData = getBuData(queries, queryIdLevel1);
   const subQueries = (subQueriesData?.queries as NeedHelpHelpers.HelpSectionQuery[]) || [];
   const headingTitle = queries?.find((q) => q.id === queryIdLevel1)?.title || 'Query';
   const helpSectionQueryId = AppConfig.Configuration.HELP_SECTION_CUSTOM_QUERIES;
@@ -373,7 +374,9 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           const data = getQueryDataByOrderStatus(
             subQueriesData,
             isOrderRelatedIssue,
-            requestStatus
+            requestStatus,
+            buData,
+            queryIdLevel2
           );
           setMedicineOrderStatus(requestStatus);
           setFlatlistData(data);
@@ -762,7 +765,8 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         !additionalInfo
       ) {
         navigation.push(AppRoutes.NeedHelpQueryDetails, {
-          queryIdLevel2: item?.id,
+          queryIdLevel2: queryIdLevel2 !== '' ? queryIdLevel2 : item?.id,
+          queryIdLevel3: queryIdLevel2 !== '' ? item?.id : '',
           queryIdLevel1,
           queries,
           email,
@@ -811,7 +815,13 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     if (!subQueries?.length) {
       return null;
     }
-    let data = getQueryDataByOrderStatus(subQueriesData, isOrderRelatedIssue, medicineOrderStatus);
+    let data = getQueryDataByOrderStatus(
+      subQueriesData,
+      isOrderRelatedIssue,
+      medicineOrderStatus,
+      buData,
+      queryIdLevel2
+    );
     const showReturnOrder =
       MEDICINE_ORDER_STATUS.DELIVERED &&
       !!medicineOrderStatusDate &&

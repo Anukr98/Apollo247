@@ -1850,7 +1850,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
             }
           }
         }
-        attributesObj{
+        attributesObj {
           initialCollectionCharges
           distanceCharges
           homeCollectionCharges
@@ -3394,6 +3394,8 @@ export const GET_MEDICAL_PRISM_RECORD_V3 = gql`
       labResults {
         response {
           id
+          documentId
+          isClinicalDocument
           labTestName
           labTestSource
           packageId
@@ -5232,16 +5234,198 @@ export const ADD_DIABETIC_QUESTIONNAIRE = gql`
 `;
 
 export const GET_PAYMENT_METHODS = gql`
-  query getPaymentMethodsV2($is_mobile: Boolean, $payment_order_id: String!) {
-    getPaymentMethodsV2(is_mobile: $is_mobile, payment_order_id: $payment_order_id) {
-      name
-      minimum_supported_version
-      payment_methods {
-        image_url
-        payment_method_name
-        payment_method_code
+  query getPaymentMethodsV3(
+    $is_juspay_pharma: Boolean
+    $payment_order_id: String!
+    $prepaid_amount: Float!
+  ) {
+    getPaymentMethodsV3(
+      is_juspay_pharma: $is_juspay_pharma
+      payment_order_id: $payment_order_id
+      prepaid_amount: $prepaid_amount
+    ) {
+      linked_wallets {
+        id
+        object
+        wallet
+        token
+        current_balance
+        linked
+        last_refreshed
+        offers {
+          offer_id
+          cashback_amount
+          discount_amount
+          merchant_discount_amount
+          total_offered_amount
+          description {
+            offer_code
+            description
+          }
+        }
+        outage
+      }
+      offers {
+        offer_id
+        status
+        offer_description {
+          title
+          description
+          tnc
+          sponsored_by
+        }
+        offer_rules {
+          amount {
+            max_quantity
+            min_quantity
+          }
+          platform
+          payment_instrument {
+            payment_method
+            payment_method_type
+            type
+            variant
+          }
+        }
+        order_breakup {
+          order_amount
+          order_quantity
+          final_order_amount
+          discount_amount
+        }
+      }
+      saved_card_list {
+        customer_id
+        merchantId
+        cards {
+          card_number
+          card_exp_year
+          card_exp_month
+          card_type
+          card_issuer
+          card_brand
+          name_on_card
+          card_token
+          card_fingerprint
+          juspay_bank_code
+          outage
+          offers {
+            offer_id
+            cashback_amount
+            discount_amount
+            merchant_discount_amount
+            total_offered_amount
+            description {
+              offer_code
+              description
+            }
+          }
+        }
+      }
+      all_payment_modes {
+        name
         minimum_supported_version
-        outage_status
+        state
+        banner_text
+        payment_methods {
+          image_url
+          payment_method_name
+          payment_method_code
+          minimum_supported_version
+          outage_list {
+            outage_status
+            bank_code
+          }
+          offers {
+            offer_id
+            cashback_amount
+            discount_amount
+            merchant_discount_amount
+            total_offered_amount
+            description {
+              offer_code
+              description
+            }
+          }
+        }
+      }
+      preferred_payment_methods {
+        saved_cards {
+          customer_id
+          merchantId
+          cards {
+            card_number
+            card_exp_year
+            card_exp_month
+            card_type
+            card_issuer
+            card_brand
+            name_on_card
+            card_token
+            card_fingerprint
+            juspay_bank_code
+            outage
+            offers {
+              offer_id
+              cashback_amount
+              discount_amount
+              merchant_discount_amount
+              total_offered_amount
+              description {
+                offer_code
+                description
+              }
+            }
+          }
+        }
+        recently_used_or_defined {
+          name
+          minimum_supported_version
+          state
+          banner_text
+          payment_methods {
+            image_url
+            payment_method_name
+            payment_method_code
+            minimum_supported_version
+            outage_list {
+              outage_status
+              bank_code
+            }
+            offers {
+              offer_id
+              cashback_amount
+              discount_amount
+              merchant_discount_amount
+              total_offered_amount
+              description {
+                offer_code
+                description
+              }
+            }
+          }
+        }
+        linked_wallets {
+          id
+          object
+          wallet
+          token
+          current_balance
+          linked
+          last_refreshed
+          offers {
+            offer_id
+            cashback_amount
+            discount_amount
+            merchant_discount_amount
+            total_offered_amount
+            description {
+              offer_code
+              description
+            }
+          }
+          outage
+        }
       }
     }
   }
@@ -5384,6 +5568,7 @@ export const GET_ORDER_INFO = gql`
       DiagnosticsPaymentDetails {
         ordersList {
           allowPayment
+          paymentNotAllowedErrorString
         }
       }
     }
@@ -6873,41 +7058,42 @@ export const GET_REWARD_ID = gql`
 `;
 
 export const GET_CAMPAIGN_ID_FOR_REFERRER = gql`
-  query campaignInfo($camp: CAMPAIGN_TYPES!) {
-    getCampaignInfoByCampaignType(campaignType: $camp) {
+  query getCampaignInfo {
+    getCampaignInfo {
       id
       campaignType
     }
   }
 `;
 
-export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS = gql `
-query getDiagnosticPackageRecommendations($itemId:Int!, $cityId: Int!){
-  getDiagnosticPackageRecommendations(itemId:$itemId, cityId:$cityId){
-    packageRecommendations{
-      itemId
-      itemName
-      inclusions
-      packageCalculatedMrp
-      diagnosticInclusions{
+export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS = gql`
+  query getDiagnosticPackageRecommendations($itemId: Int!, $cityId: Int!) {
+    getDiagnosticPackageRecommendations(itemId: $itemId, cityId: $cityId) {
+      packageRecommendations {
         itemId
-        name
-        observations{
-          observationName
-          mandatoryValue
+        itemName
+        inclusions
+        packageCalculatedMrp
+        diagnosticInclusions{
+          itemId
+          name
+          observations{
+            observationName
+            mandatoryValue
+          }
         }
-      }
-      diagnosticPricing{
-        mrp
-        price
-        groupPlan
-        status
-        startDate
-        endDate
+        diagnosticPricing {
+          mrp
+          price
+          groupPlan
+          status
+          startDate
+          endDate
+        }
       }
     }
   }
-}`;
+`;
 
 export const CANCELL_SUBSCRIPTION = gql`
   mutation CancelSubscription($CancelSubscriptionInput: CancelSubscriptionInput!) {

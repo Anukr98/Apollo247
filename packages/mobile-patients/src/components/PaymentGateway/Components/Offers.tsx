@@ -13,19 +13,21 @@ export const Offers: React.FC<offersProps> = (props) => {
   const { offers, onPressTnC } = props;
   const [showMore, setShowMore] = useState<boolean>(false);
 
-  const renderOffer = (offer: any) => {
+  const renderOffer = (offer: any, index: number) => {
     const imageUrl = `${AppConfig.Configuration.offerIconBaseUrl}${offer?.offer_description?.sponsored_by}.png`;
     return (
-      <View style={styles.offer}>
-        <View style={{ flexDirection: 'row', marginHorizontal: 16 }}>
-          <Image style={{ height: 18, width: 18 }} source={{ uri: imageUrl }} />
-          <Text style={styles.offerTitle}>{offer?.offer_description?.title}</Text>
-        </View>
-        <View style={styles.offerCont}>
-          <Text style={styles.offerDescription}>{offer?.offer_description?.description}</Text>
+      <View style={{ ...styles.offer, borderTopWidth: index == 0 ? 0 : 1 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <View style={{ flexDirection: 'row', flex: 0.8 }}>
+            <Image style={{ height: 18, width: 18 }} source={{ uri: imageUrl }} />
+            <Text style={styles.offerTitle}>{offer?.offer_description?.title}</Text>
+          </View>
           <Text style={styles.TnC} onPress={() => onPressTnC(offer)}>
             TnC Apply
           </Text>
+        </View>
+        <View style={styles.offerCont}>
+          <Text style={styles.offerDescription}>{offer?.offer_description?.description}</Text>
         </View>
       </View>
     );
@@ -35,9 +37,12 @@ export const Offers: React.FC<offersProps> = (props) => {
     return (
       <View style={styles.ChildComponent}>
         {showMore ? (
-          <FlatList data={offers} renderItem={(item: any) => renderOffer(item?.item)} />
+          <FlatList
+            data={offers}
+            renderItem={(item: any) => renderOffer(item?.item, item?.index)}
+          />
         ) : (
-          renderOffer(offers[0])
+          renderOffer(offers[0], 0)
         )}
 
         {renderShowMore()}
@@ -46,14 +51,14 @@ export const Offers: React.FC<offersProps> = (props) => {
   };
 
   const renderShowMore = () => {
-    return (
+    return offers?.length > 1 ? (
       <TouchableOpacity style={styles.showMoreCont} onPress={() => setShowMore(!showMore)}>
-        <Text style={styles.showMore}>{showMore ? 'Show Less' : 'Show More'}</Text>
+        <Text style={styles.showMore}>{showMore ? 'SHOW LESS' : 'SHOW MORE'}</Text>
         <DownOrange
           style={{ ...styles.downArrow, transform: [{ rotate: showMore ? '180deg' : '0deg' }] }}
         />
       </TouchableOpacity>
-    );
+    ) : null;
   };
 
   const renderHeader = () => {
@@ -64,6 +69,7 @@ export const Offers: React.FC<offersProps> = (props) => {
       </View>
     );
   };
+
   return !!offers?.length ? (
     <View>
       {renderHeader()}
@@ -74,19 +80,23 @@ export const Offers: React.FC<offersProps> = (props) => {
 
 const styles = StyleSheet.create({
   ChildComponent: {
-    backgroundColor: '#F6FFFF',
+    backgroundColor: '#FAFEFF',
+    marginHorizontal: 16,
+    borderWidth: 1,
+    borderColor: '#D4D4D4',
+    borderRadius: 4,
   },
   header: {
     alignItems: 'center',
-    marginHorizontal: 20,
+    marginHorizontal: 16,
     flexDirection: 'row',
     paddingBottom: 10,
-    marginTop: 20,
+    marginTop: 30,
     borderColor: 'rgba(0,0,0,0.1)',
   },
   heading: {
-    ...theme.fonts.IBMPlexSansBold(13),
-    lineHeight: 17,
+    ...theme.fonts.IBMPlexSansSemiBold(12),
+    lineHeight: 18,
     color: '#01475B',
     marginLeft: 4,
   },
@@ -96,8 +106,9 @@ const styles = StyleSheet.create({
   },
   offer: {
     paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#EBEBEB',
+    borderTopWidth: 1,
+    borderTopColor: '#EBEBEB',
+    marginHorizontal: 12,
   },
   offerTitle: {
     ...theme.fonts.IBMPlexSansMedium(12),
@@ -106,18 +117,15 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   offerCont: {
-    flexDirection: 'row',
     marginTop: 2,
-    marginHorizontal: 16,
+    flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    alignItems: 'center',
   },
   offerDescription: {
     ...theme.fonts.IBMPlexSansRegular(12),
     lineHeight: 18,
     color: '#01475B',
-    flex: 0.84,
+    marginTop: 2,
   },
   showMore: {
     ...theme.fonts.IBMPlexSansBold(12),
@@ -133,14 +141,16 @@ const styles = StyleSheet.create({
   showMoreCont: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 10,
+    marginTop: 6,
     marginHorizontal: 16,
+    marginBottom: 12,
   },
   TnC: {
     ...theme.fonts.IBMPlexSansMedium(12),
     lineHeight: 18,
     color: '#FC9916',
     marginLeft: 6,
-    flex: 0.16,
+    flex: 0.2,
+    textAlign: 'right',
   },
 });

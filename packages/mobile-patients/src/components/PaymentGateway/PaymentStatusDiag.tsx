@@ -21,7 +21,10 @@ import { useGetDiagOrderInfo } from '@aph/mobile-patients/src/components/Payment
 import { TabBar } from '@aph/mobile-patients/src/components/PaymentGateway/Components/TabBar';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { goToConsultRoom } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  clearStackAndNavigate,
+  goToConsultRoom,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { apiCallEnums } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -53,6 +56,9 @@ import {
   DiagnosticOrderPlaced,
   firePurchaseEvent,
 } from '@aph/mobile-patients/src/components/Tests/Events';
+import LottieView from 'lottie-react-native';
+const paymentSuccess =
+  '@aph/mobile-patients/src/components/PaymentGateway/AnimationFiles/Animation_2/tick.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { InfoIconRed } from '@aph/mobile-patients/src/components/ui/Icons';
 
@@ -100,7 +106,6 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
   const [showPassportModal, setShowPassportModal] = useState<boolean>(false);
   const [passportNo, setPassportNo] = useState<any>([]);
   const [passportData, setPassportData] = useState<any>([]);
-
   const orderCartSaving = orderDetails?.cartSaving!;
   const orderCircleSaving = orderDetails?.circleSaving!;
   const circleSavings = isDiagnosticCircleSubscription ? Number(orderCircleSaving) : 0;
@@ -228,13 +233,16 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
       apiCallEnums.getAllBanners,
       apiCallEnums.plansCashback,
       apiCallEnums.getUserSubscriptions,
+      apiCallEnums.getUserSubscriptionsV2,
+      apiCallEnums.oneApollo,
+      apiCallEnums.getPlans,
     ];
     goToConsultRoom(props.navigation);
   };
 
   const moveToMyOrders = () => {
-    props.navigation.push(AppRoutes.YourOrdersTest, {
-      source: AppRoutes.PaymentStatusDiag,
+    clearStackAndNavigate(props.navigation, AppRoutes.YourOrdersTest, {
+      source: AppRoutes.CartPage,
     });
   };
 
@@ -267,9 +275,14 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
 
   const navigateToOrderDetails = (showOrderSummaryTab: boolean, orderId: string) => {
     setLoading?.(false);
-    apisToCall.current = [apiCallEnums.circleSavings];
-    props.navigation.popToTop({ immediate: true });
-    props.navigation.push(AppRoutes.TestOrderDetails, {
+    apisToCall.current = [
+      apiCallEnums.circleSavings,
+      apiCallEnums.plansCashback,
+      apiCallEnums.getUserSubscriptions,
+      apiCallEnums.getUserSubscriptionsV2,
+      apiCallEnums.oneApollo,
+    ];
+    const paramObject = {
       orderId: !!modifiedOrderDetails ? modifiedOrderDetails?.id : orderId,
       setOrders: null,
       selectedOrder: null,
@@ -279,7 +292,8 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
       showOrderSummaryTab: false,
       disableTrackOrder: false,
       amount: orderDetails?.amount,
-    });
+    };
+    clearStackAndNavigate(props.navigation, AppRoutes.TestOrderDetails, paramObject);
   };
 
   const renderPaymentStatus = () => {
@@ -358,6 +372,24 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
     ) : null;
   };
 
+  const [animationfinished, setAnimationfinished] = useState<boolean>(false);
+
+  const renderSucccessAnimation = () => {
+    return (
+      <View style={{ alignItems: 'center' }}>
+        <LottieView
+          source={require(paymentSuccess)}
+          onAnimationFinish={() => setAnimationfinished(true)}
+          autoPlay
+          loop={false}
+          autoSize={true}
+          style={{ width: 225, marginBottom: 40 }}
+          imageAssetsFolder={'lottie/animation_2/images'}
+        />
+      </View>
+    );
+  };
+
   const renderNoticeText = () => {
     return (
       <View style={styles.noticeText}>
@@ -392,7 +424,7 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
 
   return (
     <>
-      {!fetching ? (
+      {animationfinished && !fetching ? (
         <SafeAreaView style={styles.container}>
           <ScrollView>
             {renderPaymentStatus()}
@@ -408,7 +440,7 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
           {renderTabBar()}
         </SafeAreaView>
       ) : (
-        <Spinner />
+        renderSucccessAnimation()
       )}
     </>
   );

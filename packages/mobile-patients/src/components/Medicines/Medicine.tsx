@@ -283,6 +283,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setBannerData,
     bannerData,
     pharmacyUserType,
+    setIsRenew,
   } = useAppCommonData();
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const {
@@ -307,12 +308,15 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     serverCartLoading,
     serverCartErrorMessage,
     setServerCartErrorMessage,
+    serverCartMessage,
+    setServerCartMessage,
     cartPrescriptions,
     cartLocationDetails,
     newAddressAdded,
     setNewAddressAdded,
     setAddToCartSource,
     cartCircleSubscriptionId,
+    setServerCartItems,
   } = useShoppingCart();
   const {
     setUserActionPayload,
@@ -423,12 +427,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    if (serverCartErrorMessage) {
+    if (serverCartErrorMessage || serverCartMessage) {
       hideAphAlert?.();
       showAphAlert!({
         unDismissable: true,
         title: 'Hey',
-        description: serverCartErrorMessage,
+        description: serverCartErrorMessage || serverCartMessage,
         titleStyle: theme.viewStyles.text('SB', 18, '#890000'),
         ctaContainerStyle: { justifyContent: 'flex-end' },
         CTAs: [
@@ -437,13 +441,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             type: 'orange-link',
             onPress: () => {
               setServerCartErrorMessage?.('');
+              setServerCartMessage?.('');
               hideAphAlert?.();
             },
           },
         ],
       });
     }
-  }, [serverCartErrorMessage]);
+  }, [serverCartErrorMessage, serverCartMessage]);
 
   useEffect(() => {
     const addressLength = addresses?.length;
@@ -1721,19 +1726,21 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
 
       if (data) {
-        if (data?.APOLLO?.[0]._id) {
-          AsyncStorage.setItem('circleSubscriptionId', data?.APOLLO?.[0]._id);
-          setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
+        const circleData = data?.APOLLO?.[0];
+        if (circleData._id) {
+          AsyncStorage.setItem('circleSubscriptionId', circleData._id);
+          setCircleSubscriptionId && setCircleSubscriptionId(circleData._id);
           setIsCircleSubscription && setIsCircleSubscription(true);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
           const planValidity = {
-            startDate: data?.APOLLO?.[0]?.start_date,
-            endDate: data?.APOLLO?.[0]?.end_date,
-            plan_id: data?.APOLLO?.[0]?.plan_id,
-            source_identifier: data?.APOLLO?.[0]?.source_meta_data?.source_identifier,
+            startDate: circleData?.start_date,
+            endDate: circleData?.end_date,
+            plan_id: circleData?.plan_id,
+            source_identifier: circleData?.source_meta_data?.source_identifier,
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
-          if (data?.APOLLO?.[0]?.status === 'disabled') {
+          setIsRenew && setIsRenew(!!circleData?.renewNow);
+          if (circleData?.status === 'disabled') {
             setIsCircleExpired && setIsCircleExpired(true);
             setNonCircleValues();
           } else {
@@ -2139,9 +2146,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const getItemQuantity = (id: string) => {
+  const getItemQuantity = (id: string): number => {
     const foundItem = serverCartItems?.find((item) => item?.sku == id);
-    return foundItem ? foundItem.quantity : 0;
+    return foundItem ? Number(foundItem.quantity) : 0;
   };
 
   const onNotifyMeClick = (name: string) => {
@@ -2168,7 +2175,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const { item, index } = data;
     const key = 'queryName';
     const keywordArr = [];
-    medicineList.map((obj) => {
+    medicineList.map((obj: any) => {
       if (Object.keys(obj).includes(key)) {
         keywordArr.push(obj?.queryName);
       }
@@ -2203,7 +2210,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               sku: item?.sku,
               movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
             });
-            const availability = getAvailabilityForSearchSuccess(pharmacyPincode, item?.sku);
+            const availability = getAvailabilityForSearchSuccess(pharmacyPincode || '', item?.sku);
             const discount = getDiscountPercentage(item?.price, item?.special_price);
             const discountPercentage = discount ? discount + '%' : '0%';
             const cleverTapEventAttributes = {
@@ -2227,6 +2234,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           }
         }}
         onPressAddToCart={() => {
+          updateServerCartLocally(1, item?.sku);
           const comingFromSearch = true;
           const discount = getDiscountPercentage(item?.price, item?.special_price);
           const discountPercentage = discount ? discount + '%' : '0%';
@@ -2268,43 +2276,79 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         onPressAdd={() => {
           setSearchItemAdded(item?.sku);
           setSearchItemLoading({ ...searchItemLoading, [item?.sku]: true });
-          const q = getItemQuantity(item?.sku);
-          if (q == getMaxQtyForMedicineItem(item?.MaxOrderQty)) return;
-          setCurrentProductQuantityInCart(q + 1);
-          setUserActionPayload?.({
-            medicineOrderCartLineItems: [
-              {
-                medicineSKU: item?.sku,
-                quantity: q + 1,
-              },
-            ],
-          });
+          let qty: number = getItemQuantity(item?.sku);
+          if (qty < getMaxQtyForMedicineItem(item?.MaxOrderQty)) {
+            qty = qty + 1;
+            updateServerCartLocally(1, item?.sku);
+            setCurrentProductQuantityInCart(qty);
+            setUserActionPayload?.({
+              medicineOrderCartLineItems: [
+                {
+                  medicineSKU: item?.sku,
+                  quantity: qty,
+                },
+              ],
+            });
+          } else {
+            setCurrentProductQuantityInCart(qty + 1);
+            setUserActionPayload?.({
+              medicineOrderCartLineItems: [
+                {
+                  medicineSKU: item?.sku,
+                  quantity: qty + 1,
+                },
+              ],
+            });
+          }
         }}
         onPressSubstract={() => {
+          updateServerCartLocally(-1, item?.sku);
           setSearchItemAdded(item?.sku);
           setSearchItemLoading({ ...searchItemLoading, [item?.sku]: true });
-          const q = getItemQuantity(item?.sku);
-          setCurrentProductQuantityInCart(q - 1);
+          let qty: number = getItemQuantity(item?.sku);
+          qty = qty - 1;
+          setCurrentProductQuantityInCart(qty);
           setUserActionPayload?.({
             medicineOrderCartLineItems: [
               {
                 medicineSKU: item?.sku,
-                quantity: q - 1,
+                quantity: qty,
               },
             ],
           });
         }}
-        quantity={getItemQuantity(item?.sku)}
+        quantity={getItemQuantity(item?.sku) || 0}
         data={item}
         loading={searchItemLoading[item?.sku]}
+        disableAction={serverCartLoading}
         showSeparator={index !== medicineList?.length - 1}
         style={{
           marginHorizontal: 20,
           paddingBottom: index == medicineList?.length - 1 ? 20 : 0,
         }}
-        disableAction={searchItemAdded ? true : false}
       />
     );
+  };
+
+  const updateServerCartLocally = (quantity: number = 0, id: string) => {
+    try {
+      const items = serverCartItems || [];
+      let doesExists = false;
+      items.forEach((i) => {
+        const qty = i?.quantity || 0;
+        if (i?.sku === id) {
+          i.quantity = qty + quantity;
+          doesExists = true;
+          return;
+        }
+      });
+
+      if (!doesExists) {
+        items.push({ sku: id, quantity: 1 });
+      }
+
+      setServerCartItems && setServerCartItems(items);
+    } catch (e) {}
   };
 
   const renderSearchResults = () => {
@@ -2498,6 +2542,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderCircleCartDetails = () => (
     <CircleBottomContainer
+      serverCartLoading={serverCartLoading}
       onPressGoToCart={() => props.navigation.navigate(AppRoutes.ServerCart)}
       onPressUpgradeTo={() => {
         setShowCirclePopup(true);
@@ -2612,9 +2657,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           keyboardShouldPersistTaps="always"
           onScroll={(event) => {
             //increments only for down scroll
-            const currentOffset = event.nativeEvent.contentOffset?.y;
-            currentOffset > (this.offset || 0) && (scrollCount.current += 1);
-            this.offset = currentOffset;
+            try {
+              const currentOffset = event.nativeEvent.contentOffset?.y;
+              currentOffset > (this.offset || 0) && (scrollCount.current += 1);
+              this.offset = currentOffset;
+            } catch (e) {}
 
             bannerScrollRef.current &&
               bannerScrollRef.current.measure(
@@ -2634,7 +2681,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           </View>
         </KeyboardAwareScrollView>
       </SafeAreaView>
-      {!!serverCartItems?.length && renderCircleCartDetails()}
+
+      {(!!serverCartItems?.length || serverCartLoading) && renderCircleCartDetails()}
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
       {showCirclePopup && renderCircleMembershipPopup()}
       {showSuggestedQuantityNudge &&

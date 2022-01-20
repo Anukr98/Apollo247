@@ -31,8 +31,10 @@ export const Helpers = {
   getQueryDataByOrderStatus: (
     queryData: NeedHelpHelpers.HelpSectionQuery,
     isOrderRelatedIssue: boolean,
-    orderStatus: any
-  ) => {
+    orderStatus: any,
+    buQuery: NeedHelpHelpers.HelpSectionQuery,
+    idLevel2: string | null,
+    ) => {
     let queries = [];
     const queriesByOrderStatus = queryData?.queriesByOrderStatus?.[orderStatus] as
       | string[]
@@ -43,7 +45,15 @@ export const Helpers = {
      // here this condition is implemented to handle backward compatiability of old version of apps. We can revert it later on.
       const nonOrderQueries = queryData?.id == helpSectionQueryId.diagnostic ? diagNonOrderQueries?.nonOrderQueries : queryData?.nonOrderQueries as string[] | undefined;
       
-    if (queriesByOrderStatus && orderStatus) {
+    if (idLevel2 && orderStatus && isOrderRelatedIssue) {
+      buQuery?.queriesByOrderStatus?.[orderStatus].forEach((qId: string) => {
+        queryData?.queries?.forEach(qElement => {
+          if(qElement?.id === qId){
+            queries.push(qElement);
+          }
+        });
+      });
+    } else if (queriesByOrderStatus && orderStatus) {
       queriesByOrderStatus.forEach((qId) => {
         queryData?.queries?.forEach(qElement => {
           if(qElement?.id === qId){
@@ -58,6 +68,13 @@ export const Helpers = {
     }
 
     return (queries.length ?  queries :  queryData?.queries ? queryData?.queries : []) as NeedHelpHelpers.HelpSectionQuery[];
+  },
+  getBuData: (
+    queries: NeedHelpHelpers.HelpSectionQuery[],
+    idLevel1: string | null,
+  ) => {
+    const data = queries.find((q1) => q1.id === idLevel1);
+    return data as NeedHelpHelpers.HelpSectionQuery;
   },
 };
 

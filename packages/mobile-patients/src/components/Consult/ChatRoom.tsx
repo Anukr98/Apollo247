@@ -238,7 +238,6 @@ import {
   createVonageSessionToken,
   createVonageSessionTokenVariables,
 } from '../../graphql/types/createVonageSessionToken';
-import InAppReview from 'react-native-in-app-review';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 interface OpentokStreamObject {
@@ -1432,8 +1431,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const typingThrottleTime = 200; //0.2 seconds
   const typingClearTime = 1000; //1 seconds
   const clearTimerId = useRef<NodeJS.Timeout>();
-  const [isVideoCallFeedback, setIsVideoCallFeedback] = useState<boolean>(false);
-  const [isCallEnded, setIsCallEnded] = useState<boolean>(false);
 
   let cancelAppointmentTitle = `${string.common.cancelAppointmentBody} ${
     appointmentData?.appointmentType === APPOINTMENT_TYPE.PHYSICAL ? 'Physical' : 'Online'
@@ -1563,12 +1560,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setChatReceived(false);
     setHideStatusBar(false);
   };
-
-  useEffect(() => {
-    if (isCallEnded) {
-      videoPerfectionfeedback(callDuration);
-    }
-  }, [isCallEnded]);
 
   const postAppointmentWEGEvent = (
     type:
@@ -3380,15 +3371,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     currentCallRetryAttempt.current = 1;
   };
 
-  const videoPerfectionfeedback = (duration: number) => {
-    if (duration && duration >= 300) {
-      appReviewAndRating();
-    } else {
-      setIsVideoCallFeedback(true);
-      setShowFeedback(true);
-    }
-  };
-
   const callEndWebengageEvent = (
     source: WebEngageEvents[WebEngageEventName.CALL_ENDED]['Ended by'],
     data:
@@ -4213,20 +4195,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
     } else {
       addMessages(message);
-    }
-  };
-
-  const appReviewAndRating = async () => {
-    try {
-      if (InAppReview.isAvailable()) {
-        await InAppReview.RequestInAppReview()
-          .then((hasFlowFinishedSuccessfully) => {})
-          .catch((error) => {
-            CommonBugFender('inAppReviewForDoctorConsult', error);
-          });
-      }
-    } catch (error) {
-      CommonBugFender('inAppRevireCallend', error);
     }
   };
 
@@ -6168,11 +6136,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       // Consult in Progress
       currentProgressBarPosition.current = 1;
     } else {
-      if (status.current === STATUS.COMPLETED) {
+      if (status.current === STATUS.PRESCRIPTION_PENDING) {
+        currentProgressBarPosition.current = 2;
+      } else if (status.current === STATUS.COMPLETED) {
         if (!isProgressBarVisible.current) {
           time = `Consult is completed`;
         }
-        currentProgressBarPosition.current = 2;
       } else if (appointmentDiffMin <= 0) {
         time = `Joining soon. Please wait!`;
       } else if (appointmentDiffMin > 0 && appointmentDiffMin < 60 && diffHours <= 1) {
@@ -6842,7 +6811,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setChatReceived(false);
       postAppointmentWEGEvent(WebEngageEventName.PATIENT_ENDED_CONSULT);
       callEndWebengageEvent('Patient');
-      setIsCallEnded(true);
       if (publishPubnub && patientId == currentPatient?.id) {
         pubnub.publish(
           {
@@ -6899,7 +6867,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setCameraPosition('front');
       postAppointmentWEGEvent(WebEngageEventName.PATIENT_ENDED_CONSULT);
       callEndWebengageEvent('Patient');
-      setIsCallEnded(true);
 
       if (publishPubnub && patientId == currentPatient?.id) {
         pubnub.publish(
@@ -8306,25 +8273,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       {showweb && showWeimageOpen()}
       <FeedbackPopup
         onComplete={(ratingStatus, ratingOption) => {
-          if (!isVideoCallFeedback) {
-            fetchAppointmentData();
-          }
+          fetchAppointmentData();
           postRatingGivenWEGEvent(ratingStatus!, ratingOption);
           setShowFeedback(false);
           showAphAlert!({
             title: 'Thanks :)',
             description: 'Your feedback has been submitted. Thanks for your time.',
           });
-          setIsVideoCallFeedback(false);
         }}
         transactionId={apptId}
         title="We value your feedback! :)"
         description="How was your overall experience with the following consultation —"
         info={{
           title: `${g(appointmentData, 'doctorInfo', 'displayName') || ''}`,
-          description: isVideoCallFeedback
-            ? moment(appointmentData.appointmentDateTime).format('D MMM YYYY, hh:mm A')
-            : `Today, ${moment(appointmentData.appointmentDateTime).format('hh:mm A')}`,
+          description: `Today, ${moment(appointmentData.appointmentDateTime).format('hh:mm A')}`,
           photoUrl: `${g(appointmentData, 'doctorInfo', 'photoUrl') || ''}`,
         }}
         type={FEEDBACKTYPE.CONSULT}

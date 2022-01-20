@@ -24,7 +24,7 @@ export enum AppEnv {
   QA8 = 'QA8',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA5 as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA3 as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -334,15 +334,14 @@ const appStaticVariables = {
     orderConfirmationHeader: 'FREE Consult booked for you',
     prescriptionOptionHeader: "I don't have a prescription",
   },
-  DIAGNOSTICS_NUDGE_MESSAGE_CONDITION: [{"Circle": true, "NonCircle": true}],
-  DIAGNOSTICS_NUDGE_MESSAGE_TEXT:"Extra 15% off for circle customers. TnC Apply",
-  DIAGNOSITCS_WIDGET_TITLES: 
-    {
-      "frequentlyBrought": string.diagnostics.frequentlyBrought,
-      "topBookedTests": string.diagnostics.topBookedTests,
-      "similarPackages": string.diagnostics.similarPackages,
-      "topPackages": "Top Packages with "
-    },
+  DIAGNOSTICS_NUDGE_MESSAGE_CONDITION: [{ Circle: true, NonCircle: true }],
+  DIAGNOSTICS_NUDGE_MESSAGE_TEXT: 'Extra 15% off for circle customers. TnC Apply',
+  DIAGNOSITCS_WIDGET_TITLES: {
+    frequentlyBrought: string.diagnostics.frequentlyBrought,
+    topBookedTests: string.diagnostics.topBookedTests,
+    similarPackages: string.diagnostics.similarPackages,
+    "topPackages": "Top Packages with "
+  },
   DeliveryIn_TAT_Text: 'Express Delivery',
   WHATSAPP_TO_ORDER: {
     bannerMessage: 'You can get 25% Discount + FREE Delivery on your first three orders.',
@@ -379,7 +378,7 @@ const appStaticVariables = {
       phoneNumber: string.diagnostics.uploadPrescriptionWhatsapp.whatsappPhoneNumber,
     },
   ],
-  DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER_TEXT: string.diagnosticsCartPage.reviewPagePolicyText
+  DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER_TEXT: string.diagnosticsCartPage.reviewPagePolicyText,
 };
 
 const DEV_top_specialties = [

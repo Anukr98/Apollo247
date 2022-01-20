@@ -560,10 +560,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         fetchPolicy: 'no-cache',
       });
       let allowPayment = true;
+      // filtering diag orders whose allowPayment is set as false
       const diagOrder = response?.data?.getOrderInternal?.DiagnosticsPaymentDetails?.ordersList?.find(
-        (item: any) => item?.allowPayment
+        (item: any) => !item?.allowPayment
       );
-      allowPayment = !!diagOrder ? diagOrder?.allowPayment : true;
+      // if there is atleast one order whose allowpayment is set as false, then we shouldn't allow the payment
+      allowPayment = !!diagOrder ? false : true;
       if (allowPayment) {
         const paymentStatus = response?.data?.getOrderInternal?.payment_status;
         const allowedStatuses = ['PAYMENT_NOT_INITIATED', 'TXN_FAILURE', 'COD_COMPLETE'];
@@ -590,18 +592,19 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         }
       } else {
         navigateToHome(props.navigation);
-        showPaymentAlert();
+        showPaymentAlert(diagOrder?.paymentNotAllowedErrorString);
       }
     } catch (error) {
       navigateToHome(props.navigation);
     }
   };
 
-  const showPaymentAlert = () => {
+  const showPaymentAlert = (msg: string) => {
     showAphAlert!({
       title: 'Uh oh! :(',
-      description:
-        'Payment can’t be made for this order. Please check my order section for more details.',
+      description: !!msg
+        ? msg
+        : 'Payment can’t be made for this order. Please check my order section for more details.',
     });
   };
 

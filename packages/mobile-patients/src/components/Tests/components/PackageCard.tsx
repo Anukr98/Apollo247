@@ -134,8 +134,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
             )
           );
       } else {
-        getMandatoryParamter =
-          !!inclusions &&
+        !!inclusions &&
           inclusions?.length > 0 &&
           inclusions?.map((inclusion: any) =>
             getMandatoryParamterResults(inclusion?.incObservationData)

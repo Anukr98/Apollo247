@@ -62,9 +62,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#D6CEE3',
   },
   siteHospitalNameLocalityContainer: {},
-  siteHospitalName: {
-    ...theme.viewStyles.text('M', 12, '#02475B'),
-  },
   siteHopitalLocality: {
     ...theme.viewStyles.text('R', 12, '#02475B'),
   },
@@ -215,9 +212,20 @@ export const VaccineSiteDateSelector: React.FC<VaccineSiteDateSelectorProps> = (
   }, [currentStripIndex]);
 
   const renderHospitalSiteItem = (item: any, index: number) => {
+    let fontSize = 12;
+    let hospitalName = item.name;
+
+    if (hospitalName.length < 30) {
+      fontSize = 12;
+    } else if (hospitalName.length > 30 && hospitalName.length <= 50) {
+      fontSize = 9;
+    } else if (hospitalName.length > 50) {
+      fontSize = 6;
+    }
+
     return (
       <View style={[styles.siteHospitalNameLocalityContainer, { height: 50 }]}>
-        <Text style={styles.siteHospitalName}>{item.name}</Text>
+        <Text style={{ ...theme.viewStyles.text('M', fontSize, '#02475B') }}>{hospitalName}</Text>
         <Text style={styles.siteHopitalLocality}>{item.city}</Text>
       </View>
     );

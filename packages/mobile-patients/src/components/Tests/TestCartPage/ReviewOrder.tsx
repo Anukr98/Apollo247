@@ -69,6 +69,7 @@ import {
   OrderCreate,
   OrderVerticals,
   patientObjWithLineItems,
+  PlanPurchaseType,
   SaveBookHomeCollectionOrderInputv2,
   saveModifyDiagnosticOrderInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -254,6 +255,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     circleStatus,
     circlePlanId,
     activeUserSubscriptions,
+    isRenew,
   } = useAppCommonData();
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
@@ -289,6 +291,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const [showCirclePopup, setShowCirclePopup] = useState<boolean>(false);
   const [isClicked, setIsClicked] = useState<boolean>(false);
   const [reportTat, setReportTat] = useState<string>('');
+  const [isFocused, setIsFocused] = useState<boolean>(false);
 
   let lineItemWithQuantity: any = [];
   let itemNamesToRemove_global: string[] = [];
@@ -379,6 +382,21 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   }
 
   useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      setIsFocused(true);
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+    const willBlur = props.navigation.addListener('willBlur', (payload) => {
+      setIsFocused(false);
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      willBlur && willBlur.remove();
+    };
+  }, []);
+
+  useEffect(() => {
     calculateNormalSavings();
   }, [coupon]);
 
@@ -436,8 +454,10 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    triggerCartPageViewed();
-  }, [toPayPrice]);
+    if (isFocused) {
+      triggerCartPageViewed();
+    }
+  }, [toPayPrice, isFocused]);
 
   const paitentTotalCart: any[] = [];
     patientCartItemsCopy?.map((item: any) => {
@@ -1599,9 +1619,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const showCirclePurchaseAmount = isDiagnosticCircleSubscription || isCircleAddedToCart;
     const showCircleRelatedSavings =
       showCirclePurchaseAmount && circleSaving > 0 && (!!coupon ? couponCircleBenefits : true);
-    const showOneApollo = isModifyFlow
-      ? modifiedOrder?.paymentType === DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT
-      : true;
+    //commented for this release
+    // const showOneApollo = isModifyFlow
+    //   ? modifiedOrder?.paymentType === DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT
+    //   : true;
+    const showOneApollo = false
     return (
       <>
         <View
@@ -2899,7 +2921,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const storeCode =
       Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
 
-    const purchaseInput = {
+    const purchaseInput: CreateUserSubscriptionVariables = {
       userSubscription: {
         mobile_number: currentPatient?.mobileNumber,
         plan_id: planId,
@@ -2908,6 +2930,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           : defaultCirclePlan?.subPlanId,
         storeCode,
         transaction_date_time: new Date().toISOString(),
+        source_meta_data: {
+          purchase_type: isRenew ? PlanPurchaseType.renew : PlanPurchaseType.first_time,
+        },
       },
     };
 

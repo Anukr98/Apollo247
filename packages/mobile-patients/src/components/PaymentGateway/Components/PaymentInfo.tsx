@@ -14,7 +14,7 @@ export const PaymentInfo: React.FC<PaymentInfoProps> = (props) => {
 
   const renderPaymentInfo = () => {
     return (
-      <View>
+      <View style={{ marginRight: 16 }}>
         <View style={{ flexDirection: 'row' }}>
           <Text style={styles.orderId}>Order ID:</Text>
           <Text style={styles.id}>{orderIds}</Text>

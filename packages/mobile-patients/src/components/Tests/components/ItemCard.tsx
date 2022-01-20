@@ -154,6 +154,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
       const isAddedToCart = !!cartItems?.find(
         (items) => Number(items?.id) == Number(getItem?.itemId)
       );
+
       const nonInclusionTests =
         !!inclusions && inclusions?.length > 0
           ? inclusions?.filter((inclusion: any) => inclusion?.incObservationData?.length == 0)

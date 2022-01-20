@@ -723,6 +723,7 @@ export enum STATUS {
   PAYMENT_PENDING_PG = 'PAYMENT_PENDING_PG',
   PENDING = 'PENDING',
   UNAVAILABLE_MEDMANTRA = 'UNAVAILABLE_MEDMANTRA',
+  PRESCRIPTION_PENDING = 'PRESCRIPTION_PENDING',
 }
 
 export enum SiteType {
@@ -2053,6 +2054,7 @@ export interface UpdatePatientInput {
   partnerId?: string | null;
   appsflyerId?: string | null;
   isConsulted?: boolean | null;
+  whatsappOptIn?: boolean;
 }
 
 export interface UploadDocumentInput {
