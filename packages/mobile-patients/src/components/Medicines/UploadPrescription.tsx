@@ -1017,9 +1017,9 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
 
       const phyPresUrls = uploadedPhyPrescriptions.map((item) => item!.filePath).filter((i) => i);
       const phyPresPrismIds = uploadedPhyPrescriptions.map((item) => item?.fileId).filter((i) => i);
-      const ePresUrls = e_Prescription.map((item) => item?.uploadedUrl).filter((i) => i);
+      const ePresUrls = e_Prescription.map((item) => item.uploadedUrl).filter((i) => i);
       const ePresPrismIds = e_Prescription
-        .map((item) => item?.prismPrescriptionFileId)
+        .map((item) => item.prismPrescriptionFileId)
         .filter((i) => i);
       const reUploadPrescriptionInput: ReUploadPrescriptionVariables = {
         prescriptionInput: {
@@ -1077,7 +1077,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         }
         renderSuccessPopup(orderId!);
         const newVal = [{ id: orderId }];
-        if (onHoldOptionOrder!.find((item) => item?.id == orderId)) {
+        if (onHoldOptionOrder!.find((item) => item.id == orderId)) {
           setLoading!(false);
           return;
         }
