@@ -9,7 +9,7 @@ import { ListItem } from 'react-native-elements';
 export interface CartSavingsProps {}
 
 export const CartSavings: React.FC<CartSavingsProps> = (props) => {
-  const { serverCartAmount, isCircleCart, cartSubscriptionDetails } = useShoppingCart();
+  const { serverCartAmount, isCircleCart } = useShoppingCart();
   const [savingDetailsVisible, setSavingDetailsVisible] = useState(true);
 
   const cartSavings = serverCartAmount?.cartSavings || 0;
@@ -17,19 +17,15 @@ export const CartSavings: React.FC<CartSavingsProps> = (props) => {
   const deliveryCharges = serverCartAmount?.deliveryCharges || 0;
   const isDeliveryFree = serverCartAmount?.isDeliveryFree || 0;
   const totalCashBack = serverCartAmount?.totalCashBack || 0;
-  const circleMembershipCashback =
-    isCircleCart && !!cartSubscriptionDetails?.subscriptionApplied
-      ? serverCartAmount?.circleSavings?.membershipCashBack || 0
-      : 0;
+  const circleMembershipCashback = isCircleCart
+    ? serverCartAmount?.circleSavings?.membershipCashBack || 0
+    : 0;
   const circleDeliverySavings = isCircleCart
     ? serverCartAmount?.circleSavings?.circleDelivery || 0
     : 0;
   const deliverySavings = isDeliveryFree || circleDeliverySavings > 0 ? deliveryCharges : 0;
   const totalSavings =
-    cartSavings +
-    couponSavings +
-    deliverySavings +
-    (isCircleCart && !!cartSubscriptionDetails?.subscriptionApplied ? totalCashBack : 0);
+    cartSavings + couponSavings + deliverySavings + (isCircleCart ? totalCashBack : 0);
   const totalCouldSaveByCircle = deliveryCharges + totalCashBack + cartSavings;
 
   const renderYouSavedCard = () => {
