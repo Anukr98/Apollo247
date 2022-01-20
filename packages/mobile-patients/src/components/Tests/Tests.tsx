@@ -1776,24 +1776,23 @@ export const Tests: React.FC<TestsProps> = (props) => {
             {sectionLoading ? (
               renderDiagnosticWidgetShimmer(false) //to load package card
             ) : (
-              <Text>po</Text>
-              // <PackageCard
-              //   data={data}
-              //   diagnosticWidgetData={data?.diagnosticWidgetData?.slice(
-              //     0,
-              //     data?.diagnosticWidgetData?.length >= listShowLength
-              //       ? listShowLength
-              //       : data?.diagnosticWidgetData?.length
-              //   )}
-              //   isPriceAvailable={isPriceAvailable}
-              //   isCircleSubscribed={isDiagnosticCircleSubscription}
-              //   isServiceable={isDiagnosticLocationServiceable}
-              //   isVertical={false}
-              //   navigation={props.navigation}
-              //   source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME}
-              //   sourceScreen={AppRoutes.Tests}
-              //   widgetHeading={data?.diagnosticWidgetTitle}
-              // />
+              <PackageCard
+                data={data}
+                diagnosticWidgetData={data?.diagnosticWidgetData?.slice(
+                  0,
+                  data?.diagnosticWidgetData?.length >= listShowLength
+                    ? listShowLength
+                    : data?.diagnosticWidgetData?.length
+                )}
+                isPriceAvailable={isPriceAvailable}
+                isCircleSubscribed={isDiagnosticCircleSubscription}
+                isServiceable={isDiagnosticLocationServiceable}
+                isVertical={false}
+                navigation={props.navigation}
+                source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME}
+                sourceScreen={AppRoutes.Tests}
+                widgetHeading={data?.diagnosticWidgetTitle}
+              />
             )}
           </>
         }

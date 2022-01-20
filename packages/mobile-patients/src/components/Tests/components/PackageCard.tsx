@@ -114,7 +114,9 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
         sourceScreen == AppRoutes.TestListing &&
         props.widgetHeading?.toLowerCase() ==
           string.diagnostics.homepagePastOrderRecommendations?.toLowerCase();
-      const inclusions = isFromRecommendendation ? getItem?.inclusions : getItem?.inclusionData;
+      const inclusions = isFromRecommendendation
+        ? getItem?.inclusions! || getItem?.inclusionData
+        : getItem?.inclusionData;
       const numberOfParametersToShow = isDiagnosticCircleSubscription ? 3 : 2;
       var getMandatoryParamter = [] as any;
 
@@ -122,7 +124,15 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
         getMandatoryParamter =
           !!inclusions &&
           inclusions?.length > 0 &&
-          inclusions?.map((inclusion: any) => getMandatoryParamterResults(inclusion?.observations));
+          inclusions?.map((inclusion: any) =>
+            getMandatoryParamterResults(
+              isFromRecommendendation
+                ? !!inclusion?.observations
+                  ? inclusion?.observations
+                  : inclusion?.incObservationData
+                : inclusion?.observations
+            )
+          );
       } else {
         getMandatoryParamter =
           !!inclusions &&
@@ -142,6 +152,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
         !!inclusions && inclusions?.length > 0
           ? inclusions?.filter((inclusion: any) => inclusion?.incObservationData?.length == 0)
           : [];
+
       return (
         <TouchableOpacity
           activeOpacity={1}
