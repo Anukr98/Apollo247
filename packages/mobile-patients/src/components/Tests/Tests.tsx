@@ -351,7 +351,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [showCartSummary, setShowCartSummary] = useState<boolean>(false);
   const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
   const defaultAddress = addresses?.find((item) => item?.defaultAddress);
-  const currentAdd = addresses?.filter((item)=> {return  item?.defaultAddress});
   const [summaryRecommendationCount, setSummaryRecommendationCount] = useState<number>(0);
   const [showLocationPopup, setLocationPopup] = useState<boolean>(false);
   const [source, setSource] = useState<DIAGNOSTIC_PINCODE_SOURCE_TYPE>();
