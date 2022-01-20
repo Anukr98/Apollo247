@@ -541,7 +541,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                     borderRadius: 5,
                   }}
                   source={{
-                    uri: `${item?.prescriptionImageUrl}` || `data:image/jpeg;base64,${item.base64}`,
+                    uri: `data:image/jpeg;base64,${item.base64}` || `${item?.prescriptionImageUrl}`,
                   }}
                 />
               )}
