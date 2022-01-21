@@ -38,14 +38,14 @@ export const UploadedPrescriptionCard: React.FC<UploadedPrescriptionCardProps> =
               value={item?.prismPrescriptionFileId || 'Prescription'}
             />
           </View>
-          {showTick && (
+          {showTick ? (
             <GreenTickIcon
               style={{
                 width: 20,
                 paddingHorizontal: 8,
               }}
             />
-          )}
+          ) : null}
           <TouchableOpacity
             activeOpacity={1}
             style={{

@@ -32,12 +32,12 @@ export const PrescriptionInfoView: React.FC<Props> = ({
         <Apollo247Icon style={styles.apollo247Icon} />
         <Text style={styles.rowText}>{description}</Text>
       </View>
-      {showUploadButton && (
+      {showUploadButton ? (
         <TouchableOpacity onPress={onPressUpload}>
           <Text style={styles.question}>{question}</Text>
           <Text style={styles.button}>{button}</Text>
         </TouchableOpacity>
-      )}
+      ) : null}
       <Text>
         <Text style={styles.noteHeading}>{noteHeading}</Text>
         <Text style={styles.note}>{note}</Text>
