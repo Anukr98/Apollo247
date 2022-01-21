@@ -38,6 +38,7 @@ export interface GetHelpSectionQueries_getHelpSectionQueries_needHelpQueries_con
   __typename: "NeedHelpContent";
   title: string | null;
   text: string | null;
+  contentType: string | null;
   cta: GetHelpSectionQueries_getHelpSectionQueries_needHelpQueries_content_cta | null;
   ctaNonCircle: GetHelpSectionQueries_getHelpSectionQueries_needHelpQueries_content_ctaNonCircle | null;
   ctaCircle: GetHelpSectionQueries_getHelpSectionQueries_needHelpQueries_content_ctaCircle | null;
@@ -74,6 +75,7 @@ export interface GetHelpSectionQueries_getHelpSectionQueries_needHelpQueries_que
   __typename: "NeedHelpContent";
   title: string | null;
   text: string | null;
+  contentType: string | null;
   cta: GetHelpSectionQueries_getHelpSectionQueries_needHelpQueries_queries_content_cta | null;
   ctaNonCircle: GetHelpSectionQueries_getHelpSectionQueries_needHelpQueries_queries_content_ctaNonCircle | null;
   ctaCircle: GetHelpSectionQueries_getHelpSectionQueries_needHelpQueries_queries_content_ctaCircle | null;
@@ -110,6 +112,7 @@ export interface GetHelpSectionQueries_getHelpSectionQueries_needHelpQueries_que
   __typename: "NeedHelpContent";
   title: string | null;
   text: string | null;
+  contentType: string | null;
   cta: GetHelpSectionQueries_getHelpSectionQueries_needHelpQueries_queries_queries_content_cta | null;
   ctaNonCircle: GetHelpSectionQueries_getHelpSectionQueries_needHelpQueries_queries_queries_content_ctaNonCircle | null;
   ctaCircle: GetHelpSectionQueries_getHelpSectionQueries_needHelpQueries_queries_queries_content_ctaCircle | null;
@@ -146,6 +149,7 @@ export interface GetHelpSectionQueries_getHelpSectionQueries_needHelpQueries_que
   __typename: "NeedHelpContent";
   title: string | null;
   text: string | null;
+  contentType: string | null;
   cta: GetHelpSectionQueries_getHelpSectionQueries_needHelpQueries_queries_queries_queries_content_cta | null;
   ctaNonCircle: GetHelpSectionQueries_getHelpSectionQueries_needHelpQueries_queries_queries_queries_content_ctaNonCircle | null;
   ctaCircle: GetHelpSectionQueries_getHelpSectionQueries_needHelpQueries_queries_queries_queries_content_ctaCircle | null;
@@ -207,5 +211,5 @@ export interface GetHelpSectionQueries_getHelpSectionQueries {
 }
 
 export interface GetHelpSectionQueries {
-  getHelpSectionQueries: GetHelpSectionQueries_getHelpSectionQueries;
+  getHelpSectionQueriesv2: GetHelpSectionQueries_getHelpSectionQueries;
 }
