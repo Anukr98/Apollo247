@@ -58,6 +58,7 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
     setCircleSubPlanId,
     setAutoCirlcePlanAdded,
     circlePlanValidity,
+    serverCartItems,
   } = useShoppingCart();
   const { circleSubscription } = useAppCommonData();
   const { setIsCircleAddedToCart, setSelectedCirclePlan } = useDiagnosticsCart();
@@ -223,6 +224,10 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
                     subscriptionApplied: true,
                   },
                 });
+                if (serverCartItems?.length === 0) {
+                  props.navigation.navigate(AppRoutes.SubscriptionCart, { circleEventSource });
+                  return;
+                }
               }
 
               navigation.goBack();
