@@ -299,7 +299,7 @@ export const ConsultPackageDetail: React.FC<ConsultPackageDetailProps> = (props)
               ) : (
                 <SingleUserPackageIcon style={styles.singleUserPackageUserIcon} />
               )}
-              {/* Family @ â‚¹3000 for 12 Months */}
+              {/* Family @ ₹3000 for 12 Months */}
               <Text style={styles.planTitle}>{plan?.PlanName}</Text>
             </TouchableOpacity>
           ))}
