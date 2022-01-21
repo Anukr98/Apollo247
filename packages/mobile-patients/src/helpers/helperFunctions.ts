@@ -248,17 +248,17 @@ export const specialOffersImagesThumbnailUrl = (filePath: string, baseUrl?: stri
 };
 
 export const formatAddress = (address: savePatientAddress_savePatientAddress_patientAddress) => {
-  const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
-  const landmark = [address.landmark];
+  const addrLine1 = [address?.addressLine1, address?.addressLine2]?.filter((v) => v)?.join(', ');
+  const landmark = [address?.landmark];
   // to handle state value getting twice
-  const addrLine2 = [address.city, address.state]
-    .filter((v) => v)
-    .join(', ')
-    .split(',')
-    .map((v) => v.trim())
-    .filter((item, idx, array) => array.indexOf(item) === idx)
-    .join(', ');
-  const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
+  const addrLine2 = [address?.city, address?.state]
+    ?.filter((v) => v)
+    ?.join(', ')
+    ?.split(',')
+    ?.map((v) => v.trim())
+    ?.filter((item, idx, array) => array?.indexOf(item) === idx)
+    ?.join(', ');
+  const formattedZipcode = address?.zipcode ? ` - ${address?.zipcode}` : '';
   return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
 };
 
@@ -280,18 +280,18 @@ export const formatAddressWithLandmark = (
   address: savePatientAddress_savePatientAddress_patientAddress
 ) => {
   const addrLine1 = removeConsecutiveComma(
-    [address?.addressLine1, address?.addressLine2].filter((v) => v).join(', ')
+    [address?.addressLine1, address?.addressLine2]?.filter((v) => v)?.join(', ')
   );
   const landmark = [address?.landmark];
   // to handle state value getting twice
   const addrLine2 = removeConsecutiveComma(
     [address?.city, address?.state]
-      .filter((v) => v)
-      .join(', ')
-      .split(',')
-      .map((v) => v.trim())
-      .filter((item, idx, array) => array.indexOf(item) === idx)
-      .join(', ')
+      ?.filter((v) => v)
+      ?.join(', ')
+      ?.split(',')
+      ?.map((v) => v?.trim())
+      ?.filter((item, idx, array) => array.indexOf(item) === idx)
+      ?.join(', ')
   );
   const formattedZipcode = address?.zipcode ? ` - ${address?.zipcode}` : '';
   if (address?.landmark != '') {
@@ -350,10 +350,10 @@ export const formatAddressForApi = (
 };
 
 export const formatNameNumber = (address: savePatientAddress_savePatientAddress_patientAddress) => {
-  if (address.name!) {
-    return `${address.name}\n${address.mobileNumber}`;
+  if (address?.name!) {
+    return `${address?.name}\n${address?.mobileNumber}`;
   } else {
-    return `${address.mobileNumber}`;
+    return `${address?.mobileNumber}`;
   }
 };
 
@@ -618,14 +618,14 @@ export const formatOrderAddress = (
   address: savePatientAddress_savePatientAddress_patientAddress
 ) => {
   // to handle state value getting twice
-  const addrLine = [address.addressLine1, address.addressLine2, address.city, address.state]
-    .filter((v) => v)
-    .join(', ')
-    .split(',')
-    .map((v) => v.trim())
-    .filter((item, idx, array) => array.indexOf(item) === idx)
-    .join(', ');
-  const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
+  const addrLine = [address?.addressLine1, address?.addressLine2, address?.city, address?.state]
+    ?.filter((v) => v)
+    ?.join(', ')
+    ?.split(',')
+    ?.map((v) => v?.trim())
+    ?.filter((item, idx, array) => array?.indexOf(item) === idx)
+    ?.join(', ');
+  const formattedZipcode = address?.zipcode ? ` - ${address?.zipcode}` : '';
   return `${addrLine}${formattedZipcode}`;
 };
 
@@ -639,8 +639,8 @@ export const formatSelectedAddress = (
     address?.state,
     address?.zipcode,
   ]
-    .filter((item) => item)
-    .join(', ');
+    ?.filter((item) => item)
+    ?.join(', ');
   return formattedAddress;
 };
 
@@ -1105,7 +1105,7 @@ export const findAddrComponents = (
   key?: 'long_name' | 'short_name' // default long_name
 ) => {
   const _key = key || 'long_name';
-  return (addrComponents.find((item) => item.types.indexOf(proptoFind) > -1) || { [_key]: '' })[
+  return (addrComponents?.find((item) => item?.types?.indexOf(proptoFind) > -1) || { [_key]: '' })[
     _key
   ];
 };
@@ -1128,7 +1128,7 @@ export const distanceBwTwoLatLng = (lat1: number, lon1: number, lat2: number, lo
 
 export const getlocationDataFromLatLang = async (latitude: number, longitude: number) => {
   const placeInfo = await getPlaceInfoByLatLng(latitude, longitude);
-  const addrComponents = g(placeInfo, 'data', 'results', '0' as any, 'address_components') || [];
+  const addrComponents = placeInfo?.data?.results?.[0]?.address_components || [];
   if (addrComponents.length == 0) {
     throw 'Unable to get location.';
   } else {
@@ -1165,7 +1165,7 @@ const getlocationData = (
       getPlaceInfoByLatLng(latitude, longitude)
         .then((response) => {
           const addrComponents = filterPinCodeAddressFromList(response);
-          if (addrComponents.length == 0) {
+          if (addrComponents?.length == 0) {
             reject('Unable to get location.');
           } else {
             resolve(
