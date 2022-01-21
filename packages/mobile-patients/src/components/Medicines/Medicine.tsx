@@ -1248,13 +1248,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
     const renderDeliverToLocationCTA = () => {
       const deliveryAddress = addresses.find((item) => item?.id == cartAddressId);
-      const location = cartLocationDetails?.pincode
-        ? `${formatText(cartLocationDetails?.city || cartLocationDetails?.state || '', 18)} ${
-            cartLocationDetails?.pincode
-          }`
-        : deliveryAddress
+      const location = deliveryAddress?.zipcode
         ? `${formatText(deliveryAddress?.city || deliveryAddress?.state || '', 18)} ${
             deliveryAddress?.zipcode
+          }`
+        : cartLocationDetails?.pincode
+        ? `${formatText(cartLocationDetails?.city || cartLocationDetails?.state || '', 18)} ${
+            cartLocationDetails?.pincode
           }`
         : '';
       return (
