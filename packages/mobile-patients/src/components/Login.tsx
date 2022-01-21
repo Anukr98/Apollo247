@@ -44,6 +44,7 @@ import {
   TouchableOpacity,
   Animated,
   ImageBackground,
+  Image,
 } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
 import WebEngage from 'react-native-webengage';
@@ -281,6 +282,21 @@ export const Login: React.FC<LoginProps> = (props) => {
       marginBottom: 20,
       marginTop: isFocused ? 7 : 0,
     },
+    checkboxContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+    checkboxInnerContainer: {
+      width: 15,
+      height: 15,
+      borderColor: theme.colors.LIGHT_BLUE,
+      borderWidth: 2,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 4,
+      marginRight: 8,
+    }
   });
 
   useEffect(() => {
@@ -975,7 +991,11 @@ export const Login: React.FC<LoginProps> = (props) => {
             </View>
           </ScrollView>
           <View style={styles.bottomContainer}>
-            <InputCheckBox checked={isTandCSelected} onClick={() => setTandC(!isTandCSelected)} />
+            <TouchableOpacity style={styles.checkboxContainer} onPress={() => setTandC(!isTandCSelected)}>
+              <View style={styles.checkboxInnerContainer}>
+                {isTandCSelected && <Image source={require('@aph/mobile-patients/src/components/ui/icons/checkBlack.webp')} style={{ width: 11, height: 11, tintColor: theme.colors.LIGHT_BLUE }} resizeMode='contain' />}
+              </View>
+            </TouchableOpacity>
             <Text
               style={{
                 color: '#02475b',
