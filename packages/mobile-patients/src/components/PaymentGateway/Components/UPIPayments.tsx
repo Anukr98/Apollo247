@@ -68,7 +68,7 @@ export const UPIPayments: React.FC<UPIPaymentsProps> = (props) => {
   };
 
   const upiApp = (item: any) => {
-    const marginLeft = item?.index == 0 ? 0 : (newWidth - 192) * 0.33;
+    const marginLeft = item?.index == 0 ? 0 : (newWidth - 220) * 0.33;
     const outageStatus = item?.item?.outage_list?.[0]?.outage_status;
     return (
       <View

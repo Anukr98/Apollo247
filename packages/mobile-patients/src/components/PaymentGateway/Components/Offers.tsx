@@ -80,7 +80,7 @@ export const Offers: React.FC<offersProps> = (props) => {
 
 const styles = StyleSheet.create({
   ChildComponent: {
-    backgroundColor: '#FAFEFF',
+    backgroundColor: '#FFF9EF',
     marginHorizontal: 16,
     borderWidth: 1,
     borderColor: '#D4D4D4',
