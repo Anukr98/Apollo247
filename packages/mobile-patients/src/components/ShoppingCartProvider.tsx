@@ -543,7 +543,7 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   locationCode: '',
   setLocationCode: null,
   tatDecidedPercentage: 0,
-  setTatDecidedPercentage: null
+  setTatDecidedPercentage: null,
 });
 
 const AsyncStorageKeys = {
@@ -791,7 +791,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
 
   const [vdcType, setVdcType] = useState<ShoppingCartContextProps['vdcType']>('');
   const [locationCode, setLocationCode] = useState<ShoppingCartContextProps['locationCode']>('');
-  const [tatDecidedPercentage, setTatDecidedPercentage] = useState<ShoppingCartContextProps['tatDecidedPercentage']>(0);
+  const [tatDecidedPercentage, setTatDecidedPercentage] = useState<
+    ShoppingCartContextProps['tatDecidedPercentage']
+  >(0);
 
   const setCartItems: ShoppingCartContextProps['setCartItems'] = (cartItems) => {
     if (cartItems.length) {
@@ -906,7 +908,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   );
 
   const isCircleCart: ShoppingCartContextProps['isCircleCart'] =
-    !!cartCircleSubscriptionId || !!cartSubscriptionDetails?.subscriptionApplied;
+    !!circleSubscriptionId ||
+    !!cartCircleSubscriptionId ||
+    !!cartSubscriptionDetails?.subscriptionApplied;
 
   const cartDiscountTotal: ShoppingCartContextProps['cartDiscountTotal'] = parseFloat(
     cartItems
@@ -1580,7 +1584,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         locationCode,
         setLocationCode,
         tatDecidedPercentage,
-        setTatDecidedPercentage
+        setTatDecidedPercentage,
       }}
     >
       {props.children}
