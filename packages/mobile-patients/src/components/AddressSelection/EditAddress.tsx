@@ -73,7 +73,10 @@ import {
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { getPatientAddressList_getPatientAddressList_addressList } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
-import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import {
   CleverTapEventName,
   CleverTapEvents,
@@ -175,15 +178,15 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
 
   //in case of edit.
   const isChanged =
-    addressData &&
-    city === addressData.city &&
-    state === addressData.state &&
-    pincode === addressData.zipcode &&
-    addressLine1 === addressData.addressLine1 &&
-    areaDetails === addressData.addressLine2 &&
-    landMark === addressData.landmark &&
-    addressType === addressData.addressType &&
-    optionalAddress === addressData.otherAddressType;
+    !!addressData &&
+    city === addressData?.city &&
+    state === addressData?.state &&
+    pincode === addressData?.zipcode &&
+    addressLine1 === addressData?.addressLine1 &&
+    areaDetails === addressData?.addressLine2 &&
+    landMark === addressData?.landmark &&
+    addressType === addressData?.addressType &&
+    optionalAddress === addressData?.otherAddressType;
 
   /** different on what case take it to map  */
   const areFieldsSame =
@@ -193,7 +196,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
     if (props.navigation.getParam('KeyName') == 'Update' && addressData) {
       //needs to be shown only when editing the address (addressLine1)
       if (locationResponse) {
-        const isPincodeNotPresent = pincodeCheck.includes(
+        const isPincodeNotPresent = pincodeCheck?.includes(
           locationResponse?.pincode! || locationResponse?.zipcode!
         );
         setcity(locationResponse?.city!);
@@ -222,7 +225,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
         setLongitude(addressData?.longitude!);
         setStateCode(addressData?.stateCode || '');
         setuserName(addressData?.name!);
-        setPincodeEditable(pincodeCheck.includes(addressData?.zipcode));
+        setPincodeEditable(pincodeCheck?.includes(addressData?.zipcode));
       }
     } else {
       if (locationResponse) {
@@ -234,7 +237,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
         setLatitude(locationResponse?.latitude || 0);
         setLongitude(locationResponse?.longitude || 0);
         setStateCode(locationResponse?.stateCode || '');
-        setPincodeEditable(pincodeCheck.includes(locationResponse?.pincode));
+        setPincodeEditable(pincodeCheck?.includes(locationResponse?.pincode));
       } else {
         const _locationDetails =
           pharmacyLocation && source == 'Cart'
@@ -258,11 +261,11 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
   const isAddressValid =
     userName &&
     phoneNumber &&
-    phoneNumber.length >= 10 &&
+    phoneNumber?.length >= 10 &&
     !!addressLine1 &&
     !!areaDetails &&
     pincode &&
-    pincode.length === 6 &&
+    pincode?.length === 6 &&
     isValidPincode(pincode) &&
     city &&
     city.length > 1 &&
@@ -296,7 +299,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
         isCityEdit && setCityEditable(false);
         setcity(response?.city! || city);
       } else {
-        pincodeCheck.includes(city) ? setCityEditable(true) : false;
+        pincodeCheck?.includes(city) ? setCityEditable(true) : false;
       }
       setshowSpinner!(false);
     } catch (error) {
@@ -325,7 +328,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
         city: city,
         state: state,
         zipcode: pincode,
-        landmark: landMark.trim(),
+        landmark: landMark?.trim(),
         mobileNumber: phoneNumber,
         addressType: addressType! || PATIENT_ADDRESS_TYPE.HOME,
         otherAddressType: optionalAddress,
@@ -336,13 +339,13 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
       };
 
       try {
-        setshowSpinner!(true);
+        setshowSpinner?.(true);
         const [saveAddressResult, pinAvailabilityResult] = await Promise.all([
           saveAddress(addressInput),
           addOnly ? null : pinCodeServiceabilityApi247(pincode),
         ]);
         setshowSpinner(false);
-        const address = g(saveAddressResult.data, 'savePatientAddress', 'patientAddress')!;
+        const address = g(saveAddressResult?.data, 'savePatientAddress', 'patientAddress')!;
         const isAddressServiceable = pinAvailabilityResult && pinAvailabilityResult?.data?.response;
         let isComingFrom = props.navigation.getParam('source');
         addAddress!(address);
@@ -390,7 +393,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
           setNewAddressAdded?.('');
           setDiagnosticAddressId?.(address?.id || '');
 
-          showAphAlert!({
+          showAphAlert?.({
             title: string.common.uhOh,
             description: string.medicine_cart.pharmaAddressUnServiceableAlert,
             onPressOk: () => {
@@ -432,11 +435,11 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
     if (currentPatient) {
       const _setUserName = addressData?.name! ? addressData?.name : currentPatient?.firstName!;
       setuserName(_setUserName);
-      setuserId(currentPatient.id);
+      setuserId(currentPatient?.id);
       if (addressData?.mobileNumber) {
-        setphoneNumber(addressData.mobileNumber);
+        setphoneNumber(addressData?.mobileNumber);
       } else {
-        setphoneNumber(currentPatient.mobileNumber.replace('+91', '') || '');
+        setphoneNumber(currentPatient?.mobileNumber.replace('+91', '') || '');
       }
     }
   }, [currentPatient]);
@@ -487,15 +490,15 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
       setPincodeEditable(true);
       CommonBugFender('EditAddress_updateCityStateByPincode', e);
     };
-    const pincodeAndAddress = [pincode, addressLine1].filter((v) => (v || '').trim()).join(',');
+    const pincodeAndAddress = [pincode, addressLine1]?.filter((v) => (v || '')?.trim())?.join(',');
     getPlaceInfoByPincode(pincodeAndAddress)
       .then(({ data }) => {
         try {
-          const addrComponents = data.results[0].address_components || [];
-          const latLang = data.results[0].geometry.location || {};
+          const addrComponents = data?.results?.[0]?.address_components || [];
+          const latLang = data?.results?.[0]?.geometry?.location || {};
           const response = getFormattedLocation(addrComponents, latLang);
-          const city = response.city;
-          const state = response.state;
+          const city = response?.city;
+          const state = response?.state;
           const finalStateCode =
             AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING[
               state as keyof typeof AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING
@@ -504,8 +507,8 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
           setcity(city || '');
           setstate(state || '');
           setStateCode(finalStateCode);
-          setLatitude(response.latitude!);
-          setLongitude(response.longitude!);
+          setLatitude(response?.latitude!);
+          setLongitude(response?.longitude!);
           city === '' ? setCityEditable(true) : setCityEditable(false);
           state === '' ? setStateEditable(true) : setStateEditable(false);
         } catch (e) {
@@ -516,14 +519,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
   };
   const renderAddressOption = () => {
     return (
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          marginBottom: 10,
-          paddingHorizontal: 2,
-        }}
-      >
+      <View style={styles.addressOptionView}>
         {AddressOptions.map((option) => (
           <Button
             key={option.name}
@@ -557,12 +553,12 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
       validationMessage = 'Enter Valid Name';
     } else if (
       !phoneNumberIsValid ||
-      phoneNumber.length !== (phoneNumber.includes('+91') ? 13 : 10)
+      phoneNumber?.length !== (phoneNumber?.includes('+91') ? 13 : 10)
     ) {
       validationMessage = 'Enter Valid Mobile Number';
     }
     if (validationMessage) {
-      showAphAlert && showAphAlert({ title: 'Alert!', description: validationMessage });
+      showAphAlert?.({ title: 'Alert!', description: validationMessage });
     } else if (comingFrom == 'userName' || comingFrom == 'userNumber') {
       saveEditDetails(comingFrom); //update the name & number
     } else {
@@ -579,13 +575,13 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
             state as keyof typeof AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING
           ] || stateCode;
         const updateaddressInputForEdit: UpdatePatientAddressInput = {
-          id: addressData.id,
-          addressLine1: addressLine1.trim(),
-          addressLine2: areaDetails.trim(),
+          id: addressData?.id,
+          addressLine1: addressLine1?.trim(),
+          addressLine2: areaDetails?.trim(),
           city: city || '',
           state: state || '',
           zipcode: pincode,
-          landmark: landMark.trim() || '',
+          landmark: landMark?.trim() || '',
           mobileNumber: phoneNumber,
           addressType: addressType,
           otherAddressType: optionalAddress,
@@ -603,8 +599,9 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
           .then((_data: any) => {
             try {
               setshowSpinner(false);
-              _navigateToScreen(_data.data.updatePatientAddress.patientAddress, 'fromUpdate');
+              _navigateToScreen(_data?.data?.updatePatientAddress?.patientAddress, 'fromUpdate');
             } catch (error) {
+              setshowSpinner(false);
               CommonBugFender('EditAddress_onSavePress_try', error);
             }
           })
@@ -625,11 +622,11 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
   ) => {
     let newAddrList = [];
     if (keyName == 'fromDelete') {
-      newAddrList = addresses.filter((item) => item.id != updatedAddress.id);
+      newAddrList = addresses?.filter((item) => item?.id != updatedAddress?.id);
     } else {
       newAddrList = [
         { ...updatedAddress },
-        ...addresses.filter((item) => item.id != updatedAddress.id),
+        ...addresses?.filter((item) => item?.id != updatedAddress?.id),
       ];
     }
 
@@ -696,7 +693,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
         ? userName.slice(0, setCharLen).concat('...')
         : userName;
     return (
-      <View style={{ margin: 20, marginBottom: 0, marginTop: 10 }}>
+      <View style={styles.userNameView}>
         <Text
           style={{
             color: editName ? theme.colors.LIGHT_BLUE : theme.colors.SHERPA_BLUE,
@@ -706,15 +703,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
         >
           BILL TO*
         </Text>
-        <View
-          style={{
-            ...theme.viewStyles.cardViewStyle,
-            marginTop: 10,
-            padding: 16,
-            borderWidth: 1,
-            borderColor: theme.colors.SHERPA_BLUE,
-          }}
-        >
+        <View style={styles.userNameInnerView}>
           <View style={styles.viewRowStyle}>
             <View style={{ height: 20, flex: 1 }}>
               {!editName ? (
@@ -731,7 +720,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
                 </Text>
               ) : (
                 <TextInputComponent
-                  conatinerstyles={{ flex: 1, paddingTop: -16, paddingBottom: -16 }}
+                  conatinerstyles={styles.textInput}
                   onChangeText={(userName) =>
                     userName.startsWith(' ') ? null : setuserName(userName)
                   }
@@ -750,7 +739,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
                   setEditName(true);
                 }}
               >
-                <EditIconNewOrange style={{ height: 15, width: 15 }} />
+                <EditIconNewOrange style={styles.editIconStyle} />
               </TouchableOpacity>
             ) : (
               <View style={styles.userSave}>
@@ -766,24 +755,14 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
             )}
           </View>
         </View>
-        <Text
-          style={{
-            marginHorizontal: 2,
-            marginVertical: 2,
-            ...theme.fonts.IBMPlexSansRegular(12),
-            lineHeight: 16,
-            color: theme.colors.SHERPA_BLUE,
-          }}
-        >
-          This bill will be prepared against this name.
-        </Text>
+        <Text style={styles.billNameText}>This bill will be prepared against this name.</Text>
       </View>
     );
   };
 
   const renderUserNumber = () => {
     return (
-      <View style={{ margin: 20, marginBottom: 0 }}>
+      <View style={styles.userNumberView}>
         <Text
           style={{
             color: editNumber ? theme.colors.LIGHT_BLUE : theme.colors.SHERPA_BLUE,
@@ -793,19 +772,11 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
         >
           MOBILE NUMBER*
         </Text>
-        <View
-          style={{
-            ...theme.viewStyles.cardViewStyle,
-            marginTop: 10,
-            padding: 16,
-            borderWidth: 1,
-            borderColor: theme.colors.SHERPA_BLUE,
-          }}
-        >
+        <View style={styles.userNameInnerView}>
           <View style={styles.viewRowStyle}>
             <View style={{ flex: editNumber ? 0.9 : 1, height: 20 }}>
               <TextInputComponent
-                conatinerstyles={{ flex: 1, paddingTop: -16, paddingBottom: -16 }}
+                conatinerstyles={styles.textInput}
                 maxLength={13}
                 keyboardType="numeric"
                 onChangeText={(phoneNumber) => {
@@ -830,7 +801,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
                   setEditNumber(true);
                 }}
               >
-                <EditIconNewOrange style={{ height: 15, width: 15 }} />
+                <EditIconNewOrange style={styles.editIconStyle} />
               </TouchableOpacity>
             ) : (
               <View style={styles.userSave}>
@@ -850,105 +821,9 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
     );
   };
 
-  /**view added for the patient's details */
-  const renderUserDetails = () => {
-    let beforeFocus =
-      Platform.OS == 'android' && userName.length > 32
-        ? userName.slice(0, setCharLen).concat('...')
-        : userName;
-    return (
-      <View style={styles.userDetailsOuterView}>
-        <View style={styles.viewRowStyle}>
-          <View style={{ flex: editProfile ? 0.9 : 1, height: 60 }}>
-            <View style={styles.viewRowStyle}>
-              <Text
-                style={{
-                  color: editProfile ? theme.colors.LIGHT_BLUE : '#02475b',
-                  opacity: editProfile ? 0.6 : 1,
-                  ...fonts.IBMPlexSansMedium(14),
-                }}
-              >
-                Name :{' '}
-              </Text>
-              {!editProfile ? (
-                <Text numberOfLines={1} ellipsizeMode="tail" style={styles.nameText}>
-                  {userName}
-                </Text>
-              ) : (
-                <TextInputComponent
-                  conatinerstyles={styles.textInputContainerStyle}
-                  onChangeText={(userName) =>
-                    userName.startsWith(' ') ? null : setuserName(userName)
-                  }
-                  onFocus={() => _onFocus()}
-                  onBlur={() => _onBlur()}
-                  value={isFocus ? userName : beforeFocus}
-                  editable={editProfile}
-                  placeholder={'Full Name'}
-                  inputStyle={styles.textInputName}
-                />
-              )}
-            </View>
-
-            <View style={{ flexDirection: 'row', top: Platform.OS == 'ios' ? -8 : -15 }}>
-              <Text
-                style={{
-                  color: editProfile ? theme.colors.LIGHT_BLUE : '#02475b',
-                  opacity: editProfile ? 0.6 : 1,
-                  ...fonts.IBMPlexSansMedium(14),
-                }}
-              >
-                Phone number :{' '}
-              </Text>
-              <TextInputComponent
-                conatinerstyles={styles.textInputContainerStyle}
-                maxLength={13}
-                keyboardType="numeric"
-                onChangeText={(phoneNumber) => {
-                  _validateAndSetPhoneNumber(phoneNumber);
-                }}
-                value={phoneNumber}
-                editable={editProfile}
-                placeholder={'Mobile Number'}
-                inputStyle={{
-                  borderBottomWidth: editProfile ? 1 : 2,
-                  paddingBottom: editProfile ? 0 : 3,
-                  color: theme.colors.SHERPA_BLUE,
-                  opacity: editProfile ? (Platform.OS == 'ios' ? 0.6 : 0.5) : 1,
-                  ...theme.fonts.IBMPlexSansMedium(14.75),
-                  borderColor: editProfile ? theme.colors.INPUT_BORDER_SUCCESS : 'transparent',
-                }}
-              />
-            </View>
-          </View>
-          {!editProfile ? (
-            <TouchableOpacity
-              onPress={() => {
-                setEditProfile(true);
-              }}
-            >
-              <EditIconNewOrange />
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.userSave}>
-              <TouchableOpacity
-                style={{ width: '100%' }}
-                onPress={() => {
-                  validateUserDetails('userdetails');
-                }}
-              >
-                <Text style={styles.userSaveText}>Save</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        </View>
-      </View>
-    );
-  };
-
   const renderAddressText = () => {
     return (
-      <View style={{ marginLeft: 20, marginTop: 20, marginBottom: -5 }}>
+      <View style={styles.addressTextView}>
         <Text style={styles.addressHeadingText}>ADDRESS DETAILS</Text>
       </View>
     );
@@ -963,11 +838,11 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
             options={(allCurrentPatients || []).map(
               (item: any) =>
                 ({
-                  optionText: item.firstName,
+                  optionText: item?.firstName,
                   onPress: () => {
                     CommonLogEvent(AppRoutes.EditAddress, 'Drop Down clicked');
-                    setuserName(item.firstName!);
-                    setuserId(item.id);
+                    setuserName(item?.firstName!);
+                    setuserId(item?.id);
                     setShowPopup(false);
                   },
                 } as DropDownProps['options'][0])
@@ -1028,7 +903,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
               value={city}
               textInputprops={{ editable: isCityEdit }}
               onChangeText={(city) =>
-                city.startsWith(' ') || city.startsWith('.') || city.startsWith(',')
+                city?.startsWith(' ') || city?.startsWith('.') || city?.startsWith(',')
                   ? null
                   : (city == '' || /^([a-zA-Z0-9.,\s])+$/.test(city)) && setcity(city)
               }
@@ -1083,32 +958,14 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
   const keyboardVerticalOffset = Platform.OS === 'android' ? { keyboardVerticalOffset: 20 } : {};
   const renderDeleteButton = () => {
     return (
-      <View
-        style={{
-          position: 'absolute',
-          height: height,
-          width: width,
-          flex: 1,
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-        }}
-      >
+      <View style={styles.deleteButtonView}>
         <TouchableOpacity
           activeOpacity={1}
           onPress={() => {
             setDeleteProfile(false);
           }}
         >
-          <View
-            style={{
-              margin: 0,
-              height: height,
-              width: width,
-              backgroundColor: 'transparent',
-            }}
-          >
+          <View style={styles.deleteInnerView}>
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => {
@@ -1147,26 +1004,8 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
                 }),
               }}
             >
-              <View
-                style={{
-                  backgroundColor: 'white',
-                  width: 145,
-                  height: 45,
-                  borderRadius: 10,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  ...theme.viewStyles.shadowStyle,
-                }}
-              >
-                <Text
-                  style={{
-                    ...theme.viewStyles.text('M', 16, '#02475b'),
-                    backgroundColor: 'white',
-                    textAlign: 'center',
-                  }}
-                >
-                  Delete Address
-                </Text>
+              <View style={styles.deleteAddressView}>
+                <Text style={styles.deleteAddressText}>Delete Address</Text>
               </View>
             </TouchableOpacity>
           </View>
@@ -1290,5 +1129,60 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(14),
     flex: 0.95,
     marginBottom: Platform.OS == 'android' ? '9%' : '7%',
+  },
+  addressOptionView: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+    paddingHorizontal: 2,
+  },
+  userNameView: { margin: 20, marginBottom: 0, marginTop: 10 },
+  userNameInnerView: {
+    ...theme.viewStyles.cardViewStyle,
+    marginTop: 10,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.SHERPA_BLUE,
+  },
+  textInput: { flex: 1, paddingTop: -16, paddingBottom: -16 },
+  editIconStyle: { height: 15, width: 15 },
+  billNameText: {
+    marginHorizontal: 2,
+    marginVertical: 2,
+    ...theme.fonts.IBMPlexSansRegular(12),
+    lineHeight: 16,
+    color: theme.colors.SHERPA_BLUE,
+  },
+  userNumberView: { margin: 20, marginBottom: 0 },
+  addressTextView: { marginLeft: 20, marginTop: 20, marginBottom: -5 },
+  deleteButtonView: {
+    position: 'absolute',
+    height: height,
+    width: width,
+    flex: 1,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  deleteInnerView: {
+    margin: 0,
+    height: height,
+    width: width,
+    backgroundColor: 'transparent',
+  },
+  deleteAddressView: {
+    backgroundColor: 'white',
+    width: 145,
+    height: 45,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...theme.viewStyles.shadowStyle,
+  },
+  deleteAddressText: {
+    ...theme.viewStyles.text('M', 16, '#02475b'),
+    backgroundColor: 'white',
+    textAlign: 'center',
   },
 });
