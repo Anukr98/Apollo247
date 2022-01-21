@@ -1041,14 +1041,14 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       physicalPrescription.map((item) => {
         const variables = {
           UploadDocumentInput: {
-            base64FileInput: item.base64,
+            base64FileInput: item?.base64,
             category: PRISM_DOCUMENT_CATEGORY.HealthChecks,
             fileType:
-              item.fileType == 'jpg'
+              item?.fileType == 'jpg'
                 ? UPLOAD_FILE_TYPES.JPEG
-                : item.fileType == 'png'
+                : item?.fileType == 'png'
                 ? UPLOAD_FILE_TYPES.PNG
-                : item.fileType == 'pdf' || item.fileType == 'application/pdf'
+                : item?.fileType == 'pdf' || item?.fileType == 'application/pdf'
                 ? UPLOAD_FILE_TYPES.PDF
                 : UPLOAD_FILE_TYPES.JPEG,
             patientId: g(currentPatient, 'id')!,
