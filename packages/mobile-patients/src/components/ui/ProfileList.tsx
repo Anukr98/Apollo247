@@ -21,6 +21,7 @@ import {
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { HEALTH_CREDITS } from '../../utils/AsyncStorageKey';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
 const styles = StyleSheet.create({
   placeholderViewStyle: {
@@ -107,6 +108,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
   } = useAllCurrentPatients();
   const { width, height } = Dimensions.get('window');
   const client = useApolloClient();
+  const { setUserActionPayload } = useServerCart();
 
   const [profile, setProfile] = useState<
     GetCurrentPatients_getCurrentPatients_patients | undefined
@@ -170,6 +172,9 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
               AsyncStorage.setItem('selectUserUHId', g(profilePatients[0], 'uhid')),
               AsyncStorage.setItem(HEALTH_CREDITS, ''),
               setAddressList(g(profilePatients[0], 'id'));
+            setUserActionPayload?.({
+              patientId: currentPatient!.id,
+            });
           }
         } catch (error) {}
       });
@@ -191,7 +196,10 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
         AsyncStorage.setItem('selectUserId', currentPatient!.id);
         AsyncStorage.setItem('selectUserUHId', currentPatient!.uhid),
           AsyncStorage.setItem(HEALTH_CREDITS, ''),
-          setAddressList(currentPatient!.id);
+          setAddressList(currentPatient!.id),
+          setUserActionPayload?.({
+            patientId: currentPatient!.id,
+          });
       }
     };
 
@@ -347,7 +355,10 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
               AsyncStorage.setItem('selectUserId', selectedUser!.key),
               AsyncStorage.setItem('selectUserUHId', selectedUser!.uhid),
               AsyncStorage.setItem(HEALTH_CREDITS, ''),
-              setAddressList(selectedUser!.key));
+              setAddressList(selectedUser!.key),
+              setUserActionPayload?.({
+                patientId: selectedUser?.key,
+              }));
           }}
         >
           {props.childView ? (
