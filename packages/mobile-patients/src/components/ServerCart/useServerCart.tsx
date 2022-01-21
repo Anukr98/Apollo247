@@ -80,7 +80,7 @@ export const useServerCart = () => {
     if (userActionPayload && currentPatient?.id && userAgent) {
       const cartInputData: CartInputData = {
         ...userActionPayload,
-        patientId: currentPatient?.id,
+        patientId: userActionPayload?.patientId ? userActionPayload?.patientId : currentPatient?.id,
       };
       serverCartLoading === false ? saveServerCart(cartInputData) : {};
     }
