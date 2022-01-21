@@ -248,10 +248,10 @@ export const specialOffersImagesThumbnailUrl = (filePath: string, baseUrl?: stri
 };
 
 export const formatAddress = (address: savePatientAddress_savePatientAddress_patientAddress) => {
-  const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
-  const landmark = [address.landmark];
+  const addrLine1 = [address?.addressLine1, address?.addressLine2]?.filter((v) => v)?.join(', ');
+  const landmark = [address?.landmark];
   // to handle state value getting twice
-  const addrLine2 = [address.city, address.state]
+  const addrLine2 = [address?.city, address?.state]
     ?.filter((v) => v)
     ?.join(', ')
     ?.split(',')
