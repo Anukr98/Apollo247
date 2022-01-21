@@ -2464,7 +2464,7 @@ export const CREATE_HELP_TICKET = gql`
 
 export const GET_HELP_SECTION_QUERIES = gql`
   query GetHelpSectionQueries {
-    getHelpSectionQueries {
+    getHelpSectionQueriesv2 {
       needHelpQueries {
         id
         title
@@ -2473,6 +2473,7 @@ export const GET_HELP_SECTION_QUERIES = gql`
         queriesByOrderStatus
         content {
           title
+          contentType
           text
           cta {
             title
@@ -2504,6 +2505,7 @@ export const GET_HELP_SECTION_QUERIES = gql`
           content {
             title
             text
+            contentType
             cta {
               title
               appRoute
@@ -2534,6 +2536,7 @@ export const GET_HELP_SECTION_QUERIES = gql`
             content {
               title
               text
+              contentType
               cta {
                 title
                 appRoute
@@ -2564,6 +2567,7 @@ export const GET_HELP_SECTION_QUERIES = gql`
               content {
                 title
                 text
+                contentType
                 cta {
                   title
                   appRoute
@@ -7482,6 +7486,22 @@ export const SAVE_MEDICINE_ORDER_V3 = gql`
     }
   }
 `;
+
+export const FETCH_DIAGNOSTICS_ORDER_TAT_STATUS = gql`
+  query getTATStatus($GetTATStatusForDiagnosticOrderInput: GetTATStatusForDiagnosticOrderInput) {
+    getTATStatusForDiagnosticOrder(
+      getTATStatusForDiagnosticOrderInput: $GetTATStatusForDiagnosticOrderInput
+    ) {
+      TATBreached
+      KB {
+        contentType
+        content
+        categories
+      }
+    }
+  }
+`;
+
 export const DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS = gql`
   query getDiagnosticItemRecommendationsByPastOrders($mobileNumber: String!) {
     getDiagnosticItemRecommendationsByPastOrders(mobileNumber: $mobileNumber) {

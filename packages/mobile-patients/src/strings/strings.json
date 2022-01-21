@@ -179,7 +179,7 @@
     "cancelRefundBody": "We regret the inconvenience caused. We’ll issue you a full refund.",
     "goBack": "GO BACK",
     "proceedCta": "PROCEED TO CONNECT",
-    "showDigitalData": "SHOW DIGITAL DATA"
+    "showDigitalData": "SHOW DIGITAL REPORT"
   },
   "diagnosticsLocation": {
     "savedAddressText": "Saved Addresses",
@@ -805,9 +805,9 @@
     "cartSavings": "Cart Savings",
     "additionalAmount": "Additional amount that needs to be paid",
     "totalCharges": "Total charges",
-    "reviewPagePolicyText":"With the Omicron variant resulting in a surge of RTPCR orders, in the interest of public safety,<b> we are allowing free cancellations only up to 6 hours before the appointment time <b> to reduce last-minute cancellations and wastage of booking slots....",
+    "reviewPagePolicyText": "With the Omicron variant resulting in a surge of RTPCR orders, in the interest of public safety,<b> we are allowing free cancellations only up to 6 hours before the appointment time <b> to reduce last-minute cancellations and wastage of booking slots....",
     "availableHCText": "Available Health Credits :",
-    "HcDisclaimer":"Use Health Credits at Payments Checkout",
+    "HcDisclaimer": "Use Health Credits at Payments Checkout",
     "healthCredits": "Health Credits",
     "redemmedTxt": "(Redeemed)",
     "minorAgeTestText": "We allow only RTPCR bookings for children less than 10 years old"

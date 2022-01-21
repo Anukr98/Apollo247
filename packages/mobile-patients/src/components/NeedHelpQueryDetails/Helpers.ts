@@ -39,11 +39,7 @@ export const Helpers = {
     const queriesByOrderStatus = queryData?.queriesByOrderStatus?.[orderStatus] as
       | string[]
       | undefined;
-    const diagNonOrderQueries = {
-       nonOrderQueries :  JSON.parse(AppConfig.Configuration.Diagnostics_Help_NonOrder_Queries),
-        } 
-     // here this condition is implemented to handle backward compatiability of old version of apps. We can revert it later on.
-      const nonOrderQueries = queryData?.id == helpSectionQueryId.diagnostic ? diagNonOrderQueries?.nonOrderQueries : queryData?.nonOrderQueries as string[] | undefined;
+      const nonOrderQueries = queryData?.nonOrderQueries as string[] | undefined;
       
     if (idLevel2 && orderStatus && isOrderRelatedIssue) {
       buQuery?.queriesByOrderStatus?.[orderStatus].forEach((qId: string) => {
@@ -62,7 +58,7 @@ export const Helpers = {
         });
       });
     } else if (nonOrderQueries && !isOrderRelatedIssue) {
-      queries = nonOrderQueries.map((qId) => queryData?.queries?.find((q) => q?.id === qId));
+      queries = nonOrderQueries.map((qId: any) => queryData?.queries?.find((q) => q?.id === qId));
     } else if (nonOrderQueries && isOrderRelatedIssue) {
       queries = queryData?.queries?.filter((q) => !nonOrderQueries.includes(q?.id!));
     }

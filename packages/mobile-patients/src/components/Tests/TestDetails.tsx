@@ -1292,12 +1292,13 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       );
 
     const nonInclusionParamters = cmsTestDetails?.diagnosticInclusionName?.filter(
-      (item: any) => !!item && !item?.TestObservation
+      (item: any) => !!item && (!item?.TestObservation || item?.TestObservation?.length == 0)
     );
 
     const getMandatoryParameterCount =
-      !!getMandatoryParamter &&
-      getMandatoryParamter?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
+      !!getMandatoryParamter && getMandatoryParamter?.length > 0
+        ? getMandatoryParamter?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0)
+        : undefined;
 
     return (
       <>

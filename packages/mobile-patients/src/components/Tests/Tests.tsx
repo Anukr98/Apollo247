@@ -3242,8 +3242,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 flex: 1,
                 marginBottom: isCartAvailable
                   ? showNudgeMessage
-                    ? 60
-                    : 30
+                    ? 70
+                    : 40
                   : showNudgeMessage
                   ? 30
                   : 0,
