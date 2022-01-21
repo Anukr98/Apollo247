@@ -145,7 +145,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const productPageViewedEventProps = props.navigation.getParam('productPageViewedEventProps');
   const _deliveryError = props.navigation.getParam('deliveryError');
   const [composition, setComposition] = useState<string>('');
-  const [tatData, setTatData] = useState<{mrp?: number; priceLoaded : boolean}>();
+  const [tatData, setTatData] = useState<{ mrp?: number; priceLoaded: boolean }>();
 
   const {
     pharmacyCircleAttributes,
@@ -168,7 +168,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     cartLocationDetails,
     cartAddressId,
     serverCartLoading,
-    tatDecidedPercentage
+    tatDecidedPercentage,
   } = useShoppingCart();
   const { setUserActionPayload, fetchAddress } = useServerCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
@@ -385,12 +385,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       setshowDeliverySpinner(false);
     }
   }, [isPharmacyPincodeServiceable]);
-
-  useEffect(() => {
-    if (!addresses?.length) {
-      fetchAddress();
-    }
-  }, [addresses]);
 
   useEffect(() => {
     try {
@@ -705,7 +699,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const fetchDeliveryTime = async (currentPincode: string, checkButtonClicked?: boolean) => {
     const pinCode = currentPincode || '110001';
     if (!pinCode || !isPharmacyPincodeServiceable) {
-      setTatData({mrp:0, priceLoaded : true});//set priceLoaded true so that on product page default price is visible
+      setTatData({ mrp: 0, priceLoaded: true }); //set priceLoaded true so that on product page default price is visible
       return;
     }
     const pincodeServiceableItemOutOfStockMsg = 'Sorry, this item is out of stock in your area.';
@@ -759,7 +753,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     } as TatApiInput247)
       .then((res) => {
         const deliveryDate = res?.data?.response?.[0]?.tat;
-        setTatData({...res?.data?.response?.[0]?.items?.[0], priceLoaded : true});
+        setTatData({ ...res?.data?.response?.[0]?.items?.[0], priceLoaded: true });
         const skuExist = res?.data?.response?.[0]?.items?.[0]?.exist;
         if (skuExist) {
           setIsInStock(true);
@@ -797,7 +791,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         );
       })
       .catch((error) => {
-        setTatData({mrp:0, priceLoaded : true});
+        setTatData({ mrp: 0, priceLoaded: true });
         setIsInStock(false);
         // Intentionally show T+2 days as Delivery Date
         const genericServiceableDate = moment()
@@ -1179,15 +1173,14 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 merchandising={medicineDetails?.merchandising}
               />
               <ProductPriceDelivery
-                {
-                  ...getPriceAndSpecialPrice( //this a replacement of(price={medicineDetails?.price} specialPrice={medicineDetails?.special_price})
-                    medicineDetails?.price,
-                    medicineDetails?.special_price,
-                    tatData?.mrp,
-                    parseInt(medicineDetails?.mou, 10),
-                    tatDecidedPercentage
-                  )
-                }
+                {...getPriceAndSpecialPrice(
+                  //this a replacement of(price={medicineDetails?.price} specialPrice={medicineDetails?.special_price})
+                  medicineDetails?.price,
+                  medicineDetails?.special_price,
+                  tatData?.mrp,
+                  parseInt(medicineDetails?.mou, 10),
+                  tatDecidedPercentage
+                )}
                 {
                   ...tatData //this for set loading on price
                 }
