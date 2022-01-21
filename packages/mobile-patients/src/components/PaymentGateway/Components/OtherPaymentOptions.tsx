@@ -63,7 +63,7 @@ export const OtherPaymentOptions: React.FC<OtherPaymentOptionsProps> = (props) =
                   <Text style={styles.name}>
                     {otherPaymentMethodsInfo[item?.item?.name]['name']}
                   </Text>
-                  {item?.item?.banner_text && (
+                  {!!item?.item?.banner_text && (
                     <Text style={styles.bannerTxt}>{item?.item?.banner_text}</Text>
                   )}
                 </View>
