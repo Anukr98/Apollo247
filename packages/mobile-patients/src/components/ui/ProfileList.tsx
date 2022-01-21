@@ -173,7 +173,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
               AsyncStorage.setItem(HEALTH_CREDITS, ''),
               setAddressList(g(profilePatients[0], 'id'));
             setUserActionPayload?.({
-              patientId: currentPatient!.id,
+              patientId: profilePatients?.[0]?.id,
             });
           }
         } catch (error) {}
