@@ -14,7 +14,7 @@ export const CartSavings: React.FC<CartSavingsProps> = (props) => {
   const cartSavings = serverCartAmount?.cartSavings || 0;
   const couponSavings = serverCartAmount?.couponSavings || 0;
   const deliveryCharges = serverCartAmount?.deliveryCharges || 0;
-  const isDeliveryFree = serverCartAmount?.isDeliveryFree || 0;
+  const isDeliveryFree = serverCartAmount?.isDeliveryFree || false;
   const totalCashBack = serverCartAmount?.totalCashBack || 0;
   const circleMembershipCashback =
     isCircleCart && !!cartSubscriptionDetails?.subscriptionApplied
@@ -33,33 +33,31 @@ export const CartSavings: React.FC<CartSavingsProps> = (props) => {
   const totalCouldSaveByCircle = deliveryCharges + totalCashBack + cartSavings;
 
   const renderYouSavedCard = () => {
-    return (
-      !!totalSavings && (
-        <View style={styles.youSavedCard}>
-          <ListItem
-            onPress={() => setSavingDetailsVisible(!savingDetailsVisible)}
-            containerStyle={savingDetailsVisible ? styles.youSavedItem : styles.youSavedHidden}
-            bottomDivider={savingDetailsVisible}
-            title={
-              <Text>
-                <Text style={styles.sherpaBlueText}>{'You'}</Text>
-                <Text style={styles.saveText}>{` saved ₹${totalSavings.toFixed(2)} `}</Text>
-                <Text style={styles.sherpaBlueText}>{'on your purchase.'}</Text>
-              </Text>
-            }
-            rightIcon={savingDetailsVisible ? <Up /> : <Down />}
-            Component={TouchableOpacity}
-          />
-          {savingDetailsVisible && renderSavingDetails()}
-        </View>
-      )
-    );
+    return !!totalSavings ? (
+      <View style={styles.youSavedCard}>
+        <ListItem
+          onPress={() => setSavingDetailsVisible(!savingDetailsVisible)}
+          containerStyle={savingDetailsVisible ? styles.youSavedItem : styles.youSavedHidden}
+          bottomDivider={savingDetailsVisible}
+          title={
+            <Text>
+              <Text style={styles.sherpaBlueText}>{'You'}</Text>
+              <Text style={styles.saveText}>{` saved ₹${totalSavings.toFixed(2)} `}</Text>
+              <Text style={styles.sherpaBlueText}>{'on your purchase.'}</Text>
+            </Text>
+          }
+          rightIcon={savingDetailsVisible ? <Up /> : <Down />}
+          Component={TouchableOpacity}
+        />
+        {savingDetailsVisible && renderSavingDetails()}
+      </View>
+    ) : null;
   };
 
   const renderSavingDetails = () => {
     return (
       <>
-        {!!circleMembershipCashback && (
+        {!!circleMembershipCashback ? (
           <ListItem
             containerStyle={styles.listItem}
             titleStyle={styles.sherpaBlueText}
@@ -72,8 +70,8 @@ export const CartSavings: React.FC<CartSavingsProps> = (props) => {
             rightTitle={`₹${circleMembershipCashback.toFixed(2)}`}
             rightTitleStyle={styles.yellowText}
           />
-        )}
-        {!!circleDeliverySavings && (
+        ) : null}
+        {!!circleDeliverySavings ? (
           <ListItem
             containerStyle={styles.listItem}
             titleStyle={styles.sherpaBlueText}
@@ -86,8 +84,8 @@ export const CartSavings: React.FC<CartSavingsProps> = (props) => {
             rightTitle={`₹${circleDeliverySavings.toFixed(2)}`}
             rightTitleStyle={styles.yellowText}
           />
-        )}
-        {!!cartSavings && (
+        ) : null}
+        {!!cartSavings ? (
           <ListItem
             containerStyle={styles.listItem}
             titleStyle={styles.sherpaBlueText}
@@ -95,8 +93,8 @@ export const CartSavings: React.FC<CartSavingsProps> = (props) => {
             rightTitle={`₹${cartSavings.toFixed(2)}`}
             rightTitleStyle={styles.sherpaBlueText}
           />
-        )}
-        {!!couponSavings && (
+        ) : null}
+        {!!couponSavings ? (
           <ListItem
             containerStyle={styles.listItem}
             titleStyle={styles.sherpaBlueText}
@@ -104,8 +102,8 @@ export const CartSavings: React.FC<CartSavingsProps> = (props) => {
             rightTitle={`₹${couponSavings.toFixed(2)}`}
             rightTitleStyle={styles.sherpaBlueText}
           />
-        )}
-        {!circleDeliverySavings && !!isDeliveryFree && (
+        ) : null}
+        {!circleDeliverySavings && !!isDeliveryFree ? (
           <ListItem
             containerStyle={styles.listItem}
             titleStyle={styles.sherpaBlueText}
@@ -113,7 +111,7 @@ export const CartSavings: React.FC<CartSavingsProps> = (props) => {
             rightTitle={`₹${deliveryCharges.toFixed(2)}`}
             rightTitleStyle={styles.sherpaBlueText}
           />
-        )}
+        ) : null}
         <ListItem
           topDivider
           containerStyle={styles.listItemTotal}
@@ -127,18 +125,16 @@ export const CartSavings: React.FC<CartSavingsProps> = (props) => {
 
   const renderYouCouldSaveCard = () => {
     if (!isCircleCart) {
-      return (
-        totalCouldSaveByCircle > totalSavings && (
-          <View style={styles.youCouldSaveCard}>
-            <Text style={styles.youText}>
-              <Text>{'You could'}</Text>
-              <Text style={styles.saveText}>{` save ₹${totalCouldSaveByCircle.toFixed(2)} `}</Text>
-              <Text>{'on your purchase with'}</Text>
-            </Text>
-            <CircleLogo style={styles.circleLogo} />
-          </View>
-        )
-      );
+      return totalCouldSaveByCircle > totalSavings ? (
+        <View style={styles.youCouldSaveCard}>
+          <Text style={styles.youText}>
+            <Text>{'You could'}</Text>
+            <Text style={styles.saveText}>{` save ₹${totalCouldSaveByCircle.toFixed(2)} `}</Text>
+            <Text>{'on your purchase with'}</Text>
+          </Text>
+          <CircleLogo style={styles.circleLogo} />
+        </View>
+      ) : null;
     }
   };
 

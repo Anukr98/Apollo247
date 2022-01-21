@@ -55,11 +55,11 @@ export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
     const isPrescriptionRequired = item?.isPrescriptionRequired == '1';
     return (
       <View style={[styles.imageContainer, { opacity: itemAvailable ? 1 : 0.3 }]}>
-        {isPrescriptionRequired && (
+        {isPrescriptionRequired ? (
           <View style={styles.rxSymbolContainer}>
             <PrescriptionRequiredIcon style={styles.rxSymbol} />
           </View>
-        )}
+        ) : null}
         <Image
           PlaceholderContent={isPrescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
           placeholderStyle={{ backgroundColor: 'transparent' }}
@@ -81,11 +81,11 @@ export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
                 {item?.name}
               </Text>
             </TouchableOpacity>
-            {item?.mou && (
+            {item?.mou ? (
               <Text
                 style={{ ...styles.info, opacity: itemAvailable ? 1 : 0.3 }}
               >{`(Pack of ${item?.mou})`}</Text>
-            )}
+            ) : null}
           </View>
           <TouchableOpacity onPress={onPressDelete} style={styles.delete}>
             {renderDelete()}
@@ -111,7 +111,7 @@ export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
         <View style={styles.lowerCountInnerView}>
           {renderQuantity()}
           {itemAvailable && !item?.freeProduct && !!couponApplied && renderCoupon()}
-          {isCircleCart && renderCareCashback()}
+          {isCircleCart ? renderCareCashback() : null}
         </View>
         {!item?.freeProduct ? renderPrice(priceToShow) : renderFree()}
       </View>
@@ -199,7 +199,7 @@ export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
   };
 
   function getDiscountPercent() {
-    if (isCouponApplied) {
+    if (isCouponApplied && !!item?.couponDiscountPrice) {
       return ((item?.couponDiscountPrice / mrp) * 100).toFixed(1);
     } else {
       return (((mrp - discountedPrice) / mrp) * 100).toFixed(1);
@@ -209,9 +209,9 @@ export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
   const renderDiscount = () => {
     return (
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        {!item?.freeProduct && (
+        {!item?.freeProduct ? (
           <Text style={styles.dicountPercent}>{`${getDiscountPercent()}%off`}</Text>
-        )}
+        ) : null}
         <Text style={styles.mrp}>{`MRP `}</Text>
         <Text style={styles.initialPrice}>{`₹${(mrp * item?.quantity).toFixed(2)}`}</Text>
       </View>
