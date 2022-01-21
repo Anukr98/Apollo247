@@ -29,7 +29,6 @@ export interface PaymentStatusProps {
 
 export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   const { status, amount, orderInfo, savings, PaymentMethod } = props;
-  console.log('orderInfo >>', orderInfo);
 
   const renderStatusCard = () => {
     return (
@@ -40,7 +39,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
       >
         <PaymentSuccess style={styles.statusIconStyles} />
         <Text style={styles.status}>Payment Successful</Text>
-        <Text style={styles.orderMsg}>{`Your order of ₹${amount} is placed`}</Text>
+        <Text style={styles.orderMsg}>{`Your order of ₹${amount.toFixed(2)} is placed`}</Text>
         {renderCircleSavings()}
         {renderAmountToPay()}
       </ImageBackground>
@@ -51,7 +50,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
     return orderInfo?.paymentMethod == 'COD' || PaymentMethod == 'COD' ? (
       <Text style={styles.toPay}>
         {`Amount to be paid via cash : `}
-        <Text style={styles.cash}>₹{amount}</Text>
+        <Text style={styles.cash}>₹{amount.toFixed(2)}</Text>
       </Text>
     ) : null;
   };

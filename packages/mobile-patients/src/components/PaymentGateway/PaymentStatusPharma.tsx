@@ -128,7 +128,8 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
   const fireEvents = () => {
     requestInAppReview();
     firePaymentOrderStatusEvent('success', payload, defaultClevertapEventParams);
-    fireCleverTapOrderSuccessEvent();
+    // removing because of duplicate event trigger
+    // fireCleverTapOrderSuccessEvent();
     firePaymentStatusPageViewedEvent(
       paymentStatus,
       paymentId,
@@ -170,12 +171,12 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
     } catch (error) {}
   };
 
-  const fireCleverTapOrderSuccessEvent = () => {
-    postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, {
-      ...cleverTapCheckoutEventAttributes,
-      'Cart items': serverCartItems?.length,
-    });
-  };
+  // const fireCleverTapOrderSuccessEvent = () => {
+  //   postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, {
+  //     ...cleverTapCheckoutEventAttributes,
+  //     'Cart items': serverCartItems?.length,
+  //   });
+  // };
 
   const onPressCopy = () => {
     Clipboard.setString(paymentId);
