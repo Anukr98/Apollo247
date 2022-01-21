@@ -90,8 +90,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 16,
     flexDirection: 'row',
-    paddingBottom: 10,
-    marginTop: 30,
+    paddingBottom: 8,
+    marginTop: 16,
     borderColor: 'rgba(0,0,0,0.1)',
   },
   heading: {

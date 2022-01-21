@@ -107,7 +107,7 @@ export const UPIPayments: React.FC<UPIPaymentsProps> = (props) => {
             ListFooterComponent={renderMoreApps()}
           />
         </View>
-        <Text style={styles.or}>or</Text>
+        {/* <Text style={styles.or}>or</Text> */}
       </View>
     ) : null;
   };
@@ -243,8 +243,8 @@ const styles = StyleSheet.create({
   },
   header: {
     marginHorizontal: 16,
-    paddingBottom: 12,
-    marginTop: 24,
+    paddingBottom: 8,
+    marginTop: 16,
   },
   heading: {
     ...theme.fonts.IBMPlexSansSemiBold(12),

@@ -103,8 +103,8 @@ export const HealthCredits: React.FC<HealthCreditsProps> = (props) => {
 const styles = StyleSheet.create({
   header: {
     marginHorizontal: 16,
-    paddingBottom: 12,
-    marginTop: 24,
+    paddingBottom: 8,
+    marginTop: 16,
   },
   heading: {
     ...theme.fonts.IBMPlexSansSemiBold(12),
