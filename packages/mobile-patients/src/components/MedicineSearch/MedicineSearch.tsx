@@ -21,7 +21,6 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getPatientPastMedicineSearches';
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
-  availabilityApi247,
   getMedicineSearchSuggestionsApi,
   MedicineProduct,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -142,7 +141,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     }
   };
   useEffect(() => {
-    if (serverCartItems.find(({ sku }) => sku?.toUpperCase() === currentProductIdInCart)) {
+    if (serverCartItems?.find(({ sku }) => sku?.toUpperCase() === currentProductIdInCart)) {
       if (shownNudgeOnce === false) {
         setShowSuggestedQuantityNudge(true);
       }

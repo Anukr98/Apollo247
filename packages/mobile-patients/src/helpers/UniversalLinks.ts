@@ -142,6 +142,26 @@ export const handleUniversalLinks = (
       case 'orderstest':
         pushTheView('ordersTest', navigation);
         break;
+      
+      case 'lab-tests-category':
+        pushTheView('TestListing', navigation, data?.length === 2 ? linkId : undefined);
+        break;
+
+      case 'category-listing':
+        pushTheView('TestWidgetListing',navigation, data?.length === 2 ? linkId : undefined );
+        break;
+  
+      case 'orderdetails':
+        pushTheView('TestOrderSummary',navigation, data?.length === 2 ? linkId : undefined );
+        break;
+
+      case 'tests-cart':
+        pushTheView('TestsCart',navigation, data?.length === 2 ? linkId : undefined );
+        break;
+
+      case 'orderstest':
+        pushTheView('ordersTest', navigation);
+        break;
 
       default:
         pushTheView('ConsultRoom', navigation, undefined);
@@ -313,6 +333,34 @@ const pushTheView = (
       navigation.navigate(AppRoutes.YourOrdersTest);
     break;
 
+    case 'TestListing':
+      navigation.navigate(AppRoutes.TestListing, {
+        movedFrom: 'deeplink',
+        widgetName: id,
+      });
+    break;
+
+    case 'TestOrderSummary':
+      navigation.navigate(AppRoutes.TestOrderDetails, {
+          orderId: id,
+          goToHomeOnBack: true,
+          setOrders: null,
+          selectedOrder: null,
+          refundStatusArr: [],
+          comingFrom: 'deeplink',
+          showOrderSummaryTab: true,
+          disableTrackOrder: true,
+      });
+    break;
+
+    case 'TestsCart':
+      navigation.navigate(AppRoutes.AddPatients);
+      break;
+
+    case 'TestWidgetListing':
+      navigation.navigate(AppRoutes.TestWidgetListing);
+      break;
+      
     default:
       break;
   }

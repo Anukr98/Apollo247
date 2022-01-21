@@ -1,33 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { CollapseView } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CollapseView';
-import { NewCard } from '@aph/mobile-patients/src/components/PaymentGateway/Components/NewCard';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { SavedCard } from '@aph/mobile-patients/src/components/PaymentGateway/Components/SavedCard';
 import { getBestOffer } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { AddNewCard, BlackArrowUp } from '@aph/mobile-patients/src/components/ui/Icons';
 export interface CardsProps {
-  onPressNewCardPayNow: (cardInfo: any, saveCard: boolean, bestOffer?: any) => void;
+  onPressNewCard: () => void;
   onPressSavedCardPayNow: (cardInfo: any, cvv: string, bestOffer?: any) => void;
   cardTypes: any;
-  isCardValid: boolean;
-  setisCardValid: (value: boolean) => void;
   savedCards: [];
   offers: any;
-  fetchOffers: (paymentInfo?: any) => void;
+  amount: number;
 }
 
 export const Cards: React.FC<CardsProps> = (props) => {
-  const {
-    onPressNewCardPayNow,
-    onPressSavedCardPayNow,
-    cardTypes,
-    isCardValid,
-    setisCardValid,
-    savedCards,
-    offers,
-    fetchOffers,
-  } = props;
+  const { onPressNewCard, onPressSavedCardPayNow, cardTypes, savedCards, offers, amount } = props;
   const [selectedCardToken, setSelectedCardToken] = useState<string>('');
-  const [newCardSelected, setNewCardSelected] = useState<boolean>(false);
 
   const renderCard = (item: any) => {
     const bestOffer = getBestOffer(offers, item?.card_fingerprint);
@@ -36,11 +24,14 @@ export const Cards: React.FC<CardsProps> = (props) => {
         onPressSavedCardPayNow={onPressSavedCardPayNow}
         cardTypes={cardTypes}
         selectedCardToken={selectedCardToken}
-        onPressSavedCard={(cardInfo) => (
-          setNewCardSelected(false), setSelectedCardToken(cardInfo?.card_token)
-        )}
+        onPressSavedCard={(cardInfo) =>
+          selectedCardToken == cardInfo?.card_token
+            ? setSelectedCardToken('')
+            : setSelectedCardToken(cardInfo?.card_token)
+        }
         cardInfo={item}
-        bestOffer={bestOffer}
+        bestOffer={item?.offers?.[0]}
+        amount={amount}
       />
     );
   };
@@ -50,35 +41,81 @@ export const Cards: React.FC<CardsProps> = (props) => {
 
   const renderNewCard = () => {
     return (
-      <NewCard
-        onPressNewCardPayNow={onPressNewCardPayNow}
-        cardTypes={cardTypes}
-        isCardValid={isCardValid}
-        setisCardValid={setisCardValid}
-        onPressNewCard={() => (setNewCardSelected(true), setSelectedCardToken(''))}
-        newCardSelected={newCardSelected}
-        offers={offers}
-        fetchOffers={fetchOffers}
-      />
+      <TouchableOpacity
+        style={styles.newCardCont}
+        onPress={() => {
+          onPressNewCard();
+          setSelectedCardToken('');
+        }}
+      >
+        <View style={styles.cardSubCont}>
+          <AddNewCard style={{ height: 24, width: 24 }} />
+          <Text style={styles.newCard}>Pay with a New Card</Text>
+        </View>
+        {<BlackArrowUp style={{ width: 15, height: 7, transform: [{ rotate: '90deg' }] }} />}
+      </TouchableOpacity>
     );
   };
 
   const renderChildComponent = () => {
     return (
-      <View>
+      <View style={styles.ChildComponent}>
         {renderSavedCards()}
         {renderNewCard()}
       </View>
     );
   };
 
+  const renderHeader = () => {
+    return (
+      <View style={styles.header}>
+        <Text style={styles.heading}>CREDIT/DEBIT CARDS</Text>
+      </View>
+    );
+  };
+
   return (
-    <CollapseView
-      isDown={true}
-      Heading={'CREDIT / DEBIT CARDS'}
-      ChildComponent={renderChildComponent()}
-    />
+    <View>
+      {renderHeader()}
+      {renderChildComponent()}
+    </View>
   );
 };
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  ChildComponent: {
+    backgroundColor: '#FAFEFF',
+    marginHorizontal: 16,
+    borderWidth: 1,
+    borderColor: '#D4D4D4',
+    borderRadius: 4,
+  },
+  header: {
+    marginHorizontal: 16,
+    paddingBottom: 12,
+    marginTop: 24,
+  },
+  heading: {
+    ...theme.fonts.IBMPlexSansSemiBold(12),
+    lineHeight: 18,
+    color: '#01475B',
+  },
+  newCard: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    lineHeight: 18,
+    color: '#01475B',
+    marginLeft: 13,
+  },
+  newCardCont: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 17,
+    paddingBottom: 21,
+    marginHorizontal: 12,
+  },
+  cardSubCont: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+});

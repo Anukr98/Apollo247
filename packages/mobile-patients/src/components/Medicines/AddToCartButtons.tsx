@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { DeleteIconWhite, MinusIconWhite, PlusIconWhite } from '../ui/Icons';
 import { theme } from '../../theme/theme';
+import { useShoppingCart } from '../ShoppingCartProvider';
 
 const localStyles = StyleSheet.create({
   addRemoveButtonContainer: {
@@ -73,6 +74,7 @@ export interface AddToCartButtonsProps {
 }
 
 export const AddToCartButtons: React.FC<AddToCartButtonsProps> = (props) => {
+  const { serverCartLoading } = useShoppingCart();
   const getDeleteIcon = () => {
     return <DeleteIconWhite style={[localStyles.deleteIconStyle, props.deleteIconStyle]} />;
   };
@@ -101,6 +103,7 @@ export const AddToCartButtons: React.FC<AddToCartButtonsProps> = (props) => {
       <TouchableOpacity
         style={localStyles.addRemoveButtonContainer}
         onPress={isSingleQty ? props.removeFromCart : props.removeItemFromCart}
+        disabled={serverCartLoading}
       >
         {isSingleQty ? getDeleteIcon() : getMinusIcon()}
       </TouchableOpacity>
@@ -130,6 +133,7 @@ export const AddToCartButtons: React.FC<AddToCartButtonsProps> = (props) => {
       {/* add button */}
       <TouchableOpacity
         style={localStyles.addRemoveButtonContainer}
+        disabled={serverCartLoading}
         onPress={() => {
           if (props.numberOfItemsInCart !== props.maxOrderQty) props.addToCart('add');
         }}

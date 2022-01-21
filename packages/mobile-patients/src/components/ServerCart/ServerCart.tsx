@@ -71,6 +71,8 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
     pharmacyCircleAttributes,
     serverCartErrorMessage,
     setServerCartErrorMessage,
+    serverCartMessage,
+    setServerCartMessage,
     isSplitCart,
   } = useShoppingCart();
   const shoppingCart = useShoppingCart();
@@ -120,12 +122,12 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
   }, [newAddressAdded, cartTat]);
 
   useEffect(() => {
-    if (serverCartErrorMessage) {
+    if (serverCartErrorMessage || serverCartMessage) {
       hideAphAlert?.();
       showAphAlert!({
         unDismissable: true,
         title: 'Hey',
-        description: serverCartErrorMessage,
+        description: serverCartErrorMessage || serverCartMessage,
         titleStyle: theme.viewStyles.text('SB', 18, '#890000'),
         ctaContainerStyle: { justifyContent: 'flex-end' },
         CTAs: [
@@ -134,13 +136,14 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
             type: 'orange-link',
             onPress: () => {
               setServerCartErrorMessage?.('');
+              setServerCartMessage?.('');
               hideAphAlert?.();
             },
           },
         ],
       });
     }
-  }, [serverCartErrorMessage]);
+  }, [serverCartErrorMessage, serverCartMessage]);
 
   useEffect(() => {
     if (!serverCartLoading) {
@@ -263,6 +266,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
             hideAphAlert!();
           }}
           onPressSelectAddress={(address) => {
+            fireAddressSelectedEvent(address);
             setUserActionPayload?.({
               patientAddressId: address.id,
               zipcode: address.zipcode,
@@ -425,7 +429,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
         </ScrollView>
         {!!serverCartItems?.length && renderProceedBar()}
       </SafeAreaView>
-      {serverCartLoading ? <Spinner /> : null}
+      {/* {serverCartLoading && <Spinner />} */}
     </View>
   );
 };

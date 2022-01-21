@@ -850,6 +850,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           onPress={() => {
             props.navigation.navigate(AppRoutes.ConsultPackagePostPurchase, {
               planId: pkg?.sub_plan_id,
+              subscriptionId: pkg?.subscription_id,
               onSubscriptionCancelled: () => {
                 props.navigation.goBack();
               },
@@ -1074,6 +1075,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
               {!!hdfcUserSubscriptions?._id ||
               !!corporateSubscriptions?.length ||
               !!consultPlan?.length ||
+              circleSubscription ||
               isCircleExpired ? (
                 <Text style={styles.currentBenefits}>CURRENT BENEFITS</Text>
               ) : (

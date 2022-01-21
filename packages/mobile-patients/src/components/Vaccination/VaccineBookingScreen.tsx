@@ -582,6 +582,16 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
     }
   };
 
+  const getDoseNumber = (doseNumber: string) => {
+    if (doseNumber == string.vaccineBooking.title_dose_2) {
+      return DOSE_NUMBER.SECOND;
+    } else if (doseNumber == string.vaccineBooking.title_dose_booster) {
+      return DOSE_NUMBER.BOOSTER_DOSE;
+    } else {
+      return DOSE_NUMBER.FIRST;
+    }
+  };
+
   const fetchVaccinationHospitalSites = () => {
     if (selectedCity == '') {
       return;
@@ -594,6 +604,8 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
     let sitesInputVariables = {
       city: selectedCity,
       is_retail: isRetail,
+      patient_id: selectedPatient?.id,
+      dose_number: getDoseNumber(selectedDose),
       ...(selectedVaccineType != '' && { vaccine_type: getVaccineType(selectedVaccineType) }),
     };
 
@@ -606,6 +618,16 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
       })
       .then((response) => {
         setVaccineSiteList(response?.data?.getResourcesList?.response);
+        if (response?.data?.getResourcesList?.message) {
+          showAphAlert &&
+            showAphAlert({
+              title: 'Hey!',
+              description: response?.data?.getResourcesList?.message,
+              onPressOk: () => {
+                hideAphAlert!();
+              },
+            });
+        }
       })
       .catch((error) => {})
       .finally(() => {
@@ -761,6 +783,8 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
       resource_id: selectedHospitalSiteResourceID,
       session_date: preferredDate,
       is_retail: isRetail,
+      patient_id: selectedPatient?.id,
+      dose_number: getDoseNumber(selectedDose),
       ...(selectedVaccineType != '' && { vaccine_type: getVaccineType(selectedVaccineType) }),
     };
 
@@ -798,8 +822,7 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
     const appointmentInputDetails = {
       patient_id: selectedPatient?.id || '',
       resource_session_id: selectedSlot?.id || '',
-      dose_number:
-        selectedDose == string.vaccineBooking.title_dose_1 ? DOSE_NUMBER.FIRST : DOSE_NUMBER.SECOND,
+      dose_number: getDoseNumber(selectedDose),
       booking_source: VACCINE_BOOKING_SOURCE.MOBILE,
       subscription_inclusion_id: subscriptionInclusionId,
       user_subscription_id: subscriptionId,
@@ -1053,6 +1076,7 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
           {string.vaccineBooking.choose_vaccination_dose_number}{' '}
         </Text>
         <VaccineDoseChooser
+          patientAge={getAge(selectedPatient?.dateOfBirth)}
           menuContainerStyle={styles.cityChooser}
           onDoseChoosed={(dose) => {
             if (dose == string.vaccineBooking.title_dose_2) {
@@ -1063,6 +1087,19 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
                   hideAphAlert!();
                 },
                 description: string.vaccineBooking.dose_2_alert,
+                onPressOk: () => {
+                  hideAphAlert!();
+                  setSelectedDose(dose);
+                },
+              });
+            } else if (dose == string.vaccineBooking.title_dose_booster) {
+              showAphAlert!({
+                title: 'Disclaimer!',
+                showCloseIcon: true,
+                onCloseIconPress: () => {
+                  hideAphAlert!();
+                },
+                description: string.vaccineBooking.dose_booster_alert,
                 onPressOk: () => {
                   hideAphAlert!();
                   setSelectedDose(dose);

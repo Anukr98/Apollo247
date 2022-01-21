@@ -31,7 +31,7 @@ export const ServerCartItemsList: React.FC<ServerCartItemsListProps> = (props) =
     pharmacyCircleAttributes,
     cartCoupon,
   } = useShoppingCart();
-  const { setUserActionPayload } = useServerCart();
+  const { setUserActionPayload, userActionPayload } = useServerCart();
   const { screen, onPressProduct } = props;
   const { currentPatient } = useAllCurrentPatients();
   const { cartBankOffer } = useAppCommonData();
@@ -129,6 +129,7 @@ export const ServerCartItemsList: React.FC<ServerCartItemsListProps> = (props) =
                 onUpdateQuantity={(quantity) => onUpdateQuantity(item, quantity)}
                 onPressDelete={() => onPressDelete(item)}
                 onPressProduct={() => onPressProduct!(item)}
+                userActionPayload={userActionPayload}
               />
             );
           }}

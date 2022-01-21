@@ -12,7 +12,6 @@ import {
   Dimensions,
   Image,
   TouchableOpacity,
-  Platform,
   BackHandler,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
@@ -59,10 +58,10 @@ import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 const { height } = Dimensions.get('window');
 import LottieView from 'lottie-react-native';
 import AsyncStorage from '@react-native-community/async-storage';
-import { getPatientPrismMedicalRecordsApi } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { DocumentPickerResponse } from 'react-native-document-picker';
-import ImageResizer from 'react-native-image-resizer';
-import RNFetchBlob from 'rn-fetch-blob';
+import {
+  convertPrismUrlToBlob,
+  getPatientPrismMedicalRecordsApi,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 const GreenTickAnimation = '@aph/mobile-patients/src/components/Tests/greenTickAnimation.json';
 
 export interface SubmittedPrescriptionProps extends NavigationScreenProps {
@@ -300,7 +299,6 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
         fileName: inputData?.prescriptionFiles?.[0]?.fileName,
         mimeType: inputData?.prescriptionFiles?.[0]?.mimeType,
       };
-
       DiagnosticPrescriptionSubmitted(
         currentPatient,
         prescriptionUrl ? prescriptionUrl : '',
@@ -333,13 +331,11 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
     userType: string,
     responseResult: any
   ) {
-    let url, allUrls, uploadUrl;
+    let url, allUrls, uploadUrl, finalConcatenatedUrl;
     if (responseResult?.prescriptionFiles?.length == 1) {
       url = responseResult?.prescriptionFiles?.[0]?.file_Url;
     } else {
-      url = responseResult?.prescriptionFiles?.map(
-        (attributes: any, index: number) => `${index + 1} - ${attributes?.file_Url}`
-      );
+      url = responseResult?.prescriptionFiles?.map((attributes: any) => `${attributes?.file_Url}`);
     }
 
     if (EPrescriptionsProps?.length > 0) {
@@ -348,10 +344,22 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
       allUrls = url?.concat(uploadUrl);
     }
 
-    const concatendatedUrl = allUrls?.map((item: any, index: number) => `${index + 1} - ${item}`);
-    const urlToUse = EPrescriptionsProps?.length > 0 ? concatendatedUrl : url;
+    const concatendatedUrl = allUrls?.map((item: any) => `${item}`);
+    const urlToUse = EPrescriptionsProps?.length > 0 ? concatendatedUrl : [url];
 
-    const newUrl = isArray(urlToUse) ? urlToUse?.map((item: any) => item)?.join(' ') : urlToUse;
+    try {
+      const getBlobUrls = await getBlobUrlFromPrismData(urlToUse?.flat());
+      finalConcatenatedUrl = getBlobUrls?.map(
+        (item: any, index: number) => `${index + 1} - ${item?.url}`
+      );
+    } catch (error) {
+      CommonBugFender('SubmittedPrecription_getBlobUrlFromPrism', error);
+      finalConcatenatedUrl = allUrls?.map((item: any, index: number) => `${index + 1} - ${item}`);
+    }
+
+    const newUrl = isArray(finalConcatenatedUrl)
+      ? finalConcatenatedUrl?.map((item: any) => item)?.join(' ')
+      : finalConcatenatedUrl;
 
     DiagnosticPrescriptionSubmitted(
       currentPatient,
@@ -361,6 +369,23 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
       isDiagnosticCircleSubscription
     );
     setOnSumbitSuccess(true);
+  }
+
+  async function getBlobUrlFromPrismData(urlArray: []) {
+    try {
+      const getResponse = Promise.all(
+        urlArray?.map((url: any) => convertPrismUrlToBlob(client, currentPatient?.id, url))
+      );
+      let allBlobUrlArray: { url: any }[] = [];
+      const getAllResponse = (await getResponse)?.map((item: any) => {
+        allBlobUrlArray.push({
+          url: item?.data?.fetchBlobURLWithPRISMData?.blobUrl,
+        });
+      });
+      return allBlobUrlArray;
+    } catch (error) {
+      CommonBugFender('SubmittedPrecription_getBlobUrlFromPrism_function', error);
+    }
   }
 
   const renderErrorMessage = () => {

@@ -7,6 +7,8 @@ import {
   View,
   ViewStyle,
   TextStyle,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Mascot, CrossPopup } from '@aph/mobile-patients/src/components/ui/Icons';

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
+  View,
   SafeAreaView,
   StyleSheet,
   NativeModules,
@@ -7,10 +8,12 @@ import {
   NativeEventEmitter,
   ScrollView,
   Platform,
+  Text,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import { Header } from '@aph/mobile-patients/src/components/PaymentGateway/Components/Header';
 import { BookingInfo } from '@aph/mobile-patients/src/components/PaymentGateway/Components/BookingInfo';
 import { PayByCash } from '@aph/mobile-patients/src/components/PaymentGateway/Components/PayByCash';
 import { NetBanking } from '@aph/mobile-patients/src/components/PaymentGateway/Components/NetBanking';
@@ -43,6 +46,7 @@ import {
   CREATE_ORDER,
   UPDATE_ORDER,
   VERIFY_VPA,
+  GET_PAYMENT_METHODS,
   INITIATE_DIAGNOSTIC_ORDER_PAYMENT_V2,
   GET_ORDER_INFO,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -51,7 +55,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { TxnFailed } from '@aph/mobile-patients/src/components/PaymentGateway/Components/TxnFailed';
 import { InvalidOffer } from '@aph/mobile-patients/src/components/PaymentGateway/Components/InvalidOffer';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { AppConfig, ELIGIBLE_HC_VERTICALS } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
   VerifyVPA,
   one_apollo_store_code,
@@ -78,6 +82,7 @@ import {
   goToConsultRoom,
   getPaymentMethodsInfo,
   getIOSPackageName,
+  clearStackAndNavigate,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PaymentStatus,
@@ -87,7 +92,6 @@ import {
   PaymentTxnInitiated,
   PaymentTxnResponse,
 } from '@aph/mobile-patients/src/components/PaymentGateway/Events';
-import { useFetchSavedCards } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useFetchSavedCards';
 import Decimal from 'decimal.js';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -102,8 +106,18 @@ import { useGetClientAuthToken } from '@aph/mobile-patients/src/components/Payme
 import { CredPay } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CredPay';
 import { Offers } from '@aph/mobile-patients/src/components/PaymentGateway/Components/Offers';
 import { OfferInfo } from '@aph/mobile-patients/src/components/PaymentGateway/Components/OfferInfo';
+import { PaymentAnimations } from '@aph/mobile-patients/src/components/PaymentGateway/Components/PaymentAnimations';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
-
+import { OtherPaymentOptions } from '@aph/mobile-patients/src/components/PaymentGateway/Components/OtherPaymentOptions';
+import { CredPayPopup } from '@aph/mobile-patients/src/components/PaymentGateway/OtherPaymentsComponents/CredPayPopup';
+import { PayByCashPopUp } from '@aph/mobile-patients/src/components/PaymentGateway/OtherPaymentsComponents/PayByCashPopUp';
+import { NetBankingPopup } from '@aph/mobile-patients/src/components/PaymentGateway/OtherPaymentsComponents/NetBankingPopup';
+import { UPICollectPopup } from '@aph/mobile-patients/src/components/PaymentGateway/OtherPaymentsComponents/UPICollectPopup';
+import { ShowBottomPopUp } from '@aph/mobile-patients/src/components/PaymentGateway/OtherPaymentsComponents/showBottomPopUp';
+import { CardsPopUp } from '@aph/mobile-patients/src/components/PaymentGateway/OtherPaymentsComponents/CardsPopUp';
+import { UPIAppsPopup } from '@aph/mobile-patients/src/components/PaymentGateway/OtherPaymentsComponents/UPIAppsPopup';
+import { NewCard } from '@aph/mobile-patients/src/components/PaymentGateway/Components/NewCard';
+import { PreferredPayments } from '@aph/mobile-patients/src/components/PaymentGateway/Components/PreferredPayments';
 const { HyperSdkReact } = NativeModules;
 
 export interface PaymentMethodsProps extends NavigationScreenProps {
@@ -129,6 +143,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [amount, setAmount] = useState<number>(props.navigation.getParam('amount'));
   const orderDetails = props.navigation.getParam('orderDetails');
   const eventAttributes = props.navigation.getParam('eventAttributes');
+  const verticalSpecificEventAttributes = props.navigation.getParam('verticalSpecificData');
   const businessLine = props.navigation.getParam('businessLine');
   const isDiagnostic = businessLine === 'diagnostics';
   const disableCod = props.navigation.getParam('disableCOD');
@@ -159,20 +174,32 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [showCOD, setShowCOD] = useState<boolean>(isDiagnostic ? false : true);
   const [showDiagnosticHCMsg, setShowDiagnosticHCMsg] = useState<string>('');
   const paymentType = useRef<string>('');
-  const [areNonCODSkus, setAreNonCODSkus] = useState(false);
   const { healthCredits } = useFetchHealthCredits(businessLine);
-  const { paymentMethods, cardTypes, fetching } = useGetPaymentMethods(paymentId);
-  const { savedCards } = useFetchSavedCards(customerId);
+  const { paymentMethods, fetching } = useGetPaymentMethods(paymentId!, amount);
+  const [fetchedPaymentMethods, setFetchedPaymentMethods] = useState(null);
+  const { all_payment_modes, offers, saved_card_list, preferred_payment_methods } =
+    fetchedPaymentMethods || paymentMethods;
+  const linkedWallets = preferred_payment_methods?.linked_wallets;
+  const closedPaymentModes = all_payment_modes?.filter((item: any) => item?.state == 'CLOSE');
+  const preferredSavedCards = preferred_payment_methods?.saved_cards?.cards || [];
+  const preferredCardTokens = preferredSavedCards?.map((item: any) => item?.card_token);
+  const savedCards =
+    saved_card_list?.cards?.filter(
+      (item: any) => !preferredCardTokens?.includes(item?.card_token)
+    ) || [];
+  const cardTypes = all_payment_modes?.filter((item: any) => item?.name == 'CARD')?.[0]
+    ?.payment_methods;
   const clientAuthToken = !!customerId
     ? useGetClientAuthToken(customerId, businessLine)
     : undefined;
   const [cred, setCred] = useState<any>(undefined);
-  const [offers, setOffers] = useState<any>([]);
+  const [offersList, setOffersList] = useState<any>([]);
   const [selectedPayment, setSelectedPaymentOption] = useState<any>({});
   const [offer, setoffer] = useState<any>(null);
-  const [linkedWallets, setLinkedWallets] = useState<any>([]);
   const [createdWallet, setcreatedWallet] = useState<any>({});
   const [walletLinking, setWalletLinking] = useState<any>('AMAZONPAY');
+  const [showAnimation, setShowAnimation] = useState<boolean>(false);
+  const [paymentStatus, setpaymentStatus] = useState<string>('');
   const requestId = currentPatient?.id || customerId || 'apollo247';
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const defaultClevertapEventParams = {
@@ -184,6 +211,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     availableHc: healthCredits,
   };
   const { deleteServerCart } = useServerCart();
+  const [otherPaymentSelected, setOtherPaymentSelected] = useState<any>(null);
 
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
@@ -213,7 +241,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', () => {
-      goBackToCart();
+      recreateCart();
       return !HyperSdkReact.isNull() && HyperSdkReact.onBackPressed();
     });
     return () => BackHandler.removeEventListener('hardwareBackPress', () => null);
@@ -229,7 +257,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const updateAmount = () => {
-    const redeemableAmount = serverCartAmount?.estimatedAmount || 0;
+    const redeemableAmount =
+      businessLine == 'pharma' ? serverCartAmount?.estimatedAmount || 0 : amount;
     HCSelected
       ? healthCredits >= redeemableAmount
         ? (setburnHc(redeemableAmount), setAmount(Number(Decimal.sub(amount, redeemableAmount))))
@@ -251,8 +280,24 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   useEffect(() => {
-    !!paymentMethods && fetchOffers();
-  }, [paymentMethods, amount]);
+    refetchPaymentOptions();
+  }, [amount]);
+
+  const getPaymentOptions = () => {
+    return client.query({
+      query: GET_PAYMENT_METHODS,
+      variables: { is_mobile: true, payment_order_id: paymentId, prepaid_amount: amount },
+      fetchPolicy: 'no-cache',
+    });
+  };
+
+  async function refetchPaymentOptions() {
+    //this is to refetch offers when a user opts health credits
+    try {
+      const response = await getPaymentOptions();
+      setFetchedPaymentMethods(response?.data?.getPaymentMethodsV3);
+    } catch (error) {}
+  }
 
   async function fetchOffers(paymentInfo?: any) {
     try {
@@ -263,7 +308,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       const walletInfo = getPaymentMethodsInfo(paymentMethods, 'WALLET');
       const info = !!paymentInfo ? walletInfo.concat(paymentInfo) : walletInfo;
       const res = await getOffersList(client, orderInfo, businessLine, info);
-      setOffers(res?.data?.getOffersList);
+      setOffersList(res?.data?.getOffersList);
     } catch (error) {}
   }
 
@@ -298,7 +343,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const handleResponsePayload = (payload: any) => {
     const status = payload?.payload?.status;
     const action = payload?.payload?.action;
-
+    setpaymentStatus('');
     switch (action) {
       case 'getPaymentMethods':
         if (!payload?.error) {
@@ -316,7 +361,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         break;
       case 'upiTxn':
         let activityRes = payload?.payload?.otherInfo?.response?.dropoutInfo?.activityResponse;
-        activityRes = !!activityRes && activityRes != {} && JSON.parse(activityRes);
+        if (Platform.OS == 'android') {
+          activityRes = !!activityRes && activityRes != {} && JSON.parse(activityRes);
+        }
         activityRes?.Status == 'FAILURE' || activityRes?.Status == 'Failed'
           ? showTxnFailurePopUP()
           : status
@@ -335,26 +382,35 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         break;
       case 'createWallet':
         setWalletLinking(null);
+        setOtherPaymentSelected(null);
         payload?.payload?.linked && setcreatedWallet(payload?.payload);
         break;
       case 'refreshWalletBalances':
         setWalletLinking(null);
-        setLinkedWallets(payload?.payload?.list);
+        // setLinkedWallets(payload?.payload?.list);
         break;
       default:
         payload?.error && handleError(payload?.errorMessage);
     }
   };
 
+  useEffect(() => {
+    paymentStatus != '' && setShowAnimation(true);
+  }, [paymentStatus]);
+
   const handleTxnStatus = (status: string, payload: any) => {
+    const verticals = ['consult', 'diagnostics', 'pharma'];
     storeSDKresponse(payload);
     const errCode = payload?.payload?.otherInfo?.offers?.[0]?.errorCode;
     switch (status) {
       case 'CHARGED':
+        // setpaymentStatus('success');
         navigatetoOrderStatus(false, 'success', payload);
         break;
       case 'AUTHORIZING':
-        navigatetoOrderStatus(false, 'pending', payload);
+        verticals.includes(businessLine)
+          ? setpaymentStatus('pending')
+          : navigatetoOrderStatus(false, 'pending', payload);
         break;
       case 'PENDING_VBV':
         handlePaymentPending(payload?.errorCode, payload);
@@ -417,6 +473,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   const handlePaymentPending = (errorCode: string, payload: any) => {
     triggerUserPaymentAbortedEvent(errorCode);
+    const verticals = ['consult', 'diagnostics', 'pharma'];
     switch (errorCode) {
       case 'JP_002':
       case 'JP_005':
@@ -428,7 +485,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         break;
       case 'JP_006':
         // txn status is awaited
-        navigatetoOrderStatus(false, 'pending', payload);
+        verticals.includes(businessLine)
+          ? setpaymentStatus('pending')
+          : navigatetoOrderStatus(false, 'pending', payload);
         break;
       default:
         showTxnFailurePopUP();
@@ -444,7 +503,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     }
   };
 
-  const createJusPayOrder = (cod: boolean) => {
+  const createJusPayOrder = (cod: boolean, updateToCOD?: boolean) => {
     const orderInput = {
       payment_order_id: paymentId,
       health_credits_used: HCSelected ? burnHc : 0,
@@ -455,7 +514,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       return_url: AppConfig.Configuration.baseUrl,
     };
     return client.mutate({
-      mutation: !!authToken ? UPDATE_ORDER : CREATE_ORDER,
+      mutation: !!authToken || updateToCOD ? UPDATE_ORDER : CREATE_ORDER,
       variables: { order_input: orderInput },
       fetchPolicy: 'no-cache',
     });
@@ -535,7 +594,15 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   function triggerWebengege(type: string, instrument: string, paymentModeName?: string) {
     paymentType.current = type;
-    PaymentInitiated(amount, businessLine, type, paymentId, instrument, paymentModeName);
+    PaymentInitiated(
+      amount,
+      businessLine,
+      type,
+      paymentId,
+      instrument,
+      paymentModeName,
+      verticalSpecificEventAttributes
+    );
   }
 
   function triggerUserPaymentAbortedEvent(errorCode: string) {
@@ -546,6 +613,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressBank(bankCode: string) {
+    setOtherPaymentSelected(null);
     triggerWebengege('NetBanking-' + bankCode, 'NB', string.common.netBanking);
     firePaymentInitiatedEvent('NB', bankCode, null, false, null, false, false);
     const token = await getClientToken();
@@ -558,6 +626,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressWallet(wallet: string, bestOffer?: any) {
+    setOtherPaymentSelected(null);
     triggerWebengege('Wallet-' + wallet, 'WALLET', string.common.phonePeWallet);
     firePaymentInitiatedEvent('WALLET', wallet, null, false, null, false, false);
     const offerId = bestOffer?.offer_id;
@@ -590,6 +659,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressWalletDirectDebit(wallet: string, walletToken: string, bestOffer?: any) {
+    setOtherPaymentSelected(null);
     firePaymentInitiatedEvent('WALLET', wallet, null, false, null, false, false);
     const offerId = bestOffer?.offer_id;
     const token = await getClientToken();
@@ -601,6 +671,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressCred() {
+    setOtherPaymentSelected(null);
     firePaymentInitiatedEvent('CRED', 'Cred Pay', null, false, null, false, false);
     const token = await getClientToken();
     const mobileNo = currentPatient?.mobileNumber.substring(3);
@@ -608,6 +679,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressUPIApp(app: any) {
+    setOtherPaymentSelected(null);
     triggerWebengege('UPIApp-' + app?.payment_method_name, 'UPI', app?.payment_method_name);
     const appName = app?.payment_method_name;
     firePaymentInitiatedEvent('UPI', appName, appName, false, 'Intent', false, false);
@@ -633,6 +705,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   async function onPressVPAPay(VPA: string) {
     triggerWebengege('UPI Collect', 'UPI', string.common.VPA);
     firePaymentInitiatedEvent('UPI', 'Upi Collect', null, false, 'Collect', false, false);
+    setOtherPaymentSelected(null);
     try {
       setisTxnProcessing(true);
       const response = await verifyVPA(VPA);
@@ -656,6 +729,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   async function onPressNewCardPayNow(cardInfo: any, saveCard: boolean, bestOffer?: any) {
     triggerWebengege('Card', 'CARD', string.common.Card);
     firePaymentInitiatedEvent('CARD', cardInfo?.cardType, null, false, null, saveCard, false);
+    setOtherPaymentSelected(null);
     const token = await getClientToken();
     token
       ? InitiateCardTxn(requestId, token, paymentId, cardInfo, saveCard, bestOffer?.offer_id)
@@ -669,6 +743,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressSavedCardPayNow(cardInfo: any, cvv: string, bestOffer?: any) {
+    setOtherPaymentSelected(null);
     triggerWebengege('Card', 'CARD', 'Card');
     firePaymentInitiatedEvent('CARD', cardInfo?.cardType, null, true, null, false, false);
     const token = await getClientToken();
@@ -683,18 +758,21 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       });
   }
 
-  async function onPressPayByCash() {
+  async function onPressPayByCash(updateToCOD?: boolean) {
+    hideAphAlert?.();
+    setOtherPaymentSelected(null);
     triggerWebengege('Cash', 'COD', string.common.Cash);
     firePaymentInitiatedEvent('COD', 'COD', null, false, null, false, true);
     setisTxnProcessing(true);
     try {
       businessLine == 'diagnostics' && initiateOrderPayment();
-      const response = await createJusPayOrder(true);
+      const response = await createJusPayOrder(true, updateToCOD);
       const { data } = response;
       const status =
         data?.createOrderV2?.payment_status || data?.updateOrderDetails?.payment_status;
       if (status === 'TXN_SUCCESS') {
         navigatetoOrderStatus(true, 'success');
+        setisTxnProcessing(false);
       } else {
         showTxnFailurePopUP();
       }
@@ -718,30 +796,10 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     }
   }
 
-  const OtherBanks = () => {
-    const topBanks = paymentMethods?.find((item: any) => item?.name == 'FEATURED_BANKS');
-    let otherBanks = paymentMethods?.find((item: any) => item?.name == 'OTHER_BANKS');
-    const methods =
-      topBanks?.payment_methods?.map((item: any) => item?.payment_method_code).slice(0, 4) || [];
-    otherBanks = otherBanks?.payment_methods?.filter(
-      (item: any) => !methods?.includes(item?.payment_method_code)
-    );
-    triggerWebengege('NetBanking - OtherBanks', 'NB', string.common.netBanking);
-    props.navigation.navigate(AppRoutes.OtherBanks, {
-      paymentId: paymentId,
-      amount: amount,
-      burnHc: burnHc,
-      banks: otherBanks,
-      orderDetails: orderDetails,
-      businessLine: businessLine,
-      healthCredits: healthCredits,
-    });
-  };
-
   const filterUPIApps = () => {
     if (availableUPIApps?.length) {
       const available = availableUPIApps?.map((item: any) => item?.packageName);
-      const UPIApps = paymentMethods?.find((item: any) => item?.name == 'UPI')?.payment_methods;
+      const UPIApps = all_payment_modes?.find((item: any) => item?.name == 'UPI')?.payment_methods;
       const apps = UPIApps?.map((app: any) => {
         if (
           available.includes(app?.payment_method_code) ||
@@ -760,7 +818,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const onPressRetryBooking = () => {
     hideAphAlert?.();
     setHCSelected(false);
-    businessLine == 'diagnostics' && props.navigation.goBack();
   };
 
   const onPressContinue = async () => {
@@ -788,7 +845,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     setauthToken?.('');
     switch (businessLine) {
       case 'diagnostics':
-        props.navigation.navigate(AppRoutes.OrderStatus, {
+        props.navigation.navigate(AppRoutes.PaymentStatusDiag, {
           paymentId: paymentId,
           orderDetails: orderDetails,
           isCOD: isCOD,
@@ -798,15 +855,18 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           defaultClevertapEventParams: defaultClevertapEventParams,
           payload: payload,
           isCircleAddedToCart: isCircleAddedToCart,
+          verticalSpecificEventAttributes,
+          amount: amount,
         });
         break;
       case 'consult':
-        props.navigation.navigate(AppRoutes.ConsultPaymentStatus, {
+        props.navigation.navigate(AppRoutes.PaymentStatusConsult, {
           orderDetails: orderDetails,
           paymentStatus: paymentStatus,
           paymentId: paymentId,
           defaultClevertapEventParams: defaultClevertapEventParams,
           payload: payload,
+          amount: amount,
         });
         break;
       case 'pharma':
@@ -823,10 +883,10 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
             `${orderDetails?.displayId}`,
             pharmacyUserType
           );
-        props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
+        props.navigation.navigate(AppRoutes.PaymentStatusPharma, {
           paymentStatus: paymentStatus,
-          price: amount,
-          transId: paymentId,
+          amount: amount,
+          paymentId: paymentId,
           orderDetails: orderDetails,
           checkoutEventAttributes: checkoutEventAttributes,
           cleverTapCheckoutEventAttributes,
@@ -878,36 +938,147 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     });
   };
 
-  const goBackToCart = () => {
-    if (businessLine != 'diagnostics') {
-      deleteServerCart(false, paymentId);
+  const showOtherPaymentBottomPopUp = () => {
+    const UPIapps = filterUPIApps();
+    return !!otherPaymentSelected ? (
+      <ShowBottomPopUp
+        onDismissPopUp={() => setOtherPaymentSelected(null)}
+        childComponent={getChildComponent(otherPaymentSelected)}
+        paymentMode={otherPaymentSelected?.name}
+        UPIapps={UPIapps}
+      />
+    ) : null;
+  };
+
+  const getChildComponent = (paymentInfo: any) => {
+    const methods = paymentInfo?.payment_methods || [];
+    switch (paymentInfo?.name) {
+      case 'COD':
+        return (
+          <PayByCashPopUp
+            onPressPayNow={onPressPayByCash}
+            businessLine={businessLine}
+            HCselected={HCSelected}
+            showDiagCOD={showCOD}
+            diagMsg={showDiagnosticHCMsg}
+            pharmaDisableCod={disableCod}
+            pharmaDisincentivizeCodMessage={paymentCodMessage}
+          />
+        );
+      case 'CARD':
+        return (
+          <CardsPopUp
+            savedCards={savedCards}
+            onPressSavedCardPayNow={onPressSavedCardPayNow}
+            cardTypes={cardTypes}
+            offers={offers}
+            amount={amount}
+            onPressNewCard={() => setOtherPaymentSelected({ name: 'NEWCARD' })}
+          />
+        );
+      case 'WALLET':
+        return (
+          <Wallets
+            wallets={methods}
+            onPressPayNow={onPressWallet}
+            onPressLinkWallet={onPressLinkWallet}
+            onPressDirectDebit={onPressWalletDirectDebit}
+            offers={offers}
+            createdWallet={createdWallet}
+            linked={linkedWallets}
+            amount={amount}
+            walletLinking={walletLinking}
+            popUp={true}
+          />
+        );
+      case 'CRED':
+        return (
+          <CredPayPopup credInfo={cred} paymentMethod={paymentInfo} onPressPayNow={onPressCred} />
+        );
+      case 'UPI':
+        return (
+          <UPIAppsPopup
+            upiApps={filterUPIApps()}
+            onPressUPIApp={onPressUPIApp}
+            onPressUpiCollect={() => setOtherPaymentSelected({ name: 'UPICOLLECT' })}
+          />
+        );
+      case 'FEATURED_BANKS':
+        return <NetBankingPopup onPressBank={onPressBank} allPaymentModes={all_payment_modes} />;
+      case 'UPICOLLECT':
+        return <UPICollectPopup amount={amount} onPressPay={onPressVPAPay} />;
+      case 'NEWCARD':
+        return (
+          <NewCard
+            onPressNewCardPayNow={onPressNewCardPayNow}
+            cardTypes={cardTypes}
+            isCardValid={isCardValid}
+            setisCardValid={setisCardValid}
+            offers={offersList}
+            fetchOffers={fetchOffers}
+            amount={amount}
+          />
+        );
     }
+  };
+
+  const showPaymentAnimation = () => {
+    return !!showAnimation ? (
+      <PaymentAnimations
+        paymentId={paymentId}
+        paymentStatus={paymentStatus}
+        onPaymentFailure={() => {
+          setShowAnimation(false);
+          showTxnFailurePopUP();
+        }}
+        onPaymentSuccess={() => {
+          setShowAnimation(false);
+          navigatetoOrderStatus(false, 'success');
+        }}
+        onTimeOut={() => {
+          clearStackAndNavigate(props.navigation, AppRoutes.PaymentFailed, {
+            orderDetails: orderDetails,
+            paymentId: paymentId,
+            businessLine: businessLine,
+            amount: amount,
+          });
+          setTimeout(() => setShowAnimation(false), 500);
+        }}
+      />
+    ) : null;
+  };
+
+  const recreateCart = () => {
+    businessLine == 'pharma' && deleteServerCart(false, paymentId);
+  };
+
+  const goBackToCart = () => {
+    businessLine == 'pharma' && deleteServerCart(false, paymentId);
     props.navigation.goBack();
   };
 
   const renderHeader = () => {
-    return (
-      <Header
-        container={styles.header}
-        leftIcon={'backArrow'}
-        title={`AMOUNT TO PAY : ₹ ${amount}`}
-        onPressLeftIcon={goBackToCart}
-      />
-    );
-  };
-
-  const renderBookingInfo = () => {
-    return (
-      <BookingInfo
-        LOB={businessLine}
-        orderDetails={orderDetails}
-        modifyOrderDetails={modifiedOrder}
-      />
-    );
+    return <Header amount={amount} onPressLeftIcon={goBackToCart} />;
   };
 
   const renderOffers = () => {
-    return <Offers offers={offers?.offers} onPressTnC={showOfferInfo} />;
+    return <Offers offers={offers} onPressTnC={showOfferInfo} />;
+  };
+
+  const renderPreferredPaymentOptions = () => {
+    return !!amount ? (
+      <PreferredPayments
+        amount={amount}
+        preferredPayments={preferred_payment_methods}
+        cardTypes={cardTypes}
+        onPressSavedCardPayNow={onPressSavedCardPayNow}
+        allModes={all_payment_modes}
+        onPressWallet={onPressWallet}
+        onPressDirectDebit={onPressWalletDirectDebit}
+        onPressUPIApp={onPressUPIApp}
+        availableUPIApps={availableUPIApps}
+      />
+    ) : null;
   };
 
   const showOfferInfo = (offer: any) => {
@@ -919,24 +1090,26 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   const showPaymentOptions = () => {
     //showPrepaid is true for all vertical except diagnostics
-    return !!paymentMethods?.length
-      ? paymentMethods.map((item: any) => {
+    return !!all_payment_modes?.length
+      ? all_payment_modes.map((item: any) => {
           const minVersion = item?.minimum_supported_version;
+          const isOpen = item?.state == 'OPEN';
           const versionCheck = paymentModeVersionCheck(minVersion);
+          const showPaymentOption = isOpen && versionCheck && !!amount && showPrepaid;
           const methods = item?.payment_methods || [];
           switch (item?.name) {
             case 'COD':
-              return !!amount && versionCheck && renderPayByCash();
+              return showPaymentOption && renderPayByCash();
             case 'CARD':
-              return !!amount && versionCheck && showPrepaid && renderCards();
+              return showPaymentOption && renderCards();
             case 'WALLET':
-              return !!amount && versionCheck && showPrepaid && renderWallets(methods);
+              return showPaymentOption && renderWallets(methods);
             case 'CRED':
-              return !!amount && versionCheck && showPrepaid && renderCred(methods[0]);
+              return showPaymentOption && renderCred(methods[0]);
             case 'UPI':
-              return !!amount && versionCheck && showPrepaid && renderUPIPayments(filterUPIApps());
+              return showPaymentOption && renderUPIPayments(filterUPIApps());
             case 'FEATURED_BANKS':
-              return !!amount && versionCheck && showPrepaid && renderNetBanking(methods);
+              return showPaymentOption && renderNetBanking(methods);
             case 'HEALTH_CREDITS':
               return versionCheck && showPrepaid && renderHealthCredits();
           }
@@ -945,7 +1118,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const renderHealthCredits = () => {
-    return healthCredits && businessLine == 'pharma' ? (
+    return healthCredits ? (
       <HealthCredits
         credits={healthCredits}
         HCSelected={HCSelected}
@@ -985,8 +1158,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         isVPAvalid={isVPAvalid}
         upiApps={upiApps}
         onPressUPIApp={onPressUPIApp}
-        onPressPay={onPressVPAPay}
+        onPressUpiCollect={() => setOtherPaymentSelected({ name: 'UPICOLLECT' })}
         setisVPAvalid={setisVPAvalid}
+        onPressMoreApps={() => setOtherPaymentSelected({ name: 'UPI' })}
       />
     );
   };
@@ -995,13 +1169,11 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     return (
       <Cards
         savedCards={savedCards}
-        onPressNewCardPayNow={onPressNewCardPayNow}
+        onPressNewCard={() => setOtherPaymentSelected({ name: 'NEWCARD' })}
         onPressSavedCardPayNow={onPressSavedCardPayNow}
         cardTypes={cardTypes}
-        isCardValid={isCardValid}
-        setisCardValid={setisCardValid}
         offers={offers}
-        fetchOffers={fetchOffers}
+        amount={amount}
       />
     );
   };
@@ -1010,7 +1182,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     return (
       <NetBanking
         topBanks={topBanks}
-        onPressOtherBanks={() => OtherBanks()}
+        onPressOtherBanks={() => setOtherPaymentSelected({ name: 'FEATURED_BANKS' })}
         onPressBank={onPressBank}
       />
     );
@@ -1035,36 +1207,63 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     setisTxnProcessing(false);
     PaymentStatus('failure', businessLine, paymentId);
     showAphAlert?.({
-      unDismissable: businessLine == 'diagnostics' ? true : false,
+      unDismissable: false,
       removeTopIcon: true,
       children: invalidOffer ? (
         <InvalidOffer onPressContinue={() => onPressContinue()} errCode={errCode} />
       ) : (
-        <TxnFailed onPressRetry={onPressRetryBooking} />
+        <TxnFailed
+          onPressRetry={onPressRetryBooking}
+          businessLine={businessLine}
+          onPressCOD={() => onPressPayByCash(true)}
+        />
       ),
     });
   };
 
-  const renderSecureTag = () => {
-    return !!paymentMethods?.length && amount != 0 ? <SecureTags /> : null;
+  const showOtherPaymentOptions = () => {
+    return !!amount ? (
+      <OtherPaymentOptions
+        paymentOptions={closedPaymentModes}
+        onPressOtherPaymentOption={(paymentInfo: any) => setOtherPaymentSelected(paymentInfo)}
+        cred={cred}
+      />
+    ) : null;
   };
+
+  const renderSecureTag = () => {
+    return !!all_payment_modes?.length && amount != 0 ? <SecureTags /> : null;
+  };
+  const keyboardVerticalOffset = Platform.OS === 'android' ? { keyboardVerticalOffset: 50 } : {};
 
   return (
     <>
-      <SafeAreaView style={theme.viewStyles.container}>
-        {renderHeader()}
-        {!fetching ? (
-          <ScrollView contentContainerStyle={styles.container}>
-            {renderBookingInfo()}
-            {renderOffers()}
-            {showPaymentOptions()}
-            {renderSecureTag()}
-          </ScrollView>
-        ) : (
-          <Spinner />
-        )}
-        {isTxnProcessing && <Spinner />}
-      </SafeAreaView>
+      {!showAnimation ? (
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={{ flex: 1 }}
+          {...keyboardVerticalOffset}
+        >
+          <SafeAreaView style={{ flex: 1 }}>
+            {renderHeader()}
+            {!fetching ? (
+              <ScrollView contentContainerStyle={styles.container}>
+                {renderOffers()}
+                {renderPreferredPaymentOptions()}
+                {showPaymentOptions()}
+                {showOtherPaymentOptions()}
+                {renderSecureTag()}
+                {showOtherPaymentBottomPopUp()}
+              </ScrollView>
+            ) : (
+              <Spinner />
+            )}
+            {isTxnProcessing && <Spinner />}
+          </SafeAreaView>
+        </KeyboardAvoidingView>
+      ) : (
+        showPaymentAnimation()
+      )}
     </>
   );
 };
@@ -1072,6 +1271,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 const styles = StyleSheet.create({
   container: {
     paddingBottom: 47,
+    backgroundColor: 'transparent',
   },
   header: {
     ...theme.viewStyles.cardViewStyle,

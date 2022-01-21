@@ -143,6 +143,7 @@ export interface InsuranceScreenProps
   extends NavigationScreenProps<{
     onPressBack: () => void;
     authToken: string;
+    callDataBool: boolean;
   }> {}
 
 export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
@@ -166,6 +167,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
   const [prismAuthToken, setPrismAuthToken] = useState<string>(
     props.navigation?.getParam('authToken') || ''
   );
+  const callDataBool = props.navigation?.getParam('callDataBool') || false;
   const [searchQuery, setSearchQuery] = useState({});
   const { phrSession, setPhrSession } = useAppCommonData();
 
@@ -285,9 +287,13 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
     }
   }, [callApi]);
 
-  const gotoPHRHomeScreen = () => {
+  const navigateToHome = () => {
     props.navigation.state.params?.onPressBack();
     props.navigation.goBack();
+  };
+
+  const gotoPHRHomeScreen = () => {
+    callDataBool ? props.navigation.navigate('HEALTH RECORDS') : navigateToHome();
   };
 
   const getLatestMedicalInsuranceRecords = () => {
@@ -366,13 +372,16 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
   };
 
   const onHealthCardItemPress = (selectedItem: MedicalInsuranceType) => {
-    const eventInputData = removeObjectProperty(selectedItem, 'insuranceFiles');
-    postCleverTapIfNewSession(
-      'Insurance',
-      currentPatient,
-      eventInputData,
-      phrSession,
-      setPhrSession
+    let dateOfBirth = g(currentPatient, 'dateOfBirth');
+    let doctorConsultationAttributes = {
+      'Nav src': 'Insurance',
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+    };
+    postCleverTapEvent(
+      CleverTapEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS,
+      doctorConsultationAttributes
     );
     props.navigation.navigate(AppRoutes.HealthRecordDetails, {
       data: selectedItem,
@@ -391,13 +400,14 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
       .then((status) => {
         if (status) {
           getLatestMedicalInsuranceRecords();
-          const eventInputData = removeObjectProperty(selectedItem, 'insuranceFiles');
-          postCleverTapPHR(
-            currentPatient,
-            CleverTapEventName.PHR_DELETE_INSURANCE,
-            'Insurance',
-            eventInputData
-          );
+          let dateOfBirth = g(currentPatient, 'dateOfBirth');
+          let attributes = {
+            'Nav src': 'Insurance',
+            'Patient UHID': g(currentPatient, 'uhid'),
+            'Patient gender': g(currentPatient, 'gender'),
+            'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+          };
+          postCleverTapEvent(CleverTapEventName.PHR_DELETE_RECORD, attributes);
         } else {
           setShowSpinner(false);
         }

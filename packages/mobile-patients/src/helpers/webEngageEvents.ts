@@ -8,7 +8,8 @@ import {
   UploadPrescSource,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE, DIAGNOSTIC_PINCODE_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
-import { DiagnosticHomePageSource } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { DiagnosticHomePageSource, DIAGNOSTICS_ITEM_TYPE } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { DiagnosticsDetailsPageViewedSource } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 
 type YesOrNo = 'Yes' | 'No';
 type HdfcPlan = 'SILVER' | 'GOLD' | 'PLATINUM';
@@ -41,7 +42,7 @@ export enum ProductPageViewedSource {
 }
 
 export enum WebEngageEventName {
-  Patient_API_Error = 'Patient_API_Error',
+  Patient_API_Error = 'Consult Patient API error',
   //DOH
   DOH_Clicked = 'DOH Clicked',
   DOH_Viewed = 'DOH Viewed',
@@ -131,7 +132,7 @@ export enum WebEngageEventName {
   GO_BACK_CLICKED_DOC_LIST = 'go back clicked doc list',
   SHARE_CLICKED_DOC_PROFILE_SCREEN = 'share clicked doc profile screen',
   SHARE_PROFILE_CLICKED_DOC_PROFILE = 'Share profile clicked doc profile',
-  GO_BACK_CLICKED_DOC_PROFILE = 'go back clicked doc profile',
+  GO_BACK_CLICKED_DOC_PROFILE = 'Consult share go back clicked',
   DOCTOR_PROFILE_SCREEN_BY_SHARE_LINK = 'Doctor profile screen by share link',
 
   MY_ORDERS_CLICKED = 'My Orders Clicked',
@@ -491,7 +492,7 @@ export enum WebEngageEventName {
   VACCINE_REGISTRATION_COMPLETED = 'Vaccine Registeration Completed',
   ERROR_WHILE_FETCHING_JWT_TOKEN = 'Error while Fetching JWT token',
   AUTHTOKEN_UPDATED = 'Authtoken Updated',
-  NO_FIREBASE_USER = 'No user on Firebase'
+  NO_FIREBASE_USER = 'No user on Firebase',
 }
 
 export interface PatientInfo {
@@ -1255,28 +1256,20 @@ export interface WebEngageEvents {
     'Category Name'?: string;
   };
   [WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION]: {
-    Source:
-      | 'Full Search'
-      | 'Home Page'
-      | 'Cart page'
-      | 'Partial Search'
-      | 'Deeplink'
-      | 'Popular search'
-      | 'Category page';
+    'Item Id': string | number;
     'Item Name': string;
-    'Item Type'?: string;
-    'Item Code': string;
-    'Patient Name': string;
-    'Patient UHID': string;
-    'Item ID': string | number;
-    'Item Price'?: number | string;
+    'Item Type': DIAGNOSTICS_ITEM_TYPE;
+    'Item Price': number | string;
+    Source: DiagnosticsDetailsPageViewedSource;
     'Circle user'?: string;
-  };
+    'Original Item ids'?: any;
+    'Section name'?: string;
+    };
 
   [WebEngageEventName.DIAGNOSTIC_CART_VIEWED]: {
     'Page source': string;
     'Total items in cart': number;
-    'Cart Items': object[];
+    'Cart Items': any;
     'Circle user': 'Yes' | 'No';
     Pincode: string | number;
     city: string;
@@ -1336,11 +1329,14 @@ export interface WebEngageEvents {
     'Thing to Improve selected': string;
   };
   [WebEngageEventName.DIAGNOSTIC_ADD_TO_CART]: {
+    'Item Id': string; // (SKUID) //type?
     'Item Name': string;
-    'Item ID': string; // (SKUID)
+    'Item Type': DIAGNOSTICS_ITEM_TYPE;
+    'Item Price': number; //type
     Source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE;
     'Section name'?: string;
     'Circle user': string;
+    'Original Item ids'?: any;
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order id': any;

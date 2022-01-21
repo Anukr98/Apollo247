@@ -77,6 +77,31 @@ export interface getOrderInternal_getOrderInternal_refunds {
   amount: number | null;
 }
 
+export interface getOrderInternal_getOrderInternal_offers_offer_description {
+  __typename: "OfferDescription";
+  offer_code: string | null;
+  title: string | null;
+  description: string | null;
+}
+
+export interface getOrderInternal_getOrderInternal_offers_benefits_calculation_info {
+  __typename: "PaymentOrderCalculationInfo";
+  value: number | null;
+}
+
+export interface getOrderInternal_getOrderInternal_offers_benefits {
+  __typename: "PaymentOrderOfferBenefit";
+  amount: number | null;
+  calculation_info: getOrderInternal_getOrderInternal_offers_benefits_calculation_info | null;
+}
+
+export interface getOrderInternal_getOrderInternal_offers {
+  __typename: "PaymentOrderOfferResp";
+  offer_code: string | null;
+  offer_description: getOrderInternal_getOrderInternal_offers_offer_description | null;
+  benefits: (getOrderInternal_getOrderInternal_offers_benefits | null)[] | null;
+}
+
 export interface getOrderInternal_getOrderInternal {
   __typename: "PaymentOrder";
   id: string;
@@ -87,6 +112,7 @@ export interface getOrderInternal_getOrderInternal {
   DiagnosticsPaymentDetails: getOrderInternal_getOrderInternal_DiagnosticsPaymentDetails | null;
   SubscriptionOrderDetails: getOrderInternal_getOrderInternal_SubscriptionOrderDetails | null;
   refunds: (getOrderInternal_getOrderInternal_refunds | null)[] | null;
+  offers: (getOrderInternal_getOrderInternal_offers | null)[] | null;
 }
 
 export interface getOrderInternal {

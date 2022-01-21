@@ -137,6 +137,9 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
 
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderPhlebotomists {
   __typename: "DiagnosticOrderPhlebotomists";
+  showPhleboDetails: boolean | null;
+  isPhleboChanged: boolean | null;
+  phleboDetailsETAText: string | null;
   phleboRating: number | null;
   phleboOTP: string | null;
   checkinDateTime: any | null;
@@ -210,6 +213,7 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   __typename: "DiagnosticOrdersResultMemberDetails";
   ordersList: (getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList | null)[] | null;
   ordersCount: number | null;
+  cancellationRequestedDisplayText: string | null;
   membersDetails: (getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_membersDetails | null)[] | null;
 }
 

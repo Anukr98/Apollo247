@@ -40,6 +40,7 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import {
   CleverTapEventName,
   CleverTapEvents,
+  DIAGNOSTICS_ITEM_TYPE,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { checkIfFollowUpBooked } from '@aph/mobile-patients/src/graphql/types/checkIfFollowUpBooked';
@@ -108,6 +109,7 @@ import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/Heal
 import { DiagnosticAddToCartEvent } from '@aph/mobile-patients/src/components/Tests/Events';
 import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
+import ListEmptyComponent from '@aph/mobile-patients/src/components/HealthRecords/Components/ListEmptyComponent';
 
 const { width, height } = Dimensions.get('window');
 
@@ -212,7 +214,9 @@ export interface ConsultRxScreenProps
     prescriptionArray: any[];
     onPressBack: () => void;
     authToken: string;
+    callDataBool: boolean;
     callPrescriptionsApi: () => void;
+    testReportBool: boolean;
   }> {}
 
 export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
@@ -220,6 +224,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [filterApplied, setFilterApplied] = useState<FILTER_TYPE | string>('');
   const client = useApolloClient();
+  const [apiError, setApiError] = useState(false);
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [localConsultRxData, setLocalConsultRxData] = useState<Array<{
     key: string;
@@ -242,6 +247,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
     props.navigation?.getParam('consultArray') || []
   );
   const [callApi, setCallApi] = useState(false);
+  const [callDelete, setCallDelete] = useState(false);
   const [callPhrMainApi, setCallPhrMainApi] = useState(false);
   const [isSearchFocus, SetIsSearchFocus] = useState(false);
   const [showSearchBar, setShowSearchBar] = useState(false);
@@ -253,6 +259,8 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
   const [prismAuthToken, setPrismAuthToken] = useState<string>(
     props.navigation?.getParam('authToken') || ''
   );
+  const testReportBool = props?.navigation?.state?.params?.testReportBool;
+  const callDataBool = props.navigation.getParam('callDataBool') || false;
   const [searchQuery, setSearchQuery] = useState({});
 
   const doctorType = (item: any) => {
@@ -260,6 +268,12 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       return obj.doctorType !== 'JUNIOR';
     });
   };
+
+  useEffect(() => {
+    if (testReportBool) {
+      getLatestPrescriptionRecords();
+    }
+  }, [testReportBool]);
 
   const handleBack = async () => {
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
@@ -278,6 +292,9 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         mergeArray.push({ type: 'prescriptions', data: c });
       });
       setConsultRxMainData(phrSortByDate(mergeArray));
+    } else {
+      setApiError(true);
+      setConsultRxMainData(phrSortByDate([]));
     }
   }, [consultArray, prescriptions]);
 
@@ -373,6 +390,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         setPrescriptions(prescriptionsData);
         setShowSpinner(false);
         setCallPhrMainApi(true);
+        setCallApi(false);
       })
       .catch((error) => {
         setShowSpinner(false);
@@ -443,12 +461,18 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
 
   const gotoPHRHomeScreen = () => {
     if (!callApi && !callPhrMainApi) {
-      props.navigation.state.params?.onPressBack();
+      callDataBool
+        ? props.navigation.navigate('HEALTH RECORDS')
+        : props.navigation.state.params?.onPressBack();
     } else {
-      props.navigation.state.params?.onPressBack();
-      props.navigation.state.params?.callPrescriptionsApi();
+      callDataBool ? props.navigation.navigate('HEALTH RECORDS') : handleNavigation();
     }
-    props.navigation.goBack();
+    callDataBool ? props.navigation.navigate('HEALTH RECORDS') : props.navigation.goBack();
+  };
+
+  const handleNavigation = () => {
+    props.navigation.state.params?.onPressBack();
+    props.navigation.state.params?.callPrescriptionsApi();
   };
 
   const renderProfileImage = () => {
@@ -628,17 +652,23 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       ...removeObjectNullUndefinedProperties(currentPatient),
       'Consult ID': g(id, 'id'),
     };
-    postWebEngageEvent(CleverTapEventName.PHR_ORDER_MEDS_TESTS, eventAttributes);
     postCleverTapEvent(CleverTapEventName.PHR_ORDER_MEDS_TESTS, eventAttributes);
   };
 
-  function postDiagnosticAddToCart(itemId: string, itemName: string) {
+  function postDiagnosticAddToCart(itemId: string, itemName: string, inclusions: any) {
+    const itemType =
+      !!inclusions &&
+      inclusions?.map((item: any) =>
+        item?.count > 1 ? DIAGNOSTICS_ITEM_TYPE.PACKAGE : DIAGNOSTICS_ITEM_TYPE.TEST
+      );
     DiagnosticAddToCartEvent(
       itemName,
       itemId,
       0,
       0,
       DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PHR,
+      itemType?.join(','),
+      undefined,
       currentPatient,
       !!circleSubscriptionId
     );
@@ -769,6 +799,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
           .then((tests) => {
             const getItemNames = tests?.map((item) => item?.name)?.join(', ');
             const getItemIds = tests?.map((item) => Number(item?.id))?.join(', ');
+            const getInclusionCount = tests?.map((item) => Number(item?.inclusions));
             if (testPrescription.length) {
               addMultipleTestCartItems!(tests! || []);
               // Adding ePrescriptions to DiagnosticsCart
@@ -782,7 +813,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
                   },
                 ]);
             }
-            postDiagnosticAddToCart(getItemIds!, getItemNames!);
+            postDiagnosticAddToCart(getItemIds!, getItemNames!, getInclusionCount);
           })
           .catch((e) => {
             CommonBugFender('DoctorConsultation_getMedicineDetailsApi', e);
@@ -842,13 +873,16 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
   };
 
   const onHealthCardItemPress = (selectedItem: any) => {
-    const eventInputData = removeObjectProperty(selectedItem, 'prescriptionFiles');
-    postCleverTapIfNewSession(
-      'Doctor Consultations',
-      currentPatient,
-      eventInputData,
-      phrSession,
-      setPhrSession
+    let dateOfBirth = g(currentPatient, 'dateOfBirth');
+    let doctorConsultationAttributes = {
+      'Nav src': 'Doctor Consultations',
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+    };
+    postCleverTapEvent(
+      CleverTapEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS,
+      doctorConsultationAttributes
     );
     if (selectedItem?.patientId) {
       postConsultCardClickEvent(selectedItem?.id);
@@ -879,13 +913,14 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       .then((status) => {
         if (status) {
           getLatestPrescriptionRecords();
-          const eventInputData = removeObjectProperty(selectedItem, 'prescriptionFiles');
-          postCleverTapPHR(
-            currentPatient,
-            CleverTapEventName.PHR_DELETE_DOCTOR_CONSULTATION,
-            'Doctor Consultation',
-            eventInputData
-          );
+          let dateOfBirth = g(currentPatient, 'dateOfBirth');
+          let attributes = {
+            'Nav src': 'Doctor Consultations',
+            'Patient UHID': g(currentPatient, 'uhid'),
+            'Patient gender': g(currentPatient, 'gender'),
+            'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+          };
+          postCleverTapEvent(CleverTapEventName.PHR_DELETE_RECORD, attributes);
         } else {
           setShowSpinner(false);
         }
@@ -994,7 +1029,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         contentContainerStyle={{ paddingBottom: 60, paddingTop: 12, paddingHorizontal: 20 }}
         sections={localConsultRxData || []}
         renderItem={({ item, index }) => renderConsultRxItems(item, index)}
-        ListEmptyComponent={renderEmptyList()}
+        ListEmptyComponent={ListEmptyComponent.getEmptyListComponent(showSpinner, apiError)}
         renderSectionHeader={({ section }) => renderSectionHeader(section)}
       />
     );

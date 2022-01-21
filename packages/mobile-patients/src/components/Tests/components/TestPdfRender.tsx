@@ -10,7 +10,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { Dimensions, SafeAreaView, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { ScrollView } from 'react-navigation';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import Pdf from 'react-native-pdf';
@@ -19,6 +19,7 @@ import moment from 'moment';
 import { DownloadNew, ShareBlue } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { shareDocument } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Overlay } from 'react-native-elements';
 interface TestPdfRenderProps {
   uri?: string;
@@ -35,7 +36,7 @@ const { CLEAR } = theme.colors;
 
 export const TestPdfRender: React.FC<TestPdfRenderProps> = (props) => {
   const { uri, order, isPopup, isReport, onPressClose } = props;
-  const { loading, setLoading } = useUIElements();
+  const { loading, setLoading, showAphAlert } = useUIElements();
 
   const { allCurrentPatients } = useAllCurrentPatients();
   const [serviceableObject, setServiceableObject] = useState({} as any);
@@ -68,7 +69,8 @@ export const TestPdfRender: React.FC<TestPdfRenderProps> = (props) => {
 
   useEffect(() => {
     setLoading?.(false);
-  }, [])
+  }, []);
+
   async function downloadLabTest(
     pdfUrl: string,
     appointmentDate: string,
@@ -77,24 +79,29 @@ export const TestPdfRender: React.FC<TestPdfRenderProps> = (props) => {
   ) {
     setLoading?.(true);
     try {
-      await downloadDiagnosticReport(
-        setLoading,
-        pdfUrl,
-        appointmentDate,
-        patientName,
-        true,
-        undefined,
-        order?.orderStatus,
-        (order?.displayId).toString(),
-        true
-      );
+      if (!!uri) {
+        await downloadDiagnosticReport(
+          setLoading,
+          pdfUrl,
+          appointmentDate,
+          patientName,
+          true,
+          undefined,
+          order?.orderStatus,
+          (order?.displayId).toString(),
+          true
+        );
+      } else {
+        renderErrorMessage();
+      }
     } catch (error) {
-      setLoading?.(false);
+      renderErrorMessage();
       CommonBugFender('TestPdfRender_downloadLabTest', error);
     } finally {
       setLoading?.(false);
     }
   }
+
   const PDFView = () => {
     return (
       <Pdf
@@ -109,12 +116,29 @@ export const TestPdfRender: React.FC<TestPdfRenderProps> = (props) => {
       />
     );
   };
+
   const shareReport = () => {
-    setLoading?.(true);
-    shareDocument(uri, 'application/pdf', order?.displayId, isReport);
-    setTimeout(() => {
-      setLoading?.(false);
-    }, 2000);
+    try {
+      if (!!uri) {
+        setLoading?.(true);
+        shareDocument(uri, 'application/pdf', order?.displayId, isReport);
+        setTimeout(() => {
+          setLoading?.(false);
+        }, 2000);
+      } else {
+        renderErrorMessage();
+      }
+    } catch (error) {
+      CommonBugFender('TestPdfRender_shareReport', error);
+      renderErrorMessage();
+    }
+  };
+
+  const renderErrorMessage = () => {
+    showAphAlert?.({
+      title: string.common.uhOh,
+      description: string.common.somethingWentWrong,
+    });
   };
 
   return (
@@ -127,39 +151,39 @@ export const TestPdfRender: React.FC<TestPdfRenderProps> = (props) => {
       transparent
       overlayStyle={styles.phrOverlayStyle}
     >
-    <View style={{ flex: 1 }}>
-      <SafeAreaView>
-        {renderHeader()}
-        <View style={styles.pdfView}>
-          <View style={styles.downloadContainerView}>
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={() => {
-                _onPressViewReport(order);
-              }}
-              style={styles.downloadView}
-            >
-              <DownloadNew />
-              <Text style={styles.textStyles}>Download</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={() => {
-                shareReport();
-              }}
-              style={styles.downloadView}
-            >
-              <ShareBlue />
-              <Text style={styles.textStyles}>Share</Text>
-            </TouchableOpacity>
+      <View style={{ flex: 1 }}>
+        <SafeAreaView>
+          {renderHeader()}
+          <View style={styles.pdfView}>
+            <View style={styles.downloadContainerView}>
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={() => {
+                  _onPressViewReport(order);
+                }}
+                style={styles.downloadView}
+              >
+                <DownloadNew />
+                <Text style={styles.textStyles}>Download</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={() => {
+                  shareReport();
+                }}
+                style={styles.downloadView}
+              >
+                <ShareBlue />
+                <Text style={styles.textStyles}>Share</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView minimumZoomScale={1} maximumZoomScale={5}>
+              {PDFView()}
+            </ScrollView>
           </View>
-          <ScrollView minimumZoomScale={1} maximumZoomScale={5}>
-            {PDFView()}
-          </ScrollView>
-        </View>
-      </SafeAreaView>
-      {loading && <Spinner />}
-    </View>
+        </SafeAreaView>
+        {loading && <Spinner />}
+      </View>
     </Overlay>
   );
 };

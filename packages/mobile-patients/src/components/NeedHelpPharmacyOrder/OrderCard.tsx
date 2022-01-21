@@ -1,10 +1,10 @@
-import { isOrderCancelNotAllowed } from '@aph/mobile-patients/src/components/OrderDetailsScene';
+import { isOrderCancelNotAllowed } from '@aph/mobile-patients/src/components/MyOrders/OrderDetailsScene';
 import { MedicineIcon, OrderPlacedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   getFormattedTime,
   getOrderTitle,
   MedOrder,
-} from '@aph/mobile-patients/src/components/YourOrdersScene';
+} from '@aph/mobile-patients/src/components/MyOrders/YourOrdersScene';
 import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getOrderStatusText } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';

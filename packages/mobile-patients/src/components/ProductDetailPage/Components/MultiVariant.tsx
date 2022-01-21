@@ -25,7 +25,7 @@ export const MultiVariant: React.FC<MultiVariantProps> = (props) => {
 
   const { addresses, cartLocationDetails, cartAddressId } = useShoppingCart();
 
-  const defaultAddress = addresses.find((item) => item.id == cartAddressId);
+  const defaultAddress = addresses.find((item) => item?.id == cartAddressId);
   const pharmacyLocation = cartLocationDetails || defaultAddress;
 
   const multiVariantsProductsKeys = Object.keys(multiVariantProducts);

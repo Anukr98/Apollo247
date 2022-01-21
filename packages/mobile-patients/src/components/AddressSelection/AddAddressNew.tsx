@@ -94,7 +94,6 @@ export interface locationResponseProps {
   state?: string;
 }
 export const AddAddressNew: React.FC<MapProps> = (props) => {
-  console.log({ props });
   const KeyName = props.navigation.getParam('KeyName');
   const addressDetails = props.navigation.getParam('addressDetails');
   const addOnly = props.navigation.getParam('addOnly');
@@ -405,8 +404,8 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
           };
           setRegion(currentRegion);
           if (response?.latitude! && response?.longitude!) {
-            setLatitude(Number(response.latitude));
-            setLongitude(Number(response.longitude));
+            setLatitude(Number(response?.latitude));
+            setLongitude(Number(response?.longitude));
             setLocationResponse(response);
             const address = formatLocalAddress(response); //removed displayName
             setAddressString(address);

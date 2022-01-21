@@ -41,6 +41,7 @@ import {
 import { ListItem } from 'react-native-elements';
 import Hyperlink from 'react-native-hyperlink';
 import { NavigationScreenProps } from 'react-navigation';
+import HTML from 'react-native-render-html';
 import {
   TicketNumberMutation,
   TicketNumberMutationVariables,
@@ -50,6 +51,7 @@ export interface Props
   extends NavigationScreenProps<{
     queryIdLevel1: string;
     queryIdLevel2: string;
+    queryIdLevel3: string;
     queries?: NeedHelpHelpers.HelpSectionQuery[];
     email?: string;
     orderId?: string;
@@ -64,6 +66,7 @@ export const NeedHelpContentView: React.FC<Props> = ({ navigation }) => {
   const pathFollowed = navigation.getParam('pathFollowed') || '';
   const queryIdLevel1 = navigation.getParam('queryIdLevel1') || helpSectionQueryId.pharmacy;
   const queryIdLevel2 = navigation.getParam('queryIdLevel2') || helpSectionQueryId.returnOrder;
+  const queryIdLevel3 = navigation.getParam('queryIdLevel3') || '';
   const headingTitle = queries?.find((q) => q.id === queryIdLevel1)?.title || 'Query';
   const orderId = navigation.getParam('orderId') || '';
   const issueNotResolvedText = 'My issue is still not resolved';
@@ -73,7 +76,7 @@ export const NeedHelpContentView: React.FC<Props> = ({ navigation }) => {
   const [email, setEmail] = useState(navigation.getParam('email') || '');
   const [comments, setComments] = useState<string>('');
   const { saveNeedHelpQuery, getQueryData } = NeedHelpQueryDetailsHelpers;
-  const subQueriesData = getQueryData(queries || [], queryIdLevel1, queryIdLevel2);
+  const subQueriesData = getQueryData(queries || [], queryIdLevel1, queryIdLevel2, queryIdLevel3);
 
   const { circlePlanId, circleStatus } = useAppCommonData();
   const client = useApolloClient();
@@ -106,9 +109,20 @@ export const NeedHelpContentView: React.FC<Props> = ({ navigation }) => {
     return <Breadcrumb links={breadCrumb} containerStyle={styles.breadcrumb} />;
   };
 
+  const ignoreStyles = [
+    'line-height',
+    'margin-bottom',
+    'color',
+    'text-align',
+    'font-size',
+    'font-family',
+  ];
+
   const renderCard = () => {
     const isCircleMember = circlePlanId && circleStatus === 'active';
-    const { title, text, cta, ctaNonCircle, ctaCircle } = subQueriesData?.content || {};
+    const { title, text, cta, ctaNonCircle, ctaCircle, contentType } =
+      subQueriesData?.content || {};
+
     const { title: buttonTitle, appRoute, appRouteParams } =
       cta || (isCircleMember ? ctaCircle : ctaNonCircle) || {};
     const onPressUrl = (url: string) => {
@@ -123,7 +137,18 @@ export const NeedHelpContentView: React.FC<Props> = ({ navigation }) => {
         {!!title && <Text style={styles.cardTitle}>{title}</Text>}
         {!!text && (
           <Hyperlink onPress={(url) => onPressUrl(url)}>
-            <Text style={styles.cardText}>{text}</Text>
+            {contentType?.toUpperCase() === 'HTML' ? (
+              <HTML
+                html={text}
+                onLinkPress={(evt, href) => {
+                  Linking.openURL(href);
+                }}
+                baseFontStyle={styles.cardText}
+                ignoredStyles={ignoreStyles}
+              />
+            ) : (
+              <Text style={styles.cardText}>{text}</Text>
+            )}
           </Hyperlink>
         )}
         {!!(buttonTitle && appRoute) && (
@@ -188,6 +213,8 @@ export const NeedHelpContentView: React.FC<Props> = ({ navigation }) => {
           ? ORDER_TYPE.PHARMACY
           : parentQuery?.id == helpSectionQueryId.consult
           ? ORDER_TYPE.CONSULT
+          : parentQuery?.id == helpSectionQueryId.diagnostic
+          ? ORDER_TYPE.DIAGNOSTICS
           : null;
       const variables: TicketNumberMutationVariables = {
         createHelpTicketHelpEmailInput: {

@@ -20,34 +20,35 @@ export enum AppEnv {
   VAPT = 'VAPT',
   DEVReplica = 'DEVReplica',
   QA6 = 'QA6',
+  QA8 = 'QA8',
 }
 
-const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA3 as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
-  ? 'https://pmt.apollo247.com'
-  : APP_ENV == AppEnv.QA
-  ? 'https://aph-staging-pmt.apollo247.com'
-  : APP_ENV == AppEnv.QA2
-  ? 'https://qapmt.apollo247.com'
-  : APP_ENV == AppEnv.QA3
-  ? 'https://qathreepmt.apollo247.com'
-  : APP_ENV == AppEnv.QA4
-  ? 'https://qa4pmt.apollo247.com'
-  : APP_ENV == AppEnv.QA5
-  ? 'https://qa5pmt.apollo247.com'
-  : APP_ENV == AppEnv.PERFORM
-  ? 'https://perfpmt.apollo247.com'
-  : APP_ENV == AppEnv.VAPT
-  ? 'https://stagingpmt.apollo247.com'
-  : APP_ENV == AppEnv.DEV
-  ? 'https://aph-dev-pmt.apollo247.com'
-  : APP_ENV == AppEnv.DEVReplica
-  ? 'https://devpmt.apollo247.com'
-  : APP_ENV == AppEnv.QA6
-  ? 'https://qa6pmt.apollo247.com '
-  : 'https://aph-staging-pmt.apollo247.com';
+    ? 'https://pmt.apollo247.com'
+    : APP_ENV == AppEnv.QA
+    ? 'https://aph-staging-pmt.apollo247.com'
+    : APP_ENV == AppEnv.QA2
+    ? 'https://qapmt.apollo247.com'
+    : APP_ENV == AppEnv.QA3
+    ? 'https://qathreepmt.apollo247.com'
+    : APP_ENV == AppEnv.QA4
+    ? 'https://qa4pmt.apollo247.com'
+    : APP_ENV == AppEnv.QA5
+    ? 'https://qa5pmt.apollo247.com'
+    : APP_ENV == AppEnv.PERFORM
+    ? 'https://perfpmt.apollo247.com'
+    : APP_ENV == AppEnv.VAPT
+    ? 'https://stagingpmt.apollo247.com'
+    : APP_ENV == AppEnv.DEV
+    ? 'https://aph-dev-pmt.apollo247.com'
+    : APP_ENV == AppEnv.DEVReplica
+    ? 'https://devpmt.apollo247.com'
+    : APP_ENV == AppEnv.QA6
+    ? 'https://qa6pmt.apollo247.com '
+    : 'https://aph-staging-pmt.apollo247.com';
 
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
@@ -145,6 +146,9 @@ const appStaticVariables = {
   TAT_API_TIMEOUT_IN_SEC: 10,
   DOCTOR_PARTNER_TEXT: 'Doctor Partners',
   MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY: 0,
+  Payment_Processing_Timer: 30,
+  Show_COD_While_Retrying_Pharma_Payment: true,
+  Show_COD_While_Retrying_Diag_Payment: true,
   CART_UPDATE_PRICE_CONFIG: {
     updatePrices: 'ByPercentage' as 'Yes' | 'No' | 'ByPercentage',
     percentage: 30,
@@ -244,6 +248,7 @@ const appStaticVariables = {
   Cancel_Threshold_Pre_Vaccination: 12, //hrs
   Enable_Diagnostics_COD: true,
   Enable_Diagnostics_Cancellation_Policy: false,
+  Vacc_Show_Booster: false,
   Diagnostics_Cancel_Policy_Text_Msg:
     'For a full refund, you must cancel at least 6 hours before the appointment time. Cancellations made within 6 hours of appointment time will incur a fee of up to ₹ 200.',
   RTPCR_Google_Form:
@@ -293,7 +298,6 @@ const appStaticVariables = {
   TrueCaller_Login_Enabled: false,
   Ask_Apollo_Number: '18605001066',
   LONG_CHAT_LAUNCH_DATE: '23/10/2021',
-  offerIconBaseUrl: 'https://newassets.apollo247.com/images/payment_offer_icons/',
   DIAGNOSTICS_NO_CIRCLE_SAVINGS_TEXT: 'Extra 15% off on lab tests and cashback on medicine orders',
   DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER: {
     ctaDetailsOnCityId: [
@@ -302,14 +306,18 @@ const appStaticVariables = {
         ctaProductPageArray: ['HOME', 'TESTLISTING', 'TESTCART', 'TESTDETAIL'],
         ctaDelaySeconds: 0,
         ctaPhoneNumber: '040-4821-3009',
+        ctaText: 'Call to Order',
+        ctaItemIds: [2446],
       },
     ],
     ctaDetailsDefault: {
       ctaProductPageArray: ['HOME', 'TESTLISTING', 'TESTCART', 'TESTDETAIL'],
       ctaDelaySeconds: 3,
       ctaPhoneNumber: '040-4821-3322',
+      ctaText: 'Call to Order',
     },
   },
+  DIAGNOSTICS_PHLEBO_CALL_NUMBER: '08046807674',
   DIAGNOSTICS_COVID_ITEM_IDS: [2446],
   FREE_CONSULT_MESSAGE: {
     prescriptionMessage: 'Get a FREE Consultation by our expert doctor within the next 30 mins.',
@@ -327,6 +335,7 @@ const appStaticVariables = {
     frequentlyBrought: string.diagnostics.frequentlyBrought,
     topBookedTests: string.diagnostics.topBookedTests,
     similarPackages: string.diagnostics.similarPackages,
+    "topPackages": "Top Packages with "
   },
   DeliveryIn_TAT_Text: 'Express Delivery',
   WHATSAPP_TO_ORDER: {
@@ -336,6 +345,35 @@ const appStaticVariables = {
     iconVisibility: true,
     whatsappNumber: '4048218743',
   },
+  RADIOLOGY_URL: '/radiology?source=Homepage%20Banner',
+  DIAGNOSTICS_CERTIFICATE_IMAGE_ARRAY: [
+    require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
+    require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_2.webp'),
+    require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_3.webp'),
+    require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_4.webp'),
+  ],
+  DIAGNOSTICS_WHY_BOOK_US_IMAGE_ARRAY: [
+    { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_0.webp') },
+    { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_1.webp') },
+    { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_2.webp') },
+    { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_3.webp') },
+  ],
+  DIAGNOSTICS_ENABLE_UPLOAD_PRESCRIPTION_VIA_WHATSAPP: false,
+  DIAGNOSTICS_UPLOAD_PRESCRIPTION: [
+    {
+      isWhatsappEnabled: false,
+      uploadPrescriptionText: string.diagnostics.prescriptionHeading,
+      CTA: string.common.upload,
+    },
+    {
+      isWhatsappEnabled: true,
+      uploadPrescriptionText: string.diagnostics.prescriptionHeading,
+      CTA: string.common.upload,
+      textMessage: string.diagnostics.uploadPrescriptionWhatsapp.message,
+      phoneNumber: string.diagnostics.uploadPrescriptionWhatsapp.whatsappPhoneNumber,
+    },
+  ],
+  DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER_TEXT: string.diagnosticsCartPage.reviewPagePolicyText,
 };
 
 const DEV_top_specialties = [
@@ -694,6 +732,7 @@ const ConfigurationDev = {
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
+  WEB_URL_PREFIX: 'https://aph-staging-web-patients.apollo247.com',
 };
 
 // QA
@@ -756,6 +795,7 @@ const ConfigurationQA = {
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
+  WEB_URL_PREFIX: 'https://aph-staging-web-patients.apollo247.com',
 };
 
 // QA2
@@ -816,6 +856,7 @@ const ConfigurationQA2 = {
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
+  WEB_URL_PREFIX: 'https://qapatients.apollo247.com',
 };
 
 // QA3
@@ -877,6 +918,7 @@ const ConfigurationQA3 = {
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
+  WEB_URL_PREFIX: 'https://qathreepatients.apollo247.com',
 };
 
 const ConfigurationQA5 = {
@@ -939,6 +981,7 @@ const ConfigurationQA5 = {
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
+  WEB_URL_PREFIX: 'https://qa5patients.apollo247.com',
 };
 
 const ConfigurationQA6 = {
@@ -1000,6 +1043,7 @@ const ConfigurationQA6 = {
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
+  WEB_URL_PREFIX: 'https://qa6patients.apollo247.com',
 };
 
 // VAPT
@@ -1061,6 +1105,7 @@ const ConfigurationVAPT = {
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
+  WEB_URL_PREFIX: 'https://stagingpatients.apollo247.com',
 };
 //Production
 const ConfigurationProd = {
@@ -1120,6 +1165,7 @@ const ConfigurationProd = {
   PROHEALTH_BANNER_IMAGE: 'https://newassets.apollo247.com/images/banners/ProHealthAppLanding.jpg',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
+  WEB_URL_PREFIX: 'https://apollo247.com',
 };
 
 //PERFORMANCE
@@ -1182,6 +1228,7 @@ const ConfigurationPERFORM = {
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
+  WEB_URL_PREFIX: 'https://perfpatients.apollo247.com',
 };
 
 //DevelopmentReplica
@@ -1244,28 +1291,29 @@ const ConfigurationDevReplica = {
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
+  WEB_URL_PREFIX: 'https://devpatients.apollo247.com',
 };
 
 const Configuration =
   APP_ENV == AppEnv.PROD
-  ? ConfigurationProd
-  : APP_ENV == AppEnv.QA
-  ? ConfigurationQA
-  : APP_ENV == AppEnv.QA2
-  ? ConfigurationQA2
-  : APP_ENV == AppEnv.QA3
-  ? ConfigurationQA3
-  : APP_ENV == AppEnv.QA5
-  ? ConfigurationQA5
-  : APP_ENV == AppEnv.PERFORM
-  ? ConfigurationPERFORM
-  : APP_ENV == AppEnv.VAPT
-  ? ConfigurationVAPT
-  : APP_ENV == AppEnv.DEVReplica
-  ? ConfigurationDevReplica
-  : APP_ENV == AppEnv.QA6
-  ? ConfigurationQA6
-  : ConfigurationDev;
+    ? ConfigurationProd
+    : APP_ENV == AppEnv.QA
+    ? ConfigurationQA
+    : APP_ENV == AppEnv.QA2
+    ? ConfigurationQA2
+    : APP_ENV == AppEnv.QA3
+    ? ConfigurationQA3
+    : APP_ENV == AppEnv.QA5
+    ? ConfigurationQA5
+    : APP_ENV == AppEnv.PERFORM
+    ? ConfigurationPERFORM
+    : APP_ENV == AppEnv.VAPT
+    ? ConfigurationVAPT
+    : APP_ENV == AppEnv.DEVReplica
+    ? ConfigurationDevReplica
+    : APP_ENV == AppEnv.QA6
+    ? ConfigurationQA6
+    : ConfigurationDev;
 
 export const MedicineFeedBackData = {
   POOR: {
@@ -1386,12 +1434,14 @@ export const SequenceForDiagnosticStatus = [
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
   DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED,
+  DIAGNOSTIC_ORDER_STATUS.CANCELLATION_REQUESTED,
 ];
 
 export const DIAGNOSTIC_ORDER_FAILED_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
+  DIAGNOSTIC_ORDER_STATUS.CANCELLATION_REQUESTED,
 ];
 export const DIAGNOSTIC_ORDER_FOR_PREPDATA = [
   DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED,
@@ -1480,6 +1530,7 @@ export const DIAGNOSTIC_VERTICAL_STATUS_TO_SHOW = [
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   REFUND_STATUSES.PENDING,
   REFUND_STATUSES.SUCCESS,
+  DIAGNOSTIC_ORDER_STATUS.CANCELLATION_REQUESTED,
 ];
 
 export const DIAGNOSTIC_HORIZONTAL_STATUS_TO_SHOW = [
@@ -1504,6 +1555,7 @@ export const DIAGNOSTIC_FAILURE_STATUS_ARRAY = [
   DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.CANCELLATION_REQUESTED,
 ];
 
 export const DIAGNOSTIC_FULLY_DONE_STATUS_ARRAY = [
@@ -1538,6 +1590,7 @@ export const DIAGNOSTIC_STATUS_BEFORE_SUBMITTED = [
   DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED_REQUEST,
+  DIAGNOSTIC_ORDER_STATUS.CANCELLATION_REQUESTED,
 ];
 
 export const DIAGNOSITC_PHELBO_TRACKING_STATUS = [
@@ -1561,6 +1614,11 @@ export const DIAGNOSTIC_SUB_STATUS_TO_SHOW = [
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
 ];
+
+export const ELIGIBLE_HC_VERTICALS = [
+  'pharma',
+  'diagnostics'
+]
 
 export const TestsNewFeedbackData = {
   options: [
@@ -1753,6 +1811,7 @@ export const BLACK_LIST_CANCEL_STATUS_ARRAY = [
   'ORDER_CANCELLED_AFTER_REGISTRATION',
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
+  DIAGNOSTIC_ORDER_STATUS.CANCELLATION_REQUESTED,
 ];
 
 export const BLACK_LIST_RESCHEDULE_STATUS_ARRAY = [
@@ -1773,7 +1832,15 @@ export const BLACK_LIST_RESCHEDULE_STATUS_ARRAY = [
   'ORDER_CANCELLED_AFTER_REGISTRATION',
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
+  DIAGNOSTIC_ORDER_STATUS.CANCELLATION_REQUESTED,
 ];
+
+export const DIAGNOSTIC_ORDER_CANCELLED_STATUS = [
+  DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
+  DIAGNOSTIC_ORDER_STATUS.CANCELLATION_REQUESTED,
+  'ORDER_CANCELLED_AFTER_REGISTRATION',
+  DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED_REQUEST,
+]
 
 export const DIAGNOSTIC_ONLINE_PAYMENT_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
@@ -1794,6 +1861,13 @@ export const DIAGNOSTIC_CALL_TO_ORDER_CTA = [
   CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING,
   CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY,
 ];
+
+export const DIAGNOSTIC_SHOW_RESCHEDULE_CANCEL_ARRAY = [
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_PLACED,
+]
 
 type SpecialitiesType = {
   [key: string]: string[];

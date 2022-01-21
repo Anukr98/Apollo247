@@ -104,6 +104,8 @@ export const MedicineListing: React.FC<Props> = (props) => {
     serverCartErrorMessage,
     setServerCartErrorMessage,
     locationCode,
+    serverCartMessage,
+    setServerCartMessage,
   } = useShoppingCart();
 
   // states
@@ -202,12 +204,12 @@ export const MedicineListing: React.FC<Props> = (props) => {
   }, []);
 
   useEffect(() => {
-    if (serverCartErrorMessage) {
+    if (serverCartErrorMessage || serverCartMessage) {
       hideAphAlert?.();
       showAphAlert!({
         unDismissable: true,
         title: 'Hey',
-        description: serverCartErrorMessage,
+        description: serverCartErrorMessage || serverCartMessage,
         titleStyle: theme.viewStyles.text('SB', 18, '#890000'),
         ctaContainerStyle: { justifyContent: 'flex-end' },
         CTAs: [
@@ -216,13 +218,14 @@ export const MedicineListing: React.FC<Props> = (props) => {
             type: 'orange-link',
             onPress: () => {
               setServerCartErrorMessage?.('');
+              setServerCartMessage?.('');
               hideAphAlert?.();
             },
           },
         ],
       });
     }
-  }, [serverCartErrorMessage]);
+  }, [serverCartErrorMessage, serverCartMessage]);
 
   const onBottomCategoryChange = (categoryId: string) => {
     if (categoryId?.length > 0) {

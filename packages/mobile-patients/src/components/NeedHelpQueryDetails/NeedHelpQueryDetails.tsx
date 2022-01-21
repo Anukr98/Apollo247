@@ -8,37 +8,32 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import {
-  ArrowRight,
-  CrossPopup,
-  DropdownGreen,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   GET_MEDICINE_ORDER_OMS_DETAILS_SHIPMENT,
-  SEND_HELP_EMAIL,
   CREATE_HELP_TICKET,
   GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS,
   CANCEL_MEDICINE_ORDER_OMS,
-  GET_MEDICINE_ORDER_CANCEL_REASONS,
   GET_MEDICINE_ORDER_CANCEL_REASONS_V2,
+  FETCH_DIAGNOSTICS_ORDER_TAT_STATUS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   GetMedicineOrderShipmentDetails,
   GetMedicineOrderShipmentDetailsVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrderShipmentDetails';
 import {
+  getTATStatus,
+  getTATStatus_getTATStatusForDiagnosticOrder,
+  getTATStatusVariables,
+} from '@aph/mobile-patients/src/graphql/types/getTATStatus';
+import {
   MEDICINE_ORDER_STATUS,
   ORDER_TYPE,
   GetMedicineOrderCancelReasonsV2Input,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
-  SendHelpEmail,
-  SendHelpEmailVariables,
-} from '@aph/mobile-patients/src/graphql/types/SendHelpEmail';
-import {
   aphConsole,
   handleGraphQlError,
-  navigateToHome,
   g,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
@@ -60,8 +55,8 @@ import {
   Text,
   View,
   BackHandler,
-  Alert,
   Linking,
+  Alert,
 } from 'react-native';
 import { Divider } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
@@ -70,8 +65,6 @@ import { RefundDetails } from '@aph/mobile-patients/src/components/RefundDetails
 import {
   getMedicineOrderOMSDetailsWithAddress,
   getMedicineOrderOMSDetailsWithAddressVariables,
-  getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails,
-  getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
 } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import { needHelpCleverTapEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
@@ -80,7 +73,6 @@ import {
   TicketNumberMutation,
   TicketNumberMutationVariables,
 } from '@aph/mobile-patients/src/graphql/types/TicketNumberMutation';
-import { GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrderCancelReasons';
 import {
   CancelMedicineOrderOMS,
   CancelMedicineOrderOMSVariables,
@@ -91,17 +83,20 @@ import {
   getMedicineOrderCancelReasonsV2,
   getMedicineOrderCancelReasonsV2_getMedicineOrderCancelReasonsV2_cancellationReasonBuckets,
 } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderCancelReasonsV2';
+import HTML from 'react-native-render-html';
 
 export interface Props
   extends NavigationScreenProps<{
     queries: NeedHelpHelpers.HelpSectionQuery[];
     queryIdLevel1: string;
     queryIdLevel2: string;
+    queryIdLevel3: string;
     email: string;
     orderId?: string;
     isOrderRelatedIssue?: boolean;
     medicineOrderStatus?: MEDICINE_ORDER_STATUS;
     isConsult?: boolean;
+    isDiagnostics?: boolean;
     medicineOrderStatusDate?: any;
     sourcePage: WebEngageEvents[WebEngageEventName.HELP_TICKET_SUBMITTED]['Source_Page'];
     pathFollowed: string;
@@ -110,6 +105,7 @@ export interface Props
     additionalInfo: boolean;
     etd: any;
     billNumber: any;
+    orderTat: any;
     refetchOrders: () => void;
   }> {}
 
@@ -118,6 +114,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const _queries = navigation.getParam('queries');
   const queryIdLevel1 = navigation.getParam('queryIdLevel1') || '';
   const queryIdLevel2 = navigation.getParam('queryIdLevel2') || '';
+  const queryIdLevel3 = navigation.getParam('queryIdLevel3') || '';
   const pathFollowed = navigation.getParam('pathFollowed') || '';
   const medicineOrderStatusDate = navigation.getParam('medicineOrderStatusDate');
   const [email, setEmail] = useState(navigation.getParam('email') || '');
@@ -133,9 +130,10 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const [medicineOrderStatus, setMedicineOrderStatus] = useState<MEDICINE_ORDER_STATUS>(
     navigation.getParam('medicineOrderStatus')!
   );
-  const { saveNeedHelpQuery, getQueryData, getQueryDataByOrderStatus } = Helpers;
+  const { saveNeedHelpQuery, getQueryData, getQueryDataByOrderStatus, getBuData } = Helpers;
   const [queries, setQueries] = useState<NeedHelpHelpers.HelpSectionQuery[]>(_queries || []);
-  const subQueriesData = getQueryData(queries, queryIdLevel1, queryIdLevel2);
+  const subQueriesData = getQueryData(queries, queryIdLevel1, queryIdLevel2, queryIdLevel3);
+  const buData = getBuData(queries, queryIdLevel1);
   const subQueries = (subQueriesData?.queries as NeedHelpHelpers.HelpSectionQuery[]) || [];
   const headingTitle = queries?.find((q) => q.id === queryIdLevel1)?.title || 'Query';
   const helpSectionQueryId = AppConfig.Configuration.HELP_SECTION_CUSTOM_QUERIES;
@@ -176,9 +174,31 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const [cancellationAllowed, setCancellationAllowed] = useState<boolean>(false);
   const [message, setMessage] = useState<string>('');
   const [subheading, setSubheading] = useState<string>('');
-  const [cancellationRequestRaised, setCancellationRequestRaised] = useState<boolean>(false);
-  const [cancellationRequestRejected, setCancellationrequestRejected] = useState<boolean>(false);
   const [flatlistData, setFlatlistData] = useState<any[]>([]);
+  const isDiagnostics = navigation.getParam('isDiagnostics') || false;
+  const [diagnosticTATQuery, setDiagnosticTATQuery] = React.useState<boolean>(false);
+  interface kbData {
+    contentType: string;
+    content: string;
+    categories: any[];
+  }
+  interface TATStateProps {
+    KB: kbData;
+    TATBreached: boolean;
+  }
+  const initialTATState: TATStateProps = {
+    KB: { contentType: '', content: '', categories: [] },
+    TATBreached: false,
+  };
+  const [orderTAT, updateTatStatus] = useState<any>(
+    navigation.getParam('orderTat')
+      ? navigation.getParam('orderTat')
+      : {
+          KB: null,
+          TATBreached: false,
+          categories: [],
+        }
+  );
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', () => {
@@ -218,7 +238,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   }, [click, medicineOrderStatus]);
 
   useEffect(() => {
-    if (cancellationAllowed && !cancellationRequestRaised && click === orderCancelId) {
+    if (cancellationAllowed && click === orderCancelId) {
       getCancellationReasonsBuckets();
     }
   }, [click]);
@@ -230,6 +250,9 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     if (queryIdLevel1 == helpSectionQueryId.pharmacy) {
       getOMSDetails();
     }
+    if (isDiagnostics && orderId && !navigation.getParam('orderTat')) {
+      getDiagnosticOrderTat();
+    }
   }, []);
 
   const fetchQueries = async () => {
@@ -238,6 +261,15 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       const queries = await getHelpSectionQueries(apolloClient);
       setQueries(queries);
       setLoading?.(false);
+    } catch (error) {
+      setLoading?.(false);
+    }
+  };
+
+  const getDiagnosticOrderTat = async () => {
+    try {
+      const diagOrderTatStatus = await fetchDiagnosticOrderTATStatusQuery(orderId);
+      updateTatStatus(diagOrderTatStatus);
     } catch (error) {
       setLoading?.(false);
     }
@@ -258,6 +290,24 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     return data?.getMedicineOrderOMSDetailsWithAddress?.medicineOrderDetails;
   };
 
+  const fetchDiagnosticOrderTATStatusQuery = async (orderId: any) => {
+    try {
+      const { data } = await client.query<getTATStatus, getTATStatusVariables>({
+        query: FETCH_DIAGNOSTICS_ORDER_TAT_STATUS,
+        variables: {
+          GetTATStatusForDiagnosticOrderInput: {
+            displayId: orderId || '',
+          },
+        },
+        fetchPolicy: 'no-cache',
+      });
+      return data?.getTATStatusForDiagnosticOrder;
+    } catch (err) {
+      console.log('fetchDiagnosticOrderTATStatusQuery errr ==== ', err);
+      return { error: err };
+    }
+  };
+
   const getOMSDetails = async () => {
     const vars: getMedicineOrderOMSDetailsWithAddressVariables = {
       patientId: currentPatient && currentPatient.id,
@@ -276,14 +326,6 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     setCancellationAllowed(
       data?.getMedicineOrderOMSDetailsWithAddress?.orderCancellationAllowedDetails
         ?.cancellationAllowed
-    );
-    setCancellationRequestRaised(
-      data?.getMedicineOrderOMSDetailsWithAddress?.orderCancellationAllowedDetails
-        ?.cancellationRequestRaised!
-    );
-    setCancellationrequestRejected(
-      data?.getMedicineOrderOMSDetailsWithAddress?.orderCancellationAllowedDetails
-        ?.cancellationRequestRejected!
     );
     setMessage(
       data?.getMedicineOrderOMSDetailsWithAddress?.orderCancellationAllowedDetails?.message || ''
@@ -378,9 +420,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         variables,
       })
       .then(({ data }) => {
-        aphConsole.log({
-          s: data,
-        });
+        aphConsole.log({ s: data });
         const setInitialSate = () => {
           setShowSpinner(false);
           setCancelVisible(false);
@@ -398,7 +438,9 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           const data = getQueryDataByOrderStatus(
             subQueriesData,
             isOrderRelatedIssue,
-            requestStatus
+            requestStatus,
+            buData,
+            queryIdLevel2
           );
           setMedicineOrderStatus(requestStatus);
           setFlatlistData(data);
@@ -433,7 +475,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       });
   };
 
-  const renderReturnOrderOverlay = () => {
+  const renderCancelOrderOverlay = () => {
     return (
       <OrderCancelComponent
         showReasons={showReasons}
@@ -472,8 +514,9 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     const onPressBack = () => {
       setSubheading('');
       if (
-        medicineOrderStatus === MEDICINE_ORDER_STATUS.CANCELLED ||
-        medicineOrderStatus === MEDICINE_ORDER_STATUS.CANCEL_REQUEST
+        !isConsult &&
+        (medicineOrderStatus === MEDICINE_ORDER_STATUS.CANCELLED ||
+          medicineOrderStatus === MEDICINE_ORDER_STATUS.CANCEL_REQUEST)
       ) {
         return navigation.navigate(AppRoutes.OrderDetailsScene, {
           orderAutoId: orderId,
@@ -563,7 +606,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       const variables: TicketNumberMutationVariables = {
         createHelpTicketHelpEmailInput: {
           category: parentQuery?.title,
-          reason: reason,
+          reason: reason ? reason : isDiagnostics && diagnosticTATQuery ? subheading : null,
           comments: comments,
           patientId: currentPatient?.id,
           email: email,
@@ -734,18 +777,32 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     );
   };
 
+  const isShowDiagnosticTatKB = (id: string, isDiagnostics: boolean, dorderTatData: any) => {
+    return (
+      !dorderTatData.TATBreached && isDiagnostics && dorderTatData?.KB?.categories?.includes(id)
+    );
+  };
+
   const renderItem = ({ item }: ListRenderItemInfo<NeedHelpHelpers.HelpSectionQuery>) => {
     const onPress = () => {
       const isReturnQuery = item?.id === helpSectionQueryId.returnOrder;
       setClick(item?.id!);
       setSubheading(item?.title!);
-      if (item?.id === orderCancelId && !raiseOrderDelayQuery && cancellationAllowed) {
+      if (
+        item?.id === orderCancelId &&
+        !raiseOrderDelayQuery &&
+        (cancellationAllowed || !cancellationAllowed)
+      ) {
         setClick(orderCancelId);
         setSelectedQueryId('');
         setComments('');
         return;
       }
-      if (item?.queries?.length) {
+      if (isShowDiagnosticTatKB(item?.id!, isDiagnostics, orderTAT)) {
+        setClick(item?.id!);
+        setSelectedQueryId('');
+        setComments('');
+      } else if (item?.queries?.length) {
         navigation.push(AppRoutes.NeedHelpQueryDetails, {
           queryIdLevel2: item?.id,
           queryIdLevel1,
@@ -755,17 +812,21 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           isOrderRelatedIssue,
           medicineOrderStatus,
           isConsult,
+          isDiagnostics,
+          orderTat: orderTAT,
         });
         setSelectedQueryId('');
         setComments('');
       } else if (item?.content?.text) {
         navigation.navigate(AppRoutes.NeedHelpContentView, {
           queryIdLevel1,
-          queryIdLevel2: item?.id,
+          queryIdLevel2: queryIdLevel2 !== '' ? queryIdLevel2 : item?.id,
+          queryIdLevel3: queryIdLevel2 !== '' ? item?.id : '',
           queries,
           email,
           orderId,
           pathFollowed: item?.title,
+          isDiagnostics,
         });
       } else if (isReturnQuery) {
         navigation.navigate(AppRoutes.ReturnMedicineOrder, {
@@ -781,7 +842,8 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         !additionalInfo
       ) {
         navigation.push(AppRoutes.NeedHelpQueryDetails, {
-          queryIdLevel2: item?.id,
+          queryIdLevel2: queryIdLevel2 !== '' ? queryIdLevel2 : item?.id,
+          queryIdLevel3: queryIdLevel2 !== '' ? item?.id : '',
           queryIdLevel1,
           queries,
           email,
@@ -789,6 +851,8 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           isOrderRelatedIssue,
           medicineOrderStatus,
           isConsult,
+          isDiagnostics,
+          orderTat: orderTAT,
           additionalInfo: true,
           refund: refund.length <= 0 ? fetchRefund : refund,
           payment: payment.length <= 0 ? fetchPayment : payment,
@@ -826,20 +890,33 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     return `"${splitStr.join(' ')}"`;
   };
 
+  const ignoreStyles = [
+    'line-height',
+    'margin-bottom',
+    'color',
+    'text-align',
+    'font-size',
+    'font-family',
+  ];
+
   const renderReasons = () => {
     if (!subQueries?.length) {
       return null;
     }
-    let data = getQueryDataByOrderStatus(subQueriesData, isOrderRelatedIssue, medicineOrderStatus);
+    let data = getQueryDataByOrderStatus(
+      subQueriesData,
+      isOrderRelatedIssue,
+      medicineOrderStatus,
+      buData,
+      queryIdLevel2
+    );
     const showReturnOrder =
       MEDICINE_ORDER_STATUS.DELIVERED &&
       !!medicineOrderStatusDate &&
       moment(new Date()).diff(moment(medicineOrderStatusDate), 'hours') <= 48;
-
     if (!showReturnOrder) {
       data = data.filter((item) => item?.id !== helpSectionQueryId.returnOrder);
     }
-
     const showMessage = (tat: boolean) => {
       if (tat) {
         const str = string.needHelpQueryDetails.tatBreachedTrue;
@@ -921,13 +998,47 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         </>
       );
 
+    const renderDiagnoticsOrderTatStatus = () => (
+      <>
+        <View style={styles.flatListContainer2}>
+          <HTML
+            html={orderTAT?.KB?.content}
+            onLinkPress={(evt, href) => {
+              Linking.openURL(href);
+            }}
+            baseFontStyle={styles.flatListItem}
+            ignoredStyles={ignoreStyles}
+          />
+        </View>
+        <View style={styles.flatListContainer2}>
+          <TouchableOpacity
+            style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+            onPress={() => {
+              setDiagnosticTATQuery(!diagnosticTATQuery);
+              setComments('');
+            }}
+          >
+            <Text style={styles.txtBold}>My issue is still not resolved</Text>
+            <ArrowRight style={{ height: 18, width: 18 }} />
+          </TouchableOpacity>
+          {isShowDiagnosticTatKB(click, isDiagnostics, orderTAT) && diagnosticTATQuery
+            ? renderTextInputAndCTAs()
+            : null}
+        </View>
+      </>
+    );
+
     return (
       <>
-        <>{renderReturnOrderOverlay()}</>
+        <>{renderCancelOrderOverlay()}</>
         {(loading || showSpinner) && <Spinner style={{ zIndex: 200 }} />}
         <SafeAreaView>
           {orderDelayed && click === orderDelayId ? (
             <>{renderOrderStatus()}</>
+          ) : isShowDiagnosticTatKB(click, isDiagnostics, orderTAT) ? (
+            <>{renderDiagnoticsOrderTatStatus()}</>
+          ) : click === orderCancelId ? (
+            <>{renderCancelOrder()}</>
           ) : (
             !isCancelVisible && (
               <View style={styles.flatListContainer}>
@@ -966,9 +1077,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     if (subheading) {
       return (
         <Text style={[styles.subHeading, styles.txtBold, styles.subHeadingText]}>
-          {cancellationAllowed && click === orderCancelId && !cancellationRequestRaised
-            ? null
-            : subheading}
+          {cancellationAllowed && click === orderCancelId ? null : subheading}
         </Text>
       );
     }

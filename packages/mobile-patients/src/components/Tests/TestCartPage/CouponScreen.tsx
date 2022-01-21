@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, FlatList, Dimensions } from 'react-native';
-import { isEmptyObject, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getPackageIds, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { NavigationScreenProps, SafeAreaView } from 'react-navigation';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -10,7 +10,6 @@ import {
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  DIAGNOSTIC_GROUP_PLAN,
   fetchDiagnosticCoupons,
   validateConsultCoupon,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -41,23 +40,29 @@ export interface CouponScreenProps
 
 export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
   const {
-    modifiedOrder,
     isDiagnosticCircleSubscription,
     isCircleAddedToCart,
     setCoupon,
-    couponDiscount,
     setCouponDiscount,
     setCouponCircleBenefits,
-    circleSaving,
     setCouponOnMrp,
+    setHcCharges,
+    setModifyHcCharges,
+    setDistanceCharges,
+    setWaiveOffCollectionCharges,
   } = useDiagnosticsCart();
   const { circleSubscriptionId, hdfcSubscriptionId } = useShoppingCart();
-  const { hdfcPlanId, circlePlanId, hdfcStatus, circleStatus } = useAppCommonData();
+  const {
+    hdfcPlanId,
+    circlePlanId,
+    hdfcStatus,
+    circleStatus,
+    activeUserSubscriptions,
+  } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const { showAphAlert, setLoading, loading } = useUIElements();
   const getPincode = props.navigation.getParam('pincode');
   const lineItemWithQuantity = props.navigation.getParam('lineItemWithQuantity');
-  const toPayPrice = props.navigation.getParam('toPayPrice');
   const [couponsList, setCouponsList] = useState([] as any);
   const [couponListError, setCouponListError] = useState<string>('');
   const [couponError, setCouponError] = useState<string>('');
@@ -65,7 +70,6 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
   const [appliedCouponName, setAppliedCouponName] = useState<string>('');
   const [disableCouponsList, setDisableCouponsList] = useState<string[]>([]);
   const [loadingOverlay, setLoadingOverlay] = useState<boolean>(false);
-  const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
 
   const isEnableApplyBtn = couponText.length >= 4;
 
@@ -81,10 +85,23 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
     getDiagnosticCoupons();
   }, []);
 
+  function createPackageId() {
+    const activeSubPackageId = getPackageIds(activeUserSubscriptions);
+    const circlePackageId =
+      isCircleAddedToCart || (circleSubscriptionId && circleStatus === 'active')
+        ? `APOLLO:${circlePlanId}`
+        : null;
+    if (!!circlePackageId && !activeSubPackageId.includes(circlePackageId)) {
+      //if not included, then add..
+      activeSubPackageId?.push(circlePackageId);
+    }
+    return activeSubPackageId;
+  }
+
   async function getDiagnosticCoupons() {
     setLoading?.(true);
     try {
-      const result = await fetchDiagnosticCoupons('Diag', packageId);
+      const result = await fetchDiagnosticCoupons('Diag', createPackageId()?.join());
       if (!!result?.data?.response && result?.data?.response?.length > 0) {
         const getCoupons = result?.data?.response;
         setLoading?.(false);
@@ -169,7 +186,7 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
       coupon: coupon,
       pinCode: String(getPincode),
       diagnostics: createLineItemsForPayload?.pricesForItemArray?.map((item: any) => item), //define type
-      packageIds: setSubscription != undefined ? [] : packageId, //array of all subscriptions of user
+      packageIds: createPackageId(),
     };
     validateConsultCoupon(data)
       .then((resp: any) => {
@@ -178,6 +195,9 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
             const responseData = resp?.data?.response;
             const getCircleBenefits = responseData?.circleBenefits;
             const hasOnMrpTrue = responseData?.diagnostics?.filter((item: any) => item?.onMrp);
+            const isFreeHomeCollection = responseData?.diagnostics?.filter(
+              (item: any) => item?.freeHomeCollection
+            );
             /**
              * case for if user is claiming circle benefits, but coupon => circleBenefits as false
              */
@@ -196,6 +216,11 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
               );
             } else {
               const successMessage = responseData?.successMessage || '';
+              //if any sku has freeCollection as true => waive off
+              if (isFreeHomeCollection?.length > 0) {
+                setWaiveOffCollectionCharges?.(true);
+                clearCollectionCharges();
+              }
               setCoupon?.({
                 ...responseData,
                 successMessage: successMessage,
@@ -251,6 +276,12 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
         setCouponCircleBenefits?.(false); //reset it to default value
       });
   };
+
+  function clearCollectionCharges() {
+    setHcCharges?.(0);
+    setDistanceCharges?.(0);
+    setModifyHcCharges?.(0);
+  }
 
   function _onPressApplyCoupon(coupon: string, appliedFromList: boolean) {
     validateAppliedCoupon(coupon, lineItemWithQuantity, appliedFromList);
