@@ -326,7 +326,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
 
   const [bannerLoading, setBannerLoading] = useState(true);
-  const [imgHeight, setImgHeight] = useState<number>(AppConfig.Configuration.DIAGNOSTICS_HOME_PAGE_BANNER_HEIGHT | 160);
+  const [imgHeight, setImgHeight] = useState<number>(
+    AppConfig.Configuration.DIAGNOSTICS_HOME_PAGE_BANNER_HEIGHT | 160
+  );
   const [slideIndex, setSlideIndex] = useState(0);
   const [banners, setBanners] = useState([]);
   const [cityId, setCityId] = useState('');
@@ -767,6 +769,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           (a: any, b: any) =>
             Number(a.diagnosticwidgetsRankOrder) - Number(b.diagnosticwidgetsRankOrder)
         );
+        console.log({ sortWidgets });
         //filter wigets to be shown on homepage
         const getWidgetsForHomePage = sortWidgets?.filter(
           (widget: any) => widget?.shownOnHomePage || widget?.shownOnHomePage == 'true'
@@ -961,8 +964,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   function triggerAddressSelected(servicable: 'Yes' | 'No') {
     const addressUsed = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
-    const addressToUse = !!addressUsed ? addressUsed : diagnosticLocation
-    const pinCodeFromAddress = !!addressToUse?.zipcode ? addressToUse?.zipcode : addressToUse?.pincode;
+    const addressToUse = !!addressUsed ? addressUsed : diagnosticLocation;
+    const pinCodeFromAddress = !!addressToUse?.zipcode
+      ? addressToUse?.zipcode
+      : addressToUse?.pincode;
     if (!!addressToUse) {
       DiagnosticAddresssSelected(
         newAddressAddedHomePage != '' ? 'Manual' : 'Automation',
@@ -2721,7 +2726,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
-
   const isOrderAvailable =
     diagnosticStateUserType == `"${string.user_type.REPEAT}"` ||
     diagnosticStateUserType == string.user_type.REPEAT;
@@ -3422,8 +3426,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 flex: 1,
                 marginBottom: isCartAvailable
                   ? showNudgeMessage
-                    ? 60
-                    : 30
+                    ? 70
+                    : 40
                   : showNudgeMessage
                   ? 30
                   : 0,
@@ -3584,7 +3588,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     marginTop: 20,
   },
-  miniIconsStyle: { height: 21, alignSelf: 'center', width:15 },
+  miniIconsStyle: { height: 21, alignSelf: 'center', width: 15 },
   precriptionContainerUpload: {
     flexDirection: 'row',
     justifyContent: 'space-around',
