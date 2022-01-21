@@ -20,6 +20,7 @@ export interface fetchCart_fetchCart_data_amount {
   estimatedAmount: number | null;
   deliveryCharges: number | null;
   isDeliveryFree: boolean | null;
+  freeDeliveryAmount: number | null;
   cartSavings: number | null;
   couponSavings: number | null;
   totalCashBack: number | null;

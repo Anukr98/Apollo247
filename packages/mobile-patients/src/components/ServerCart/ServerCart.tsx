@@ -419,7 +419,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
       {renderUnserviceableMessage()}
       {renderServerCartItemsList()}
       {circlePlanAddedToCart && renderCircleCartItem()}
-      {/* {renderAvailFreeDelivery()} */}
+      {renderAvailFreeDelivery()}
       {renderAmountSection()}
       {renderOneApolloHealthCredits()}
       {renderPrescriptions()}
