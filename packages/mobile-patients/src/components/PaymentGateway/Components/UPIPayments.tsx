@@ -68,7 +68,7 @@ export const UPIPayments: React.FC<UPIPaymentsProps> = (props) => {
   };
 
   const upiApp = (item: any) => {
-    const marginLeft = item?.index == 0 ? 0 : (newWidth - 220) * 0.33;
+    const marginLeft = item?.index == 0 ? 0 : (newWidth - 256) * 0.33;
     const outageStatus = item?.item?.outage_list?.[0]?.outage_status;
     return (
       <View
@@ -114,7 +114,7 @@ export const UPIPayments: React.FC<UPIPaymentsProps> = (props) => {
 
   const renderMoreApps = () => {
     return upiApps?.length > 3 ? (
-      <View style={{ ...styles.AppCont, marginLeft: (newWidth - 220) * 0.33 }}>
+      <View style={{ ...styles.AppCont, marginLeft: (newWidth - 256) * 0.33 }}>
         <TouchableOpacity style={styles.imageCont} onPress={onPressMoreApps}>
           <BlackArrowUp style={{ width: 15, height: 7, transform: [{ rotate: '90deg' }] }} />
         </TouchableOpacity>
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   AppCont: {
-    width: 55,
+    width: 64,
     alignItems: 'center',
     marginBottom: 15,
   },
