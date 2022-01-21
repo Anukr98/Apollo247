@@ -1075,6 +1075,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
               {!!hdfcUserSubscriptions?._id ||
               !!corporateSubscriptions?.length ||
               !!consultPlan?.length ||
+              circleSubscription ||
               isCircleExpired ? (
                 <Text style={styles.currentBenefits}>CURRENT BENEFITS</Text>
               ) : (
