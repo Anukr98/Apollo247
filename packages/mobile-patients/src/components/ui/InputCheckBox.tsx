@@ -1,8 +1,7 @@
 import React from 'react';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { WhatsAppCheckTick } from './Icons';
+import { WhatsAppCheckTick } from '@aph/mobile-patients/src/components/ui/Icons';
 
 export interface InputCheckBoxProps {
   label?: string;
