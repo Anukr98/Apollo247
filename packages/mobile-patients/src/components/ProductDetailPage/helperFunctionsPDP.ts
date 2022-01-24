@@ -54,7 +54,8 @@ export const fireTatApiCalledEvent = (
   currentPincode: string,
   serverCartItems: saveCart_saveCart_data_medicineOrderCartLineItems[],
   medicineDetails: any,
-  setTatEventData: (eventAttributes: PharmacyTatApiCalled) => void
+  setTatEventData: (eventAttributes: PharmacyTatApiCalled) => void,
+  sku: string
 ) => {
   try {
     const item = response.items[0];

@@ -787,7 +787,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           currentPincode,
           serverCartItems,
           medicineDetails,
-          setTatEventData
+          setTatEventData,
+          sku || ''
         );
       })
       .catch((error) => {

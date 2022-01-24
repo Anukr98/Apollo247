@@ -5238,16 +5238,8 @@ export const ADD_DIABETIC_QUESTIONNAIRE = gql`
 `;
 
 export const GET_PAYMENT_METHODS = gql`
-  query getPaymentMethodsV3(
-    $is_juspay_pharma: Boolean
-    $payment_order_id: String!
-    $prepaid_amount: Float!
-  ) {
-    getPaymentMethodsV3(
-      is_juspay_pharma: $is_juspay_pharma
-      payment_order_id: $payment_order_id
-      prepaid_amount: $prepaid_amount
-    ) {
+  query getPaymentMethodsV3($payment_order_id: String!, $prepaid_amount: Float!) {
+    getPaymentMethodsV3(payment_order_id: $payment_order_id, prepaid_amount: $prepaid_amount) {
       linked_wallets {
         id
         object
@@ -5514,16 +5506,16 @@ export const GET_INTERNAL_ORDER = gql`
         updated_at
         amount
       }
-      offers{
+      offers {
         offer_code
-        offer_description{
+        offer_description {
           offer_code
           title
           description
         }
-        benefits{
+        benefits {
           amount
-          calculation_info{
+          calculation_info {
             value
           }
         }
@@ -6457,7 +6449,7 @@ export const GET_RESCHEDULE_AND_CANCELLATION_REASONS = gql`
     getRescheduleAndCancellationReasons(appointmentDateTimeInUTC: $appointmentDateTimeInUTC) {
       rescheduleReasons
       cancellationReasons
-      cancellationReasonsv2{
+      cancellationReasonsv2 {
         reason
         isDirectCancellation
       }
@@ -6697,10 +6689,10 @@ export const GET_DIAGNOSTICS_RECOMMENDATIONS = gql`
       itemsData {
         itemId
         itemName
-        diagnosticInclusions{
+        diagnosticInclusions {
           itemId
           name
-          observations{
+          observations {
             observationName
             mandatoryValue
           }
@@ -7074,10 +7066,10 @@ export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS = gql`
         itemName
         inclusions
         packageCalculatedMrp
-        diagnosticInclusions{
+        diagnosticInclusions {
           itemId
           name
-          observations{
+          observations {
             observationName
             mandatoryValue
           }
@@ -7511,8 +7503,8 @@ export const DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS = gql`
       itemsData {
         itemId
         itemName
-        diagnosticInclusions{
-          observations{
+        diagnosticInclusions {
+          observations {
             observationName
             mandatoryValue
           }
@@ -7520,17 +7512,11 @@ export const DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS = gql`
       }
     }
   }
-`
+`;
 
 export const FETCH_BLOB_URL_WITH_PRISM = gql`
-  mutation fetchBlobURLWithPRISMData(
-    $patientId: ID!
-    $fileUrl: String!
-  ) {
-    fetchBlobURLWithPRISMData(
-      patientId: $patientId
-      fileUrl: $fileUrl
-    ) {
+  mutation fetchBlobURLWithPRISMData($patientId: ID!, $fileUrl: String!) {
+    fetchBlobURLWithPRISMData(patientId: $patientId, fileUrl: $fileUrl) {
       blobUrl
     }
   }

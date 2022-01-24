@@ -4,7 +4,7 @@ import { GET_PAYMENT_METHODS } from '@aph/mobile-patients/src/graphql/profiles';
 import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 
 export const useGetPaymentMethods = (paymentOrderId: string, amount: number) => {
-const { buildApolloClient, authToken } = useAuth();
+  const { buildApolloClient, authToken } = useAuth();
   const client = useApolloClient();
   const apolloClientWithAuth = buildApolloClient(authToken);
 
@@ -15,7 +15,7 @@ const { buildApolloClient, authToken } = useAuth();
   const fetchPaymentOptions = () => {
     return apolloClientWithAuth.query({
       query: GET_PAYMENT_METHODS,
-      variables: { is_mobile: true, payment_order_id: paymentOrderId, prepaid_amount: amount },
+      variables: { payment_order_id: paymentOrderId, prepaid_amount: amount },
       fetchPolicy: 'no-cache',
     });
   };

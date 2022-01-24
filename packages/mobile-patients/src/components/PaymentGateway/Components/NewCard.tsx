@@ -267,7 +267,7 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
     const conatinerstyles = {
       ...styles.conatinerstyles,
       borderColor: isExpired ? '#BF2600' : '#D8D8D8',
-      borderWidth: 2,
+      borderWidth: isExpired ? 2 : 1,
     };
     return (
       <View style={{ marginTop: 24, flex: 0.5 }}>
@@ -287,7 +287,7 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
 
   const cvvInput = () => {
     return (
-      <View style={{ marginTop: 20, flex: 0.45 }}>
+      <View style={{ marginTop: 24, flex: 0.45 }}>
         <TextInputComponent
           conatinerstyles={styles.conatinerstyles}
           inputStyle={styles.inputStyle}

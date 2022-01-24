@@ -1644,14 +1644,14 @@ const webengage = new WebEngage();
 
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
-    webengage.track(eventName, attributes);
-  } catch (error) { }
+    webengage.track(eventName, validateEventObject(attributes));
+  } catch (error) {}
 };
 
 export const postCleverTapEvent = (eventName: CleverTapEventName, attributes: Object) => {
   try {
-    CleverTap.recordEvent(eventName, attributes);
-  } catch (error) { }
+    CleverTap.recordEvent(eventName, validateEventObject(attributes));
+  } catch (error) {}
 };
 
 /**
@@ -2351,8 +2351,8 @@ export const InitiateAppsFlyer = (
     if (JSON.parse(res?.data?.is_first_launch || 'null') == true) {
       isFirstLaunch = true;
       try {
-        res?.data?.af_dp?.(AsyncStorage.setItem('deeplink', res.data.af_dp));
-        res?.data?.af_sub1?.(AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1));
+        res?.data?.af_dp && AsyncStorage.setItem('deeplink', res.data.af_dp);
+        res?.data?.af_sub1 && AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
         if (res?.data?.linkToUse !== null && res?.data?.linkToUse === 'ForReferrarInstall') {
           const responseData = res.data;
           setAppReferralData({
@@ -2365,8 +2365,8 @@ export const InitiateAppsFlyer = (
           });
         }
 
-        res?.data?.af_dp?.(setBugFenderLog('APPS_FLYER_DEEP_LINK', res.data.af_dp));
-        res.data.af_sub1?.(setBugFenderLog('APPS_FLYER_DEEP_LINK_Referral_Code', res.data.af_sub1));
+        res?.data?.af_dp && setBugFenderLog('APPS_FLYER_DEEP_LINK', res.data.af_dp);
+        res.data.af_sub1 && setBugFenderLog('APPS_FLYER_DEEP_LINK_Referral_Code', res.data.af_sub1);
 
         setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
       } catch (error) { }
@@ -2383,17 +2383,13 @@ export const InitiateAppsFlyer = (
     // for iOS universal links
     if (Platform.OS === 'ios') {
       try {
-        res?.data?.af_dp?.(AsyncStorage.setItem('deeplink', res.data.af_dp));
-        res?.data?.af_sub1?.(AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1));
+        res?.data?.af_dp && AsyncStorage.setItem('deeplink', res.data.af_dp);
+        res?.data?.af_sub1 && AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
 
-        res?.data?.af_dp?.(
-          setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK', res.data.af_dp)
-        );
-        res?.data?.af_sub1?.(
-          setBugFenderLog(
-            'onAppOpenAttribution_APPS_FLYER_DEEP_LINK_Referral_Code',
-            res.data.af_sub1
-          )
+        res?.data?.af_dp && setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK', res.data.af_dp);
+        res?.data?.af_sub1 && setBugFenderLog(
+          'onAppOpenAttribution_APPS_FLYER_DEEP_LINK_Referral_Code',
+          res.data.af_sub1
         );
 
         setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
@@ -2539,14 +2535,29 @@ export const APPStateActive = () => {
   }
 };
 
+const validateEventObject = (eventAttributes: any) => {
+  Object.keys(eventAttributes).forEach((key) => {
+    if (!eventAttributes[key]) {
+      try {
+        eventAttributes[key] = `${eventAttributes[key]}`;
+      } catch (e) {
+        eventAttributes[key] = 'undefined';
+      }
+    }
+  });
+  return eventAttributes;
+};
+
 export const postAppsFlyerEvent = (eventName: AppsFlyerEventName, attributes: Object) => {
   try {
     const logContent = `[AppsFlyer Event] ${eventName}`;
     appsFlyer.logEvent(
       eventName,
-      attributes,
-      (res) => { },
-      (err) => { }
+      validateEventObject(attributes),
+      (res) => {
+      },
+      (err) => {
+      }
     );
   } catch (error) { }
 };
@@ -2920,7 +2931,7 @@ export const addPharmaItemToCart = (
     }
     addToCart();
     onAddedSuccessfully?.();
-  } catch (error) {}
+  } catch (error) { }
 };
 
 export const dataSavedUserID = async (key: string) => {
@@ -3810,52 +3821,46 @@ export const getCleverTapCheckoutCompletedEventAttributes = (
   ordersIds: any
 ) => {
   const {
-    deliveryAddressId,
+    isCartPrescriptionRequired,
+    cartAddressId,
     addresses,
     storeId,
     stores,
-    uploadPrescriptionRequired,
-    physicalPrescriptions,
-    cartItems,
-    cartTotal,
-    deliveryCharges,
-    coupon,
-    couponDiscount,
-    productDiscount,
-    ePrescriptions,
-    grandTotal,
-    circleSubscriptionId,
-    isCircleSubscription,
-    cartTotalCashback,
+    serverCartItems,
+    serverCartAmount,
+    cartCoupon,
     pharmacyCircleAttributes,
-    orders,
-    pinCode,
+    noOfShipments,
+    cartPrescriptions,
+    cartLocationDetails,
   } = shoppingCart;
-  const addr = deliveryAddressId && addresses.find((item) => item.id == deliveryAddressId);
+  const addr = cartAddressId && addresses.find((item) => item.id == cartAddressId);
   const store = storeId && stores.find((item) => item.storeid == storeId);
-  const shippingInformation = addr ? formatAddress(addr) : store ? store.address : '';
+  const shippingInformation = addr ? formatAddress(addr) : store ? store?.address : '';
   const getFormattedAmount = (num: number) => Number(num.toFixed(2));
   const eventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED] = {
     'Transaction ID': paymentOrderId,
     'Order type': 'Cart',
-    'Prescription added': !!(physicalPrescriptions.length || ePrescriptions.length),
+    'Prescription added': cartPrescriptions.length > 0,
     'Shipping information': shippingInformation, // (Home/Store address)
-    'Total items in cart': cartItems.length,
-    'Grand total': cartTotal + deliveryCharges,
-    'Total discount %': coupon
-      ? getFormattedAmount(((couponDiscount + productDiscount) / cartTotal) * 100)
+    'Total items in cart': serverCartItems.length,
+    'Grand total': serverCartAmount?.estimatedAmount || 0,
+    'Total discount %': cartCoupon?.coupon && cartCoupon?.valid
+      ? getFormattedAmount(((serverCartAmount?.couponSavings || 0) / (serverCartAmount?.estimatedAmount || 0)) * 100)
       : 0,
-    'Discount amount': getFormattedAmount(couponDiscount + productDiscount),
-    'Shipping charges': deliveryCharges,
-    'Net after discount': getFormattedAmount(grandTotal),
+    'Discount amount': getFormattedAmount((serverCartAmount?.cartSavings || 0) + (serverCartAmount?.couponSavings || 0)),
+    'Shipping charges': serverCartAmount?.isDeliveryFree ? (serverCartAmount?.deliveryCharges || 0) : 0,
+    'Net after discount': getFormattedAmount(serverCartAmount?.estimatedAmount || 0),
     'Payment status': 1,
     'Service area': 'Pharmacy',
-    'Mode of delivery': deliveryAddressId ? 'Home' : 'Pickup',
-    'AF revenue': getFormattedAmount(grandTotal),
+    'Mode of delivery': cartAddressId ? 'Home' : 'Pickup',
+    'AF revenue': getFormattedAmount(serverCartAmount?.estimatedAmount || 0),
     'Circle cashback amount':
-      circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
-    'Split cart': orders?.length > 1 ? 'Yes' : 'No',
-    'Prescription option selected': uploadPrescriptionRequired
+      serverCartAmount?.circleSavings?.membershipCashBack
+        ? Number(serverCartAmount?.circleSavings?.membershipCashBack)
+        : 0,
+    'Split cart': noOfShipments > 1 ? 'Yes' : 'No',
+    'Prescription option selected': isCartPrescriptionRequired
       ? 'Prescription Upload'
       : 'Not Applicable',
     'Circle member':
@@ -3863,9 +3868,9 @@ export const getCleverTapCheckoutCompletedEventAttributes = (
       undefined,
     'Circle membership value': pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
     'User type': pharmacyUserTypeAttribute?.User_Type || undefined,
-    'Coupon applied': coupon?.coupon || undefined,
-    Pincode: pinCode || undefined,
-    'Cart items': JSON.stringify(cartItems),
+    'Coupon applied': cartCoupon?.coupon && cartCoupon?.valid ? cartCoupon?.coupon : '',
+    Pincode: cartLocationDetails?.pincode || undefined,
+    'Cart items': JSON.stringify(serverCartItems?.map((item) => item?.sku || '')),
     'Order ID(s)': ordersIds?.map((i) => i?.orderAutoId)?.join(','),
   };
   if (store) {
