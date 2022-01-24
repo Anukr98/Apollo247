@@ -13,12 +13,11 @@ export const HealthCreditsCard: React.FC<HealthCreditsCardProps> = (props) => {
   const { healthCredits: availableHC } = useFetchHealthCredits('pharma');
   const { serverCartAmount } = useShoppingCart();
   const getFormattedAmount = (num: number) => Number(num.toFixed(2));
-  const cartTotal = serverCartAmount?.cartTotal || 0;
   const estimatedAmount = serverCartAmount?.estimatedAmount || 0;
 
   const amountToPay =
     estimatedAmount && availableHC >= getFormattedAmount(estimatedAmount)
-      ? getFormattedAmount(availableHC - estimatedAmount)
+      ? 0
       : getFormattedAmount(estimatedAmount - availableHC);
 
   return availableHC != 0 ? (
