@@ -253,7 +253,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
         Email: (email || '').trim(),
         'Mobile Number': currentPatient?.mobileNumber,
       };
-      const cleverTapEventAttributes: any = {
+      const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.REGISTRATION_DONE] = {
         'Customer ID': currentPatient?.id,
         'Full Name': (firstName || '')!.trim() + ' ' + (lastName || '')!.trim(),
         DOB: currentPatient?.dateOfBirth || date ? moment(date, 'DD/MM/YYYY').toDate() : undefined,

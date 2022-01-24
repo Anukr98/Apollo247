@@ -377,7 +377,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
     };
   }, []);
 
-  const _postWebEngageEvent = () => {
+  const _postWebEngageEvent = async () => {
     if (isSignupEventFired) {
       return;
     }
@@ -396,6 +396,10 @@ const SignUp: React.FC<SignUpProps> = (props) => {
         Email: email.trim(),
         'Mobile Number': currentPatient?.mobileNumber,
       };
+      let preApolloExistingUser = await AsyncStorage.getItem('preApolloUser');
+
+      if (preApolloExistingUser && preApolloExistingUser === 'true') {
+      }
       const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.REGISTRATION_DONE] = {
         'Customer ID': currentPatient ? currentPatient.id : '',
         'Full Name': firstName?.trim() + ' ' + lastName?.trim(),
@@ -410,6 +414,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
         'Mobile Number': currentPatient?.mobileNumber,
         'Nav src': 'App login screen',
         'Page Name': 'Signup Screen',
+        'Customer type': preApolloExistingUser === 'true' ? 'Prism' : 'New',
       };
       if (referral) {
         // only send if referral has a value
