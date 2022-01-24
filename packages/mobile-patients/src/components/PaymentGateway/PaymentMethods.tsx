@@ -256,8 +256,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const updateAmount = () => {
-    const redeemableAmount =
-      businessLine == 'pharma' ? serverCartAmount?.estimatedAmount || 0 : amount;
+    const redeemableAmount = amount;
     HCSelected
       ? healthCredits >= redeemableAmount
         ? (setburnHc(redeemableAmount), setAmount(Number(Decimal.sub(amount, redeemableAmount))))
@@ -285,7 +284,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const getPaymentOptions = () => {
     return client.query({
       query: GET_PAYMENT_METHODS,
-      variables: { is_mobile: true, payment_order_id: paymentId, prepaid_amount: amount },
+      variables: { payment_order_id: paymentId, prepaid_amount: amount },
       fetchPolicy: 'no-cache',
     });
   };

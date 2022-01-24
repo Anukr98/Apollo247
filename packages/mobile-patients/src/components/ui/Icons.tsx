@@ -852,11 +852,7 @@ export const DownloadOrange: React.FC<IconProps> = (props) => (
 );
 
 export const OneApollo: React.FC<IconProps> = (props) => (
-  <IconBase
-    style={{ width: 76, height: 59 }}
-    {...props}
-    source={require('./icons/img_apolloone.webp')}
-  />
+  <IconBase {...props} source={require('./icons/health_credits.webp')} />
 );
 
 export const PhysicalConsult: React.FC<IconProps> = (props) => (

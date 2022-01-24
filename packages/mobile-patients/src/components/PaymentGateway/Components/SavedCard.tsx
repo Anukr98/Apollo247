@@ -57,12 +57,15 @@ export const SavedCard: React.FC<SavedCardProps> = (props) => {
 
   const renderCardNo = () => {
     return (
-      <Text style={styles.cardNo}>
-        {cardInfo?.card_number?.slice(-7)}
-        {' • '}
-        {cardInfo?.card_issuer?.replace('Bank', ' ') + camelize(cardInfo?.card_type)}
-        {' Card'}
-      </Text>
+      <View>
+        <Text style={styles.cardNo}>
+          {cardInfo?.card_number?.slice(-7)}
+          {' • '}
+          {cardInfo?.card_issuer?.replace('Bank', ' ') + camelize(cardInfo?.card_type)}
+          {' Card'}
+        </Text>
+        <Text style={styles.name}>{cardInfo?.name_on_card || 'User'}</Text>
+      </View>
     );
   };
 
@@ -82,7 +85,6 @@ export const SavedCard: React.FC<SavedCardProps> = (props) => {
             {renderCardIcon()}
             {renderCardNo()}
           </View>
-          <Text style={styles.name}>{cardInfo?.name_on_card || 'User'}</Text>
         </View>
         {cardSelected ? <CircleCheckIcon /> : <CircleUncheckIcon />}
       </View>
@@ -225,10 +227,11 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     color: '#01475B',
     marginTop: 4,
-    marginLeft: 37,
+    marginLeft: 12,
   },
   cardIcon: {
-    width: 25,
+    width: 30,
+    height: 30,
   },
   cvvInput: {
     borderWidth: 2,
