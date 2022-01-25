@@ -27,7 +27,11 @@ export const UploadedPrescriptionCard: React.FC<UploadedPrescriptionCardProps> =
           key={i}
         >
           <View style={styles.imageCont}>
-            <Image style={styles.image} source={{ uri: item?.prescriptionImageUrl }} />
+            {item?.meta?.fileType?.includes('pdf') ? (
+              <FileBig style={styles.pdfIcon} />
+            ) : (
+              <Image style={styles.image} source={{ uri: item?.prescriptionImageUrl }} />
+            )}
           </View>
           <View style={{ flex: 1 }}>
             <TextInputComponent
@@ -79,6 +83,11 @@ const styles = StyleSheet.create({
   },
   image: {
     height: 30,
+    width: 30,
+    borderRadius: 5,
+  },
+  pdfIcon: {
+    height: 45,
     width: 30,
     borderRadius: 5,
   },
