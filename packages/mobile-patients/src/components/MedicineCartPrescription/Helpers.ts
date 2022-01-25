@@ -46,9 +46,9 @@ export const uploadDocuments = (
         base64FileInput: base64,
         category: PRISM_DOCUMENT_CATEGORY.HealthChecks,
         fileType:
-          fileType?.toLowerCase() === 'png'
+          fileType?.toLowerCase()?.includes('png')
             ? UPLOAD_FILE_TYPES.PNG
-            : fileType?.toLowerCase() === 'pdf'
+            : fileType?.toLowerCase()?.includes('pdf')
             ? UPLOAD_FILE_TYPES.PDF
             : UPLOAD_FILE_TYPES.JPEG,
         patientId,
