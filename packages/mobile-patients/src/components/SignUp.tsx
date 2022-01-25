@@ -904,7 +904,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
         : null;
       let patientDetails: any = {
         id: mePatient.id,
-        // whatsappOptIn: whatsAppOptIn,
+        whatsappOptIn: whatsAppOptIn,
         mobileNumber: mePatient.mobileNumber,
         firstName: firstName.trim(),
         lastName: lastName.trim(),

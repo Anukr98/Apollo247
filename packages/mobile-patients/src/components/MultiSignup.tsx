@@ -442,7 +442,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                       relation: Relation.ME, // profile ? profile.relation!.toUpperCase() : '',
                       referralCode: trimReferral || null,
                       deviceCode: deviceToken,
-                      // whatsappOptIn: whatsAppOptIn,
+                      whatsappOptIn: whatsAppOptIn,
                     };
 
                     CommonLogEvent(AppRoutes.MultiSignup, 'Update API clicked');
