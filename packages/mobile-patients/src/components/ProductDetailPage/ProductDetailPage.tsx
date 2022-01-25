@@ -258,6 +258,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   }, [medicineDetails]);
 
   useEffect(() => {
+    const getUserType = async () => {
+      const pharmacyUserType: any = await AsyncStorage.getItem('PharmacyUserType');
+      const circleId: any = await AsyncStorage.getItem('circleSubscriptionId');
+      setUserType(pharmacyUserType);
+      setCircleID(circleId);
+    };
+    getUserType();
     setProductSubstitutes?.([]);
     BackHandler.addEventListener('hardwareBackPress', onPressHardwareBack);
     return () => {
@@ -273,6 +280,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         movedFrom == ProductPageViewedSource.MULTI_VARIANT)
     ) {
       fetchDeliveryTime(pharmacyPincode, false);
+    }
+
+    if (sku && pharmacyPincode) {
+      getProductSubstitutes(sku);
     }
   }, [sku]);
 
@@ -295,9 +306,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setLoading(true);
       getMedicineDetails();
-      if (sku && pharmacyPincode) {
-        getProductSubstitutes(sku);
-      }
     });
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
       setLoading(true);
@@ -327,7 +335,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         circleMembershipCharges
       );
     }
-  }, [medicineDetails, deliveryTime]);
+  }, [deliveryTime]);
 
   useEffect(() => {
     if (productSubstitutes?.length > 0) {
@@ -401,30 +409,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   }, [tatEventData]);
 
   useEffect(() => {
-    const getUserType = async () => {
-      const pharmacyUserType: any = await AsyncStorage.getItem('PharmacyUserType');
-      const circleId: any = await AsyncStorage.getItem('circleSubscriptionId');
-      setUserType(pharmacyUserType);
-      setCircleID(circleId);
-    };
-    getUserType();
-  }, []);
-
-  useEffect(() => {
-    if (sku && pharmacyPincode) {
-      getProductSubstitutes(sku);
-    }
-  }, [sku, isPharma, pharmacyPincode, props.navigation, medicineDetails]);
-
-  useEffect(() => {
     if (serverCartItems?.find(({ sku }) => sku?.toUpperCase() === currentProductIdInCart)) {
       if (shownNudgeOnce === false) {
         setShowSuggestedQuantityNudge(true);
       }
     }
   }, [serverCartItems, currentProductQuantityInCart, currentProductIdInCart]);
-
-  useEffect(() => {}, [setShowSuggestedQuantityNudge]);
 
   const getMedicineDetails = (zipcode?: string, pinAcdxCode?: string, selectedSku?: string) => {
     setLoading(true);
@@ -472,13 +462,19 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     setMedicineDetails(productDetails || {});
     setIsPharma(productDetails?.type_id?.toLowerCase() === 'pharma');
     trackTagalysViewEvent(productDetails);
-    savePastSearch(client, {
-      typeId: productDetails?.sku,
-      typeName: productDetails?.name,
-      type: SEARCH_TYPE.MEDICINE,
-      patient: currentPatient?.id,
-      image: productDetails?.thumbnail,
-    });
+    if (
+      movedFrom === ProductPageViewedSource.PARTIAL_SEARCH ||
+      movedFrom === ProductPageViewedSource.FULL_SEARCH ||
+      movedFrom === ProductPageViewedSource.CATEGORY_OR_LISTING
+    ) {
+      savePastSearch(client, {
+        typeId: productDetails?.sku,
+        typeName: productDetails?.name,
+        type: SEARCH_TYPE.MEDICINE,
+        patient: currentPatient?.id,
+        image: productDetails?.thumbnail,
+      });
+    }
 
     if (productDetails?.multi_variants_products) {
       const attributes = productDetails?.multi_variants_products?.attributes;
