@@ -286,7 +286,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   useEffect(() => {
     isAndroid && initializeTruecaller();
     isAndroid && truecallerEventListeners();
-    isAndroid && renderNumberPopup();
+    // isAndroid && renderNumberPopup(); // Anubhav will look in this
     const eventAttributes: WebEngageEvents[WebEngageEventName.MOBILE_ENTRY] = {};
     postWebEngageEvent(WebEngageEventName.MOBILE_ENTRY, eventAttributes);
     postFirebaseEvent(FirebaseEventName.MOBILE_ENTRY, eventAttributes);
