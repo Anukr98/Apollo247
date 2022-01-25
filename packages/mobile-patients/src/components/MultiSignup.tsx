@@ -839,6 +839,6 @@ const styles = StyleSheet.create({
     zIndex: 3,
   },
   userItemListMain: {
-    minHeight: Dimensions.get('screen').height - 400,
+    minHeight: Dimensions.get('screen').height - 415,
   },
 });
