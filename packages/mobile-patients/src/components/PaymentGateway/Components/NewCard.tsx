@@ -278,7 +278,7 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
           onChangeText={(text) => updateValidity(text)}
           keyboardType={'numeric'}
           maxLength={5}
-          placeholder={'Expiry Date (MM/YY)'}
+          placeholder={'Exp Date (MM/YY)'}
         />
         <View style={{ height: 16 }}>{isExpired && renderExpired()}</View>
       </View>
