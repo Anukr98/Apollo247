@@ -971,6 +971,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setPharmaHomeNudgeMessage,
     setPharmaCartNudgeMessage,
     setPharmaPDPNudgeMessage,
+    setTatDecidedPercentage,
   } = useShoppingCart();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
@@ -1306,6 +1307,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'DeliveryIn_TAT_Text_QA',
       PROD: 'DeliveryIn_TAT_Text_PROD',
     },
+    Tat_Decided_Percentage: {
+      QA: 'Tat_Decided_Percentage_QA',
+      PROD: 'Tat_Decided_Percentage_PROD',
+    },
     RESCHEDULE_CANCELLATION: {
       QA: 'RESCHEDULE_CANCELLATION_QA',
       PROD: 'RESCHEDULE_CANCELLATION_PROD',
@@ -1523,6 +1528,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         config.getString(key)
       );
       setPdpDisclaimerMessage?.(disclaimerMessagePdp);
+
+      const tatDecidedPercentage = getRemoteConfigValue('Tat_Decided_Percentage', (key) =>
+        config.getNumber(key)
+      );
+      setTatDecidedPercentage?.(tatDecidedPercentage);
 
       setAppConfig(
         'Min_Value_For_Pharmacy_Free_Delivery',

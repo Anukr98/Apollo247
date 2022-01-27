@@ -48,6 +48,7 @@ import {
   VERIFY_VPA,
   GET_PAYMENT_METHODS,
   INITIATE_DIAGNOSTIC_ORDER_PAYMENT_V2,
+  GET_ORDER_INFO,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';

@@ -1225,6 +1225,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     pinCode,
     isPharmacyPincodeServiceable,
     serverCartItems,
+    locationCode,
   } = useShoppingCart();
   const cartItemsCount = cartItems?.length + serverCartItems?.length;
 

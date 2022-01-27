@@ -7148,6 +7148,7 @@ export const SERVER_CART_SAVE_CART = gql`
           estimatedAmount
           deliveryCharges
           isDeliveryFree
+          freeDeliveryAmount
           cartSavings
           couponSavings
           totalCashBack
@@ -7275,6 +7276,7 @@ export const SERVER_CART_FETCH_CART = gql`
           estimatedAmount
           deliveryCharges
           isDeliveryFree
+          freeDeliveryAmount
           cartSavings
           couponSavings
           totalCashBack
@@ -7373,6 +7375,7 @@ export const SERVER_CART_REVIEW_CART = gql`
           estimatedAmount
           deliveryCharges
           isDeliveryFree
+          freeDeliveryAmount
           cartSavings
           couponSavings
           totalCashBack
