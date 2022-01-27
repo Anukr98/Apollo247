@@ -8,16 +8,12 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.SystemClock;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
@@ -54,9 +50,6 @@ public class MyFirebaseMessagingService
 
     private static DeviceEventManagerModule.RCTDeviceEventEmitter eventEmitter = null;
     private Vibrator vibrator;
-    private NotificationManager notificationManager;
-    private String channelId = "fcm_call_channel";
-    private String channelName = "Incoming Call";
 
     @Override
     public void onCreate() {
@@ -76,10 +69,10 @@ public class MyFirebaseMessagingService
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         try {
+            Log.e("RemoteMessage", remoteMessage.getData().toString());
             String notifDataType = remoteMessage.getData().get("type");
             String startCallType = "call_start";
             String disconnectCallType = "call_disconnect";
-            notificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
 
             if (startCallType.equals(notifDataType) || disconnectCallType.equals(notifDataType)) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
@@ -87,13 +80,13 @@ public class MyFirebaseMessagingService
                         cancelCall(); /* Cancel the first call incase if a user is notified or called twice by a doc*/
                         sendNotifications(remoteMessage);
                     } else if (disconnectCallType.equals(notifDataType)) {
+                        NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
                         notificationManager.cancelAll();
                         vibrator.cancel();
                         Intent stopIntent = new Intent(this, RingtonePlayingService.class);
                         this.stopService(stopIntent);
                         LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(MyFirebaseMessagingService.this);
                         localBroadcastManager.sendBroadcast(new Intent("com.unlockscreenactivity.action.close"));
-                        triggerMissCallNotification(remoteMessage);
                     }
                 } else {
                     showUnlockScreen(remoteMessage, !isAppRunning());
@@ -210,6 +203,8 @@ public class MyFirebaseMessagingService
         //end
 
         //channel info start
+        String channelId = "fcm_call_channel";
+        String channelName = "Incoming Call";
         Uri incoming_call_notif = RingtoneManager.getActualDefaultRingtoneUri(getApplicationContext(), RingtoneManager.TYPE_RINGTONE);
 
         // notification action buttons start
@@ -270,49 +265,6 @@ public class MyFirebaseMessagingService
         }
     }
 
-    private void triggerMissCallNotification(RemoteMessage remoteMessage) {
-        //Missed call notification
-        String appointment_id = remoteMessage.getData().get("appointmentId");
-        String incoming_call_type = remoteMessage.getData().get("callType");
-        String doctorName = remoteMessage.getData().get("doctorName");
-        String doctorCallDeepLink = "apollopatients://DoctorCall?" + appointment_id + '+' + incoming_call_type;
-        Uri uri = Uri.parse(doctorCallDeepLink);
-        Bitmap bm = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
-
-        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
-                PendingIntent.FLAG_ONE_SHOT);
-
-        NotificationCompat.Builder notificationBuilder =
-                new NotificationCompat.Builder(getApplicationContext(), channelId)
-                        .setContentTitle("Missed call")
-                        .setContentText(doctorName)
-                        .setSmallIcon(R.drawable.ic_notification_white)
-                        .setPriority(NotificationCompat.PRIORITY_MAX)
-                        .setCategory(NotificationCompat.CATEGORY_CALL)
-                        .setAutoCancel(true)
-                        .setLargeIcon(bm)
-                        .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                        .addAction(0, "CONSULT ROOM", pendingIntent)
-                        .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
-                        .setContentIntent(pendingIntent);
-        int notificationId = (int) SystemClock.uptimeMillis();
-        int importance = NotificationManager.IMPORTANCE_HIGH;
-
-        //channel creation start
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel mChannel = new NotificationChannel(channelId, channelName, importance);
-            AudioAttributes attributes = new AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_NOTIFICATION)
-                    .build();
-            mChannel.setSound(null, null);
-            mChannel.setDescription(channelName);
-            mChannel.enableLights(true);
-            notificationManager.createNotificationChannel(mChannel);
-        }
-        notificationManager.notify(notificationId, notificationBuilder.build());
-    }
 
     @SuppressLint("MissingPermission")
     private void setVibration() {
