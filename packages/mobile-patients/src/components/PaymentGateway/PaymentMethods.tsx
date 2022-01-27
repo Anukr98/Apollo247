@@ -150,6 +150,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const paymentCodMessage = props.navigation.getParam('paymentCodMessage');
   const isCircleAddedToCart = props.navigation.getParam('isCircleAddedToCart');
   const oneTapPatient = props.navigation.getParam('oneTapPatient');
+  const transactionId = props.navigation.getParam('transactionId');
+  const orders = props.navigation.getParam('orders');
+
   const { currentPatient } = useAllCurrentPatients();
   const [banks, setBanks] = useState<any>([]);
   const [isTxnProcessing, setisTxnProcessing] = useState<boolean>(false);
@@ -163,7 +166,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const { authToken, setauthToken, pharmacyUserType } = useAppCommonData();
-  const { grandTotal, serverCartAmount } = useShoppingCart();
+  const { grandTotal, serverCartAmount, cartTat } = useShoppingCart();
   const [HCSelected, setHCSelected] = useState<boolean>(false);
   const [burnHc, setburnHc] = useState<number>(0);
   const storeCode =
@@ -891,6 +894,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           cleverTapCheckoutEventAttributes,
           defaultClevertapEventParams: defaultClevertapEventParams,
           payload: payload,
+          transactionId,
+          orders,
+          cartTat
         });
         break;
       case 'subscription':

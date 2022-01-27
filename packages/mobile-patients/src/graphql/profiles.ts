@@ -7537,3 +7537,11 @@ export const INSERT_REFEREE_DATA_TO_REFERRER = gql`
     }
   }
 `;
+
+export const GET_REVIEW_POPUP_PERMISSION = gql`
+  query popUpReviewConfiguration($popupConfig: popupConfigArgs!) {
+    popUpReviewConfiguration(popupConfigArgs: $popupConfig) {
+      enable
+    }
+  }
+`;
