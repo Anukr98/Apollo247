@@ -244,26 +244,6 @@ const appStaticVariables = {
     'An Apollo doctor will be assigned to you in the next 15 minutes.',
     'View your booked appointment in the ‘My Appointment’ section on your app.',
   ],
-  RESCHEDULE_CANCELLATION: {
-    reschedule_cancellation_guidelines: {
-      title: 'Reschedule and Cancellation is allowed :',
-      guidelines: [
-        'a. 15 mins prior to the start of the appointment time',
-        'b. 10 minutes after the appointment time, in case the appointment has not started',
-      ],
-    },
-    other_guidelines: {
-      title: 'Other details:',
-      guidelines: [
-        'a. An appointment that has been started can not be canceled or rescheduled ',
-        'b. Full refund will be issued on cancellation, the same will be credited to the source account within 10 working days',
-        'c. In case reschedule request has been initiated by the doctor, you may accept the request or choose another slot',
-      ],
-    },
-    isConsultationGuidelinesPdf: true,
-    guidelinesHeading: 'Consultation Guidelines',
-    guidelinesSubHeading: 'Reschedule & Cancellation',
-  },
   Vaccine_Type: ['Covaxin', 'Covishield'],
   Cancel_Threshold_Pre_Vaccination: 12, //hrs
   Enable_Diagnostics_COD: true,

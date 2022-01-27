@@ -182,12 +182,6 @@
     "cancelRefundBody": "We regret the inconvenience caused. We’ll issue you a full refund.",
     "goBack": "GO BACK",
     "proceedCta": "PROCEED TO CONNECT",
-    "consultationFee": "Consultation Fee",
-    "amountPaid": "Amount Paid",
-    "paymentReceipt": "Payment Receipt",
-    "viewDownload": "View & Download",
-    "paymentDetails": "Payment Details",
-    "viewConsultationGuidelines": "View Consultation Guidelines",
     "showDigitalData": "SHOW DIGITAL REPORT"
   },
   "diagnosticsLocation": {

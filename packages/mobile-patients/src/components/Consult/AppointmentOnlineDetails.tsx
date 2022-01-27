@@ -11,8 +11,6 @@ import {
   DropdownGreen,
   CrossPopup,
   BackArrow,
-  Pdf,
-  RightArrowBlue,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -29,7 +27,6 @@ import {
   BOOK_APPOINTMENT_RESCHEDULE,
   CANCEL_APPOINTMENT,
   CHECK_IF_RESCHDULE,
-  CONSULT_ORDER_INVOICE,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   bookRescheduleAppointment,
@@ -83,21 +80,12 @@ import {
   Text,
   TouchableOpacity,
   View,
-  ScrollView,
-  StatusBar,
-  PermissionsAndroid,
-  Platform,
-  Alert,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
-import { AppConfig, CancelConsultation } from '@aph/mobile-patients/src/strings/AppConfig';
+import { CancelConsultation } from '@aph/mobile-patients/src/strings/AppConfig';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
-import { CollapseView } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CollapseView';
-import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import RNFetchBlob from 'rn-fetch-blob';
-import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { useShoppingCart } from '../ShoppingCartProvider';
 
 const OTHER_REASON = string.ReasonFor_Cancel_Consultation.otherReasons;
@@ -112,43 +100,20 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
     borderBottomColor: 'rgba(2, 71, 91, 0.2)',
   },
-  pdfIcon: {
-    width: 22,
-    height: 26,
-    marginStart: 9,
-    marginEnd: 13,
-  },
-  pdfView: {
-    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-    borderRadius: 6,
-    flexDirection: 'row',
-    paddingVertical: 8,
-    alignItems: 'center',
-  },
-  arrowIconView: {
-    flex: 1,
-    alignItems: 'flex-end',
-    marginEnd: 16,
-  },
   doctorNameStyle: {
     paddingTop: 8,
     paddingBottom: 2,
     textTransform: 'capitalize',
-    ...theme.fonts.IBMPlexSansSemiBold(14),
-    color: theme.colors.BUTTON_ORANGE,
+    ...theme.fonts.IBMPlexSansSemiBold(23),
+    color: theme.colors.LIGHT_BLUE,
   },
   timeStyle: {
-    paddingBottom: 10,
-    ...theme.fonts.IBMPlexSansRegular(12),
+    paddingBottom: 20,
+    ...theme.fonts.IBMPlexSansMedium(16),
     color: theme.colors.SKY_BLUE,
   },
   labelStyle: {
     ...theme.fonts.IBMPlexSansMedium(14),
-    color: theme.colors.LIGHT_BLUE,
-    paddingBottom: 3.5,
-  },
-  labelStyle1: {
-    ...theme.fonts.IBMPlexSansRegular(12),
     color: theme.colors.LIGHT_BLUE,
     paddingBottom: 3.5,
   },
@@ -173,7 +138,7 @@ const styles = StyleSheet.create({
   },
   displayId: {
     ...theme.fonts.IBMPlexSansMedium(12),
-    color: theme.colors.CHAT_TILE_BG,
+    color: theme.colors.SEARCH_EDUCATION_COLOR,
     paddingBottom: 4,
   },
   doctorImage: {
@@ -181,7 +146,7 @@ const styles = StyleSheet.create({
     height: 80,
   },
   reschduleButtonStyle: {
-    flex: 0.5,
+    flex: 0.4,
     marginLeft: 20,
     marginRight: 8,
     backgroundColor: 'white',
@@ -192,12 +157,12 @@ const styles = StyleSheet.create({
     width: 120,
   },
   mainView: {
+    backgroundColor: theme.colors.CARD_BG,
     paddingTop: 20,
     paddingHorizontal: 20,
-    backgroundColor: theme.colors.HEX_WHITE,
     ...theme.viewStyles.shadowStyle,
   },
-  startConsultText: { flex: 0.5, marginRight: 20, marginLeft: 8 },
+  startConsultText: { flex: 0.6, marginRight: 20, marginLeft: 8 },
   viewStyles: {
     ...theme.viewStyles.container,
   },
@@ -282,61 +247,6 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 10,
     borderBottomLeftRadius: 10,
   },
-  consultationGuidelinesText: {
-    ...theme.fonts.IBMPlexSansRegular(11),
-    marginVertical: 2,
-    color: theme.colors.SLATE_GRAY,
-  },
-  viewMoreText: {
-    color: theme.colors.BUTTON_ORANGE,
-    ...theme.fonts.IBMPlexSansMedium(11),
-    textTransform: 'uppercase',
-    marginTop: 4,
-  },
-  flexRow: {
-    flexDirection: 'row',
-  },
-  flexOne: { flex: 1 },
-  displayIdNew: {
-    backgroundColor: theme.colors.AQUA_BLUE,
-    width: 160,
-    paddingLeft: 6,
-    paddingTop: 6,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-  },
-  patientNameHeadingText: {
-    ...theme.fonts.IBMPlexSansRegular(12),
-    paddingBottom: 10,
-    color: theme.colors.LIGHT_BLUE,
-  },
-  patientNameText: { color: theme.colors.SKY_BLUE },
-  scrollMain: { backgroundColor: theme.colors.HEX_WHITE, marginTop: 20 },
-  contentContainerStyle: { paddingBottom: 60 },
-  semiBold12: { ...theme.fonts.IBMPlexSansSemiBold(12) },
-  pdfButton: { marginVertical: 10, paddingHorizontal: 20 },
-  rescheduleCancelContainer: { flex: 1, paddingHorizontal: 20, marginTop: 12 },
-  rescheduleCancelContainerHeading: {
-    ...theme.fonts.IBMPlexSansMedium(13),
-    textTransform: 'uppercase',
-    marginBottom: 6,
-    color: theme.colors.LIGHT_BLUE,
-  },
-  rescheduleCancelContainerHeadingText: {
-    ...theme.fonts.IBMPlexSansMedium(12),
-    color: theme.colors.CHAT_TILE_BG,
-  },
-  stickyButtonComponent: {
-    paddingHorizontal: 0,
-    borderTopWidth: 1,
-    borderColor: theme.colors.CALL_BG_GRAY,
-  },
-  rescheduleButtonOrange: {
-    borderWidth: 1,
-    borderColor: theme.colors.BUTTON_ORANGE,
-    borderRadius: 4,
-  },
-  padding20: { paddingHorizontal: 20 },
 });
 
 type rescheduleType = {
@@ -383,7 +293,6 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const { getPatientApiCall } = useAuth();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { circleSubscriptionId, circleSubPlanId } = useShoppingCart();
-  const CONFIG_RC = AppConfig.Configuration.RESCHEDULE_CANCELLATION;
 
   const isSubmitDisableForOther = selectedReason == OTHER_REASON && comment == '';
 
@@ -418,7 +327,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
       const time = `${moment
         .utc(data.appointmentDateTime)
         .local()
-        .format('DD MMM YYYY h:mm A')}`;
+        .format('DD MMM h:mm A')}`;
       setAppointmentTime(time);
     }
   }, []);
@@ -806,169 +715,10 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
     );
   };
 
-  const renderErrorPopup = (desc: string) =>
-    showAphAlert!({
-      title: 'Uh oh.. :(',
-      description: `${desc || ''}`.trim(),
-    });
-
-  const downloadInvoice = () => {
-    client
-      .query({
-        query: CONSULT_ORDER_INVOICE,
-        variables: {
-          patientId: currentPatient?.id,
-          appointmentId: data?.id,
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((res) => {
-        const { getOrderInvoice } = res?.data || {};
-        let dirs = RNFetchBlob.fs.dirs;
-        let fileName: string =
-          'Apollo_Consult_Invoice' + moment().format('MMM_D_YYYY_HH_mm') + '.pdf';
-        const downloadPath =
-          Platform.OS === 'ios'
-            ? (dirs.DocumentDir || dirs.MainBundleDir) +
-              '/' +
-              (fileName || 'Apollo_Consult_Invoice.pdf')
-            : dirs.DownloadDir + '/' + (fileName || 'Apollo_Consult_Invoice.pdf');
-        RNFetchBlob.config({
-          fileCache: true,
-          path: downloadPath,
-          addAndroidDownloads: {
-            title: fileName,
-            useDownloadManager: true,
-            notification: true,
-            path: downloadPath,
-            mime: mimeType(downloadPath),
-            description: 'File downloaded by download manager.',
-          },
-        })
-          .fetch('GET', String(getOrderInvoice), {
-            //some headers ..
-          })
-          .then((res) => {
-            if (Platform.OS === 'android') {
-              Alert.alert('Download Complete');
-            }
-            Platform.OS === 'ios'
-              ? RNFetchBlob.ios.previewDocument(res.path())
-              : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
-          })
-          .catch((err) => {
-            CommonBugFender('ConsultView_downloadInvoice', err);
-          });
-      })
-      .catch((error) => {
-        renderErrorPopup(`Something went wrong, please try again after sometime`);
-        CommonBugFender('fetchingConsultInvoice', error);
-      });
-  };
-
-  const requestStoragePermission = async () => {
-    try {
-      const resuts = await PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-      ]);
-      if (
-        resuts[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] !==
-        PermissionsAndroid.RESULTS.GRANTED
-      ) {
-      }
-      if (
-        resuts[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] !==
-        PermissionsAndroid.RESULTS.GRANTED
-      ) {
-      }
-      if (resuts) {
-        downloadInvoice();
-      }
-    } catch (error) {
-      CommonBugFender('AppointmentScreen_requestReadSmsPermission_try', error);
-    }
-  };
-
-  const downloadPDF = () => {
-    let dirs = RNFetchBlob.fs.dirs;
-    const title = 'Consultation guideline';
-    const downloadPath =
-      Platform.OS === 'ios'
-        ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + 'ConsultGuidelines.pdf'
-        : dirs.DownloadDir + '/' + 'ConsultGuidelines.pdf';
-    RNFetchBlob.config({
-      fileCache: true,
-      path: downloadPath,
-      addAndroidDownloads: {
-        title: 'ConsultGuidelines.pdf',
-        mime: mimeType(downloadPath),
-        useDownloadManager: true,
-        notification: true,
-        description: 'File downloaded by download manager.',
-        path: downloadPath,
-      },
-    })
-      .fetch('GET', 'https://newassets-test.apollo247.com/files/Mobile_View_Infographic.pdf', {
-        //some headers ..
-      })
-      .then((res) => {
-        showAphAlert!({
-          title: 'Alert!',
-          description: 'Downloaded : ' + title,
-          onPressOk: () => {
-            Platform.OS === 'ios'
-              ? RNFetchBlob.ios.previewDocument(res.path())
-              : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
-            hideAphAlert!();
-          },
-        });
-      })
-      .catch((err) => {
-        CommonBugFender('AppointmentDetails_downloadPDF', err);
-      });
-  };
 
   const resetReasonForCancelFields = () => {
     setSelectedReason('');
     setComment('');
-  };
-  const [isViewMore, setIsViewMore] = useState<boolean>(
-    Boolean(CONFIG_RC?.other_guidelines?.guidelines?.length) ||
-      CONFIG_RC?.isConsultationGuidelinesPdf
-  );
-
-  const renderConsultationGuidlines = () => {
-    return (
-      <>
-        <Text style={styles.consultationGuidelinesText}>
-          {CONFIG_RC?.reschedule_cancellation_guidelines?.title}
-        </Text>
-        {CONFIG_RC?.reschedule_cancellation_guidelines?.guidelines?.length
-          ? CONFIG_RC?.reschedule_cancellation_guidelines?.guidelines.map((item) => (
-              <Text style={styles.consultationGuidelinesText}>{item}</Text>
-            ))
-          : null}
-        {isViewMore &&
-          (CONFIG_RC?.reschedule_cancellation_guidelines?.guidelines?.length ||
-            CONFIG_RC?.isConsultationGuidelinesPdf) && (
-            <Text onPress={() => setIsViewMore(!isViewMore)} style={styles.viewMoreText}>
-              View More
-            </Text>
-          )}
-        {!isViewMore && CONFIG_RC?.reschedule_cancellation_guidelines?.guidelines?.length && (
-          <>
-            <Text style={styles.consultationGuidelinesText}>
-              {CONFIG_RC?.other_guidelines?.title}
-            </Text>
-            {CONFIG_RC?.other_guidelines?.guidelines?.length &&
-              CONFIG_RC?.other_guidelines?.guidelines.map((item) => (
-                <Text style={styles.consultationGuidelinesText}>{item}</Text>
-              ))}
-          </>
-        )}
-      </>
-    );
   };
 
   const postAppointmentWEGEvents = (
@@ -1010,73 +760,6 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
     postWebEngageEvent(type, eventAttributes);
   };
 
-  const paymentTable = () => (
-    <>
-      <View style={[styles.labelViewStyle, styles.padding20]}>
-        <Text style={styles.labelStyle1}>{string.common.consultationFee}</Text>
-        <Text style={[styles.labelStyle1, { width: 35 }]}>
-          {data?.consultFee != null && data?.consultFee != undefined
-            ? `₹ ${data?.consultFee}`
-            : '-'}
-        </Text>
-      </View>
-      {data?.couponApplied && (
-        <>
-          <Spearator />
-          <View style={[styles.labelViewStyle, styles.padding20]}>
-            <Text style={[styles.labelStyle1, { color: theme.colors.CHAT_TILE_BG }]}>
-              {`${string.common.couponApplied} (${data?.couponCode ? data?.couponCode : '-'})`}
-            </Text>
-            <Text style={[styles.labelStyle1, { color: theme.colors.CHAT_TILE_BG, width: 35 }]}>
-              {data?.couponAmount != null && data?.couponAmount != undefined
-                ? `₹ ${data?.couponAmount}`
-                : '-'}
-            </Text>
-          </View>
-        </>
-      )}
-      <Spearator />
-      <View style={[styles.labelViewStyle, styles.padding20]}>
-        <Text style={styles.labelStyle1}>{string.common.bookingFee}</Text>
-        <Text style={[styles.labelStyle1, { width: 35 }]}>
-          {data?.bookingFee != null && data?.bookingFee != undefined
-            ? `₹ ${data?.bookingFee}`
-            : '-'}
-        </Text>
-      </View>
-      <Spearator />
-      <View
-        style={[
-          styles.labelViewStyle,
-          { paddingHorizontal: 20, backgroundColor: theme.colors.AQUA_BLUE },
-        ]}
-      >
-        <Text style={[styles.labelStyle1, styles.semiBold12]}>{string.common.amountPaid}</Text>
-        <Text style={[styles.labelStyle1, styles.semiBold12, { width: 35 }]}>
-          {data?.amountPaid != null && data?.amountPaid != undefined
-            ? `₹ ${data?.amountPaid}`
-            : '-'}
-        </Text>
-      </View>
-      <View style={styles.separatorStyle} />
-      <TouchableOpacity onPress={requestStoragePermission} style={styles.pdfButton}>
-        <View style={[styles.pdfView, { paddingHorizontal: 10 }]}>
-          <Pdf style={styles.pdfIcon} />
-          <View>
-            <Text style={theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE)}>
-              {string.common.paymentReceipt}
-            </Text>
-            <Text style={theme.viewStyles.text('R', 12, theme.colors.SLATE_GRAY)}>
-              {string.common.viewDownload}
-            </Text>
-          </View>
-          <View style={styles.arrowIconView}>
-            <RightArrowBlue style={{ height: 12, width: 6 }} />
-          </View>
-        </View>
-      </TouchableOpacity>
-    </>
-  );
   if (data.doctorInfo) {
     const isAwaitingReschedule = data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE;
     const showCancel =
@@ -1104,83 +787,77 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             onPressLeftIcon={() => props.navigation.goBack()}
           />
           <View style={styles.mainView}>
-            <View style={styles.flexRow}>
-              <View style={styles.flexOne}>
-                <View style={styles.displayIdNew}>
-                  <Text style={[styles.displayId]}>{`Appointment ID ${data?.displayId}`}</Text>
-                </View>
-
+            <View
+              style={{
+                flexDirection: 'row',
+              }}
+            >
+              <View style={{ flex: 1 }}>
+                <Text style={styles.displayId}>#{data.displayId}</Text>
                 <View style={styles.separatorStyle} />
-                <TouchableOpacity
-                  onPress={() =>
-                    props.navigation.navigate(AppRoutes.DoctorDetails, {
-                      doctorId: doctorDetails?.id,
-                    })
-                  }
-                >
-                  <Text style={styles.doctorNameStyle}>{data.doctorInfo.displayName}</Text>
-                </TouchableOpacity>
+                <Text style={styles.doctorNameStyle}>{data.doctorInfo.displayName}</Text>
                 <Text style={styles.timeStyle}>{appointmentTime}</Text>
 
-                <Text style={styles.patientNameHeadingText}>
-                  {'Patient Name: '}
-                  <Text
-                    style={styles.patientNameText}
-                  >{`${currentPatient?.firstName} ${currentPatient?.lastName}`}</Text>
-                </Text>
+                <View style={styles.labelViewStyle}>
+                  <Text style={styles.labelStyle}>Payment</Text>
+                  <Text style={theme.viewStyles.yellowTextStyle}>BILL</Text>
+                </View>
+                <View style={styles.separatorStyle} />
+                <View style={styles.amountPaidStyles}>
+                  <Text style={styles.descriptionStyle}>Amount Paid</Text>
+                  <Text style={styles.descriptionStyle}>
+                    {g(data, 'appointmentPayments', '0' as any, 'amountPaid') ===
+                    Number(doctorDetails.onlineConsultationFees) ? (
+                      <Text>{`${string.common.Rs} ${convertNumberToDecimal(
+                        Number(doctorDetails?.onlineConsultationFees)
+                      )}`}</Text>
+                    ) : (
+                      <>
+                        <Text
+                          style={{
+                            textDecorationLine: 'line-through',
+                            textDecorationStyle: 'solid',
+                          }}
+                        >
+                          {`(${string.common.Rs} ${convertNumberToDecimal(
+                            Number(doctorDetails?.onlineConsultationFees)
+                          )})`}
+                        </Text>
+                        <Text>
+                          {' '}
+                          {string.common.Rs}{' '}
+                          {convertNumberToDecimal(
+                            g(data, 'appointmentPayments', '0' as any, 'amountPaid') || null
+                          )}
+                        </Text>
+                      </>
+                    )}
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.imageView}>
+                {!!g(data, 'doctorInfo', 'thumbnailUrl') ? (
+                  <Image
+                    source={{ uri: data.doctorInfo.thumbnailUrl! }}
+                    resizeMode={'contain'}
+                    style={styles.doctorImage}
+                  />
+                ) : (
+                  <DoctorPlaceholderImage />
+                )}
               </View>
             </View>
           </View>
-          <ScrollView
-            style={styles.scrollMain}
-            contentContainerStyle={styles.contentContainerStyle}
-          >
-            <CollapseView
-              isDown={false}
-              Heading={string.common.paymentDetails}
-              isViewDownload
-              ChildComponent={paymentTable()}
-            />
-            <Spearator />
-            <View style={styles.rescheduleCancelContainer}>
-              <Text style={styles.rescheduleCancelContainerHeading}>
-                {CONFIG_RC?.guidelinesHeading}
-              </Text>
-              <Text style={styles.rescheduleCancelContainerHeadingText}>
-                {CONFIG_RC?.guidelinesSubHeading}
-              </Text>
-              {renderConsultationGuidlines()}
-              {!isViewMore && CONFIG_RC?.isConsultationGuidelinesPdf && (
-                <TouchableOpacity onPress={downloadPDF} style={{ marginVertical: 10 }}>
-                  <View style={[styles.pdfView, { paddingHorizontal: 10 }]}>
-                    <Pdf style={styles.pdfIcon} />
-                    <View>
-                      <Text style={theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE)}>
-                        {string.common.viewConsultationGuidelines}
-                      </Text>
-                      <Text style={theme.viewStyles.text('R', 12, theme.colors.SLATE_GRAY)}>
-                        {string.consultPayment.download}
-                      </Text>
-                    </View>
-                    <View style={styles.arrowIconView}>
-                      <RightArrowBlue style={{ height: 12, width: 6 }} />
-                    </View>
-                  </View>
-                </TouchableOpacity>
-              )}
-            </View>
-          </ScrollView>
-          <StickyBottomComponent style={styles.stickyButtonComponent}>
+          <StickyBottomComponent defaultBG style={{ paddingHorizontal: 0 }}>
             <Button
               title={'RESCHEDULE'}
               style={[
                 isAwaitingReschedule
                   ? styles.reschduleWaitButtonStyle
                   : styles.reschduleButtonStyle,
-                styles.rescheduleButtonOrange,
               ]}
               titleTextStyle={{
-                color: theme.colors.BUTTON_ORANGE,
+                color: '#fc9916',
                 opacity:
                   isAwaitingReschedule ||
                   dateIsAfter ||
@@ -1218,8 +895,8 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             />
             {data.appointmentState != APPOINTMENT_STATE.AWAITING_RESCHEDULE ? (
               <Button
-                title={'PROCEED'}
-                style={[styles.startConsultText, { borderRadius: 4 }]}
+                title={data.isConsultStarted ? 'CONTINUE CONSULTATION' : 'START CONSULTATION'}
+                style={styles.startConsultText}
                 onPress={() => {
                   if (data?.isConsultStarted) {
                     postAppointmentWEGEvents(WebEngageEventName.CONTINUE_CONSULTATION_CLICKED);

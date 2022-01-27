@@ -171,12 +171,6 @@ export interface getPatientAllAppointments_getPatientAllAppointments_activeAppoi
   appointmentPayments: (getPatientAllAppointments_getPatientAllAppointments_activeAppointments_appointmentPayments | null)[] | null;
   id: string;
   hideHealthRecordNudge: boolean | null;
-  bookingFee: number | null;
-  consultFee: number | null;
-  amountPaid: number | null;
-  couponApplied: boolean | null;
-  couponCode: string | null;
-  couponAmount: number | null;
   discountedAmount: number | null;
   patientId: string;
   doctorId: string;

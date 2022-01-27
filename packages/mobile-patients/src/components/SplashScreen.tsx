@@ -1311,10 +1311,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'Tat_Decided_Percentage_QA',
       PROD: 'Tat_Decided_Percentage_PROD',
     },
-    RESCHEDULE_CANCELLATION: {
-      QA: 'RESCHEDULE_CANCELLATION_QA',
-      PROD: 'RESCHEDULE_CANCELLATION_PROD',
-    },
     Radiology_Url: {
       QA: 'QA_Radiology_Url',
       PROD: 'Radiology_Url',
@@ -1697,12 +1693,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'Show_COD_While_Retrying_Diag_Payment',
         'Show_COD_While_Retrying_Diag_Payment',
         (key) => config.getBoolean(key)
-      );
-
-      setAppConfig(
-        'RESCHEDULE_CANCELLATION',
-        'RESCHEDULE_CANCELLATION',
-        (key) => JSON.parse(config.getString(key)) || null
       );
 
       setAppConfig('DeliveryIn_TAT_Text', 'DeliveryIn_TAT_Text', (key) => config.getString(key));
