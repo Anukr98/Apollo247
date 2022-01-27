@@ -2997,3 +2997,11 @@ export const CalendarIcon: React.FC<IconProps> = (props) => (
     {...props}
   />
 );
+
+export const WhatsAppCheckTick: React.FC<IconProps> = (props) => (
+  <Image
+    style={[props.style]}
+    source={require('@aph/mobile-patients/src/images/signUp/check-tick-icon.webp')}
+    {...props}
+  />
+);
