@@ -1515,6 +1515,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const isAppointmentExceedsTenMin = appointmentDiffMin <= 0 && appointmentDiffMin > -10;
   type messageType = 'PDF' | 'Text' | 'Image';
 
+  const { OpentokHelper } = NativeModules;
+
   useEffect(() => {
     handleExternalFileShareUpload();
 
@@ -1622,6 +1624,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   useEffect(() => {
     onCall.current = isCall || isAudioCall;
+    // Ongoing call notification
+    !!onCall.current && OpentokHelper?.triggerCallNotification();
   }, [isCall, isAudioCall]);
 
   const minimiseCall = () => {
@@ -2364,6 +2368,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           } else {
             handleEndCall(false, false);
           }
+          OpentokHelper?.dismissCallNotification();
           clearNetworkCheckInterval();
         }
       } else {
@@ -2896,6 +2901,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         props.navigation.setParams({ callType: isAudio.current ? 'AUDIO' : 'VIDEO' });
       }
     } else if (nextAppState === 'active') {
+      // notification when app comes to forground
+      !!onCall.current && OpentokHelper?.triggerCallNotification();
+
       const permissionSettings: string | null = await AsyncStorage.getItem('permissionHandler');
       if (permissionSettings && permissionSettings === 'true') {
         callPermissions(
@@ -4164,6 +4172,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           } else {
             handleEndCall();
           }
+          OpentokHelper?.dismissCallNotification();
           ////------------ */
         }
         //resetCurrentRetryAttempt();
@@ -6947,6 +6956,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             } else {
               handleEndCall();
             }
+            OpentokHelper?.dismissCallNotification();
           }}
         >
           <WhiteCallIcon style={styles.endCallIcon} />

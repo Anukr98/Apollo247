@@ -298,6 +298,8 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       af_revenue: price,
       af_currency: 'INR',
       'Circle discount': circleDiscountedPrice,
+      currency: 'INR',
+      Value: price,
     };
     return eventAttributes;
   };

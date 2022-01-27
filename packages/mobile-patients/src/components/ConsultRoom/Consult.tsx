@@ -19,6 +19,11 @@ import {
   WhiteArrowRightIcon,
   DownArrow,
   Close,
+  CrossGray,
+  TickIcon,
+  AppointmentCalendarIcon,
+  TimeIcon,
+  AlertWhiteIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppointmentFilterScene } from '@aph/mobile-patients/src/components/ConsultRoom/AppointmentFilterScene';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
@@ -96,6 +101,7 @@ import { NotificationListener } from '@aph/mobile-patients/src/components/Notifi
 import _ from 'lodash';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { renderAppointmentShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
+import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 
 const { width, height } = Dimensions.get('window');
 
@@ -530,6 +536,31 @@ const styles = StyleSheet.create({
   horizontalContainer: {
     flexDirection: 'row',
   },
+  padding14: { padding: 14 },
+  bottomPopUpContainer: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
+  bottomHeading: { ...theme.fonts.IBMPlexSansMedium(12), color: theme.colors.LIGHT_BLUE },
+  tickIcon: {
+    marginVertical: 10,
+    flexDirection: 'row',
+    paddingRight: 10,
+    alignItems: 'center',
+  },
+  desc: { ...theme.fonts.IBMPlexSansRegular(13), marginLeft: 12 },
+  timingContainer: { backgroundColor: theme.colors.BLUISH_GRAY, padding: 10 },
+  timingSubContainer1: { flexDirection: 'row', alignItems: 'center', marginVertical: 2 },
+  dateText: { ...theme.fonts.IBMPlexSansRegular(13), color: theme.colors.LIGHT_BLUE },
+  indicatorContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    backgroundColor: 'rgba(0, 179, 142, 0.9)',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  indicatorText: {
+    color: theme.colors.HEX_WHITE,
+    marginLeft: 15,
+    ...theme.fonts.IBMPlexSansRegular(12),
+  },
 });
 
 export interface ConsultProps extends NavigationScreenProps {
@@ -579,6 +610,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
+  const doctorName = props?.navigation?.getParam('DoctorName') || '';
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
 
@@ -838,6 +870,14 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
     const getConsultationSubTexts = () => {
       const { isAutomatedQuestionsComplete, isSeniorConsultStarted, isConsultStarted } = item || {};
+      if (
+        (minutes > 0 &&
+          minutes <= 30 &&
+          (item?.status === STATUS.PENDING || item?.status === STATUS.IN_PROGRESS)) ||
+        item?.doctorInfo?.skipAutoQuestions
+      ) {
+        return string.common.mentionReports;
+      }
       return (!isAutomatedQuestionsComplete && !isSeniorConsultStarted) || !isConsultStarted
         ? string.common.fillVitalsText
         : !isConsultStarted && isAutomatedQuestionsComplete
@@ -1635,30 +1675,52 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         {renderConsultations()}
       </SafeAreaView>
       {showSchdulesView && (
-        <BottomPopUp
-          title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
-          description={`Your appointment with ${props.navigation.getParam(
-            'DoctorName'
-          )} \nhas been rescheduled for — ${newAppointmentTime}\n\n${
-            newRescheduleCount == 0
-              ? 'You have reached the maximum number of reschedules for this appointment.'
-              : `You have ${newRescheduleCount} free ${
-                  newRescheduleCount == 1 ? 'reschedule' : 'reschedules'
-                } left.`
-          }
-          `}
-        >
-          <View style={{ height: 60, alignItems: 'flex-end' }}>
-            <TouchableOpacity
-              style={styles.gotItStyles}
-              onPress={() => {
-                CommonLogEvent(AppRoutes.Consult, 'Consult Bootom PopUp clicked');
-                AsyncStorage.setItem('showSchduledPopup', 'false');
-                setShowSchdulesView(false);
-              }}
-            >
-              <Text style={styles.gotItTextStyles}>{string.home.welcome_popup.cta_label}</Text>
-            </TouchableOpacity>
+        <BottomPopUp removeTopIcon>
+          <View style={styles.padding14}>
+            <View style={styles.bottomPopUpContainer}>
+              <Text style={styles.bottomHeading}>{'APPOINTMENT RESCHEDULED'}</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  CommonLogEvent(AppRoutes.Consult, 'Consult Bootom PopUp clicked');
+                  AsyncStorage.setItem('showSchduledPopup', 'false');
+                  setShowSchdulesView(false);
+                }}
+              >
+                <CrossGray style={{ height: 12, width: 12 }} />
+              </TouchableOpacity>
+            </View>
+            <Spearator />
+            <View style={styles.tickIcon}>
+              <TickIcon />
+              <Text
+                style={styles.desc}
+                numberOfLines={2}
+              >{`Your appointment with ${doctorName} has been rescheduled to:`}</Text>
+            </View>
+            <View style={styles.timingContainer}>
+              <View style={styles.timingSubContainer1}>
+                <AppointmentCalendarIcon style={{ width: 16, height: 16, marginRight: 12 }} />
+                <Text style={styles.dateText}>
+                  {newAppointmentTime ? moment(new Date()).format('dddd, DD MMMM YYYY') : '-'}
+                </Text>
+              </View>
+              <View style={styles.timingSubContainer1}>
+                <TimeIcon style={{ width: 16, height: 16, marginRight: 12 }} />
+                <Text style={styles.dateText}>
+                  {newAppointmentTime ? moment(new Date()).format('h:mm A') : '-'}
+                </Text>
+              </View>
+            </View>
+          </View>
+          <View style={styles.indicatorContainer}>
+            <AlertWhiteIcon style={{ width: 12, height: 12 }} />
+            <Text style={styles.indicatorText}>
+              {newRescheduleCount == 0
+                ? 'You have reached the maximum number of reschedules for this appointment.'
+                : `You have ${newRescheduleCount} free ${
+                    newRescheduleCount == 1 ? 'reschedule' : 'reschedules'
+                  } left.`}
+            </Text>
           </View>
         </BottomPopUp>
       )}

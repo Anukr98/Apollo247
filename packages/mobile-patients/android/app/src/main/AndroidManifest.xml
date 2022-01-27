@@ -223,7 +223,7 @@
             </intent-filter>
         </service>
         <service android:name=".RingtonePlayingService" />
-
+        <service android:name="com.apollopatient.opentokhelper.NotificationService" />
         <receiver
             android:name="com.clevertap.pushtemplates.PTPushNotificationReceiver"
             android:exported="false"

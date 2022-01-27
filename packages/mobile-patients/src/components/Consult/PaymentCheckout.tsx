@@ -808,7 +808,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
                 fireBaseFCM();
               }
             } else {
-              res(resp?.data?.response?.reason);
+              rej(resp?.data?.response?.reason);
               if (fireEvent) {
                 const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_COUPON_APPLIED] = {
                   CouponCode: coupon,
@@ -962,6 +962,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           eventAttributes['Display ID'] = `${apptmt?.displayId!}`;
           eventAttributes['User_Type'] = getUserType(allCurrentPatients);
           postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
+          postCleverTapEvent(CleverTapEventName.CONSULTATION_BOOKED, eventAttributes);
           postAppsFlyerEvent(
             AppsFlyerEventName.CONSULTATION_BOOKED,
             getConsultationBookedAppsFlyerEventAttributes(apptmt?.id!, `${apptmt?.displayId!}`)
@@ -1238,6 +1239,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       af_revenue: price,
       af_currency: 'INR',
       'Circle discount': circleDiscount,
+      currency: 'INR',
+      Value: price,
     };
     return eventAttributes;
   };

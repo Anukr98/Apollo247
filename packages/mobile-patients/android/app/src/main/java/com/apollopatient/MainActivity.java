@@ -97,7 +97,6 @@ public class MainActivity extends ReactActivity {
                 KeyguardManager myKM = (KeyguardManager) this.getSystemService(Context.KEYGUARD_SERVICE);
                 if (!myKM.inKeyguardRestrictedInputMode()) {
                     // device is not locked
-                    notificationManager.cancelAll();
                     ringtone.stop();
                     vibrator.cancel();
                 }
