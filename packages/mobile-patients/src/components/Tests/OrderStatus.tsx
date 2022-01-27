@@ -41,7 +41,10 @@ import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/Diagnost
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { firePurchaseEvent } from '@aph/mobile-patients/src/components/Tests/Events';
+import {
+  DiagnosticOrderPlaced,
+  firePurchaseEvent,
+} from '@aph/mobile-patients/src/components/Tests/Events';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -100,6 +103,9 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const modifiedOrderDetails = props.navigation.getParam('isModify');
   const orderDetails = props.navigation.getParam('orderDetails');
   const eventAttributes = props.navigation.getParam('eventAttributes');
+  const verticalSpecificEventAttributes = props.navigation.getParam(
+    'verticalSpecificEventAttributes'
+  );
   const isCOD = props.navigation.getParam('isCOD');
   const paymentId = props.navigation.getParam('paymentId');
   const paymentStatus = props.navigation.getParam('paymentStatus');
@@ -149,6 +155,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const [primaryOrderId, setPrimaryOrderId] = useState<string>('');
   const [slotDuration, setSlotDuration] = useState<number>(0);
   const [circlePlanDetails, setCirclePlanDetails] = useState([] as any);
+  const [offerAmount, setOfferAmount] = useState<number>(0);
 
   const moveToMyOrders = () => {
     props.navigation.popToTop({ immediate: true }); //if not added, stack was getting cleared.
@@ -187,10 +194,20 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       let response: any = await getDiagnosticRefundOrders(client, paymentId);
       if (response?.data?.data?.getOrderInternal) {
         const getResponse = response?.data?.data?.getOrderInternal?.DiagnosticsPaymentDetails;
+        const getOffersResponse = response?.data?.data?.getOrderInternal?.offers;
         const getSlotDateTime = getResponse?.ordersList?.[0]?.slotDateTimeInUTC;
         const primaryOrderID = getResponse?.ordersList?.[0]?.primaryOrderID;
         const slotDuration =
           getResponse?.ordersList?.[0]?.attributesObj?.slotDurationInMinutes || 0;
+        if (!!getOffersResponse) {
+          const getOffersAmount = getOffersResponse?.[0]?.benefits;
+          const totalOfferAmount = getOffersAmount?.reduce(
+            (prev: any, curr: any) => prev + curr?.amount,
+            0
+          );
+          !!totalOfferAmount && setOfferAmount(totalOfferAmount);
+        }
+
         setApiOrderDetails([getResponse]);
         setTimeDate(getSlotDateTime);
         setSlotDuration(slotDuration);
@@ -337,14 +354,18 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   };
 
   const postwebEngageCheckoutCompletedEvent = () => {
-    let attributes = {
-      ...eventAttributes,
-      'Payment Mode': isCOD ? 'Cash' : 'Prepaid',
-      'Circle discount': circleSubscriptionId && orderCircleSaving ? orderCircleSaving : 0,
-      'Circle user': isDiagnosticCircleSubscription || isCircleAddedToCart ? 'Yes' : 'No',
-    };
-    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED, attributes);
-    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ORDER_PLACED, attributes);
+    const circleDiscount = circleSubscriptionId && orderCircleSaving ? orderCircleSaving : 0;
+    const circleUser = isDiagnosticCircleSubscription || isCircleAddedToCart ? 'Yes' : 'No';
+    const mode = isCOD ? 'Cash' : 'Prepaid';
+    DiagnosticOrderPlaced(
+      currentPatient,
+      isDiagnosticCircleSubscription,
+      circleDiscount,
+      circleUser,
+      mode,
+      eventAttributes,
+      verticalSpecificEventAttributes
+    );
   };
 
   const handleBack = () => {
@@ -362,7 +383,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       selectedOrder: null,
       refundStatusArr: [],
       goToHomeOnBack: true,
-      comingFrom: AppRoutes.TestsCart,
+      comingFrom: AppRoutes.CartPage,
       showOrderSummaryTab: false,
       disableTrackOrder: false,
       amount: orderDetails?.amount,
@@ -443,6 +464,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   };
 
   const renderAmount = () => {
+    const totalAmountPaid = orderDetails?.amount - offerAmount;
     return (
       <Text
         style={[
@@ -456,7 +478,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
         {isCOD ? 'Amount to be paid via cash' : 'Total Amount Paid'} :{' '}
         <Text style={styles.amount}>
           {string.common.Rs}
-          {orderDetails?.amount}
+          {totalAmountPaid}
         </Text>
       </Text>
     );

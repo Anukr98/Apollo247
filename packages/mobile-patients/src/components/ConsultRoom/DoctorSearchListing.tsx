@@ -364,6 +364,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const doctorTypeFilter = props.navigation.getParam('doctorType');
   const cityFilter = props.navigation.getParam('city');
   const brandFilter = props.navigation.getParam('brand');
+  const isCircleOnly = props.navigation.getParam('isCircleOnly') || false; //aka isCare only, filtering circle doctor
+  const appliedCircleCouponCode = props.navigation.getParam('appliedCircleCouponCode');
   const scrollViewRef = React.useRef<ScrollView | null>(null);
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
@@ -972,7 +974,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       pageNo: pageNo ? pageNo + 1 : 1,
       pageSize: pageSize,
       searchText: searchText,
-      isCare: careDoctorsSwitch,
+      isCare: careDoctorsSwitch || isCircleOnly, //TODO set it true for only circle doctors
       consultMode: filterMode,
     };
 
@@ -1370,6 +1372,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         }}
         onPlanSelected={() => setShowCarePlanNotification(true)}
         selectedConsultMode={filter}
+        appliedCircleCouponCode={appliedCircleCouponCode}
       />
     ) : null;
   };

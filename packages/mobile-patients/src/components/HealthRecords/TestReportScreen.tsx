@@ -722,13 +722,16 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
   };
 
   const onHealthCardItemPress = async (selectedItem: any) => {
-    const eventInputData = removeObjectProperty(selectedItem, 'testResultFiles');
-    postCleverTapIfNewSession(
-      'Test Reports',
-      currentPatient,
-      eventInputData,
-      phrSession,
-      setPhrSession
+    let dateOfBirth = g(currentPatient, 'dateOfBirth');
+    let doctorConsultationAttributes = {
+      'Nav src': 'Test Reports',
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+    };
+    postCleverTapEvent(
+      CleverTapEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS,
+      doctorConsultationAttributes
     );
     const checkSelectedItem = selectedItem?.data || selectedItem;
     let imageArrayObj = {} as imageArray;
@@ -948,13 +951,6 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
           const status = g(data, 'addPatientLabTestRecord', 'status');
           if (status) {
             getLatestLabAndHealthCheckRecords();
-            const eventInputData = removeObjectProperty(selectedItem, 'testResultFiles');
-            postCleverTapPHR(
-              currentPatient,
-              CleverTapEventName.PHR_DELETE_TEST_REPORT,
-              'Test Report',
-              eventInputData
-            );
           } else {
             setShowSpinner(false);
           }
@@ -974,6 +970,14 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       )
         .then((status) => {
           if (status) {
+            let dateOfBirth = g(currentPatient, 'dateOfBirth');
+            let attributes = {
+              'Nav src': 'Test Reports',
+              'Patient UHID': g(currentPatient, 'uhid'),
+              'Patient gender': g(currentPatient, 'gender'),
+              'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+            };
+            postCleverTapEvent(CleverTapEventName.PHR_DELETE_RECORD, attributes);
             getLatestLabAndHealthCheckRecords();
           } else {
             setShowSpinner(false);

@@ -6,7 +6,11 @@ import {
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { isSmallDevice, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  isEmptyObject,
+  isSmallDevice,
+  nameFormater,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
@@ -58,19 +62,16 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   const inclusionItemToShow = !!finalFilterInclusions && finalFilterInclusions?.join(', ');
 
   const hasExtraData =
-    (!!reportGenItem && (reportGenItem?.itemPrepration || reportGenItem?.itemReportTat)) ||
-    reportTat?.preOrderReportTATMessage;
-  const inclusionCount = !!reportGenItem && reportGenItem?.itemParameterCount;
+    (!!reportTat && !isEmptyObject(reportTat) && reportTat?.preOrderReportTATMessage != '') ||
+    (!!reportGenItem && !isEmptyObject(reportGenItem) && reportGenItem?.itemPrepration != '');
+
+  const inclusionCount =
+    !!reportGenItem && !isEmptyObject(reportGenItem) && reportGenItem?.itemParameterCount;
 
   const showSavingsView =
     isCircleSubscribed &&
     !!cartItem?.circleSpecialPrice &&
     cartItem?.groupPlan === DIAGNOSTIC_GROUP_PLAN.CIRCLE;
-
-  const showDiscountSavingsView =
-    !showSavingsView &&
-    !!cartItem?.discountSpecialPrice &&
-    cartItem?.groupPlan === DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT;
 
   function _onPressCard(item: DiagnosticsCartItem) {
     props.onPressCard(item);
@@ -96,9 +97,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     );
     const promoteCircle = cartItem?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE; //if circle discount is more
     const promoteDiscount = promoteCircle ? false : discount < specialDiscount;
-    const hasOtherDiscount = discount > 0 ? discount : 0;
-    const discountPrice =
-      specialDiscount > 0 ? specialDiscount : hasOtherDiscount > 0 ? hasOtherDiscount : 0;
+
     return (
       <TouchableOpacity style={{}} onPress={() => _onPressCard(cartItem)}>
         <View
@@ -144,7 +143,9 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
           </View>
         </View>
         {renderInclusionsCount()}
-        {(!!reportGenItem || !!reportTat) && renderReportTat_preTestingReqrmnt()}
+        {((!!reportGenItem && !isEmptyObject(reportGenItem)) ||
+          (!!reportTat && !isEmptyObject(reportTat))) &&
+          renderReportTat_preTestingReqrmnt()}
         {comingFrom == AppRoutes.CartPage && showCartInclusions && !!inclusionItemToShow ? (
           <View style={styles.inclusionView}>
             <TestInfoIcon style={styles.timeIconStyle} />
@@ -156,17 +157,6 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   };
 
   const renderInclusionsCount = () => {
-    const discount = calculatePackageDiscounts(
-      cartItem?.packageMrp,
-      cartItem?.price,
-      cartItem?.specialPrice
-    );
-    const specialDiscount = calculatePackageDiscounts(
-      cartItem?.packageMrp,
-      cartItem?.discountPrice,
-      cartItem?.discountSpecialPrice
-    );
-    const promoteCircle = cartItem?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE; //if circle discount is more
     return (
       <View
         style={[
@@ -184,8 +174,6 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
             }`}</Text>
           </View>
         ) : null}
-        {/* {showSavingsView && renderDisountPercentage(true)}
-        {!showSavingsView && showDiscountSavingsView && renderSavingView(false)} */}
       </View>
     );
   };
@@ -193,7 +181,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   const renderReportTat_preTestingReqrmnt = () => {
     return !!hasExtraData ? (
       <View style={styles.reportView}>
-        {reportTat?.preOrderReportTATMessage || reportGenItem?.itemReportTat ? (
+        {!!reportTat && !isEmptyObject(reportTat) && reportTat?.preOrderReportTATMessage != '' ? (
           <View style={[styles.reportGenViewStyle, styles.reportViewStyle]}>
             <View style={styles.clockIconView}>
               <TestTimeIcon
@@ -206,9 +194,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
               />
             </View>
             <Text style={[styles.reportGenTextStyle, styles.reportBGText]}>
-              {!!reportTat?.preOrderReportTATMessage
-                ? reportTat?.preOrderReportTATMessage
-                : `Report in ${reportGenItem?.itemReportTat}`}
+              {reportTat?.preOrderReportTATMessage != '' && reportTat?.preOrderReportTATMessage}
             </Text>
           </View>
         ) : null}
@@ -218,8 +204,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
               styles.reportGenViewStyle,
               {
                 justifyContent: 'flex-start',
-                marginLeft:
-                  !!reportTat?.preOrderReportTATMessage || !!reportGenItem?.itemReportTat ? -4 : -8,
+                marginLeft: !!reportTat?.preOrderReportTATMessage ? -4 : -8,
               },
             ]}
           >
@@ -244,39 +229,6 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
           <RemoveIcon style={styles.removeIconStyle} />
         </TouchableOpacity>
       </View>
-    );
-  };
-
-  const renderSavingView = (isCircleDiscount: boolean) => {
-    const mrpToDisplay = diagnosticsDisplayPrice(cartItem, isCircleSubscribed)?.mrpToDisplay;
-
-    const savingAmount =
-      Number((!!cartItem?.packageMrp && cartItem?.packageMrp!) || mrpToDisplay) -
-      Number(isCircleDiscount ? cartItem?.circleSpecialPrice! : cartItem?.discountSpecialPrice!);
-
-    return (
-      <>
-        {!!savingAmount && savingAmount > 0 ? (
-          <View style={styles.flexRow}>
-            {/* {isCircleDiscount ? (
-              <CircleLogo style={styles.circleLogoIcon} />
-            ) : (
-              <SpecialDiscountText isImage={false} text={string.diagnostics.test247Text} />
-            )} */}
-            <Text
-              style={[
-                styles.savingTextStyle,
-                {
-                  marginHorizontal: isCircleDiscount ? 0 : 3,
-                },
-              ]}
-            >
-              {'save'} {string.common.Rs}
-              {savingAmount}
-            </Text>
-          </View>
-        ) : null}
-      </>
     );
   };
 
@@ -320,7 +272,7 @@ const styles = StyleSheet.create({
     height: isSmallDevice ? 28 : 30,
     width: isSmallDevice ? 28 : 30,
     alignSelf: 'flex-start',
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   priceView: {
     justifyContent: 'flex-start',
@@ -419,7 +371,7 @@ const styles = StyleSheet.create({
   },
   reportBGText: {
     textAlign: 'right',
-    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG, // backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
+    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
     borderTopRightRadius: 4,
     borderBottomRightRadius: 4,
     paddingRight: 6,

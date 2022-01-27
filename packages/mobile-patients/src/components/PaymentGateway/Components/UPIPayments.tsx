@@ -11,29 +11,78 @@ import {
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { CollapseView } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CollapseView';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { UPI, BlackArrowUp } from '@aph/mobile-patients/src/components/ui/Icons';
+import { OutagePrompt } from '@aph/mobile-patients/src/components/PaymentGateway/Components/OutagePrompt';
+
 const { width } = Dimensions.get('window');
-const newWidth = width - 40;
+const newWidth = width - 56;
 export interface UPIPaymentsProps {
   upiApps: any;
   onPressUPIApp: (app: any) => void;
-  onPressPay: (VPA: string) => void;
+  onPressUpiCollect: () => void;
   isVPAvalid: boolean;
   setisVPAvalid: (arg: boolean) => void;
+  onPressMoreApps: () => void;
 }
 
 export const UPIPayments: React.FC<UPIPaymentsProps> = (props) => {
-  const { upiApps, onPressUPIApp, onPressPay, isVPAvalid, setisVPAvalid } = props;
-  const [VPA, setVPA] = useState<string>('');
-
+  const {
+    upiApps,
+    onPressUPIApp,
+    onPressUpiCollect,
+    isVPAvalid,
+    setisVPAvalid,
+    onPressMoreApps,
+  } = props;
+  const apps = upiApps?.slice(0, 3);
   const isValid = (VPA: string) => {
     const match = /^[\w\.\-_]{3,}@[a-zA-Z]{3,}/;
     return match.test(VPA);
   };
+
+  const getOutageMsg = () => {
+    const apps = upiApps?.slice(0, 3);
+    const outageApps = apps?.filter(
+      (item: any) =>
+        item?.outage_list?.[0]?.outage_status == 'FLUCTUATE' ||
+        item?.outage_list?.[0]?.outage_status == 'DOWN'
+    );
+    let msg = '';
+    if (outageApps?.length == 1) {
+      msg = `${outageApps?.[0]?.payment_method_name} is`;
+    } else if (outageApps?.length > 1) {
+      outageApps?.forEach((item: any, index: number) => {
+        if (index == 0) {
+          msg = item?.payment_method_name;
+        } else if (index == outageApps?.length - 1) {
+          msg = msg + ', and ' + item?.payment_method_name;
+        } else {
+          msg = msg + ', ' + item?.payment_method_name;
+        }
+        if (index == outageApps?.length - 1) {
+          msg = msg + ' are';
+        }
+      });
+    }
+    return msg;
+  };
+
   const upiApp = (item: any) => {
-    const marginLeft = item?.index == 0 ? 0 : (newWidth - 192) * 0.33;
+    const marginLeft = item?.index == 0 ? 0 : (newWidth - 256) * 0.33;
+    const outageStatus = item?.item?.outage_list?.[0]?.outage_status;
     return (
-      <View style={{ ...styles.AppCont, marginLeft: marginLeft }}>
-        <TouchableOpacity style={styles.imageCont} onPress={() => onPressUPIApp(item?.item)}>
+      <View
+        style={{
+          ...styles.AppCont,
+          marginLeft: marginLeft,
+          opacity: outageStatus == 'DOWN' ? 0.5 : 1,
+        }}
+      >
+        <TouchableOpacity
+          disabled={outageStatus == 'DOWN' ? true : false}
+          style={styles.imageCont}
+          onPress={() => onPressUPIApp(item?.item)}
+        >
           <Image
             source={{ uri: item?.item?.image_url }}
             resizeMode="contain"
@@ -48,65 +97,41 @@ export const UPIPayments: React.FC<UPIPaymentsProps> = (props) => {
   const renderUPIApps = () => {
     return upiApps?.length ? (
       <View>
-        <Text style={styles.UPIHeader}>Select your UPI App</Text>
-        <FlatList
-          style={{ marginTop: 12 }}
-          horizontal={true}
-          data={upiApps}
-          renderItem={(item: any) => upiApp(item)}
-        />
-        <Text style={styles.or}>OR</Text>
+        <View style={{ borderBottomWidth: 1, borderColor: '#E5E5E5' }}>
+          <FlatList
+            style={{ marginTop: 12 }}
+            horizontal={true}
+            showsHorizontalScrollIndicator={false}
+            data={apps}
+            renderItem={(item: any) => upiApp(item)}
+            ListFooterComponent={renderMoreApps()}
+          />
+        </View>
+        {/* <Text style={styles.or}>or</Text> */}
       </View>
     ) : null;
   };
 
-  const renderPay = () => {
-    return (
-      <TouchableOpacity onPress={() => isValid(VPA) && onPressPay(VPA)}>
-        <Text
-          style={{
-            ...styles.payNow,
-            color: isValid(VPA) ? 'rgba(252,153,22,1)' : 'rgba(252,153,22,0.6)',
-          }}
-        >
-          {'VERIFY & PAY'}
-        </Text>
-      </TouchableOpacity>
-    );
+  const renderMoreApps = () => {
+    return upiApps?.length > 3 ? (
+      <View style={{ ...styles.AppCont, marginLeft: (newWidth - 256) * 0.33 }}>
+        <TouchableOpacity style={styles.imageCont} onPress={onPressMoreApps}>
+          <BlackArrowUp style={{ width: 15, height: 7, transform: [{ rotate: '90deg' }] }} />
+        </TouchableOpacity>
+        <Text style={styles.App}>More Apps</Text>
+      </View>
+    ) : null;
   };
 
   const renderUPICollect = () => {
     return (
-      <View style={{}}>
-        <Text style={styles.UPIHeader}>Enter your UPI ID</Text>
-        <View style={{ ...styles.inputCont, borderColor: isVPAvalid ? '#00B38E' : '#FF748E' }}>
-          <View style={{ flex: 1 }}>
-            <TextInputComponent
-              conatinerstyles={styles.conatinerstyles}
-              inputStyle={styles.inputStyle}
-              value={VPA}
-              onChangeText={(text) => {
-                setVPA(text);
-                setisVPAvalid(true);
-              }}
-              placeholder={'username@bank'}
-              onSubmitEditing={(e) => isValid(VPA) && onPressPay(VPA)}
-            />
-          </View>
-          {renderPay()}
+      <TouchableOpacity style={styles.upiCont} onPress={onPressUpiCollect}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <UPI style={styles.icon} />
+          <Text style={styles.UPIHeader}>Pay with UPI ID</Text>
         </View>
-        {renderUPICollectMsg()}
-      </View>
-    );
-  };
-
-  const renderUPICollectMsg = () => {
-    return isVPAvalid ? (
-      <Text style={styles.upiCollectMsg}>A payment request will be sent to this UPI ID</Text>
-    ) : (
-      <Text style={{ ...styles.upiCollectMsg, color: '#FF748E' }}>
-        Invalid UPI Id, Please check again
-      </Text>
+        <BlackArrowUp style={styles.backArrow} />
+      </TouchableOpacity>
     );
   };
 
@@ -119,20 +144,45 @@ export const UPIPayments: React.FC<UPIPaymentsProps> = (props) => {
     );
   };
 
+  const renderHeader = () => {
+    const msg = getOutageMsg();
+    return (
+      <View style={styles.header}>
+        <Text style={styles.heading}>UPI APPS</Text>
+        {!!msg && <OutagePrompt outageStatus="FLUCTUATE" msg={msg} />}
+      </View>
+    );
+  };
+
   return (
-    <CollapseView isDown={true} Heading={'UPI PAYMENTS'} ChildComponent={renderChildComponent()} />
+    <View>
+      {renderHeader()}
+      {renderChildComponent()}
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   ChildComponent: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    flex: 1,
+    backgroundColor: '#FAFEFF',
+    marginHorizontal: 16,
+    borderWidth: 1,
+    borderColor: '#D4D4D4',
+    borderRadius: 4,
+    paddingBottom: 21,
+    paddingHorizontal: 12,
+  },
+  upiCont: {
+    marginTop: 21,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   UPIHeader: {
-    ...theme.fonts.IBMPlexSansSemiBold(12),
-    lineHeight: 20,
+    ...theme.fonts.IBMPlexSansMedium(14),
+    lineHeight: 18,
+    marginLeft: 10,
     color: '#01475B',
   },
   conatinerstyles: {
@@ -150,7 +200,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   AppCont: {
-    width: 48,
+    width: 64,
     alignItems: 'center',
     marginBottom: 15,
   },
@@ -162,22 +212,21 @@ const styles = StyleSheet.create({
     height: 48,
     width: 48,
     borderRadius: 5,
-    borderWidth: 1,
+    // borderWidth: 01,
     borderColor: 'rgba(0,124,157,0.4)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   App: {
-    ...theme.fonts.IBMPlexSansSemiBold(14),
+    ...theme.fonts.IBMPlexSansMedium(14),
     lineHeight: 20,
     color: '#01475B',
     textAlign: 'center',
   },
   or: {
-    ...theme.fonts.IBMPlexSansRegular(10),
-    lineHeight: 14,
-    color: 'rgba(1,71,91,0.6)',
-    marginBottom: 16,
+    ...theme.fonts.IBMPlexSansMedium(14),
+    lineHeight: 18,
+    color: 'rgba(1,71,91,0.7)',
     marginTop: 8,
   },
   payNow: {
@@ -191,5 +240,24 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: theme.colors.INPUT_BORDER_SUCCESS,
     marginBottom: 4,
+  },
+  header: {
+    marginHorizontal: 16,
+    paddingBottom: 8,
+    marginTop: 16,
+  },
+  heading: {
+    ...theme.fonts.IBMPlexSansSemiBold(12),
+    lineHeight: 18,
+    color: '#01475B',
+  },
+  icon: {
+    width: 32,
+    height: 8.8,
+  },
+  backArrow: {
+    width: 15,
+    height: 7,
+    transform: [{ rotate: '90deg' }],
   },
 });

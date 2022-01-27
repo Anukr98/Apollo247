@@ -7,6 +7,7 @@ import {
   Mascot,
   WhiteTickIcon,
   Gift,
+  WhatsAppIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -25,6 +26,7 @@ import {
   Keyboard,
   ScrollView,
   Platform,
+  PixelRatio,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { MenuProvider } from 'react-native-popup-menu';
@@ -36,7 +38,11 @@ import {
   updatePatient,
   updatePatient_updatePatient_patient,
 } from '@aph/mobile-patients/src/graphql/types/updatePatient';
-import { UPDATE_PATIENT, CREATE_ONE_APOLLO_USER } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  UPDATE_PATIENT,
+  CREATE_ONE_APOLLO_USER,
+  INSERT_REFEREE_DATA_TO_REFERRER,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import { Mutation } from 'react-apollo';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import moment from 'moment';
@@ -56,8 +62,10 @@ import {
   setFirebaseUserId,
   onCleverTapUserLogin,
   postCleverTapEvent,
+  getAge,
+  setRefereeFlagForNewRegisterUser,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { TextInputComponent } from './ui/TextInputComponent';
+import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
   ProductPageViewedSource,
@@ -69,9 +77,9 @@ import {
   AppsFlyerEvents,
 } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import DeviceInfo from 'react-native-device-info';
-import { FirebaseEventName, FirebaseEvents } from '../helpers/firebaseEvents';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import { useApolloClient } from 'react-apollo-hooks';
-import { getDeviceTokenCount } from '../helpers/clientCalls';
+import { getDeviceTokenCount } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   createOneApolloUser,
   createOneApolloUserVariables,
@@ -81,73 +89,8 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
-
-const { width, height } = Dimensions.get('window');
-
-const styles = StyleSheet.create({
-  container: {
-    ...theme.viewStyles.container,
-    backgroundColor: theme.colors.WHITE,
-    paddingTop: 2,
-  },
-  mascotStyle: {
-    position: 'absolute',
-    top: -32,
-    right: 20,
-    height: 64,
-    width: 64,
-    zIndex: 2,
-    elevation: 2,
-  },
-  idTextStyle: {
-    ...theme.fonts.IBMPlexSansMedium(14),
-    color: theme.colors.INPUT_TEXT,
-  },
-  nameTextStyle: {
-    paddingTop: 15,
-    paddingBottom: 8,
-    ...theme.fonts.IBMPlexSansMedium(18),
-    color: theme.colors.INPUT_TEXT,
-    textTransform: 'capitalize',
-  },
-  textStyle: {
-    color: '#01475b',
-    ...theme.fonts.IBMPlexSansMedium(18),
-    paddingVertical: 8,
-  },
-  textViewStyle: {
-    borderBottomWidth: 1,
-    borderColor: '#dddddd',
-    marginHorizontal: 16,
-  },
-  placeholderStyle: {
-    color: theme.colors.placeholderTextColor,
-  },
-  placeholderTextStyle: {
-    color: '#01475b',
-    ...theme.fonts.IBMPlexSansMedium(18),
-  },
-  placeholderViewStyle: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
-    borderBottomWidth: 2,
-    paddingTop: 7,
-    paddingBottom: 3,
-    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
-  },
-});
-
-type currentProfiles = {
-  firstName: string;
-  id: string;
-  lastName: string;
-  mobileNumber: string;
-  gender: string;
-  uhid: string;
-  relation?: string;
-};
+import { FlatList } from 'react-native-gesture-handler';
+import { InputCheckBox } from '@aph/mobile-patients/src/components/ui/InputCheckBox';
 
 let backPressCount = 0;
 
@@ -161,7 +104,6 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
     []
   );
   const [discriptionText, setDiscriptionText] = useState<string>('');
-  const [showText, setShowText] = useState<boolean>(false);
   const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
   const { currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const [referredBy, setReferredBy] = useState<string>();
@@ -172,6 +114,9 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const [deviceToken, setDeviceToken] = useState<string>('');
   const [showReferralCode, setShowReferralCode] = useState<boolean>(false);
   const [oneApolloRegistrationCalled, setoneApolloRegistrationCalled] = useState<boolean>(false);
+  const [whatsAppOptIn, setWhatsAppOptIn] = useState<boolean>(true);
+  const [selectedUser, setUserSelected] = useState<any>(null);
+  const [userContactNumber, setUserContactNumber] = useState<string>('');
 
   useEffect(() => {
     const isValidReferralCode = /^[a-zA-Z]{4}[0-9]{4}$/.test(referral);
@@ -223,7 +168,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
       }
       setProfiles(allPatients ? allPatients : []);
       if (allPatients && allPatients.length > 0) {
-        setShowText(true);
+        setUserContactNumber(allPatients[0]?.mobileNumber || '');
       }
       AsyncStorage.setItem('multiSignUp', 'true');
     }
@@ -274,201 +219,12 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
       })
       .catch((e) => {});
   };
-
-  const renderUserForm = (
-    allCurrentPatients: GetCurrentPatients_getCurrentPatients_patients | null,
-    i: number
-  ) => {
-    if (allCurrentPatients)
-      return (
-        <View>
-          <View
-            style={{
-              marginTop: 12,
-              borderRadius: 5,
-              backgroundColor: '#f7f8f5',
-              padding: 16,
-              paddingBottom: 6,
-            }}
-          >
-            <View style={{ flex: 1 }}></View>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                borderBottomColor: 'rgba(2,71,91, 0.3)',
-                borderBottomWidth: 0.5,
-                paddingBottom: 8,
-              }}
-            >
-              <Text style={styles.idTextStyle}>{i + 1}.</Text>
-              <Text style={styles.idTextStyle}>{allCurrentPatients.uhid}</Text>
-            </View>
-            <Text style={styles.nameTextStyle}>
-              {allCurrentPatients.firstName} {allCurrentPatients.lastName}
-            </Text>
-            {allCurrentPatients.gender || allCurrentPatients.dateOfBirth ? (
-              <Text
-                style={[
-                  styles.idTextStyle,
-                  { textTransform: 'capitalize', color: theme.colors.SHERPA_BLUE },
-                ]}
-              >
-                {allCurrentPatients.gender}{' '}
-                {allCurrentPatients.dateOfBirth && allCurrentPatients.gender ? '| ' : ''}
-                {moment(allCurrentPatients.dateOfBirth).format('DD MMMM YYYY')}
-              </Text>
-            ) : null}
-            <View style={{ marginTop: 10 }}>
-              <View style={{ paddingTop: 5, paddingBottom: 10 }}>
-                <TouchableOpacity
-                  activeOpacity={1}
-                  onPress={() => {
-                    CommonLogEvent(AppRoutes.MultiSignup, 'show popup for relation checking');
-                    setShowPopup(true);
-                    setRelationIndex(i);
-                  }}
-                >
-                  <View style={styles.placeholderViewStyle}>
-                    <Text
-                      style={[
-                        styles.placeholderTextStyle,
-                        allCurrentPatients.relation ? null : styles.placeholderStyle,
-                      ]}
-                    >
-                      {allCurrentPatients.relation
-                        ? allCurrentPatients.relation.replace(
-                            /\w+/g,
-                            (w) => w[0].toUpperCase() + w.slice(1).toLowerCase()
-                          )
-                        : 'Relation'}
-                    </Text>
-                    <DropdownGreen size="sm" />
-                  </View>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </View>
-      );
-    return null;
-  };
   const isDisabled = () => {
-    const filteredProfiles = profiles ? profiles.filter((obj) => obj.relation) : [];
-    if (profiles && profiles.length === filteredProfiles.length) {
+    if (selectedUser && selectedUser != '') {
       return false;
     }
     return true;
   };
-
-  type RelationArray = {
-    key: Relation;
-    title: string;
-  };
-
-  const Options2: RelationArray[] = [
-    {
-      title: 'Me',
-      key: Relation.ME,
-    },
-    {
-      title: 'Mother',
-      key: Relation.MOTHER,
-    },
-    {
-      title: 'Father',
-      key: Relation.FATHER,
-    },
-    {
-      title: 'Sister',
-      key: Relation.SISTER,
-    },
-    {
-      title: 'Brother',
-      key: Relation.BROTHER,
-    },
-    {
-      title: 'Cousin',
-      key: Relation.COUSIN,
-    },
-    {
-      title: 'Wife',
-      key: Relation.WIFE,
-    },
-    {
-      title: 'Husband',
-      key: Relation.HUSBAND,
-    },
-  ];
-  const Options = getRelations('Me') || Options2;
-  const Popup = () => (
-    <TouchableOpacity
-      activeOpacity={1}
-      style={{
-        paddingVertical: 9,
-        position: 'absolute',
-        width: width,
-        height: height,
-        flex: 1,
-        alignItems: 'flex-end',
-        justifyContent: 'center',
-        zIndex: 3,
-        backgroundColor: 'transparent',
-      }}
-      onPress={() => (
-        CommonLogEvent(AppRoutes.MultiSignup, 'Hide popup clicked'), setShowPopup(false)
-      )}
-    >
-      <View
-        style={{
-          width: 160,
-          borderRadius: 10,
-          backgroundColor: 'white',
-          marginRight: 20,
-          shadowColor: '#808080',
-          shadowOffset: { width: 0, height: 5 },
-          shadowOpacity: 0.8,
-          shadowRadius: 10,
-          elevation: 5,
-          marginTop: Platform.OS === 'ios' ? 10 : 8,
-          marginBottom: Platform.OS === 'ios' ? 16 : 30,
-        }}
-      >
-        <ScrollView showsHorizontalScrollIndicator={false} showsVerticalScrollIndicator={false}>
-          {Options.map(({ title, key }) => (
-            <View style={styles.textViewStyle}>
-              <Text
-                style={styles.textStyle}
-                onPress={() => {
-                  if (profiles) {
-                    profiles[relationIndex].relation = Relation[key];
-                    const result = profiles.filter((obj) => {
-                      return obj.relation == Relation['ME'];
-                    });
-
-                    if (result.length > 1) {
-                      profiles[relationIndex].relation = null;
-                      Alert.alert('Apollo', 'Me is already choosen for another profile.');
-                      CommonLogEvent(
-                        AppRoutes.MultiSignup,
-                        'Me is already choosen for another profile.'
-                      );
-                    }
-
-                    setProfiles(profiles);
-                    setShowPopup(false);
-                    CommonLogEvent(AppRoutes.MultiSignup, 'Select the relations for the profile');
-                  }
-                }}
-              >
-                {title}
-              </Text>
-            </View>
-          ))}
-        </ScrollView>
-      </View>
-    </TouchableOpacity>
-  );
 
   const fireUserLoggedInEvent = (mePatient: any, type: 'Registration' | 'Login') => {
     setFirebaseUserId(mePatient.primaryUhid);
@@ -506,6 +262,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
         'Mobile Number': currentPatient?.mobileNumber,
         'Nav src': 'App login screen',
         'Page Name': 'Multi Signup Screen',
+        'Customer type': 'Prism',
       };
       if (referral) {
         // only send if referral has a value
@@ -560,31 +317,136 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
     } catch (error) {}
   };
 
+  const renderReferral = () => {
+    return (
+      <View style={styles.referralMainContainer}>
+        <Text style={styles.referralHeadingText}>{string.multiSignupScreen.haveAReferralCode}</Text>
+        <TextInputComponent
+          maxLength={25}
+          placeholder={string.multiSignupScreen.enterReferralCodeOptional}
+          placeholderTextColor={theme.colors.LIGHT_BLUE_DOWN}
+          inputStyle={styles.referralTextInputStyle}
+          conatinerstyles={{ width: '80%' }}
+          value={referral}
+          onChangeText={(text) => setReferral(text)}
+          icon={referral.length > 0 ? <WhiteTickIcon /> : null}
+        />
+      </View>
+    );
+  };
+
+  const updateRefereeDataInReferrerRecord = async ({
+    af_referrer_customer_id,
+    campaign,
+    rewardId,
+    shortlink,
+    installTime,
+  }: any) => {
+    const currentDate = new Date();
+    const installAppsflyerTime = installTime.split(' ');
+    try {
+      const response = await client.query({
+        query: INSERT_REFEREE_DATA_TO_REFERRER,
+        variables: {
+          referralDataInput: {
+            refereeId: currentPatient ? currentPatient.id : '',
+            referrerId: af_referrer_customer_id,
+            rewardId: rewardId,
+            campaignId: campaign,
+            deviceOS: Platform.OS == 'ios' ? 'IOS' : 'ANDROID',
+            installTime:
+              installAppsflyerTime[0] ||
+              `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate()}`,
+            eventName: 'Registration_Referrer',
+            shortLink: shortlink,
+          },
+        },
+        fetchPolicy: 'no-cache',
+      });
+      if (response?.data?.addReferralRecord?.rewardStatus) {
+        AsyncStorage.setItem('RefereeStatus', response?.data?.addReferralRecord?.rewardStatus);
+      }
+    } catch (e) {}
+  };
+
+  const postAppsFlyerEventAppInstallViaReferral = async (data: any) => {
+    try {
+      const referralData: any = await AsyncStorage.getItem('app_referral_data');
+      setRefereeFlagForNewRegisterUser(referralData !== null);
+      const cleverTapProfile = { ...data?.updatePatient?.patient };
+      if (whatsAppOptIn) cleverTapProfile['Msg-whatsapp'] = true;
+      onCleverTapUserLogin(cleverTapProfile);
+      if (referralData !== null) {
+        const { af_referrer_customer_id, campaign, rewardId, shortlink, installTime } = JSON.parse(
+          referralData
+        );
+        const eventAttribute = {
+          referrer_id: af_referrer_customer_id,
+          referee_id: currentPatient ? currentPatient.id : '',
+          campaign_id: campaign,
+          reward_id: rewardId,
+          short_link: shortlink,
+          device_os: Platform.OS == 'ios' ? 'IOS' : 'ANDROID',
+        };
+        updateRefereeDataInReferrerRecord({
+          af_referrer_customer_id,
+          campaign,
+          rewardId,
+          shortlink,
+          installTime,
+        });
+        postAppsFlyerEvent(AppsFlyerEventName.REGISTRATION_REFERRER, eventAttribute);
+        AsyncStorage.removeItem('app_referral_data');
+        AsyncStorage.setItem('referrerInstall', 'true');
+      }
+      handleOpenURLs();
+    } catch (e) {}
+  };
+
   const renderButtons = () => {
     return (
-      <StickyBottomComponent>
-        <Mutation<updatePatient, updatePatientVariables> mutation={UPDATE_PATIENT}>
-          {(mutate, { loading, data, error }) => (
-            <Button
-              style={{ width: '100%', flex: 1, marginHorizontal: 40 }}
-              title={'SUBMIT'}
-              disabled={isDisabled()}
-              onPress={async () => {
-                Keyboard.dismiss();
-                let trimReferral = referral;
-                if (profiles) {
-                  if (referral !== '') {
-                    trimReferral = trimReferral.trim();
-                  }
-                  setVerifyingPhoneNumber(true);
+      <View style={styles.stickyButtonMainContainer}>
+        <View style={styles.stickyTextContainer}>
+          <Text style={styles.stickyText}>{string.multiSignupScreen.cannotFindName}</Text>
+        </View>
+        <View style={styles.stickyButtonContainer}>
+          <TouchableOpacity
+            style={styles.addProfileBtnContainer}
+            onPress={() => {
+              AsyncStorage.setItem('preApolloUser', 'true');
+              props.navigation.navigate(AppRoutes.SignUp);
+            }}
+          >
+            <Text style={styles.addProfileBtnTitle}>{string.multiSignupScreen.addProfile}</Text>
+          </TouchableOpacity>
+          <Mutation<updatePatient, updatePatientVariables> mutation={UPDATE_PATIENT}>
+            {(mutate, { loading, data, error }) => (
+              <Button
+                style={styles.confirmBtnContainer}
+                title={string.multiSignupScreen.confirm}
+                titleTextStyle={styles.confirmBtnText}
+                disabled={isDisabled()}
+                onPress={async () => {
+                  Keyboard.dismiss();
+                  let trimReferral = referral;
+                  if (profiles) {
+                    if (referral !== '') {
+                      trimReferral = trimReferral.trim();
+                    }
+                    setVerifyingPhoneNumber(true);
 
-                  profiles.forEach(async (profile: updatePatient_updatePatient_patient) => {
+                    let profileToUpdate = profiles.filter(
+                      (profile: updatePatient_updatePatient_patient) => profile.id === selectedUser
+                    )[0];
+
                     const patientsDetails: UpdatePatientInput = {
-                      id: profile.id,
-                      relation: Relation[profile.relation!], // profile ? profile.relation!.toUpperCase() : '',
+                      id: profileToUpdate.id,
+                      relation: Relation.ME, // profile ? profile.relation!.toUpperCase() : '',
                       referralCode: trimReferral || null,
                       deviceCode: deviceToken,
+                      whatsappOptIn: whatsAppOptIn,
                     };
+
                     CommonLogEvent(AppRoutes.MultiSignup, 'Update API clicked');
                     mutate({
                       variables: {
@@ -599,6 +461,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                           AsyncStorage.setItem('selectUserId', patient.id);
                           AsyncStorage.setItem('selectUserUHId', patient.uhid!);
                           _postWebEngageEvent(patient);
+                          postAppsFlyerEventAppInstallViaReferral(_data);
                         }
                       } catch (error) {
                         CommonLogEvent(
@@ -607,75 +470,126 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                         );
                       }
                     });
-                  });
-                }
-              }}
-            >
-              {data
-                ? (getPatientApiCall(),
-                  AsyncStorage.setItem('userLoggedIn', 'true'),
-                  AsyncStorage.setItem('multiSignUp', 'false'),
-                  AsyncStorage.setItem('gotIt', 'false'),
-                  onCleverTapUserLogin(data?.updatePatient?.patient),
-                  createOneApolloUser(data?.updatePatient?.patient?.id!),
-                  handleOpenURLs())
-                : null}
-              {error
-                ? (signOut(),
-                  AsyncStorage.setItem('userLoggedIn', 'false'),
-                  AsyncStorage.setItem('multiSignUp', 'false'),
-                  AsyncStorage.setItem('signUp', 'false'),
-                  CommonLogEvent(AppRoutes.MultiSignup, 'Navigating back to Login'),
-                  setTimeout(() => {
-                    setVerifyingPhoneNumber(false),
-                      props.navigation.dispatch(
-                        StackActions.reset({
-                          index: 0,
-                          key: null,
-                          actions: [
-                            NavigationActions.navigate({
-                              routeName: AppRoutes.Login,
-                            }),
-                          ],
-                        })
-                      );
-                  }, 0))
-                : null}
-            </Button>
-          )}
-        </Mutation>
-      </StickyBottomComponent>
+                  }
+                }}
+              >
+                {data
+                  ? (getPatientApiCall(),
+                    AsyncStorage.setItem('userLoggedIn', 'true'),
+                    AsyncStorage.setItem('multiSignUp', 'false'),
+                    AsyncStorage.setItem('gotIt', 'false'),
+                    onCleverTapUserLogin(
+                      !whatsAppOptIn
+                        ? data?.updatePatient?.patient
+                        : { ...data?.updatePatient?.patient, 'Msg-whatsapp': true }
+                    ),
+                    createOneApolloUser(data?.updatePatient?.patient?.id!),
+                    handleOpenURLs())
+                  : null}
+                {error
+                  ? (signOut(),
+                    AsyncStorage.setItem('userLoggedIn', 'false'),
+                    AsyncStorage.setItem('multiSignUp', 'false'),
+                    AsyncStorage.setItem('signUp', 'false'),
+                    CommonLogEvent(AppRoutes.MultiSignup, 'Navigating back to Login'),
+                    setTimeout(() => {
+                      setVerifyingPhoneNumber(false),
+                        props.navigation.dispatch(
+                          StackActions.reset({
+                            index: 0,
+                            key: null,
+                            actions: [
+                              NavigationActions.navigate({
+                                routeName: AppRoutes.Login,
+                              }),
+                            ],
+                          })
+                        );
+                    }, 0))
+                  : null}
+              </Button>
+            )}
+          </Mutation>
+        </View>
+      </View>
     );
   };
 
-  const renderReferral = () => {
+  const renderHeader = () => {
     return (
-      <View
-        style={{
-          backgroundColor: theme.colors.SKY_BLUE,
-          marginHorizontal: -20,
-          paddingVertical: 20,
-          marginTop: 20,
-          marginBottom: 10,
-        }}
+      <View style={styles.stickyHeaderMainContainer}>
+        <ApolloLogo style={styles.headerLogo} />
+        <View style={styles.headerHeadingContainer}>
+          <Text style={styles.headerHeadingOne}>
+            {string.multiSignupScreen.choosePrimaryProfile}
+          </Text>
+          <Text style={styles.headerHeadingTwo}>{userContactNumber}</Text>
+        </View>
+      </View>
+    );
+  };
+
+  const renderUserItem = (item: any, index: number) => {
+    return (
+      <TouchableOpacity
+        onPress={() => setUserSelected(item.id)}
+        style={[
+          styles.itemMainContainer,
+          {
+            backgroundColor: selectedUser == item.id ? '#32cd9469' : theme.colors.WHITE,
+          },
+        ]}
       >
-        <View style={{ marginHorizontal: 20, flexDirection: 'row', alignItems: 'flex-start' }}>
-          <Gift style={{ marginRight: 20, marginTop: 12 }} />
-          <TextInputComponent
-            maxLength={25}
-            label={'Do You Have A Referral Code? (Optional)'}
-            labelStyle={{ ...theme.viewStyles.text('M', 14, '#ffffff'), marginBottom: 12 }}
-            placeholder={'Enter referral code'}
-            placeholderTextColor={'rgba(255,255,255,0.6)'}
-            inputStyle={{
-              borderColor: theme.colors.WHITE,
-              color: theme.colors.WHITE,
-            }}
-            conatinerstyles={{ width: '78%' }}
-            value={referral}
-            onChangeText={(text) => setReferral(text)}
-            icon={referral.length > 0 ? <WhiteTickIcon /> : null}
-          />
+        <View style={styles.itemSubContainer}>
+          <View style={styles.radioInputContainer}>
+            {selectedUser == item.id && <View style={styles.radioInputCircleToggle} />}
+          </View>
+        </View>
+        <View style={styles.textContainer}>
+          <Text style={styles.userName}>
+            {item.firstName} {item.lastName}
+          </Text>
+          <View style={styles.userOtherInfoContainer}>
+            <Text
+              style={[
+                styles.userDetails,
+                {
+                  marginRight: 20,
+                },
+              ]}
+            >
+              AGE: {getAge(item.dateOfBirth)}
+            </Text>
+            <Text style={styles.userDetails}>GENDER: {item.gender}</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderExistingAccount = () => {
+    return (
+      <View style={styles.userItemListMain}>
+        <FlatList
+          data={profiles || []}
+          renderItem={({ item, index }) => renderUserItem(item, index)}
+          keyExtractor={(item, index) => index.toString()}
+        />
+      </View>
+    );
+  };
+
+  const renderWhatsAppOptIn = () => {
+    return (
+      <View style={styles.whatsAppOptinContainer}>
+        <View style={styles.whatsAppOptinCheckboxContainer}>
+          <InputCheckBox checked={whatsAppOptIn} onClick={() => setWhatsAppOptIn(!whatsAppOptIn)} />
+          <Text style={styles.whatsAppPersonalisedText}>
+            {string.registerationScreenData.personalisedWhatsAppTips}
+          </Text>
+        </View>
+        <View style={{ width: '10%' }}>
+          <WhatsAppIcon style={styles.whatsAppIcon} />
         </View>
       </View>
     );
@@ -684,68 +598,249 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
-        <MenuProvider customStyles={{ menuProviderWrapper: { flex: 1 } }}>
-          <KeyboardAwareScrollView style={styles.container} bounces={false}>
-            <View style={{ justifyContent: 'center', marginTop: 20, marginLeft: 20 }}>
-              <ApolloLogo />
-            </View>
-
-            <Card
-              cardContainer={{
-                marginHorizontal: 0,
-                marginTop: 20,
-                shadowOffset: { width: 0, height: -10 },
-                shadowOpacity: 0.4,
-                backgroundColor: theme.colors.WHITE,
-              }}
-              headingTextStyle={{ paddingBottom: 20 }}
-              heading={string.login.welcome_text}
-              description={
-                showText
-                  ? 'We have found ' +
-                    ((profiles || []).length == 1
-                      ? (profiles || []).length + ' account'
-                      : (profiles || []).length + ' accounts') +
-                    ' registered with this mobile number. Please tell us who is who ? :)'
-                  : string.login.multi_signup_desc
-              }
-              descriptionTextStyle={{ paddingBottom: 50 }}
-            >
-              <View style={styles.mascotStyle}>
-                <Mascot />
-              </View>
-              {profiles &&
-                profiles.map((allCurrentPatients, i: number) => (
-                  <View key={i}>{renderUserForm(allCurrentPatients, i)}</View>
-                ))}
-              {showReferralCode && renderReferral()}
-              <View style={{ height: 80 }} />
-            </Card>
-          </KeyboardAwareScrollView>
-          {renderButtons()}
-        </MenuProvider>
-        {showPopup && Popup()}
+        {renderHeader()}
+        <KeyboardAwareScrollView style={styles.container} bounces={false}>
+          <ScrollView>
+            {renderExistingAccount()}
+            {renderReferral()}
+            {renderWhatsAppOptIn()}
+          </ScrollView>
+        </KeyboardAwareScrollView>
+        {renderButtons()}
       </SafeAreaView>
       {verifyingPhoneNumber ? (
-        <View
-          style={{
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
-            backgroundColor: 'rgba(0,0,0, 0.2)',
-            alignSelf: 'center',
-            justifyContent: 'center',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            elevation: 3,
-            zIndex: 3,
-          }}
-        >
+        <View style={styles.loadingSpinner}>
           <ActivityIndicator animating={verifyingPhoneNumber} size="large" color="green" />
         </View>
       ) : null}
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    ...theme.viewStyles.container,
+    backgroundColor: theme.colors.WHITE,
+    paddingTop: 2,
+  },
+  mascotStyle: {
+    position: 'absolute',
+    top: -32,
+    right: 20,
+    height: 64,
+    width: 64,
+    zIndex: 2,
+    elevation: 2,
+  },
+  idTextStyle: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    color: theme.colors.INPUT_TEXT,
+  },
+  nameTextStyle: {
+    paddingTop: 15,
+    paddingBottom: 8,
+    ...theme.fonts.IBMPlexSansMedium(18),
+    color: theme.colors.INPUT_TEXT,
+    textTransform: 'capitalize',
+  },
+  textStyle: {
+    color: theme.colors.SHERPA_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(18),
+    paddingVertical: 8,
+  },
+  textViewStyle: {
+    borderBottomWidth: 1,
+    borderColor: theme.colors.GRAY_TWO,
+    marginHorizontal: 16,
+  },
+  placeholderStyle: {
+    color: theme.colors.placeholderTextColor,
+  },
+  placeholderTextStyle: {
+    color: theme.colors.SHERPA_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(18),
+  },
+  placeholderViewStyle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    borderBottomWidth: 2,
+    paddingTop: 7,
+    paddingBottom: 3,
+    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
+  },
+  whatsAppOptinContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.LIGHT_SOIL_COLOR,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 40,
+  },
+  whatsAppOptinCheckboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingLeft: 15,
+    paddingRight: 2,
+  },
+  whatsAppIcon: {
+    height: 22,
+    width: 22,
+    resizeMode: 'contain',
+  },
+  whatsAppPersonalisedText: {
+    ...theme.fonts.IBMPlexSansSemiBold(12),
+    color: theme.colors.LIGHT_BLUE,
+  },
+  referralMainContainer: {
+    backgroundColor: theme.colors.LIGHT_SOIL_COLOR,
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  referralHeadingText: {
+    ...theme.fonts.IBMPlexSansBold(16),
+    color: theme.colors.LIGHT_BLUE,
+    marginBottom: 20,
+  },
+  referralTextInputStyle: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    borderColor: theme.colors.LIGHT_BLUE,
+    backgroundColor: theme.colors.WHITE,
+    textAlign: 'center',
+    flex: 1,
+  },
+  stickyButtonMainContainer: {
+    width: '100%',
+  },
+  stickyTextContainer: {
+    backgroundColor: theme.colors.LIGHT_WHITE_GRAY,
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  stickyText: {
+    ...theme.fonts.IBMPlexSansRegular(14),
+    color: theme.colors.LIGHT_BLUE,
+    fontWeight: '600',
+  },
+  stickyButtonContainer: {
+    backgroundColor: theme.colors.WHITE,
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    justifyContent: 'space-between',
+    paddingVertical: 18,
+  },
+  addProfileBtnContainer: {
+    borderWidth: 1,
+    borderColor: theme.colors.BUTTON_ORANGE,
+    flex: 0.48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 40,
+    borderRadius: 5,
+  },
+  addProfileBtnTitle: {
+    ...theme.fonts.IBMPlexSansSemiBold(14),
+    color: theme.colors.BUTTON_ORANGE,
+  },
+  confirmBtnContainer: {
+    backgroundColor: theme.colors.BUTTON_ORANGE,
+    flex: 0.48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 40,
+    borderRadius: 5,
+  },
+  confirmBtnText: {
+    ...theme.fonts.IBMPlexSansSemiBold(14),
+    color: theme.colors.WHITE,
+  },
+  stickyHeaderMainContainer: {
+    alignItems: 'center',
+    paddingTop: 20,
+    paddingBottom: 24,
+    borderBottomColor: theme.colors.LIGHT_GRAY_3,
+    borderBottomWidth: 1,
+  },
+  headerLogo: {
+    width: 66,
+    height: 48,
+    marginBottom: 14,
+  },
+  headerHeadingContainer: {
+    alignItems: 'center',
+  },
+  headerHeadingOne: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    fontSize: 12,
+    color: theme.colors.MULTISIGNUP_HEADING_BLUE,
+  },
+  headerHeadingTwo: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    fontSize: 12,
+    color: theme.colors.MULTISIGNUP_HEADING_BLUE,
+    fontWeight: 'bold',
+  },
+  itemMainContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 10,
+    height: 72,
+    borderBottomColor: theme.colors.LIGHT_GRAY_2,
+    borderBottomWidth: 1,
+  },
+  itemSubContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  radioInputContainer: {
+    width: 20,
+    height: 20,
+    borderWidth: 2,
+    borderColor: theme.colors.BLACK_COLOR,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  radioInputCircleToggle: {
+    width: 10,
+    height: 10,
+    backgroundColor: theme.colors.BLACK_COLOR,
+    borderRadius: 5,
+  },
+  textContainer: {
+    height: '100%',
+    justifyContent: 'center',
+    flex: 4,
+  },
+  userName: {
+    ...theme.fonts.IBMPlexSansMedium(15),
+    color: theme.colors.LIGHT_BLUE,
+    fontSize: PixelRatio.getFontScale() * 15,
+  },
+  userOtherInfoContainer: {
+    flexDirection: 'row',
+  },
+  userDetails: {
+    ...theme.fonts.IBMPlexSansMedium(11),
+    color: theme.colors.SHERPA_BLUE,
+    fontSize: PixelRatio.getFontScale() * 11,
+  },
+  loadingSpinner: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0,0,0, 0.2)',
+    alignSelf: 'center',
+    justifyContent: 'center',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    elevation: 3,
+    zIndex: 3,
+  },
+  userItemListMain: {
+    minHeight: Dimensions.get('screen').height - 415,
+  },
+});

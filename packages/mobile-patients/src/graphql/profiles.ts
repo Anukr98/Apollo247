@@ -1824,6 +1824,32 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         couponCode
         paymentOrderId
         passportNo
+        diagnosticOrderTransactions {
+          healthCreditsUsed
+          paymentMethod
+          paymentStatus
+          effectivePrepaidAmount
+          prepaidAmount
+          offers {
+            offer_id
+            offer_code
+            offer_description {
+              title
+              tnc
+              description
+            }
+            status
+            benefits {
+              type
+              amount
+              calculation_info {
+                value
+                max_amount
+                calculation_rule
+              }
+            }
+          }
+        }
         attributesObj {
           initialCollectionCharges
           distanceCharges
@@ -2319,6 +2345,7 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
         }
       }
       ordersCount
+      cancellationRequestedDisplayText
       membersDetails {
         id
         firstName
@@ -2437,7 +2464,7 @@ export const CREATE_HELP_TICKET = gql`
 
 export const GET_HELP_SECTION_QUERIES = gql`
   query GetHelpSectionQueries {
-    getHelpSectionQueries {
+    getHelpSectionQueriesv2 {
       needHelpQueries {
         id
         title
@@ -2446,6 +2473,7 @@ export const GET_HELP_SECTION_QUERIES = gql`
         queriesByOrderStatus
         content {
           title
+          contentType
           text
           cta {
             title
@@ -2477,6 +2505,7 @@ export const GET_HELP_SECTION_QUERIES = gql`
           content {
             title
             text
+            contentType
             cta {
               title
               appRoute
@@ -2507,6 +2536,7 @@ export const GET_HELP_SECTION_QUERIES = gql`
             content {
               title
               text
+              contentType
               cta {
                 title
                 appRoute
@@ -2537,6 +2567,7 @@ export const GET_HELP_SECTION_QUERIES = gql`
               content {
                 title
                 text
+                contentType
                 cta {
                   title
                   appRoute
@@ -3367,6 +3398,8 @@ export const GET_MEDICAL_PRISM_RECORD_V3 = gql`
       labResults {
         response {
           id
+          documentId
+          isClinicalDocument
           labTestName
           labTestSource
           packageId
@@ -4398,21 +4431,6 @@ export const SEARCH_DIAGNOSTICS_BY_ID = gql`
   }
 `;
 
-export const SAVE_DIAGNOSTIC_ORDER_NEW = gql`
-  mutation saveDiagnosticBookHCOrder($diagnosticOrderInput: SaveBookHomeCollectionOrderInput) {
-    saveDiagnosticBookHCOrder(diagnosticOrderInput: $diagnosticOrderInput) {
-      orderId
-      displayId
-      status
-      errorMessageToDisplay
-      attributes {
-        itemids
-        refreshCart
-      }
-    }
-  }
-`;
-
 export const CREATE_INTERNAL_ORDER = gql`
   mutation createOrderInternal($order: OrderCreate) {
     createOrderInternal(order: $order) {
@@ -5220,16 +5238,190 @@ export const ADD_DIABETIC_QUESTIONNAIRE = gql`
 `;
 
 export const GET_PAYMENT_METHODS = gql`
-  query getPaymentMethodsV2($is_mobile: Boolean, $payment_order_id: String!) {
-    getPaymentMethodsV2(is_mobile: $is_mobile, payment_order_id: $payment_order_id) {
-      name
-      minimum_supported_version
-      payment_methods {
-        image_url
-        payment_method_name
-        payment_method_code
+  query getPaymentMethodsV3($payment_order_id: String!, $prepaid_amount: Float!) {
+    getPaymentMethodsV3(payment_order_id: $payment_order_id, prepaid_amount: $prepaid_amount) {
+      linked_wallets {
+        id
+        object
+        wallet
+        token
+        current_balance
+        linked
+        last_refreshed
+        offers {
+          offer_id
+          cashback_amount
+          discount_amount
+          merchant_discount_amount
+          total_offered_amount
+          description {
+            offer_code
+            description
+          }
+        }
+        outage
+      }
+      offers {
+        offer_id
+        status
+        offer_description {
+          title
+          description
+          tnc
+          sponsored_by
+        }
+        offer_rules {
+          amount {
+            max_quantity
+            min_quantity
+          }
+          platform
+          payment_instrument {
+            payment_method
+            payment_method_type
+            type
+            variant
+          }
+        }
+        order_breakup {
+          order_amount
+          order_quantity
+          final_order_amount
+          discount_amount
+        }
+      }
+      saved_card_list {
+        customer_id
+        merchantId
+        cards {
+          card_number
+          card_exp_year
+          card_exp_month
+          card_type
+          card_issuer
+          card_brand
+          name_on_card
+          card_token
+          card_fingerprint
+          juspay_bank_code
+          outage
+          offers {
+            offer_id
+            cashback_amount
+            discount_amount
+            merchant_discount_amount
+            total_offered_amount
+            description {
+              offer_code
+              description
+            }
+          }
+        }
+      }
+      all_payment_modes {
+        name
         minimum_supported_version
-        outage_status
+        state
+        banner_text
+        payment_methods {
+          image_url
+          payment_method_name
+          payment_method_code
+          minimum_supported_version
+          outage_list {
+            outage_status
+            bank_code
+          }
+          offers {
+            offer_id
+            cashback_amount
+            discount_amount
+            merchant_discount_amount
+            total_offered_amount
+            description {
+              offer_code
+              description
+            }
+          }
+        }
+      }
+      preferred_payment_methods {
+        saved_cards {
+          customer_id
+          merchantId
+          cards {
+            card_number
+            card_exp_year
+            card_exp_month
+            card_type
+            card_issuer
+            card_brand
+            name_on_card
+            card_token
+            card_fingerprint
+            juspay_bank_code
+            outage
+            offers {
+              offer_id
+              cashback_amount
+              discount_amount
+              merchant_discount_amount
+              total_offered_amount
+              description {
+                offer_code
+                description
+              }
+            }
+          }
+        }
+        recently_used_or_defined {
+          name
+          minimum_supported_version
+          state
+          banner_text
+          payment_methods {
+            image_url
+            payment_method_name
+            payment_method_code
+            minimum_supported_version
+            outage_list {
+              outage_status
+              bank_code
+            }
+            offers {
+              offer_id
+              cashback_amount
+              discount_amount
+              merchant_discount_amount
+              total_offered_amount
+              description {
+                offer_code
+                description
+              }
+            }
+          }
+        }
+        linked_wallets {
+          id
+          object
+          wallet
+          token
+          current_balance
+          linked
+          last_refreshed
+          offers {
+            offer_id
+            cashback_amount
+            discount_amount
+            merchant_discount_amount
+            total_offered_amount
+            description {
+              offer_code
+              description
+            }
+          }
+          outage
+        }
       }
     }
   }
@@ -5314,6 +5506,20 @@ export const GET_INTERNAL_ORDER = gql`
         updated_at
         amount
       }
+      offers {
+        offer_code
+        offer_description {
+          offer_code
+          title
+          description
+        }
+        benefits {
+          amount
+          calculation_info {
+            value
+          }
+        }
+      }
     }
   }
 `;
@@ -5358,18 +5564,9 @@ export const GET_ORDER_INFO = gql`
       DiagnosticsPaymentDetails {
         ordersList {
           allowPayment
+          paymentNotAllowedErrorString
         }
       }
-    }
-  }
-`;
-
-export const PROCESS_DIAG_COD_ORDER = gql`
-  mutation processDiagnosticHCOrder($processDiagnosticHCOrderInput: ProcessDiagnosticHCOrderInput) {
-    processDiagnosticHCOrder(processDiagnosticHCOrderInput: $processDiagnosticHCOrderInput) {
-      status
-      preBookingID
-      message
     }
   }
 `;
@@ -6252,6 +6449,10 @@ export const GET_RESCHEDULE_AND_CANCELLATION_REASONS = gql`
     getRescheduleAndCancellationReasons(appointmentDateTimeInUTC: $appointmentDateTimeInUTC) {
       rescheduleReasons
       cancellationReasons
+      cancellationReasonsv2 {
+        reason
+        isDirectCancellation
+      }
     }
   }
 `;
@@ -6488,7 +6689,14 @@ export const GET_DIAGNOSTICS_RECOMMENDATIONS = gql`
       itemsData {
         itemId
         itemName
-        combinedLift
+        diagnosticInclusions {
+          itemId
+          name
+          observations {
+            observationName
+            mandatoryValue
+          }
+        }
       }
     }
   }
@@ -6633,6 +6841,7 @@ export const GET_DIAGNOSTIC_SEARCH_RESULTS = gql`
       data {
         diagnostic_item_id
         diagnostic_item_name
+        testParametersCount
         diagnostic_inclusions
         diagnostic_item_alias
         diagnostic_item_price {
@@ -6841,8 +7050,8 @@ export const GET_REWARD_ID = gql`
 `;
 
 export const GET_CAMPAIGN_ID_FOR_REFERRER = gql`
-  query campaignInfo($camp: CAMPAIGN_TYPES!) {
-    getCampaignInfoByCampaignType(campaignType: $camp) {
+  query getCampaignInfo {
+    getCampaignInfo {
       id
       campaignType
     }
@@ -6857,6 +7066,14 @@ export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS = gql`
         itemName
         inclusions
         packageCalculatedMrp
+        diagnosticInclusions {
+          itemId
+          name
+          observations {
+            observationName
+            mandatoryValue
+          }
+        }
         diagnosticPricing {
           mrp
           price
@@ -6869,6 +7086,7 @@ export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS = gql`
     }
   }
 `;
+
 export const CANCELL_SUBSCRIPTION = gql`
   mutation CancelSubscription($CancelSubscriptionInput: CancelSubscriptionInput!) {
     CancelSubscription(CancelSubscriptionInput: $CancelSubscriptionInput) {
@@ -7260,16 +7478,47 @@ export const SAVE_MEDICINE_ORDER_V3 = gql`
     }
   }
 `;
+
+export const FETCH_DIAGNOSTICS_ORDER_TAT_STATUS = gql`
+  query getTATStatus($GetTATStatusForDiagnosticOrderInput: GetTATStatusForDiagnosticOrderInput) {
+    getTATStatusForDiagnosticOrder(
+      getTATStatusForDiagnosticOrderInput: $GetTATStatusForDiagnosticOrderInput
+    ) {
+      TATBreached
+      KB {
+        contentType
+        content
+        categories
+      }
+    }
+  }
+`;
+
 export const DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS = gql`
   query getDiagnosticItemRecommendationsByPastOrders($mobileNumber: String!) {
     getDiagnosticItemRecommendationsByPastOrders(mobileNumber: $mobileNumber) {
       itemsData {
         itemId
         itemName
+        diagnosticInclusions {
+          observations {
+            observationName
+            mandatoryValue
+          }
+        }
       }
     }
   }
 `;
+
+export const FETCH_BLOB_URL_WITH_PRISM = gql`
+  mutation fetchBlobURLWithPRISMData($patientId: ID!, $fileUrl: String!) {
+    fetchBlobURLWithPRISMData(patientId: $patientId, fileUrl: $fileUrl) {
+      blobUrl
+    }
+  }
+`;
+
 export const INSERT_REFEREE_DATA_TO_REFERRER = gql`
   mutation addReferralRecord($referralDataInput: createReferralInput!) {
     addReferralRecord(referralInput: $referralDataInput) {

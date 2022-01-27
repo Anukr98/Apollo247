@@ -233,7 +233,7 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
             if (transactionId) {
               props.navigation.navigate(AppRoutes.PaymentMethods, {
                 paymentId: paymentOrderId,
-                amount: newCartTotal,
+                amount: Number(newCartTotal?.toFixed(2)),
                 orderDetails: getOrderDetails(orders, transactionId, saveMedicineOrderV3Variables),
                 businessLine: 'pharma',
                 customerId: cusId,

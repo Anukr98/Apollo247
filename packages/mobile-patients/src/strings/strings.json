@@ -138,6 +138,7 @@
     "couldNotLoadText": "Uh oh.. could't load!",
     "lowNetworkText": "We were unable to load the page properly because of low network. Please try again",
     "CorporateVaccineBenefit": "DEPENDENT_VACCINATION_REG",
+    "APPLY_CIRCLE_COUPON": "APPLY_CIRCLE_COUPON",
     "noDiagnosticsAvailable": "Unfortunately, we do not have any diagnostic(s) available right now.",
     "unableToSetDeliveryAddress": "We're sorry! Unable to set delivery address. Please try again after some time",
     "circleNoSubscriptionText": "No Subscription",
@@ -180,7 +181,8 @@
     "cancelAppointmentBody": "Confirm if you would like to proceed with the cancellation of your",
     "cancelRefundBody": "We regret the inconvenience caused. We’ll issue you a full refund.",
     "goBack": "GO BACK",
-    "proceedCta": "PROCEED TO CONNECT"
+    "proceedCta": "PROCEED TO CONNECT",
+    "showDigitalData": "SHOW DIGITAL REPORT"
   },
   "diagnosticsLocation": {
     "savedAddressText": "Saved Addresses",
@@ -332,15 +334,16 @@
     "availableForInAppConsultsOnly": "Due to the current situation, {{doctor}} is available only for In-App Consults"
   },
   "login": {
+    "accept_tnc": "Please accept the T&C and Privacy Policy to continue",
     "hello": "hello!",
     "please_enter_no": "Please enter your phone number to get access to Apollo Doctors and Apollo Pharmacy online! ",
-    "otp_sent_to": "An OTP will be sent to this number",
+    "otp_sent_to": "OTP sent on SMS",
     "bySigningUp": "By signing up, I agree to the",
-    "termsAndCondition": "Terms and Conditions",
+    "termsAndCondition": "T&C",
     "and": "and",
     "privacyPolicy": "Privacy Policy",
     "ofApollo247": "of Apollo247",
-    "wrong_number": "This seems like a wrong number",
+    "wrong_number": "Please enter a valid 10-digit phone number",
     "numberPrefix": "+91",
     "great": "great!",
     "type_otp_text": "Now type in the OTP sent to you for authentication",
@@ -357,7 +360,22 @@
     "best_general_physicians_text": "Here are our best General Physicians",
     "all_consults": "All Consults",
     "distance": "Distance",
-    "hello_login": "hello! :)"
+    "hello_login": "hello! :)",
+    "signin_signup": "Sign in / Sign up",
+    "otp_title": "Enter OTP",
+    "otp_placeholder": "Please enter the OTP to access all of Apollo Services!",
+    "otp_resent_on_call": "OTP resent on call",
+    "otp_resent_on_sms": "OTP resent on SMS",
+    "otp_not_received": "Didn't get OTP?",
+    "number_auto_detected": "Number auto detected from your SIM 1",
+    "manual_number_input": "ENTER NUMBER MANUALLY",
+    "auto_verfying_otp": "Auto verifying OTP",
+    "max_attempts_reached": "Maximum tries exceeded! Please generate a new OTP and/or wait 10 seconds and try again",
+    "try_otp_again": "You may try again",
+    "mobile_placeholder": "Enter mobile number (10 digits)",
+    "resend_on_call": "Resend on Call",
+    "resend_on_sms": "Resend on SMS",
+    "mobile_number_label": "Enter mobile number"
   },
   "home": {
     "hi": "hi",
@@ -737,8 +755,8 @@
     "prescriptionSuccess": "Prescription Successfully Uploaded",
     "fromHealthRecord": "PRESCRIPTION FROM HEALTH RECORDS",
     "addMorePrescription": "+ ADD MORE PRESCRIPTIONS",
-    "itemAdded": "item added",
-    "itemsAdded": "items added",
+    "itemAdded": "Item added",
+    "itemsAdded": "Items added",
     "goToCart": "Go to cart",
     "invalidFileSize": "Invalid File Size. File size must be less than 25MB.",
     "invalidFileType": "Invalid File Type. File type must be PDF.",
@@ -761,7 +779,8 @@
     "uploadPrescriptionWhatsapp": {
       "whatsappPhoneNumber": "4048218743",
       "message": "I want to place a Lab Test Order with prescription"
-    }
+    },
+    "cancelRequestedText": "Cancellation Request In Progress. Apollo agent will contact you soon."
   },
   "diagnosticCategoryTitle": {
     "category": "category",
@@ -789,7 +808,12 @@
     "cartSavings": "Cart Savings",
     "additionalAmount": "Additional amount that needs to be paid",
     "totalCharges": "Total charges",
-    "reviewPagePolicyText": "With the Omicron variant resulting in a surge of RTPCR orders, in the interest of public safety, we are allowing free cancellations only up to 6 hours before the appointment time to reduce last-minute cancellations and wastage of booking slots."
+    "reviewPagePolicyText": "With the Omicron variant resulting in a surge of RTPCR orders, in the interest of public safety,<b> we are allowing free cancellations only up to 6 hours before the appointment time <b> to reduce last-minute cancellations and wastage of booking slots....",
+    "availableHCText": "Available Health Credits :",
+    "HcDisclaimer": "Use Health Credits at Payments Checkout",
+    "healthCredits": "Health Credits",
+    "redemmedTxt": "(Redeemed)",
+    "minorAgeTestText": "We allow only RTPCR bookings for children less than 10 years old"
   },
   "orders": {
     "urOrders": "MY ORDERS",
@@ -1021,6 +1045,7 @@
     "PHARMACY_LANDING": "PHARMACY_LANDING",
     "DIETECIAN_LANDING": "DIETECIAN_LANDING",
     "PRO_HEALTH": "PRO-HEALTH",
+    "APPLY_CIRCLE_COUPON":"APPLY_CIRCLE_COUPON",
     "PHR": "PHR",
     "DOC_LISTING_WITH_PAYROLL_DOCS_SELECTED": "DOC_LISTING_WITH_PAYROLL_DOCS_SELECTED",
     "DIAGNOSTICS_LANDING": "DIAGNOSTICS_LANDING",
@@ -1549,7 +1574,7 @@
     "prodeedToPay": "PROCEED TO PAY",
     "cancelSubscription": "CANCEL SUBSCRIPTION",
     "cancellationPolicy": "CANCELLATION POLICY",
-    "bookOneTap": "Book One Tap Now"
+    "bookOneTap": "Book Appointment"
   },
   "consultPackages": {
     "infoTitle": "How does it work?",
@@ -1763,6 +1788,25 @@
         }
       ]
     }
+  },
+  "registerationScreenData": {
+    "headerOneHeading": "Create Profile",
+    "headerTwoHeading": "You are a step away from unlocking exclusive offers!",
+    "firstName": "First Name *",
+    "lastName": "Last Name *",
+    "dateofBirth": "Date Of Birth (DD/MM/YY) *",
+    "profileCreatedFor": "Profile Created For *",
+    "Email": "Email (Optional)",
+    "personalisedWhatsAppTips": "Send me personalised health tips & offers on",
+    "referralLabel": "Do You Have A Referral Code? (Optional)"
+  },
+  "multiSignupScreen": {
+    "haveAReferralCode": "Have a Referral code?",
+    "enterReferralCodeOptional": "Enter referral code (Optional)",
+    "cannotFindName": "Can’t find your name? Add a new profile",
+    "addProfile": "ADD PROFILE",
+    "confirm": "CONFIRM",
+    "choosePrimaryProfile": "Choose Primary Profile associated with your mobile no."
   },
   "refAndEarn": {
     "global": {

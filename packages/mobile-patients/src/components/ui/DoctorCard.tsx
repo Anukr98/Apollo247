@@ -413,6 +413,7 @@ export interface DoctorCardProps extends NavigationScreenProps {
   ) => void;
   onPressRequest?: (arg: boolean) => void;
   isPlatinumDoctor?: boolean;
+  appliedCircleCouponCode?: string;
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
@@ -515,6 +516,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         params && params?.consultModeSelected === ConsultMode.ONLINE
           ? string.consultModeTab.VIDEO_CONSULT
           : string.consultModeTab.HOSPITAL_VISIT,
+      appliedCircleCouponCode: props.appliedCircleCouponCode,
     });
   };
 

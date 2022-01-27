@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, FlatList, Dimensions } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { CollapseView } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CollapseView';
@@ -6,10 +6,16 @@ import { WalletIcon } from '@aph/mobile-patients/src/components/PaymentGateway/C
 import {
   paymentModeVersionCheck,
   getBestOffer,
+  getOfferDescription,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { OutagePrompt } from '@aph/mobile-patients/src/components/PaymentGateway/Components/OutagePrompt';
-import { OffersIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  OffersIcon,
+  CircleCheckIcon,
+  CircleUncheckIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { ActivityIndicator } from 'react-native-paper';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 
 export interface WalletsProps {
   onPressPayNow: (wallet: string, bestOffer?: any) => void;
@@ -20,6 +26,7 @@ export interface WalletsProps {
   linked: any;
   amount: number;
   createdWallet: any;
+  popUp?: boolean;
   walletLinking: any;
 }
 const windowWidth = Dimensions.get('window').width;
@@ -34,26 +41,15 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
     onPressLinkWallet,
     onPressDirectDebit,
     createdWallet,
+    popUp,
     walletLinking,
   } = props;
   const phonePe = 'https://newassets.apollo247.com/images/upiicons/phone-pe.png';
   const Apay = 'https://prodaphstorage.blob.core.windows.net/paymentlogos/amazon_pay.png';
+  const [Apayselected, setApayselected] = useState<boolean>(false);
 
   const renderTitle = (item: any, linkedWallet: any) => {
-    return (
-      <View style={{ marginRight: 5, paddingRight: 15 }}>
-        <Text style={styles.walletName}>{item?.item?.payment_method_name}</Text>
-        {linkedWallet?.linked ? (
-          Number(linkedWallet?.currentBalance) < amount ? (
-            <Text style={{ ...styles.walletBalance, color: '#BF2600' }}>
-              Low Balance: ₹{linkedWallet?.currentBalance}
-            </Text>
-          ) : (
-            <Text style={styles.walletBalance}>Balance: ₹{linkedWallet?.currentBalance}</Text>
-          )
-        ) : null}
-      </View>
-    );
+    return <Text style={styles.walletName}>{item?.item?.payment_method_name}</Text>;
   };
 
   const renderOffer = (item: any, bestOffer: any) => {
@@ -61,25 +57,16 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
       <View style={styles.offer}>
         <OffersIcon style={styles.offerIcon} />
         <Text numberOfLines={2} style={styles.offerTitle}>
-          {getOfferDescription(bestOffer, item)}
+          {getOfferDescription(bestOffer, item?.item)}
         </Text>
       </View>
     ) : null;
   };
 
-  const getOfferDescription = (bestOffer: any, item: any) => {
-    const orderBreakup = bestOffer?.order_breakup;
-    return parseFloat(orderBreakup?.discount_amount) > 50
-      ? `Get ₹${orderBreakup?.discount_amount} off on ${item?.item?.payment_method_name} wallet`
-      : parseFloat(orderBreakup?.cashback_amount) > 50
-      ? `Get ₹${orderBreakup?.cashback_amount} cashback on ${item?.item?.payment_method_name} wallet`
-      : bestOffer?.offer_description?.description;
-  };
-
   const renderButton = (paymentCode: any, linkedWallet: any) => {
     return paymentCode == 'AMAZONPAY'
       ? linkedWallet?.linked
-        ? Number(linkedWallet?.currentBalance) < amount
+        ? Number(linkedWallet?.current_balance) < amount
           ? 'ADD MONEY & PAY'
           : 'PAY NOW'
         : 'LINK ACCOUNT'
@@ -89,7 +76,7 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
   const onPress = (paymentCode: any, linkedWallet: any, bestOffer: any) => {
     return paymentCode == 'AMAZONPAY'
       ? linkedWallet?.linked
-        ? onPressDirectDebit(paymentCode, linkedWallet?.token, bestOffer)
+        ? setApayselected(!Apayselected)
         : onPressLinkWallet(paymentCode, bestOffer)
       : onPressPayNow(paymentCode, bestOffer);
   };
@@ -100,56 +87,90 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
 
   const renderWallet = (item: any) => {
     const paymentCode = item?.item?.payment_method_code;
-    const bestOffer = getBestOffer(offers, paymentCode);
+    const outageStatus = item?.item?.outage_list?.[0]?.outage_status;
+    const bestOffer = !outageStatus ? item?.item?.offers?.[0] : null;
     const walletCreated =
       createdWallet?.linked && createdWallet?.wallet == paymentCode ? createdWallet : null;
     const linkedWallet =
       walletCreated || linked?.filter((wallet: any) => wallet?.wallet == paymentCode)?.[0];
     return (
       <View>
-        <OutagePrompt
-          outageStatus={item?.item?.outage_status}
-          msg={item?.item?.payment_method_name + ' is'}
-        />
-        <TouchableOpacity
-          disabled={
-            item?.item?.outage_status == 'DOWN' || walletLinking == paymentCode ? true : false
-          }
+        <View
           style={{
-            ...styles.wallet,
+            ...styles.subCont,
             borderBottomWidth: item?.index == wallets.length - 1 ? 0 : 1,
-            opacity: item?.item?.outage_status == 'DOWN' ? 0.5 : 1,
           }}
-          onPress={() => onPress(paymentCode, linkedWallet, bestOffer)}
         >
-          <WalletIcon
-            imageUrl={
-              item?.item?.payment_method_name == 'PhonePe'
-                ? phonePe
-                : item?.item?.payment_method_name == 'Amazon Pay'
-                ? Apay
-                : item?.item?.image_url
-            }
-          />
-          <View style={{ width: windowWidth - 75 }}>
+          <TouchableOpacity
+            disabled={outageStatus == 'DOWN' ? true : false}
+            style={{ ...styles.wallet, opacity: outageStatus == 'DOWN' ? 0.5 : 1 }}
+            onPress={() => onPress(paymentCode, linkedWallet, bestOffer)}
+          >
+            <WalletIcon
+              imageUrl={
+                item?.item?.payment_method_name == 'PhonePe' ? phonePe : item?.item?.image_url
+              }
+            />
             <View style={styles.walletCont}>
               {renderTitle(item, linkedWallet)}
-              {walletLinking != paymentCode ? (
+              {paymentCode == 'AMAZONPAY' && linkedWallet?.linked ? (
+                renderBalance(linkedWallet)
+              ) : walletLinking != paymentCode ? (
                 <Text style={styles.payNow}>{renderButton(paymentCode, linkedWallet)}</Text>
               ) : (
                 renderLoader()
               )}
             </View>
-            {renderOffer(item, bestOffer)}
-          </View>
-        </TouchableOpacity>
+          </TouchableOpacity>
+          <OutagePrompt outageStatus={outageStatus} />
+          {renderOffer(item, bestOffer)}
+          {Apayselected && renderPayNowButton(linkedWallet, paymentCode, bestOffer)}
+        </View>
       </View>
     );
   };
 
+  const renderBalance = (linkedWallet: any) => {
+    return (
+      <View style={{ flexDirection: 'row' }}>
+        {Number(linkedWallet?.current_balance) < amount ? (
+          <Text style={styles.balance}> Low Balance: ₹{linkedWallet?.current_balance}</Text>
+        ) : (
+          <Text style={styles.balance}>₹{linkedWallet?.current_balance}</Text>
+        )}
+        {Apayselected ? (
+          <CircleCheckIcon style={styles.icon} />
+        ) : (
+          <CircleUncheckIcon style={styles.icon} />
+        )}
+      </View>
+    );
+  };
+
+  const renderPayNowButton = (linkedWallet: any, paymentCode: string, bestOffer: any) => {
+    const title =
+      Number(linkedWallet?.current_balance) < amount ? 'ADD MONEY AND PAY' : `PAY ₹${amount}`;
+
+    return !!linkedWallet ? (
+      <Button
+        style={{ marginTop: 10, borderRadius: 5 }}
+        title={title}
+        onPress={() => {
+          onPressDirectDebit(paymentCode, linkedWallet?.token, bestOffer);
+        }}
+      />
+    ) : null;
+  };
+
   const renderWallets = () => {
     return (
-      <View style={styles.ChildComponent}>
+      <View
+        style={{
+          ...styles.ChildComponent,
+          marginTop: popUp ? 12 : 0,
+          marginBottom: popUp ? 24 : 0,
+        }}
+      >
         <FlatList
           data={wallets}
           renderItem={(item: any) => {
@@ -162,19 +183,37 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
     );
   };
 
+  const renderHeader = () => {
+    return !popUp ? (
+      <View style={styles.header}>
+        <Text style={styles.heading}>WALLETS</Text>
+      </View>
+    ) : null;
+  };
+
   return !!wallets?.length ? (
-    <CollapseView isDown={true} Heading={'WALLETS'} ChildComponent={renderWallets()} />
+    <View>
+      {renderHeader()}
+      {renderWallets()}
+    </View>
   ) : null;
 };
 
 const styles = StyleSheet.create({
   ChildComponent: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 20,
+    backgroundColor: '#FAFEFF',
+    marginHorizontal: 16,
+    borderWidth: 1,
+    borderColor: '#D4D4D4',
+    borderRadius: 4,
+    paddingHorizontal: 12,
+  },
+  subCont: {
+    borderColor: 'rgba(0,0,0,0.1)',
+    marginTop: 16,
+    paddingBottom: 16,
   },
   wallet: {
-    paddingVertical: 16,
-    borderColor: 'rgba(0,0,0,0.1)',
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -187,12 +226,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     flexDirection: 'row',
+    flex: 1,
   },
   walletName: {
     ...theme.fonts.IBMPlexSansMedium(14),
     lineHeight: 18,
     color: '#01475B',
     marginLeft: 12,
+    letterSpacing: 0.01,
   },
   walletBalance: {
     ...theme.fonts.IBMPlexSansRegular(12),
@@ -202,10 +243,8 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   offer: {
-    marginRight: 20,
     flexDirection: 'row',
-    marginLeft: 12,
-    marginTop: 2,
+    marginTop: 3,
   },
   offerTitle: {
     ...theme.fonts.IBMPlexSansMedium(12),
@@ -218,5 +257,25 @@ const styles = StyleSheet.create({
     marginTop: 2,
     height: 16,
     width: 16,
+  },
+  header: {
+    marginHorizontal: 16,
+    paddingBottom: 8,
+    marginTop: 16,
+  },
+  heading: {
+    ...theme.fonts.IBMPlexSansSemiBold(12),
+    lineHeight: 18,
+    color: '#01475B',
+  },
+  balance: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    lineHeight: 18,
+    color: '#01475B',
+  },
+  icon: {
+    height: 18,
+    width: 18,
+    marginLeft: 8,
   },
 });

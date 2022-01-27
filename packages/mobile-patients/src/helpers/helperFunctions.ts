@@ -248,17 +248,17 @@ export const specialOffersImagesThumbnailUrl = (filePath: string, baseUrl?: stri
 };
 
 export const formatAddress = (address: savePatientAddress_savePatientAddress_patientAddress) => {
-  const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
-  const landmark = [address.landmark];
+  const addrLine1 = [address?.addressLine1, address?.addressLine2]?.filter((v) => v)?.join(', ');
+  const landmark = [address?.landmark];
   // to handle state value getting twice
-  const addrLine2 = [address.city, address.state]
-    .filter((v) => v)
-    .join(', ')
-    .split(',')
-    .map((v) => v.trim())
-    .filter((item, idx, array) => array.indexOf(item) === idx)
-    .join(', ');
-  const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
+  const addrLine2 = [address?.city, address?.state]
+    ?.filter((v) => v)
+    ?.join(', ')
+    ?.split(',')
+    ?.map((v) => v.trim())
+    ?.filter((item, idx, array) => array?.indexOf(item) === idx)
+    ?.join(', ');
+  const formattedZipcode = address?.zipcode ? ` - ${address?.zipcode}` : '';
   return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
 };
 
@@ -267,34 +267,31 @@ export const getDoctorShareMessage = (doctorData: any) => {
     ? g(doctorData, 'doctorHospital', '0', 'facility', 'name') + ', '
     : '';
   const hospitalCity = g(doctorData, 'doctorHospital', '0', 'facility', 'city') || '';
-  return `Recommending ${doctorData?.displayName} \n\n${
-    doctorData?.displayName
-  } from ${doctorData?.doctorfacility ||
+  return `Recommending ${doctorData?.displayName} \n\n${doctorData?.displayName
+    } from ${doctorData?.doctorfacility ||
     hospitalName + hospitalCity} is one of the top ${doctorData?.specialtydisplayName ||
     doctorData?.specialty?.name ||
-    ''} doctors in the country. \n\nI strongly recommend ${
-    doctorData?.gender ? (doctorData?.gender === Gender.FEMALE ? 'her' : 'him') : ''
-  } for any relevant health issues!\n\nYou can easily consult with ${
-    doctorData?.displayName
-  } online over Apollo 247 App and Website. Click ${doctorData?.profile_deeplink || ''} to book!`;
+    ''} doctors in the country. \n\nI strongly recommend ${doctorData?.gender ? (doctorData?.gender === Gender.FEMALE ? 'her' : 'him') : ''
+    } for any relevant health issues!\n\nYou can easily consult with ${doctorData?.displayName
+    } online over Apollo 247 App and Website. Click ${doctorData?.profile_deeplink || ''} to book!`;
 };
 
 export const formatAddressWithLandmark = (
   address: savePatientAddress_savePatientAddress_patientAddress
 ) => {
   const addrLine1 = removeConsecutiveComma(
-    [address?.addressLine1, address?.addressLine2].filter((v) => v).join(', ')
+    [address?.addressLine1, address?.addressLine2]?.filter((v) => v)?.join(', ')
   );
   const landmark = [address?.landmark];
   // to handle state value getting twice
   const addrLine2 = removeConsecutiveComma(
     [address?.city, address?.state]
-      .filter((v) => v)
-      .join(', ')
-      .split(',')
-      .map((v) => v.trim())
-      .filter((item, idx, array) => array.indexOf(item) === idx)
-      .join(', ')
+      ?.filter((v) => v)
+      ?.join(', ')
+      ?.split(',')
+      ?.map((v) => v?.trim())
+      ?.filter((item, idx, array) => array.indexOf(item) === idx)
+      ?.join(', ')
   );
   const formattedZipcode = address?.zipcode ? ` - ${address?.zipcode}` : '';
   if (address?.landmark != '') {
@@ -353,10 +350,10 @@ export const formatAddressForApi = (
 };
 
 export const formatNameNumber = (address: savePatientAddress_savePatientAddress_patientAddress) => {
-  if (address.name!) {
-    return `${address.name}\n${address.mobileNumber}`;
+  if (address?.name!) {
+    return `${address?.name}\n${address?.mobileNumber}`;
   } else {
-    return `${address.mobileNumber}`;
+    return `${address?.mobileNumber}`;
   }
 };
 
@@ -621,14 +618,14 @@ export const formatOrderAddress = (
   address: savePatientAddress_savePatientAddress_patientAddress
 ) => {
   // to handle state value getting twice
-  const addrLine = [address.addressLine1, address.addressLine2, address.city, address.state]
-    .filter((v) => v)
-    .join(', ')
-    .split(',')
-    .map((v) => v.trim())
-    .filter((item, idx, array) => array.indexOf(item) === idx)
-    .join(', ');
-  const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
+  const addrLine = [address?.addressLine1, address?.addressLine2, address?.city, address?.state]
+    ?.filter((v) => v)
+    ?.join(', ')
+    ?.split(',')
+    ?.map((v) => v?.trim())
+    ?.filter((item, idx, array) => array?.indexOf(item) === idx)
+    ?.join(', ');
+  const formattedZipcode = address?.zipcode ? ` - ${address?.zipcode}` : '';
   return `${addrLine}${formattedZipcode}`;
 };
 
@@ -642,8 +639,8 @@ export const formatSelectedAddress = (
     address?.state,
     address?.zipcode,
   ]
-    .filter((item) => item)
-    .join(', ');
+    ?.filter((item) => item)
+    ?.join(', ');
   return formattedAddress;
 };
 
@@ -1058,9 +1055,8 @@ export const nextAvailability = (
     } else if (isTomorrow && differenceMinute < 2880 - minPassedToday) {
       return isPhysical
         ? 'Consult Tomorrow'
-        : `${type} Tomorrow${
-            type === 'Available' ? ` at ${moment(nextSlot).format('hh:mm A')}` : ''
-          }`;
+        : `${type} Tomorrow${type === 'Available' ? ` at ${moment(nextSlot).format('hh:mm A')}` : ''
+        }`;
     } else if ((diffDays >= 2 && diffDays <= 30) || type == 'Consult') {
       return `${type} in ${diffDays} days`;
     } else {
@@ -1109,7 +1105,7 @@ export const findAddrComponents = (
   key?: 'long_name' | 'short_name' // default long_name
 ) => {
   const _key = key || 'long_name';
-  return (addrComponents.find((item) => item.types.indexOf(proptoFind) > -1) || { [_key]: '' })[
+  return (addrComponents?.find((item) => item?.types?.indexOf(proptoFind) > -1) || { [_key]: '' })[
     _key
   ];
 };
@@ -1132,7 +1128,7 @@ export const distanceBwTwoLatLng = (lat1: number, lon1: number, lat2: number, lo
 
 export const getlocationDataFromLatLang = async (latitude: number, longitude: number) => {
   const placeInfo = await getPlaceInfoByLatLng(latitude, longitude);
-  const addrComponents = g(placeInfo, 'data', 'results', '0' as any, 'address_components') || [];
+  const addrComponents = placeInfo?.data?.results?.[0]?.address_components || [];
   if (addrComponents.length == 0) {
     throw 'Unable to get location.';
   } else {
@@ -1169,7 +1165,7 @@ const getlocationData = (
       getPlaceInfoByLatLng(latitude, longitude)
         .then((response) => {
           const addrComponents = filterPinCodeAddressFromList(response);
-          if (addrComponents.length == 0) {
+          if (addrComponents?.length == 0) {
             reject('Unable to get location.');
           } else {
             resolve(
@@ -1322,8 +1318,8 @@ export const isValidName = (value: string) =>
   value == ' '
     ? false
     : value == '' || /^[a-zA-Z]+((['’ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
-    ? true
-    : false;
+      ? true
+      : false;
 
 export const isValidPhoneNumber = (value: string) => {
   const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(value)
@@ -1379,26 +1375,26 @@ export const reOrderMedicines = async (
   const availableLineItemsSkus = lineItemsDetails.map((v) => v.sku);
   const cartItemsToAdd = lineItemsDetails.map(
     (item, index) =>
-      ({
-        ...formatToCartItem(item),
-        quantity: Math.ceil(
-          (billedLineItems
-            ? billedLineItems[index].issuedQty
-            : isOfflineOrder
+    ({
+      ...formatToCartItem(item),
+      quantity: Math.ceil(
+        (billedLineItems
+          ? billedLineItems[index].issuedQty
+          : isOfflineOrder
             ? Math.ceil(
-                lineItems[index].price! / lineItems[index].mrp! / lineItems[index].quantity!
-              )
+              lineItems[index].price! / lineItems[index].mrp! / lineItems[index].quantity!
+            )
             : lineItems[index].quantity) || 1
-        ),
-      } as ShoppingCartItem)
+      ),
+    } as ShoppingCartItem)
   );
   const unavailableItems = billedLineItems
     ? billedLineItems
-        .filter((item) => !availableLineItemsSkus.includes(item.itemId))
-        .map((item) => item.itemName)
+      .filter((item) => !availableLineItemsSkus.includes(item.itemId))
+      .map((item) => item.itemName)
     : lineItems
-        .filter((item) => !availableLineItemsSkus.includes(item.medicineSKU!))
-        .map((item) => item.medicineName!);
+      .filter((item) => !availableLineItemsSkus.includes(item.medicineSKU!))
+      .map((item) => item.medicineName!);
 
   const eventAttributes: WebEngageEvents[WebEngageEventName.RE_ORDER_MEDICINE] = {
     orderType: 'Cart',
@@ -1429,15 +1425,15 @@ export const reOrderMedicines = async (
   ).join(',');
   const prescriptionsToAdd = prescriptionUrls.map(
     (item, index) =>
-      ({
-        id: appointmentIds?.[index],
-        appointmentId: appointmentIds?.[index],
-        date: moment(g(order, 'createdDate')).format('DD MMM YYYY'),
-        doctorName: `Meds Rx ${(order.id && order.id.substring(0, order.id.indexOf('-'))) || ''}`,
-        forPatient: g(currentPatient, 'firstName') || '',
-        medicines: medicineNames,
-        uploadedUrl: item,
-      } as EPrescription)
+    ({
+      id: appointmentIds?.[index],
+      appointmentId: appointmentIds?.[index],
+      date: moment(g(order, 'createdDate')).format('DD MMM YYYY'),
+      doctorName: `Meds Rx ${(order.id && order.id.substring(0, order.id.indexOf('-'))) || ''}`,
+      forPatient: g(currentPatient, 'firstName') || '',
+      medicines: medicineNames,
+      uploadedUrl: item,
+    } as EPrescription)
   );
 
   return {
@@ -1508,8 +1504,8 @@ export const getDiscountPercentage = (price: number | string, specialPrice?: num
   const discountPercent = !specialPrice
     ? 0
     : Number(price) == Number(specialPrice)
-    ? 0
-    : ((Number(price) - Number(specialPrice)) / Number(price)) * 100;
+      ? 0
+      : ((Number(price) - Number(specialPrice)) / Number(price)) * 100;
   return discountPercent != 0 ? Number(Number(discountPercent).toFixed(1)) : 0;
 };
 
@@ -1598,13 +1594,13 @@ const webengage = new WebEngage();
 
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
-    webengage.track(eventName, attributes);
+    webengage.track(eventName, validateEventObject(attributes));
   } catch (error) {}
 };
 
 export const postCleverTapEvent = (eventName: CleverTapEventName, attributes: Object) => {
   try {
-    CleverTap.recordEvent(eventName, attributes);
+    CleverTap.recordEvent(eventName, validateEventObject(attributes));
   } catch (error) {}
 };
 
@@ -1636,13 +1632,16 @@ export const onCleverTapUserLogin = async (_currentPatient: any) => {
         _currentPatient?.gender == Gender.MALE
           ? 'M'
           : _currentPatient?.gender == Gender.FEMALE
-          ? 'F'
-          : '',
+            ? 'F'
+            : '',
       DOB: new Date(_currentPatient?.dateOfBirth),
       ...(_currentPatient?.emailAddress && { Email: _currentPatient?.emailAddress }),
       ...(_currentPatient?.photoUrl && { Photo: _currentPatient?.photoUrl }),
       ...(_currentPatient?.createdDate && { CreatedDate: _currentPatient?.createdDate }),
     };
+    if (_currentPatient?.['Msg-whatsapp']) {
+      _userProfile['Msg-whatsapp'] = true;
+    }
     CleverTap.onUserLogin(_userProfile);
     AsyncStorage.setItem('createCleverTapProifle', 'true');
   } catch (error) {
@@ -1735,8 +1734,8 @@ export const getCleverTapCircleMemberValues = (
   return pharmacyCircleMemeber == 'Yes'
     ? 'Added'
     : pharmacyCircleMemeber == 'No'
-    ? 'Not Added'
-    : 'Existing';
+      ? 'Not Added'
+      : 'Existing';
 };
 
 export const postAppointmentCleverTapEvents = (
@@ -2178,7 +2177,7 @@ export const permissionHandler = (
         Alert.alert(permission.toUpperCase(), deniedMessage, [
           {
             text: 'Cancel',
-            onPress: () => {},
+            onPress: () => { },
           },
           {
             text: 'Ok',
@@ -2190,7 +2189,7 @@ export const permissionHandler = (
         ]);
       }
     })
-    .catch((e) => {});
+    .catch((e) => { });
 };
 
 const consultPermissionCleverTapEvents = (
@@ -2294,16 +2293,16 @@ export const InitiateAppsFlyer = (
       onInstallConversionDataListener: true, //Optional
       onDeepLinkListener: true, //Optional
     },
-    (result) => {},
-    (error) => {}
+    (result) => { },
+    (error) => { }
   );
   let isFirstLaunch = false;
   onInstallConversionDataCanceller = appsFlyer.onInstallConversionData((res) => {
     if (JSON.parse(res?.data?.is_first_launch || 'null') == true) {
       isFirstLaunch = true;
       try {
-        res?.data?.af_dp?.(AsyncStorage.setItem('deeplink', res.data.af_dp));
-        res?.data?.af_sub1?.(AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1));
+        res?.data?.af_dp && AsyncStorage.setItem('deeplink', res.data.af_dp);
+        res?.data?.af_sub1 && AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
         if (res?.data?.linkToUse !== null && res?.data?.linkToUse === 'ForReferrarInstall') {
           const responseData = res.data;
           setAppReferralData({
@@ -2316,11 +2315,11 @@ export const InitiateAppsFlyer = (
           });
         }
 
-        res?.data?.af_dp?.(setBugFenderLog('APPS_FLYER_DEEP_LINK', res.data.af_dp));
-        res.data.af_sub1?.(setBugFenderLog('APPS_FLYER_DEEP_LINK_Referral_Code', res.data.af_sub1));
+        res?.data?.af_dp && setBugFenderLog('APPS_FLYER_DEEP_LINK', res.data.af_dp);
+        res.data.af_sub1 && setBugFenderLog('APPS_FLYER_DEEP_LINK_Referral_Code', res.data.af_sub1);
 
         setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
-      } catch (error) {}
+      } catch (error) { }
 
       if (res?.data?.af_status === 'Non-organic') {
         const media_source = res.data.media_source;
@@ -2334,27 +2333,23 @@ export const InitiateAppsFlyer = (
     // for iOS universal links
     if (Platform.OS === 'ios') {
       try {
-        res?.data?.af_dp?.(AsyncStorage.setItem('deeplink', res.data.af_dp));
-        res?.data?.af_sub1?.(AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1));
+        res?.data?.af_dp && AsyncStorage.setItem('deeplink', res.data.af_dp);
+        res?.data?.af_sub1 && AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
 
-        res?.data?.af_dp?.(
-          setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK', res.data.af_dp)
-        );
-        res?.data?.af_sub1?.(
-          setBugFenderLog(
-            'onAppOpenAttribution_APPS_FLYER_DEEP_LINK_Referral_Code',
-            res.data.af_sub1
-          )
+        res?.data?.af_dp && setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK', res.data.af_dp);
+        res?.data?.af_sub1 && setBugFenderLog(
+          'onAppOpenAttribution_APPS_FLYER_DEEP_LINK_Referral_Code',
+          res.data.af_sub1
         );
 
         setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
-      } catch (error) {}
+      } catch (error) { }
     }
   });
   let isDeepLinked = false;
   onDeepLinkCanceller = appsFlyer.onDeepLink((res) => {
     isDeepLinked = true;
-    if (res?.isDeferred) {
+    if (res.is_deferred) {
       getInstallResources();
       res?.data?.deep_link_value?.(() => {
         const url = handleOpenURL(res?.data?.deep_link_value);
@@ -2362,7 +2357,7 @@ export const InitiateAppsFlyer = (
       });
     }
     try {
-      if (!res?.isDeferred) {
+      if (!res.is_deferred) {
         if (redirectUrl && checkUniversalURL(redirectUrl).universal) {
           if (Object.keys(res.data).length < 2) {
             clevertapEventForAppsflyerDeeplink(
@@ -2391,7 +2386,7 @@ export const InitiateAppsFlyer = (
       if (res.status == 'success') {
         clevertapEventForAppsflyerDeeplink(removeNullFromObj(res.data));
       }
-    } catch (e) {}
+    } catch (e) { }
   });
   setTimeout(() => {
     !isDeepLinked && launchSourceEvent(isFirstLaunch);
@@ -2472,7 +2467,7 @@ export const deferredDeepLinkRedirectionData = async (
 };
 
 export const UnInstallAppsFlyer = (newFirebaseToken: string) => {
-  appsFlyer.updateServerUninstallToken(newFirebaseToken, (success) => {});
+  appsFlyer.updateServerUninstallToken(newFirebaseToken, (success) => { });
 };
 
 export const APPStateActive = () => {
@@ -2490,16 +2485,31 @@ export const APPStateActive = () => {
   }
 };
 
+const validateEventObject = (eventAttributes: any) => {
+  Object.keys(eventAttributes).forEach((key) => {
+    if (!eventAttributes[key]) {
+      try {
+        eventAttributes[key] = `${eventAttributes[key]}`;
+      } catch (e) {
+        eventAttributes[key] = 'undefined';
+      }
+    }
+  });
+  return eventAttributes;
+};
+
 export const postAppsFlyerEvent = (eventName: AppsFlyerEventName, attributes: Object) => {
   try {
     const logContent = `[AppsFlyer Event] ${eventName}`;
     appsFlyer.logEvent(
       eventName,
-      attributes,
-      (res) => {},
-      (err) => {}
+      validateEventObject(attributes),
+      (res) => {
+      },
+      (err) => {
+      }
     );
-  } catch (error) {}
+  } catch (error) { }
 };
 
 export const setCleverTapAppsFlyerCustID = () => {
@@ -2508,13 +2518,13 @@ export const setCleverTapAppsFlyerCustID = () => {
       const userId = res;
       SetAppsFlyerCustID(userId?.toString());
     });
-  } catch (error) {}
+  } catch (error) { }
 };
 
 export const SetAppsFlyerCustID = (patientId: string) => {
   try {
-    appsFlyer.setCustomerUserId(patientId, (res) => {});
-  } catch (error) {}
+    appsFlyer.setCustomerUserId(patientId, (res) => { });
+  } catch (error) { }
 };
 
 export const postAppsFlyerAddToCartEvent = (
@@ -2543,7 +2553,7 @@ export const postAppsFlyerAddToCartEvent = (
 export const setFirebaseUserId = (userId: string) => {
   try {
     analytics().setUserId(userId);
-  } catch (error) {}
+  } catch (error) { }
 };
 
 export const setCrashlyticsAttributes = async (
@@ -2557,13 +2567,13 @@ export const setCrashlyticsAttributes = async (
         lastName: currentPatient?.lastName!,
       }),
     ]);
-  } catch (error) {}
+  } catch (error) { }
 };
 
 export const postFirebaseEvent = (eventName: FirebaseEventName, attributes: Object) => {
   try {
     analytics().logEvent(eventName, attributes);
-  } catch (error) {}
+  } catch (error) { }
 };
 
 export const postFirebaseAddToCartEvent = (
@@ -2598,7 +2608,7 @@ export const postFirebaseAddToCartEvent = (
       ...pharmacyCircleAttributes,
     };
     postFirebaseEvent(FirebaseEventName.PHARMACY_ADD_TO_CART, eventAttributes);
-  } catch (error) {}
+  } catch (error) { }
 };
 
 export const nameFormater = (
@@ -2654,10 +2664,10 @@ export const getFormattedLocation = (
   return {
     displayName: isModifyAddress
       ? findAddrComponents('locality', addrComponents) ||
-        findAddrComponents('administrative_area_level_2', addrComponents)
+      findAddrComponents('administrative_area_level_2', addrComponents)
       : (area || []).pop() ||
-        findAddrComponents('locality', addrComponents) ||
-        findAddrComponents('administrative_area_level_2', addrComponents),
+      findAddrComponents('locality', addrComponents) ||
+      findAddrComponents('administrative_area_level_2', addrComponents),
 
     latitude: lat,
     longitude: lng,
@@ -2687,8 +2697,8 @@ const getDaysCount = (type: MEDICINE_CONSUMPTION_DURATION | null) => {
   return type == MEDICINE_CONSUMPTION_DURATION.MONTHS
     ? 30
     : type == MEDICINE_CONSUMPTION_DURATION.WEEKS
-    ? 7
-    : 1;
+      ? 7
+      : 1;
 };
 
 export const getPrescriptionItemQuantity = (
@@ -2703,19 +2713,19 @@ export const getPrescriptionItemQuantity = (
   if (medicineUnit == MEDICINE_UNIT.TABLET || medicineUnit == MEDICINE_UNIT.CAPSULE) {
     const medicineDosageMapping = medicineCustomDosage
       ? medicineCustomDosage.split('-').map((item) => {
-          if (item.indexOf('/') > -1) {
-            const dosage = item.split('/').map((item) => Number(item));
-            return (dosage[0] || 1) / (dosage[1] || 1);
-          } else if (item.indexOf('\\') > -1) {
-            const dosage = item.split('\\').map((item) => Number(item));
-            return (dosage[0] || 1) / (dosage[1] || 1);
-          } else {
-            return Number(item);
-          }
-        })
+        if (item.indexOf('/') > -1) {
+          const dosage = item.split('/').map((item) => Number(item));
+          return (dosage[0] || 1) / (dosage[1] || 1);
+        } else if (item.indexOf('\\') > -1) {
+          const dosage = item.split('\\').map((item) => Number(item));
+          return (dosage[0] || 1) / (dosage[1] || 1);
+        } else {
+          return Number(item);
+        }
+      })
       : medicineDosage
-      ? Array.from({ length: 4 }).map(() => Number(medicineDosage))
-      : [1, 1, 1, 1];
+        ? Array.from({ length: 4 }).map(() => Number(medicineDosage))
+        : [1, 1, 1, 1];
 
     const medicineTimingsPerDayCount =
       (medicineTimings || []).reduce(
@@ -2724,12 +2734,12 @@ export const getPrescriptionItemQuantity = (
           (currItem == MEDICINE_TIMINGS.MORNING
             ? medicineDosageMapping[0]
             : currItem == MEDICINE_TIMINGS.NOON
-            ? medicineDosageMapping[1]
-            : currItem == MEDICINE_TIMINGS.EVENING
-            ? medicineDosageMapping[2]
-            : currItem == MEDICINE_TIMINGS.NIGHT
-            ? medicineDosageMapping[3]
-            : 1),
+              ? medicineDosageMapping[1]
+              : currItem == MEDICINE_TIMINGS.EVENING
+                ? medicineDosageMapping[2]
+                : currItem == MEDICINE_TIMINGS.NIGHT
+                  ? medicineDosageMapping[3]
+                  : 1),
         0
       ) || 1;
 
@@ -2786,7 +2796,7 @@ export const savePastSearch = (client: ApolloClient<object>, input: SaveSearchIn
       mutation: SAVE_SEARCH,
       variables: { saveSearchInput: input },
     });
-  } catch (error) {}
+  } catch (error) { }
 };
 
 export const addPharmaItemToCart = (
@@ -2871,7 +2881,7 @@ export const addPharmaItemToCart = (
     }
     addToCart();
     onAddedSuccessfully?.();
-  } catch (error) {}
+  } catch (error) { }
 };
 
 export const dataSavedUserID = async (key: string) => {
@@ -2958,21 +2968,21 @@ export const overlyCallPermissions = (
 
           showPermissionPopUp(
             string.callRelatedPermissions.camAndMPPermission.replace('{0}', doctorName),
-            () => callPermissions(() => {}, screenName, currentPatient)
+            () => callPermissions(() => { }, screenName, currentPatient)
           );
         } else if (cameraYes && microphoneNo) {
           showPermissionPopUp(
             string.callRelatedPermissions.onlyMPPermission.replace('{0}', doctorName),
-            () => callPermissions(() => {}, screenName, currentPatient)
+            () => callPermissions(() => { }, screenName, currentPatient)
           );
         } else if (cameraNo && microphoneYes) {
           showPermissionPopUp(
             string.callRelatedPermissions.onlyCameraPermission.replace('{0}', doctorName),
-            () => callPermissions(() => {}, screenName, currentPatient)
+            () => callPermissions(() => { }, screenName, currentPatient)
           );
         }
       })
-      .catch((e) => {});
+      .catch((e) => { });
   } else {
     Permissions.checkMultiple(['camera', 'microphone'])
       .then((response) => {
@@ -2986,10 +2996,10 @@ export const overlyCallPermissions = (
           cameraNo && microphoneNo
             ? string.callRelatedPermissions.camAndMPPermission
             : cameraYes && microphoneNo
-            ? string.callRelatedPermissions.onlyMPPermission
-            : cameraNo && microphoneYes
-            ? string.callRelatedPermissions.onlyCameraPermission
-            : '';
+              ? string.callRelatedPermissions.onlyMPPermission
+              : cameraNo && microphoneYes
+                ? string.callRelatedPermissions.onlyCameraPermission
+                : '';
         if (description) {
           showAphAlert!({
             unDismissable: true,
@@ -3013,14 +3023,14 @@ export const overlyCallPermissions = (
                   hideAphAlert!();
                   onPressAllow();
                   callback?.();
-                  callPermissions(() => {}, screenName, currentPatient);
+                  callPermissions(() => { }, screenName, currentPatient);
                 },
               },
             ],
           });
         }
       })
-      .catch((e) => {});
+      .catch((e) => { });
   }
 };
 
@@ -3301,7 +3311,6 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
   switch (status) {
     case DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED:
     case 'ORDER_CANCELLED_AFTER_REGISTRATION':
-    case DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED_REQUEST:
       statusString = 'Order cancelled';
       break;
     case DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED:
@@ -3374,6 +3383,10 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
       break;
     case DIAGNOSTIC_ORDER_STATUS.REFUND_INITIATED:
       statusString = 'Partial Refund Initiated';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.CANCELLATION_REQUESTED:
+    case DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED_REQUEST:
+      statusString = 'Cancellation Requested';
       break;
     default:
       statusString = '';
@@ -3545,9 +3558,9 @@ export async function downloadDiagnosticReport(
       (result &&
         Platform.OS == 'android' &&
         result?.[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] ===
-          PermissionsAndroid.RESULTS.GRANTED &&
+        PermissionsAndroid.RESULTS.GRANTED &&
         result?.[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] ===
-          PermissionsAndroid.RESULTS.GRANTED) ||
+        PermissionsAndroid.RESULTS.GRANTED) ||
       Platform.OS == 'ios'
     ) {
       const dirs = RNFetchBlob.fs.dirs;
@@ -3597,9 +3610,9 @@ export async function downloadDiagnosticReport(
         result &&
         Platform.OS == 'android' &&
         result?.[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] !==
-          PermissionsAndroid.RESULTS.DENIED &&
+        PermissionsAndroid.RESULTS.DENIED &&
         result?.[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] !==
-          PermissionsAndroid.RESULTS.DENIED
+        PermissionsAndroid.RESULTS.DENIED
       ) {
         storagePermissionsToDownload(() => {
           downloadDiagnosticReport(
@@ -3758,52 +3771,46 @@ export const getCleverTapCheckoutCompletedEventAttributes = (
   ordersIds: any
 ) => {
   const {
-    deliveryAddressId,
+    isCartPrescriptionRequired,
+    cartAddressId,
     addresses,
     storeId,
     stores,
-    uploadPrescriptionRequired,
-    physicalPrescriptions,
-    cartItems,
-    cartTotal,
-    deliveryCharges,
-    coupon,
-    couponDiscount,
-    productDiscount,
-    ePrescriptions,
-    grandTotal,
-    circleSubscriptionId,
-    isCircleSubscription,
-    cartTotalCashback,
+    serverCartItems,
+    serverCartAmount,
+    cartCoupon,
     pharmacyCircleAttributes,
-    orders,
-    pinCode,
+    noOfShipments,
+    cartPrescriptions,
+    cartLocationDetails,
   } = shoppingCart;
-  const addr = deliveryAddressId && addresses.find((item) => item.id == deliveryAddressId);
+  const addr = cartAddressId && addresses.find((item) => item.id == cartAddressId);
   const store = storeId && stores.find((item) => item.storeid == storeId);
-  const shippingInformation = addr ? formatAddress(addr) : store ? store.address : '';
+  const shippingInformation = addr ? formatAddress(addr) : store ? store?.address : '';
   const getFormattedAmount = (num: number) => Number(num.toFixed(2));
   const eventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED] = {
     'Transaction ID': paymentOrderId,
     'Order type': 'Cart',
-    'Prescription added': !!(physicalPrescriptions.length || ePrescriptions.length),
+    'Prescription added': cartPrescriptions.length > 0,
     'Shipping information': shippingInformation, // (Home/Store address)
-    'Total items in cart': cartItems.length,
-    'Grand total': cartTotal + deliveryCharges,
-    'Total discount %': coupon
-      ? getFormattedAmount(((couponDiscount + productDiscount) / cartTotal) * 100)
+    'Total items in cart': serverCartItems.length,
+    'Grand total': serverCartAmount?.estimatedAmount || 0,
+    'Total discount %': cartCoupon?.coupon && cartCoupon?.valid
+      ? getFormattedAmount(((serverCartAmount?.couponSavings || 0) / (serverCartAmount?.estimatedAmount || 0)) * 100)
       : 0,
-    'Discount amount': getFormattedAmount(couponDiscount + productDiscount),
-    'Shipping charges': deliveryCharges,
-    'Net after discount': getFormattedAmount(grandTotal),
+    'Discount amount': getFormattedAmount((serverCartAmount?.cartSavings || 0) + (serverCartAmount?.couponSavings || 0)),
+    'Shipping charges': serverCartAmount?.isDeliveryFree ? (serverCartAmount?.deliveryCharges || 0) : 0,
+    'Net after discount': getFormattedAmount(serverCartAmount?.estimatedAmount || 0),
     'Payment status': 1,
     'Service area': 'Pharmacy',
-    'Mode of delivery': deliveryAddressId ? 'Home' : 'Pickup',
-    'AF revenue': getFormattedAmount(grandTotal),
+    'Mode of delivery': cartAddressId ? 'Home' : 'Pickup',
+    'AF revenue': getFormattedAmount(serverCartAmount?.estimatedAmount || 0),
     'Circle cashback amount':
-      circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
-    'Split cart': orders?.length > 1 ? 'Yes' : 'No',
-    'Prescription option selected': uploadPrescriptionRequired
+      serverCartAmount?.circleSavings?.membershipCashBack
+        ? Number(serverCartAmount?.circleSavings?.membershipCashBack)
+        : 0,
+    'Split cart': noOfShipments > 1 ? 'Yes' : 'No',
+    'Prescription option selected': isCartPrescriptionRequired
       ? 'Prescription Upload'
       : 'Not Applicable',
     'Circle member':
@@ -3811,9 +3818,9 @@ export const getCleverTapCheckoutCompletedEventAttributes = (
       undefined,
     'Circle membership value': pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
     'User type': pharmacyUserTypeAttribute?.User_Type || undefined,
-    'Coupon applied': coupon?.coupon || undefined,
-    Pincode: pinCode || undefined,
-    'Cart items': JSON.stringify(cartItems),
+    'Coupon applied': cartCoupon?.coupon && cartCoupon?.valid ? cartCoupon?.coupon : '',
+    Pincode: cartLocationDetails?.pincode || undefined,
+    'Cart items': JSON.stringify(serverCartItems?.map((item) => item?.sku || '')),
     'Order ID(s)': ordersIds?.map((i) => i?.orderAutoId)?.join(','),
   };
   if (store) {
@@ -3863,15 +3870,14 @@ export const checkPatientAge = (_selectedPatient: any, fromNewProfile: boolean =
 
 export const extractPatientDetails = (patientDetails: any) => {
   const patientName = `${patientDetails?.firstName! || ''} ${patientDetails?.lastName! || ''}`;
-  const genderAgeText = `${nameFormater(patientDetails?.gender!, 'title') || ''}, ${
-    patientDetails?.dateOfBirth ? getAge(patientDetails?.dateOfBirth) || '0' : ''
-  }`;
+  const genderAgeText = `${nameFormater(patientDetails?.gender!, 'title') || ''}, ${patientDetails?.dateOfBirth ? getAge(patientDetails?.dateOfBirth) || '0' : ''
+    }`;
   const patientSalutation = !!patientDetails?.gender
     ? patientDetails?.gender === Gender.FEMALE
       ? 'Ms.'
       : patientDetails?.gender === Gender.MALE
-      ? 'Mr.'
-      : ''
+        ? 'Mr.'
+        : ''
     : '';
 
   return {
@@ -3939,17 +3945,22 @@ export const downloadDocument = (
   orderId: number,
   isReport?: boolean
 ) => {
+  const dirs = RNFetchBlob.fs.dirs;
   let filePath: string | null = null;
-  let file_url_length = fileUrl.length;
+  let file_url_length = fileUrl?.length;
   let viewReportOrderId = orderId;
   const isReportApollo = isReport ? 'labreport' : 'labinvoice';
   const dynamicFileName = `Apollo247_${orderId}_${isReportApollo}.pdf`;
-  const configOptions = { fileCache: true };
+  const downloadPath =
+    Platform.OS === 'ios'
+      ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + dynamicFileName
+      : dirs.DownloadDir + '/' + dynamicFileName;
+  const configOptions = { fileCache: true, path: downloadPath };
   RNFetchBlob.config(configOptions)
-    .fetch('GET', fileUrl.replace(/\s/g, ''))
+    .fetch('GET', fileUrl?.replace(/\s/g, ''))
     .then((resp) => {
-      filePath = resp.path();
-      return resp.readFile('base64');
+      filePath = resp?.path();
+      return resp?.readFile('base64');
     })
     .then(async (base64Data) => {
       base64Data = `data:${type};base64,` + base64Data;
@@ -3963,6 +3974,7 @@ export const downloadDocument = (
 
   return viewReportOrderId;
 };
+
 export const getIsMedicine = (typeId: string) => {
   const medicineType = {
     fmcg: '0',
@@ -4097,7 +4109,7 @@ export const replaceVariableInString = (
   }
   let newArrayWithUpdatedString = Object.keys(mapObj).map((item) => '{' + item + '}');
   let rgx = new RegExp(newArrayWithUpdatedString.join('|'), 'gi');
-  str = str.replace(rgx, function(matched) {
+  str = str.replace(rgx, function (matched) {
     return mapObj[matched.replace(/{|}/gi, '')];
   });
   return str;
@@ -4209,7 +4221,7 @@ export const getCirclePlanDetails = async (
         details = res?.APOLLO?.[0]?.plan_summary;
       } else details = [];
     })
-    .catch((err: Error) => {});
+    .catch((err: Error) => { });
   return details;
 };
 
@@ -4315,28 +4327,33 @@ export const shareDocument = async (
   isReport?: boolean
 ) => {
   let result = Platform.OS === 'android' && (await requestReadSmsPermission());
+  const dirs = RNFetchBlob.fs.dirs;
   let filePath: string | null = null;
-  let file_url_length = fileUrl.length;
+  let file_url_length = fileUrl?.length;
   let viewReportOrderId = orderId;
   const isReportApollo = isReport ? 'labreport' : 'labinvoice';
   const dynamicFileName = `Apollo247_${orderId}_${isReportApollo}.pdf`;
-  const configOptions = { fileCache: true };
+  const downloadPath =
+    Platform.OS === 'ios'
+      ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + dynamicFileName
+      : dirs.DownloadDir + '/' + dynamicFileName;
+  const configOptions = { fileCache: true, path: downloadPath };
 
   try {
     if (
       (result &&
         Platform.OS == 'android' &&
         result?.[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] ===
-          PermissionsAndroid.RESULTS.GRANTED &&
+        PermissionsAndroid.RESULTS.GRANTED &&
         result?.[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] ===
-          PermissionsAndroid.RESULTS.GRANTED) ||
+        PermissionsAndroid.RESULTS.GRANTED) ||
       Platform.OS == 'ios'
     ) {
       RNFetchBlob.config(configOptions)
-        .fetch('GET', fileUrl.replace(/\s/g, ''))
+        .fetch('GET', fileUrl?.replace(/\s/g, ''))
         .then((resp) => {
-          filePath = resp.path();
-          return resp.readFile('base64');
+          filePath = resp?.path();
+          return resp?.readFile('base64');
         })
         .then(async (base64Data) => {
           base64Data = `data:${type};base64,` + base64Data;
@@ -4352,9 +4369,9 @@ export const shareDocument = async (
         result &&
         Platform.OS == 'android' &&
         result?.[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] !==
-          PermissionsAndroid.RESULTS.DENIED &&
+        PermissionsAndroid.RESULTS.DENIED &&
         result?.[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] !==
-          PermissionsAndroid.RESULTS.DENIED
+        PermissionsAndroid.RESULTS.DENIED
       ) {
         storagePermissionsToDownload(() => {
           shareDocument(fileUrl, type, orderId, isReport);
@@ -4367,6 +4384,13 @@ export const shareDocument = async (
   return viewReportOrderId;
 };
 
+export const getOfferDescription = (bestOffer: any, item: any) => {
+  return parseFloat(bestOffer?.discount_amount) > 50
+    ? `Get ₹${bestOffer?.discount_amount} off on ${item?.payment_method_name} wallet`
+    : parseFloat(bestOffer?.cashback_amount) > 50
+      ? `Get ₹${bestOffer?.cashback_amount} cashback on ${item?.payment_method_name} wallet`
+      : bestOffer?.description?.description;
+};
 export const addSlotDuration = (slotValue: string, slotDuration: number) => {
   return moment(slotValue, 'hh:mm A')
     ?.add(slotDuration, 'minutes')
@@ -4392,9 +4416,41 @@ export const showDiagnosticCTA = (pageName: CALL_TO_ORDER_CTA_PAGE_ID, cityId: s
       return null;
     }
   });
+}
+
+export const calculateDiagnosticCartItems = (
+  cartItem: DiagnosticsCartItem[],
+  patientCartItem: DiagnosticPatientCartItem[]
+) => {
+
+  let selectedCartItems;
+  if (!!patientCartItem && patientCartItem?.length > 0) {
+    const getPatientCartItems = patientCartItem
+      ?.map((item) => item?.cartItems?.filter((idd) => idd?.id))
+      ?.flat();
+    const getUniquePatientItems = (selectedCartItems = [
+      ...getPatientCartItems
+        ?.reduce((item: any, obj: any) => item?.set(obj?.id, obj), new Map())
+        .values(),
+    ]);
+    const getItemsInCartNotInPatientCart = cartItem?.filter(
+      ({ id: cId }) => !getUniquePatientItems?.some(({ id: pId }) => cId === pId)
+    );
+    const getSelectedItems = getPatientCartItems?.filter(
+      (i: DiagnosticsCartItem) => i?.isSelected
+    );
+    const unionArray = getSelectedItems?.concat(getItemsInCartNotInPatientCart);
+    selectedCartItems = [
+      ...unionArray?.reduce((item: any, obj: any) => item?.set(obj?.id, obj), new Map()).values(),
+    ];
+  } else {
+    selectedCartItems = cartItem?.filter((i: DiagnosticsCartItem) => i?.isSelected);
+  }
+  return selectedCartItems;
 };
 
 export const isTodaysDate = (time: string) => moment(time).isSame(new Date(), 'date');
+
 export const isTomorrowsDate = (time: string) => {
   let tommorowDate = new Date();
   tommorowDate.setDate(tommorowDate.getDate() + 1);
@@ -4404,22 +4460,26 @@ export const isTomorrowsDate = (time: string) => {
   return difference == 0;
 };
 
+export const isRtpcrInCart = (cartItems: DiagnosticsCartItem[]) => {
+  return !!cartItems?.find((cartItem) => AppConfig.Configuration.DIAGNOSTICS_COVID_ITEM_IDS?.includes(Number(cartItem?.id)))
+}
+
 export const getShipmentAndTatInfo = (shipments) => {
   return shipments?.length
     ? shipments.map((shipment) => {
-        const { tat, estimatedAmount, items } = shipment;
-        const tatDate = tat ? tat : null;
-        const tatDayDifference = tatDate ? moment(tatDate).diff(new Date(), 'd') : null;
-        const tatHourDifference = tatDate ? moment(tatDate).format('hh:mm a') : null;
+      const { tat, estimatedAmount, items } = shipment;
+      const tatDate = tat ? tat : null;
+      const tatDayDifference = tatDate ? moment(tatDate).diff(new Date(), 'd') : null;
+      const tatHourDifference = tatDate ? moment(tatDate).format('hh:mm a') : null;
 
-        const skuIds = items.map(({ sku }) => sku).join(' , ');
-        return {
-          tatDayDifference,
-          tatHourDifference,
-          estimatedAmount,
-          skuIds,
-          tat,
-        };
-      })
+      const skuIds = items.map(({ sku }) => sku).join(' , ');
+      return {
+        tatDayDifference,
+        tatHourDifference,
+        estimatedAmount,
+        skuIds,
+        tat,
+      };
+    })
     : [];
 };

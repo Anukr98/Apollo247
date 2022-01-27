@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
@@ -18,15 +18,18 @@ import {
   SafeAreaView,
 } from 'react-native';
 import LottieView from 'lottie-react-native';
+import Animation from 'lottie-react-native';
 const paymentProcessing =
-  '@aph/mobile-patients/src/components/PaymentGateway/AnimationFiles/paymentProcessing.json';
+  '@aph/mobile-patients/src/components/PaymentGateway/AnimationFiles/Animation_1/paymentProcessing.json';
 const paymentSuccess =
-  '@aph/mobile-patients/src/components/PaymentGateway/AnimationFiles/paymentSuccess.json';
+  '@aph/mobile-patients/src/components/PaymentGateway/AnimationFiles/Animation_2/tick.json';
+
 import { CountdownCircleTimer } from 'react-native-countdown-circle-timer';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { GET_PAYMENT_STATUS } from '@aph/mobile-patients/src/graphql/profiles';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
+const { height, width } = Dimensions.get('window');
 export interface PaymentAnimationsProps {
   paymentId: string;
   paymentStatus: string;
@@ -38,8 +41,27 @@ export interface PaymentAnimationsProps {
 export const PaymentAnimations: React.FC<PaymentAnimationsProps> = (props) => {
   const { paymentStatus, onPaymentFailure, onPaymentSuccess, paymentId, onTimeOut } = props;
   const timerTime = AppConfig.Configuration.Payment_Processing_Timer;
+  const timerVal = useRef(timerTime);
   const [remainingTime, setremainingTime] = useState(timerTime);
   const client = useApolloClient();
+  let interval: any;
+
+  useEffect(() => {
+    interval = setInterval(() => tick(), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const tick = () => {
+    if (timerVal.current > 1) {
+      timerVal.current -= 1;
+      setremainingTime(timerVal.current);
+    } else if (timerVal.current == 1) {
+      timerVal.current = 0;
+      setremainingTime(0);
+      onTimerComplete();
+      clearInterval(interval);
+    }
+  };
 
   useEffect(() => {
     refetchPaymentStatus(remainingTime);
@@ -84,47 +106,29 @@ export const PaymentAnimations: React.FC<PaymentAnimationsProps> = (props) => {
     }
   };
 
-  const RenderTimer = () => {
+  const renderProcessingAnimation = () => {
     return (
-      <View style={{}}>
-        <CountdownCircleTimer
-          onComplete={() => {
-            onTimerComplete();
-          }}
-          isPlaying
-          duration={timerTime}
-          colors="#F89B2D"
-          size={102}
-          strokeWidth={7}
-        >
-          {({ remainingTime }) => {
-            setremainingTime(remainingTime);
-            return (
-              <Animated.Text style={{ color: '#01475B', ...theme.fonts.IBMPlexSansSemiBold(18) }}>
-                00:{remainingTime > 9 ? remainingTime : '0' + remainingTime}
-              </Animated.Text>
-            );
-          }}
-        </CountdownCircleTimer>
+      <View style={{ flex: 1, alignItems: 'center', marginTop: 125 }}>
+        <LottieView
+          source={require(paymentProcessing)}
+          autoPlay
+          loop={true}
+          autoSize={true}
+          style={{ width: 250, marginBottom: 40 }}
+          imageAssetsFolder={'lottie/animation_1/images'}
+        />
+        <Text>
+          <Animated.Text style={styles.timer}>
+            00:{remainingTime > 9 ? remainingTime : '0' + remainingTime}
+          </Animated.Text>
+        </Text>
+        <Text style={styles.wait}>{'Please Wait'}</Text>
+        <Text style={styles.status}>We are checking your payment status</Text>
       </View>
     );
   };
 
-  const renderProcessing = () => {
-    return (
-      <View style={styles.textCont}>
-        {RenderTimer()}
-        <Text style={styles.processing}>{'Please Wait'}</Text>
-        <Text style={styles.note}>{'We are checking your payment status'}</Text>
-      </View>
-    );
-  };
-
-  return (
-    <View style={styles.container}>
-      {paymentStatus == 'success' ? renderProcessing() : renderProcessing()}
-    </View>
-  );
+  return <View style={styles.container}>{renderProcessingAnimation()}</View>;
 };
 
 const styles = StyleSheet.create({
@@ -150,5 +154,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: 35,
+  },
+  timer: {
+    ...theme.fonts.IBMPlexSansBold(20),
+    color: '#0087BA',
+    textAlign: 'center',
+  },
+  wait: {
+    ...theme.fonts.IBMPlexSansSemiBold(16),
+    color: '#01475B',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginTop: 8,
+  },
+  status: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    lineHeight: 18,
+    color: '#01475B',
+    marginTop: 2,
   },
 });

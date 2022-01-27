@@ -429,6 +429,16 @@ const styles = StyleSheet.create({
     height: 60,
     width: '100%',
   },
+  recommendationShimmerView: {
+    marginTop: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  recommendationLeftView: { height: 70, width: '50%', marginRight: 30 },
+  recommendationRightView: {
+    height: 50,
+    width: 70,
+  },
 });
 
 export const renderCovidVaccinationShimmer = () => {
@@ -1361,6 +1371,32 @@ export const renderDiagnosticCardShimmer = () => {
         LinearGradient={LinearGradient}
         shimmerStyle={styles.diagnosticsCardBottom}
       />
+    </View>
+  );
+};
+
+export const renderDiagnosticRecommendationShimmer = () => {
+  return (
+    <View style={{ margin: 16 }}>
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={{ height: 30 }}
+      />
+      <View style={styles.recommendationShimmerView}>
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={styles.recommendationLeftView}
+        />
+        <View style={{ alignItems: 'flex-end' }}>
+          <ShimmerPlaceHolder
+            shimmerColors={shimmerColors}
+            LinearGradient={LinearGradient}
+            shimmerStyle={styles.recommendationRightView}
+          />
+        </View>
+      </View>
     </View>
   );
 };

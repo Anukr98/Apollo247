@@ -31,6 +31,8 @@ export interface getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_
 export interface getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_labResults_response {
   __typename: "LabResultsBaseResponse";
   id: string;
+  documentId: string | null;
+  isClinicalDocument:any;
   labTestName: string;
   labTestSource: string;
   packageId: string | null;

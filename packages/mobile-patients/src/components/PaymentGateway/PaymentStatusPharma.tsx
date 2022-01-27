@@ -7,6 +7,7 @@ import {
   Platform,
   ToastAndroid,
   Clipboard,
+  View,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -47,6 +48,9 @@ import {
   fireCirclePlanActivatedEvent,
 } from '@aph/mobile-patients/src/components/PaymentGateway/Events';
 import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import LottieView from 'lottie-react-native';
+const paymentSuccess =
+  '@aph/mobile-patients/src/components/PaymentGateway/AnimationFiles/Animation_2/tick.json';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 
@@ -128,7 +132,8 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
   const fireEvents = () => {
     requestInAppReview();
     firePaymentOrderStatusEvent('success', payload, defaultClevertapEventParams);
-    fireCleverTapOrderSuccessEvent();
+    // removing because of duplicate event trigger
+    // fireCleverTapOrderSuccessEvent();
     firePaymentStatusPageViewedEvent(
       paymentStatus,
       paymentId,
@@ -170,12 +175,12 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
     } catch (error) {}
   };
 
-  const fireCleverTapOrderSuccessEvent = () => {
-    postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, {
-      ...cleverTapCheckoutEventAttributes,
-      'Cart items': serverCartItems?.length,
-    });
-  };
+  // const fireCleverTapOrderSuccessEvent = () => {
+  //   postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, {
+  //     ...cleverTapCheckoutEventAttributes,
+  //     'Cart items': serverCartItems?.length,
+  //   });
+  // };
 
   const onPressCopy = () => {
     Clipboard.setString(paymentId);
@@ -258,18 +263,40 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
     return <TabBar onPressGoToHome={moveToHome} onPressGoToMyOrders={onPressGoToMyOrders} />;
   };
 
+  const [animationfinished, setAnimationfinished] = useState<boolean>(false);
+
+  const renderSucccessAnimation = () => {
+    return (
+      <View style={{ alignItems: 'center' }}>
+        <LottieView
+          source={require(paymentSuccess)}
+          onAnimationFinish={() => setAnimationfinished(true)}
+          autoPlay
+          loop={false}
+          autoSize={true}
+          style={{ width: 225, marginBottom: 40 }}
+          imageAssetsFolder={'lottie/animation_2/images'}
+        />
+      </View>
+    );
+  };
+
   return (
     <>
-      <SafeAreaView style={styles.container}>
-        <ScrollView>
-          {renderSubstituteNotice()}
-          {renderPaymentStatus()}
-          {renderPaymentInfo()}
-          {renderFreeConsultCard()}
-          {renderOrderInfo()}
-        </ScrollView>
-        {renderTabBar()}
-      </SafeAreaView>
+      {animationfinished ? (
+        <SafeAreaView style={styles.container}>
+          <ScrollView>
+            {renderSubstituteNotice()}
+            {renderPaymentStatus()}
+            {renderPaymentInfo()}
+            {renderFreeConsultCard()}
+            {renderOrderInfo()}
+          </ScrollView>
+          {renderTabBar()}
+        </SafeAreaView>
+      ) : (
+        renderSucccessAnimation()
+      )}
     </>
   );
 };

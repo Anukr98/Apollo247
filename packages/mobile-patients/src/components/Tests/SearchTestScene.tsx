@@ -27,6 +27,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   aphConsole,
+  calculateDiagnosticCartItems,
   g,
   isEmptyObject,
   isSmallDevice,
@@ -63,6 +64,7 @@ import {
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import _ from 'lodash';
 import {
+  diagnosticsDisplayPrice,
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   getPricesForItem,
   sourceHeaders,
@@ -80,6 +82,7 @@ import { searchDiagnosticItem_searchDiagnosticItem_data } from '@aph/mobile-pati
 import { DiagnosticsSearchResultItem } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticSearchResultItem';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { DIAGNOSTICS_ITEM_TYPE } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 type searchResults = searchDiagnosticItem_searchDiagnosticItem_data;
 
@@ -189,7 +192,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     if (!popularArray?.length) {
       fetchPopularDetails();
     }
-    setWebEngageEventOnSearchItem('', []);
+    //for time being removing Diagnostic search clicked ct event from here required for ticket https://apollogarage.atlassian.net/browse/APP-18205
   }, []);
 
   useEffect(() => {
@@ -290,7 +293,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         const products = res?.data?.searchDiagnosticItem?.data || [];
         setDiagnosticResults(products as searchDiagnosticItem_searchDiagnosticItem_data[]);
         setSearchResult(products?.length == 0);
-        setWebEngageEventOnSearchItem(_searchText, products);
+        if (_searchText?.length > 0) {
+          setWebEngageEventOnSearchItem(_searchText, products);
+        }
       } else {
         setDiagnosticResults([]);
         setSearchResult(true);
@@ -321,14 +326,20 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     id: string,
     price: number,
     discountedPrice: number,
-    source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE
+    source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
+    inclusions?: any
   ) => {
+    const itemType =
+      !!inclusions && inclusions?.length > 1
+        ? DIAGNOSTICS_ITEM_TYPE.PACKAGE
+        : DIAGNOSTICS_ITEM_TYPE.TEST;
     DiagnosticAddToCartEvent(
       name,
       id,
-      price,
-      discountedPrice,
+      price, //mrp
+      discountedPrice, //actual price
       source,
+      itemType,
       undefined,
       currentPatient,
       isDiagnosticCircleSubscription
@@ -343,21 +354,34 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     itemId: string | number,
     itemName: string,
     source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
+    inclusions?: any[],
     rate?: number,
     collectionType?: TEST_COLLECTION_TYPE,
     pricesObject?: any,
     promoteCircle?: boolean,
     promoteDiscount?: boolean,
-    selectedPlan?: any,
-    inclusions?: any[]
+    selectedPlan?: any
   ) => {
+    const priceToShow = !!pricesObject
+      ? diagnosticsDisplayPrice(pricesObject, isDiagnosticCircleSubscription)?.priceToShow
+      : 0;
     savePastSearch(`${itemId}`, itemName).catch((e) => {});
-    postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, 0, 0, source);
+    postDiagnosticAddToCartEvent(
+      stripHtml(itemName),
+      `${itemId}`,
+      !!rate ? rate : 0,
+      priceToShow,
+      source,
+      inclusions
+    );
     const addedItem = {
       id: `${itemId}`,
       name: stripHtml(itemName),
-      price: pricesObject?.rate || 0,
-      specialPrice: pricesObject?.specialPrice! || pricesObject?.rate || 0,
+      price: !!pricesObject?.rate ? pricesObject?.rate : pricesObject?.price || 0,
+      specialPrice:
+        pricesObject?.specialPrice! || !!pricesObject?.rate
+          ? pricesObject?.rate
+          : pricesObject?.price || 0,
       circlePrice: pricesObject?.circlePrice,
       circleSpecialPrice: pricesObject?.circleSpecialPrice,
       discountPrice: pricesObject?.discountPrice,
@@ -403,7 +427,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   };
 
   const renderHeader = () => {
-    const cartItemsCount = cartItems?.length + shopCartItems?.length;
+    const cartItemsCount = isModify
+      ? cartItems?.length
+      : calculateDiagnosticCartItems(cartItems, patientCartItems);
     return (
       <Header
         container={{ borderBottomWidth: 1 }}
@@ -515,7 +541,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
                   setDiagnosticResults([]);
                   return;
                 }
-                const search = _.debounce(onSearchTest, 300);
+                const search = _.debounce(onSearchTest, 500);
                 setSearchQuery((prevSearch: any) => {
                   if (prevSearch?.cancel) {
                     prevSearch?.cancel();
@@ -619,6 +645,38 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     );
   };
 
+  function fetchPrices(data: any) {
+    const pricesForItem = getPricesForItem(
+      data?.diagnostic_item_price,
+      data?.packageCalculatedMrp!
+    );
+    const obj = {
+      id: data?.diagnostic_item_id,
+      name: data?.diagnostic_item_name,
+      mou: 1,
+      price: pricesForItem?.price!,
+      thumbnail: null,
+      specialPrice: pricesForItem?.specialPrice!,
+      circlePrice: pricesForItem?.circlePrice,
+      circleSpecialPrice: pricesForItem?.circleSpecialPrice!,
+      discountPrice: pricesForItem?.discountPrice!,
+      discountSpecialPrice: pricesForItem?.discountSpecialPrice!,
+      collectionMethod: TEST_COLLECTION_TYPE.HC,
+      groupPlan: pricesForItem?.planToConsider?.groupPlan,
+      packageMrp: data?.packageCalculatedMrp!,
+      inclusions: data?.diagnostic_inclusions,
+    };
+    onAddCartItem(
+      data?.diagnostic_item_id,
+      data?.diagnostic_item_name,
+      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PARTIAL_SEARCH,
+      data?.diagnostic_inclusions,
+      obj?.price,
+      TEST_COLLECTION_TYPE.HC,
+      obj
+    );
+  }
+
   const renderTestCard = (product: any, index: number, array: searchResults[]) => {
     return (
       <DiagnosticsSearchResultItem
@@ -631,11 +689,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           });
         }}
         onPressAddToCart={() => {
-          onAddCartItem(
-            product?.diagnostic_item_id,
-            product?.diagnostic_item_name,
-            DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PARTIAL_SEARCH
-          );
+          fetchPrices(product);
         }}
         data={product}
         loading={true}
@@ -767,7 +821,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           onAddCartItem(
             item?.diagnostic_item_id,
             item?.diagnostic_item_name,
-            DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.POPULAR_SEARCH
+            DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.POPULAR_SEARCH,
+            item?.diagnostic_inclusions
           );
         }}
         data={item}

@@ -5,7 +5,6 @@ const semiDarkClear = 'rgba(0, 0, 0, 0.3)';
 const lightColor = 'rgb(216, 216, 216)';
 const darkColor = 'rgb(115, 118, 131)';
 const sherpa_blue_light = 'rgba(1, 71, 91, 0.4)';
-
 const darkGray = '#bbbbbb';
 const hexWhite = '#ffffff';
 const app_green = '#00b38e';
@@ -61,9 +60,11 @@ const Card = {
 };
 
 const Common = {
+  GRAY_TWO: "#dddddd",
   DARK_GRAY: darkGray,
   BLACK_COLOR: black,
   DEFAULT_BACKGROUND_COLOR: '#f0f1ec',
+  LOGIN_BANNER_TEXT: "#00485D",
   INPUT_CURSOR_COLOR: app_green,
   APP_GREEN: app_green,
   DARK_BLUE: '#346CD9',
@@ -108,6 +109,7 @@ const Common = {
   CAROUSEL_INACTIVE_DOT: '#C4C4C4',
   ORANGE_BORDER: '#FA9E3E',
   GRAY: '#6A6A6A',
+  NEWGRAY: '#CECECE',
   DISABLE_TEXT: '#BCBCBC',
   RED: '#C5411E',
   LIGHTISH_GRAY: '#93B7C5',
@@ -172,6 +174,16 @@ const Common = {
   LIGHT_REFERRER_AQUA_TWO: '#FFFCFF',
   BLUE_REFERRER_BORDER: '#74b9ed',
   MERCURY_GRAY: '#e9e9e9',
+  ORANGE_DISABLED: "#f8952180",
+  ORANGE_ENABLED: "#f89521",
+  ORANGE_BG :"#FFF6DE",
+  SLOT_GRAY: "#F0F0F0",
+  MULTISIGNUP_HEADING_BLUE: '#01495D',
+  LIGHT_BLUE_DOWN: '#02475bb0',
+  LIGHT_WHITE_GRAY: '#F0F0F0',
+  BUTTON_ORANGE: '#fc9916eb',
+  BUTTON_ORANGE_DISABLE: '#fc991661',
+  LIGHT_SOIL_COLOR: '#FCF0E3'
 };
 
 const Header = {
@@ -239,6 +251,12 @@ const StatusColors = {
   REFUND: lightPaleRed,
 };
 
+const SignupColors = {
+  GRADIENT_LIGHT_YELLOW_ONE: '#F3ECD9',
+  GRADIENT_LIGHT_YELLOW_TWO: '#FFE8AD',
+  RED_BROWN: '#A15D59'
+}
+
 export const colors = {
   ...Buttons,
   ...Card,
@@ -251,4 +269,5 @@ export const colors = {
   ...TabBar,
   ...Capsule,
   ...StatusColors,
+  ...SignupColors
 };

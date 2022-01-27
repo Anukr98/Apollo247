@@ -50,7 +50,9 @@ import {
   g,
   handleGraphQlError,
   isSmallDevice,
+  postCleverTapEvent,
   postCleverTapPHR,
+  removeObjectProperty,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import {
@@ -357,7 +359,9 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
     Platform.OS === 'android' && requestReadSmsPermission();
     setLoading && setLoading(true);
     // This is for creating a new object after collecting the data from the api..
-    asyncFetchDailyData(data);
+    if (data) {
+      asyncFetchDailyData(data);
+    }
   }, []);
 
   const combineObjects = (arr: any) => {
@@ -480,13 +484,14 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
         prescriptionSource
       )
         .then((_data: any) => {
-          const labResultsData = g(
+          let labResultsData = g(
             _data,
             'getPatientPrismMedicalRecords_V3',
             'labResults',
-            'response',
-            '0' as any
+            'response'
           );
+          labResultsData = labResultsData.find((item: any) => item.documentId === healthrecordId);
+          setTestResultArray(labResultsData?.testResultFiles);
           setData(labResultsData);
           data ? setApiError(false) : setApiError(true);
         })
@@ -727,7 +732,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
       currentPatient,
       fileShare
         ? CleverTapEventName.PHR_SHARE_LAB_TEST_REPORT
-        : CleverTapEventName.PHR_DOWNLOAD_TEST_REPORT,
+        : CleverTapEventName.PHR_DOWNLOAD_RECORD,
       'Test Report Screen View'
     );
     setLoading && setLoading(true);
@@ -1030,6 +1035,12 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
     };
 
     const pushToInformaticPage = (content: any, desc: any, title: any) => {
+      let attributes = {
+        'Nav src': 'Bar Chart Visualisation',
+        'Parameter Name': title,
+        'Service Name': data?.labTestName,
+      };
+      postCleverTapEvent(CleverTapEventName.PHR_INFO_CONTENT, attributes);
       props.navigation.navigate(AppRoutes.InformativeContent, {
         relatedFAQ: content,
         desc: desc,
@@ -1039,6 +1050,12 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
 
     const handleOnClickForGraphPopUp = (paramName: any, labTestName: any, lonCode: any) => {
       setLoading && setLoading(true);
+      let attributes = {
+        'Nav src': 'Bar Chart Visualisation',
+        'Parameter Name': paramName,
+        'Service Name': labTestName,
+      };
+      postCleverTapEvent(CleverTapEventName.PHR_BAR_CHART_VISUALISATION, attributes);
       client
         .query<getVisualizationData, getVisualizationDataVariables>({
           query: GET_VISUALIZATION_DATA,
@@ -1275,12 +1292,18 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
       Platform.OS === 'ios'
         ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + (fileName || 'Apollo_TestReport.pdf')
         : dirs.DownloadDir + '/' + (fileName || 'Apollo_TestReport.pdf');
-    postCleverTapPHR(
-      currentPatient,
+    let dateOfBirth = g(currentPatient, 'dateOfBirth');
+    let testReportAttributes = {
+      'Nav src': 'Test Reports',
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+    };
+    postCleverTapEvent(
       fileShare
         ? CleverTapEventName.PHR_SHARE_LAB_TEST_REPORT
-        : CleverTapEventName.PHR_DOWNLOAD_TEST_REPORT,
-      'Test Report Screen View'
+        : CleverTapEventName.PHR_DOWNLOAD_RECORD,
+      testReportAttributes
     );
     setLoading && setLoading(true);
     RNFetchBlob.config({
@@ -1397,12 +1420,13 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
       minNumber = Number(rangeDecider[0]);
       maxNumber = Number(rangeDecider[1]);
     }
-    postCleverTapPHR(
-      currentPatient,
-      CleverTapEventName.PHR_BAR_CHART_VISUALISATION,
-      'Test Report Screen View',
-      resonseData
-    );
+    let attributes = {
+      'Nav src': 'Bar Chart',
+      'Parameter name': sendTestReportName,
+      'Service Name': sendParamName,
+      'LONIC CODE': lonicCode,
+    };
+    postCleverTapEvent(CleverTapEventName.PHR_DOWNLOAD_RECORD, attributes);
     const lineData = arrResult?.map((i) => Number(i));
     const dateForRanges = arrDate?.map((i) => Number(i));
     const imgArray: [] = [];

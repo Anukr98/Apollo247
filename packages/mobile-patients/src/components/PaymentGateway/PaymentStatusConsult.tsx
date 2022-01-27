@@ -78,6 +78,9 @@ import {
 import AsyncStorage from '@react-native-community/async-storage';
 import messaging from '@react-native-firebase/messaging';
 import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
+const paymentSuccess =
+  '@aph/mobile-patients/src/components/PaymentGateway/AnimationFiles/Animation_2/tick.json';
+import LottieView from 'lottie-react-native';
 
 export interface PaymentStatusConsultProps extends NavigationScreenProps {}
 
@@ -111,7 +114,6 @@ export const PaymentStatusConsult: React.FC<PaymentStatusConsultProps> = (props)
   const fireLocationEvent = useRef<boolean>(false);
   const userChangedLocation = useRef<boolean>(false);
   const [notificationAlert, setNotificationAlert] = useState(false);
-
   const moveToHome = () => {
     // use apiCallsEnum values here in order to make that api call in home screen
     apisToCall.current = !!circleSubscriptionId
@@ -565,10 +567,27 @@ export const PaymentStatusConsult: React.FC<PaymentStatusConsultProps> = (props)
       />
     ) : null;
   };
+  const [animationfinished, setAnimationfinished] = useState<boolean>(false);
+
+  const renderSucccessAnimation = () => {
+    return (
+      <View style={{ alignItems: 'center' }}>
+        <LottieView
+          source={require(paymentSuccess)}
+          onAnimationFinish={() => setAnimationfinished(true)}
+          autoPlay
+          loop={false}
+          autoSize={true}
+          style={{ width: 225, marginBottom: 40 }}
+          imageAssetsFolder={'lottie/animation_2/images'}
+        />
+      </View>
+    );
+  };
 
   return (
     <>
-      {!fetching ? (
+      {animationfinished ? (
         <SafeAreaView style={styles.container}>
           <ScrollView>
             {renderPaymentStatus()}
@@ -583,7 +602,7 @@ export const PaymentStatusConsult: React.FC<PaymentStatusConsultProps> = (props)
           {renderTabBar()}
         </SafeAreaView>
       ) : (
-        <Spinner />
+        renderSucccessAnimation()
       )}
     </>
   );

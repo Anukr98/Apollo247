@@ -25,7 +25,7 @@ export const WalletIcon: React.FC<WalletIconProps> = (props) => {
       resizeMode="contain"
       style={{
         ...styles.image,
-        height: 35,
+        height: 30,
       }}
     />
   );
@@ -33,6 +33,6 @@ export const WalletIcon: React.FC<WalletIconProps> = (props) => {
 
 const styles = StyleSheet.create({
   image: {
-    width: 35,
+    width: 30,
   },
 });

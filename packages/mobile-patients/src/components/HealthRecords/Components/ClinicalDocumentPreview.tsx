@@ -42,7 +42,13 @@ import { SAVE_CLINICAL_DOCUMENTS } from '@aph/mobile-patients/src/graphql/profil
 import { AddClinicalDocumentDetails } from '@aph/mobile-patients/src/components/HealthRecords/Components/AddClinicalDocumentDetails';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  handleGraphQlError,
+  postCleverTapEvent,
+  postCleverTapPHR,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const styles = StyleSheet.create({
   phrOverlayStyle: {
@@ -347,6 +353,14 @@ export const ClinicalDocumentPreview: React.FC<ClinicalDocumentPreviewProps> = (
           },
         })
         .then((response: any) => {
+          let dateOfBirth = g(currentPatient, 'dateOfBirth');
+          let attributes = {
+            'Nav src': 'Clinical Documents',
+            'Patient UHID': g(currentPatient, 'uhid'),
+            'Patient gender': g(currentPatient, 'gender'),
+            'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+          };
+          postCleverTapEvent(CleverTapEventName.PHR_ADD_RECORD, attributes);
           props.navigation.navigate(AppRoutes.ClinicalDocumentImageReview, {
             imageArray: Images,
             imageTitle: pdfStringHandler,
