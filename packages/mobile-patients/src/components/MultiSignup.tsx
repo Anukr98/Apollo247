@@ -370,35 +370,37 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   };
 
   const postAppsFlyerEventAppInstallViaReferral = async (data: any) => {
-    const referralData: any = await AsyncStorage.getItem('app_referral_data');
-    setRefereeFlagForNewRegisterUser(referralData !== null);
-    const cleverTapProfile = { ...data?.updatePatient?.patient };
-    if (whatsAppOptIn) cleverTapProfile['Msg-whatsapp'] = true;
-    onCleverTapUserLogin(cleverTapProfile);
-    if (referralData !== null) {
-      const { af_referrer_customer_id, campaign, rewardId, shortlink, installTime } = JSON.parse(
-        referralData
-      );
-      const eventAttribute = {
-        referrer_id: af_referrer_customer_id,
-        referee_id: currentPatient ? currentPatient.id : '',
-        campaign_id: campaign,
-        reward_id: rewardId,
-        short_link: shortlink,
-        device_os: Platform.OS == 'ios' ? 'IOS' : 'ANDROID',
-      };
-      updateRefereeDataInReferrerRecord({
-        af_referrer_customer_id,
-        campaign,
-        rewardId,
-        shortlink,
-        installTime,
-      });
-      postAppsFlyerEvent(AppsFlyerEventName.REGISTRATION_REFERRER, eventAttribute);
-      AsyncStorage.removeItem('app_referral_data');
-      AsyncStorage.setItem('referrerInstall', 'true');
-    }
-    handleOpenURLs();
+    try {
+      const referralData: any = await AsyncStorage.getItem('app_referral_data');
+      setRefereeFlagForNewRegisterUser(referralData !== null);
+      const cleverTapProfile = { ...data?.updatePatient?.patient };
+      if (whatsAppOptIn) cleverTapProfile['Msg-whatsapp'] = true;
+      onCleverTapUserLogin(cleverTapProfile);
+      if (referralData !== null) {
+        const { af_referrer_customer_id, campaign, rewardId, shortlink, installTime } = JSON.parse(
+          referralData
+        );
+        const eventAttribute = {
+          referrer_id: af_referrer_customer_id,
+          referee_id: currentPatient ? currentPatient.id : '',
+          campaign_id: campaign,
+          reward_id: rewardId,
+          short_link: shortlink,
+          device_os: Platform.OS == 'ios' ? 'IOS' : 'ANDROID',
+        };
+        updateRefereeDataInReferrerRecord({
+          af_referrer_customer_id,
+          campaign,
+          rewardId,
+          shortlink,
+          installTime,
+        });
+        postAppsFlyerEvent(AppsFlyerEventName.REGISTRATION_REFERRER, eventAttribute);
+        AsyncStorage.removeItem('app_referral_data');
+        AsyncStorage.setItem('referrerInstall', 'true');
+      }
+      handleOpenURLs();
+    } catch (e) {}
   };
 
   const renderButtons = () => {

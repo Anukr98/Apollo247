@@ -397,9 +397,6 @@ const SignUp: React.FC<SignUpProps> = (props) => {
         'Mobile Number': currentPatient?.mobileNumber,
       };
       let preApolloExistingUser = await AsyncStorage.getItem('preApolloUser');
-
-      if (preApolloExistingUser && preApolloExistingUser === 'true') {
-      }
       const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.REGISTRATION_DONE] = {
         'Customer ID': currentPatient ? currentPatient.id : '',
         'Full Name': firstName?.trim() + ' ' + lastName?.trim(),
