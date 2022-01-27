@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, Dimensions } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
@@ -12,6 +12,7 @@ import { CvvPopUp } from '@aph/mobile-patients/src/components/PaymentGateway/Com
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { OffersIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { OutagePrompt } from '@aph/mobile-patients/src/components/PaymentGateway/Components/OutagePrompt';
+const { width } = Dimensions.get('window');
 
 export interface SavedCardProps {
   onPressSavedCardPayNow: (cardInfo: any, saveCard: any, bestOffer?: any) => void;
@@ -239,7 +240,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     height: 40,
     marginLeft: 41,
-    width: 125,
+    width: 0.25 * width,
     backgroundColor: '#fff',
     paddingLeft: 12,
     ...theme.fonts.IBMPlexSansMedium(14),
@@ -252,7 +253,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   buttonStyle: {
-    width: 150,
+    width: 0.4 * width,
     // paddingHorizontal: 18,
     borderRadius: 5,
   },

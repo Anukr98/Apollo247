@@ -23,7 +23,7 @@ export enum AppEnv {
   QA8 = 'QA8',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA5 as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -244,6 +244,26 @@ const appStaticVariables = {
     'An Apollo doctor will be assigned to you in the next 15 minutes.',
     'View your booked appointment in the ‘My Appointment’ section on your app.',
   ],
+  RESCHEDULE_CANCELLATION: {
+    reschedule_cancellation_guidelines: {
+      title: 'Reschedule and Cancellation is allowed :',
+      guidelines: [
+        'a. 15 mins prior to the start of the appointment time',
+        'b. 10 minutes after the appointment time, in case the appointment has not started',
+      ],
+    },
+    other_guidelines: {
+      title: 'Other details:',
+      guidelines: [
+        'a. An appointment that has been started can not be canceled or rescheduled ',
+        'b. Full refund will be issued on cancellation, the same will be credited to the source account within 10 working days',
+        'c. In case reschedule request has been initiated by the doctor, you may accept the request or choose another slot',
+      ],
+    },
+    isConsultationGuidelinesPdf: true,
+    guidelinesHeading: 'Consultation Guidelines',
+    guidelinesSubHeading: 'Reschedule & Cancellation',
+  },
   Vaccine_Type: ['Covaxin', 'Covishield'],
   Cancel_Threshold_Pre_Vaccination: 12, //hrs
   Enable_Diagnostics_COD: true,
@@ -793,6 +813,7 @@ const ConfigurationQA = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  PATIENT_VITALS: 'https://aph-staging-web-patients.apollo247.com/patient-vitals',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://aph-staging-web-patients.apollo247.com',
@@ -854,6 +875,7 @@ const ConfigurationQA2 = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  PATIENT_VITALS: 'https://qapatients.apollo247.com/patient-vitals',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://qapatients.apollo247.com',
@@ -916,6 +938,7 @@ const ConfigurationQA3 = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  PATIENT_VITALS: 'https://qathreepatients.apollo247.com/patient-vitals',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://qathreepatients.apollo247.com',
@@ -979,6 +1002,7 @@ const ConfigurationQA5 = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  PATIENT_VITALS: 'https://qa5patients.apollo247.com/patient-vitals',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://qa5patients.apollo247.com',
@@ -1041,6 +1065,7 @@ const ConfigurationQA6 = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  PATIENT_VITALS: 'https://qa6patients.apollo247.com/patient-vitals',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://qa6patients.apollo247.com',
@@ -1103,6 +1128,7 @@ const ConfigurationVAPT = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  PATIENT_VITALS: 'http://stagingpatients.apollo247.com/patient-vitals',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://stagingpatients.apollo247.com',
@@ -1163,6 +1189,7 @@ const ConfigurationProd = {
   baseUrl: 'https://www.apollo247.com',
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE: 'https://newassets.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  PATIENT_VITALS: 'https://www.apollo247.com/patient-vitals',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://apollo247.com',
@@ -1226,6 +1253,7 @@ const ConfigurationPERFORM = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  PATIENT_VITALS: 'https://aph-staging-web-patients.apollo247.com/patient-vitals',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://perfpatients.apollo247.com',
@@ -1289,6 +1317,7 @@ const ConfigurationDevReplica = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  PATIENT_VITALS: 'https://aph-staging-web-patients.apollo247.com/patient-vitals',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://devpatients.apollo247.com',

@@ -111,6 +111,7 @@ export interface getPatientAllAppointments_getPatientAllAppointments_activeAppoi
   isActive: boolean | null;
   id: string;
   languages: string | null;
+  skipAutoQuestions: boolean | null;
   lastName: string | null;
   mobileNumber: string;
   onlineConsultationFees: string;
@@ -170,6 +171,12 @@ export interface getPatientAllAppointments_getPatientAllAppointments_activeAppoi
   appointmentPayments: (getPatientAllAppointments_getPatientAllAppointments_activeAppointments_appointmentPayments | null)[] | null;
   id: string;
   hideHealthRecordNudge: boolean | null;
+  bookingFee: number | null;
+  consultFee: number | null;
+  amountPaid: number | null;
+  couponApplied: boolean | null;
+  couponCode: string | null;
+  couponAmount: number | null;
   discountedAmount: number | null;
   patientId: string;
   doctorId: string;

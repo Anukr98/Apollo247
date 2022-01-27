@@ -272,7 +272,7 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
                   // new cart total does not contain circle membership charges
                   props.navigation.navigate(AppRoutes.PaymentMethods, {
                     paymentId: paymentOrderId,
-                    amount: newCartTotal,
+                    amount: Number(newCartTotal?.toFixed(2)),
                     orderDetails: getOrderDetails(
                       orders,
                       transactionId,

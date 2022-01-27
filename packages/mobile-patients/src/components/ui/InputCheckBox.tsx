@@ -1,7 +1,7 @@
 import React from 'react';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { WhatsAppCheckTick } from '@aph/mobile-patients/src/components/ui/Icons';
 
 export interface InputCheckBoxProps {
   label?: string;
@@ -12,7 +12,14 @@ export const InputCheckBox: React.FC<InputCheckBoxProps> = (props) => {
   return (
     <TouchableOpacity style={styles.checkboxMainContainer} onPress={() => props.onClick()}>
       <View style={styles.checkboxContainer}>
-        {props.checked && <FontAwesome5 name="check" size={10} color={theme.colors.LIGHT_BLUE} />}
+        {props.checked && (
+          <WhatsAppCheckTick
+            style={{
+              width: 9,
+              height: 9,
+            }}
+          />
+        )}
       </View>
       <View>
         <Text>{props.label}</Text>

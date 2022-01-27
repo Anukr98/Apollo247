@@ -483,6 +483,12 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
           bankTxnId
           orderId
         }
+        bookingFee
+        consultFee
+        amountPaid
+        couponApplied
+        couponCode
+        couponAmount
         id
         hideHealthRecordNudge
         discountedAmount
@@ -520,6 +526,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
           isActive
           id
           languages
+          skipAutoQuestions
           lastName
           mobileNumber
           onlineConsultationFees

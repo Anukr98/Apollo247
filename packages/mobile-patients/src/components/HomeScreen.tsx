@@ -2151,8 +2151,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED,
           'Home Screen'
         );
-        props.navigation.navigate(AppRoutes.DoctorSearch);
-        //props.navigation.navigate(AppRoutes.PostShareAppointmentSelectorScreen);
+        props.navigation.navigate(AppRoutes.DoctorSearch);      
       },
     },
     {
