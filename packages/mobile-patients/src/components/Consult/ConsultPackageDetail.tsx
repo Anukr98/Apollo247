@@ -6,7 +6,15 @@ import React, { useEffect, useState } from 'react';
 import { default as Moment, default as moment } from 'moment';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { Text, SafeAreaView, View, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import {
+  Text,
+  SafeAreaView,
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  BackHandler,
+} from 'react-native';
 import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import HTML from 'react-native-render-html';
 import { ConsultPatientSelector } from '@aph/mobile-patients/src/components/Consult/Components/ConsultPatientSelector';
@@ -416,10 +424,13 @@ export const ConsultPackageDetail: React.FC<ConsultPackageDetailProps> = (props)
   };
 
   const onPatientSelected = (patient: any) => {
+    setShowPatientSelector(false);
+
     setPatient(patient);
     props.navigation.navigate(AppRoutes.PackageCheckout, {
       packageDetailData,
       selectedPlanIndex,
+      isOneTap: isOneTap,
       oneTapPatient: patient,
     });
   };
@@ -451,6 +462,9 @@ export const ConsultPackageDetail: React.FC<ConsultPackageDetailProps> = (props)
             setVisiblity(false);
           }}
           onCloseClicked={() => {
+            setShowPatientSelector(false);
+          }}
+          onOutboundClicked={() => {
             setShowPatientSelector(false);
           }}
         />

@@ -2890,6 +2890,12 @@ export const DoctorConsultIcon: React.FC<IconProps> = (props) => (
   />
 );
 
+export const MedicalAssessment: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/assessment.webp')}
+  />
+);
 export const PaymentSuccess: React.FC<IconProps> = (props) => (
   <IconBase
     size="sm"

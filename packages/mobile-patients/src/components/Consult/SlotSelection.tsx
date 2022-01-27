@@ -312,6 +312,12 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
             ? consultPhysicalTab
             : consultOnlineTab
         );
+        setIsOnlineSelected(
+          props.navigation.getParam('consultModeSelected') === consultPhysicalTab &&
+            (isPhysical?.length > 0 || isBoth?.length > 0)
+            ? false
+            : true
+        );
       } else {
         showErrorPopup();
       }

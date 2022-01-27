@@ -1065,6 +1065,19 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           `Slot you are trying to book is no longer available. Please try a different slot.`
         );
         break;
+      case 'Internal Error':
+        renderErrorPopup(string.common.bookingFailedMM);
+        const eventAttributes: WebEngageEvents[WebEngageEventName.Patient_API_Error] = {
+          'Error Name': 'Medmantra_Issue',
+          'Patient Name': currentPatient?.firstName || '',
+          'Patient ID': currentPatient?.id || '',
+          'Patient Number': currentPatient?.mobileNumber || '',
+          'Doctor ID': doctor?.id || '',
+          'Screen Name': 'PaymentCheckout',
+          'API Name': 'bookAppointment',
+        };
+        postCleverTapEvent(CleverTapEventName.PATIENT_API_ERROR, eventAttributes);
+        break;
       default:
         renderErrorPopup(`Something went wrong.${message ? ` Error Code: ${message}.` : ''}`);
         break;
