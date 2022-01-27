@@ -150,6 +150,7 @@ interface PaymentCheckoutProps extends NavigationScreenProps {
   nextAvailableSlot: string;
   selectedTimeSlot: string;
   whatsAppUpdate: boolean;
+  appliedCircleCouponCode?: string;
 }
 export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const [coupon, setCoupon] = useState<string>('');
@@ -175,6 +176,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const selectedTimeSlot = props.navigation.getParam('selectedTimeSlot');
   const whatsAppUpdate = props.navigation.getParam('whatsAppUpdate');
   const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
+  const appliedCircleCouponCode = props.navigation.getParam('appliedCircleCouponCode');
+
   const isOnlineConsult =
     selectedTab === string.consultModeTab.VIDEO_CONSULT ||
     selectedTab === string.consultModeTab.CONSULT_ONLINE;
@@ -282,8 +285,14 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   useEffect(() => {
     setPatientProfiles(moveSelectedToTop());
-    getAutoApplyCoupon();
     setBookingAmount();
+
+    if (appliedCircleCouponCode) {
+      //first preference is given to circle coupon else it will fetch autoapplied coupon
+      validateCircleCoupon();
+    } else {
+      getAutoApplyCoupon();
+    }
   }, []);
 
   useEffect(() => {
@@ -433,6 +442,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       for (let couponObj of couponList) {
         const { coupon } = couponObj || {};
         const couponStatus: any = await validateCoupon(coupon, true);
+       
         if (couponStatus?.applied) break;
       }
       setLoading && setLoading(false);
@@ -878,6 +888,12 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         });
     } else {
       setShowErrorSelect(true);
+    }
+  };
+
+  const validateCircleCoupon = async () => {
+    if (appliedCircleCouponCode) {
+      const couponStatus: any = await validateCoupon(appliedCircleCouponCode, true);
     }
   };
 

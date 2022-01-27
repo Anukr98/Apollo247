@@ -101,6 +101,7 @@ interface SlotSelectionProps extends NavigationScreenProps {
   doctorId: string;
   isCircleDoctor?: boolean;
   consultModeSelected: string;
+  appliedCircleCouponCode?: string;
 }
 
 type TimeArray = {
@@ -117,6 +118,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   const doctorId = props.navigation.getParam('doctorId');
   const client = useApolloClient();
   const isCircleDoctor = props.navigation.getParam('isCircleDoctor');
+  const appliedCircleCouponCode = props.navigation.getParam('appliedCircleCouponCode');
   const { showAphAlert } = useUIElements();
   const [doctorDetails, setDoctorDetails] = useState<getDoctorDetailsById_getDoctorDetailsById>();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
@@ -878,6 +880,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
       selectedTimeSlot: selectedTimeSlot,
       whatsAppUpdate: whatsAppUpdate,
       isDoctorsOfTheHourStatus: doctorDetails?.doctorsOfTheHourStatus,
+      appliedCircleCouponCode: appliedCircleCouponCode,
     };
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION] = {
       'Doctor name': doctorDetails?.displayName!,
