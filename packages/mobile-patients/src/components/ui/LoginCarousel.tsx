@@ -19,7 +19,6 @@ export const LoginCarousel: React.FC<Props> = ({ focused }) => {
 
   const { width, height } = Dimensions.get('window');
   let imageHeight = height * 0.25;
-  const translateX = -width * 0.09;
 
   useEffect(() => {
     getBannerTexts();
@@ -54,7 +53,7 @@ export const LoginCarousel: React.FC<Props> = ({ focused }) => {
         <Image
           source={item?.image}
           resizeMode="contain"
-          style={{ aspectRatio: 16 / 7, transform: [{ translateX }], height: imageHeight }}
+          style={{ height: imageHeight, width }}
         />
         <View style={{ alignItems: 'center', marginTop: 40 }}>
           <Text style={styles.imageTitle}>{item?.text}</Text>

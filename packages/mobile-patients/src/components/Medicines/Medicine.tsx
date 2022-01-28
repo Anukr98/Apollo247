@@ -316,6 +316,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setNewAddressAdded,
     setAddToCartSource,
     cartCircleSubscriptionId,
+    locationCode,
     setServerCartItems,
   } = useShoppingCart();
   const {
@@ -1250,13 +1251,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
     const renderDeliverToLocationCTA = () => {
       const deliveryAddress = addresses.find((item) => item?.id == cartAddressId);
-      const location = cartLocationDetails?.pincode
-        ? `${formatText(cartLocationDetails?.city || cartLocationDetails?.state || '', 18)} ${
-            cartLocationDetails?.pincode
-          }`
-        : deliveryAddress
+      const location = deliveryAddress?.zipcode
         ? `${formatText(deliveryAddress?.city || deliveryAddress?.state || '', 18)} ${
             deliveryAddress?.zipcode
+          }`
+        : cartLocationDetails?.pincode
+        ? `${formatText(cartLocationDetails?.city || cartLocationDetails?.state || '', 18)} ${
+            cartLocationDetails?.pincode
           }`
         : '';
       return (
@@ -1953,9 +1954,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [isSearchFocused, setSearchFocused] = useState(false);
   const [medicineSearchLoading, setMedicineSearchLoading] = useState<boolean>(false);
 
-  const onSearchMedicine = (_searchText: string) => {
+  const onSearchMedicine = (
+    _searchText: string,
+    pharmacyPincode: string,
+    locationCode: string,
+    axdcCode: string
+  ) => {
     setMedicineSearchLoading(true);
-    getMedicineSearchSuggestionsApi(_searchText, axdcCode, pharmacyPincode)
+    getMedicineSearchSuggestionsApi(_searchText, axdcCode, pharmacyPincode, locationCode)
       .then(({ data }) => {
         const products = data.products || [];
         const queries = data.queries || [];
@@ -2005,7 +2011,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   useEffect(() => {
-    debounce.current(searchText);
+    debounce.current(searchText, pharmacyPincode || '', locationCode, axdcCode);
   }, [searchText]);
 
   useEffect(() => {
@@ -2024,9 +2030,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   useEffect(() => {}, [showSuggestedQuantityNudge]);
 
-  const onSearch = (searchText: string) => {
+  const onSearch = (
+    searchText: string,
+    pharmacyPincode: string,
+    locationCode: string,
+    axdcCode: string
+  ) => {
     if (searchText.length >= 3) {
-      onSearchMedicine(searchText);
+      onSearchMedicine(searchText, pharmacyPincode || '', locationCode, axdcCode);
     } else {
       setMedicineList([]);
       setMedicineSearchLoading(false);

@@ -27,7 +27,7 @@ export const HealthCredits: React.FC<HealthCreditsProps> = (props) => {
   const renderOneApollo = () => {
     return (
       <View style={styles.subcontainer}>
-        <OneApollo style={{ height: 28, width: 35 }} />
+        <OneApollo style={{ width: 24, height: 17 }} />
         <View style={{ flexWrap: 'wrap' }}>
           <Text style={styles.hcs}>
             {HCSelected && amount != 0
@@ -78,7 +78,7 @@ export const HealthCredits: React.FC<HealthCreditsProps> = (props) => {
             ...styles.ChildComponent,
             backgroundColor: amount != 0 && HCSelected ? '#EBFFF8' : '#FAFEFF',
             borderColor: amount != 0 && HCSelected ? '#50B08F' : '#D4D4D4',
-            paddingVertical: amount != 0 && HCSelected ? 12 : 15,
+            paddingVertical: amount != 0 && HCSelected ? 12 : 21,
           }}
           onPress={() => onPressHCoption(!HCSelected)}
         >
@@ -103,8 +103,8 @@ export const HealthCredits: React.FC<HealthCreditsProps> = (props) => {
 const styles = StyleSheet.create({
   header: {
     marginHorizontal: 16,
-    paddingBottom: 12,
-    marginTop: 24,
+    paddingBottom: 8,
+    marginTop: 16,
   },
   heading: {
     ...theme.fonts.IBMPlexSansSemiBold(12),
@@ -119,7 +119,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#D4D4D4',
     borderRadius: 4,
-    paddingVertical: 12,
     paddingHorizontal: 12,
   },
   subcontainer: {
@@ -128,15 +127,15 @@ const styles = StyleSheet.create({
   },
   hcs: {
     ...theme.fonts.IBMPlexSansSemiBold(14),
-    lineHeight: 20,
-    marginLeft: 10,
+    lineHeight: 18,
+    marginLeft: 14,
     color: '#01475B',
   },
   hcMsg: {
     ...theme.fonts.IBMPlexSansRegular(12),
     lineHeight: 16,
     color: '#01475B',
-    marginLeft: 10,
+    marginLeft: 14,
     marginTop: 4,
     alignItems: 'flex-start',
   },

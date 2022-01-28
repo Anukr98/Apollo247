@@ -223,7 +223,6 @@
             </intent-filter>
         </service>
         <service android:name=".RingtonePlayingService" />
-
         <receiver
             android:name="com.clevertap.pushtemplates.PTPushNotificationReceiver"
             android:exported="false"

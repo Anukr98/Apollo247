@@ -31,7 +31,7 @@ import {
   getShipmentAndTatInfo,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { SAVE_MEDICINE_ORDER_V3 } from '@aph/mobile-patients/src/graphql/profiles';
+import { GET_ORDER_INFO, SAVE_MEDICINE_ORDER_V3 } from '@aph/mobile-patients/src/graphql/profiles';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
@@ -232,8 +232,10 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
             );
             if (transactionId) {
               props.navigation.navigate(AppRoutes.PaymentMethods, {
+                orders,
+                transactionId,
                 paymentId: paymentOrderId,
-                amount: newCartTotal,
+                amount: Number(newCartTotal?.toFixed(2)),
                 orderDetails: getOrderDetails(orders, transactionId, saveMedicineOrderV3Variables),
                 businessLine: 'pharma',
                 customerId: cusId,
@@ -355,7 +357,10 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
-        <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+        <ScrollView
+          keyboardShouldPersistTaps={'handled'}
+          contentContainerStyle={{ paddingBottom: 100 }}
+        >
           {renderAddress()}
           {renderAmountSection()}
           {renderTatCard()}

@@ -139,7 +139,9 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
   const newProfileAdded = props.navigation.getParam('newProfileAdded');
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
-  const doctor : getDoctorDetailsById_getDoctorDetailsById | null = props.navigation.getParam('doctor');
+  const doctor: getDoctorDetailsById_getDoctorDetailsById | null = props.navigation.getParam(
+    'doctor'
+  );
   const tabs = props.navigation.getParam('tabs');
   const selectedTab = props.navigation.getParam('selectedTab');
   const appointmentInput = props.navigation.getParam('appointmentInput');
@@ -706,6 +708,19 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           `Slot you are trying to book is no longer available. Please try a different slot.`
         );
         break;
+      case 'Internal Error':
+        renderErrorPopup(string.common.bookingFailedMM);
+        const eventAttributes: WebEngageEvents[WebEngageEventName.Patient_API_Error] = {
+          'Error Name': 'Medmantra_Issue',
+          'Patient Name': currentPatient?.firstName || '',
+          'Patient ID': currentPatient?.id || '',
+          'Patient Number': currentPatient?.mobileNumber || '',
+          'Doctor ID': doctor?.id || '',
+          'Screen Name': 'PaymentCheckoutPhysical',
+          'API Name': 'bookAppointment',
+        };
+        postCleverTapEvent(CleverTapEventName.PATIENT_API_ERROR, eventAttributes);
+        break;
       default:
         renderErrorPopup(`Something went wrong.${message ? ` Error Code: ${message}.` : ''}`);
         break;
@@ -999,7 +1014,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       'Doctor city': g(doctor, 'city')!,
       'Doctor category': g(doctor, 'doctorType')!,
       'Speciality name': g(doctor, 'specialty', 'name')!,
-      'Discount': !!coupon ? 'T' : 'F',
+      Discount: !!coupon ? 'T' : 'F',
       'Coupon applied': coupon,
       'Discount amount': couponDiscountFees,
       'Net amount': amountToPay,
