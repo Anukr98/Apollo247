@@ -28,7 +28,6 @@ export const useAuth = () => {
 
   const authToken = useAuthContext().authToken;
   const validateAuthToken = useAuthContext().validateAuthToken;
-  const validateAndReturnAuthToken = useAuthContext().validateAndReturnAuthToken;
   const buildApolloClient = useAuthContext().buildApolloClient;
   const checkIsAppDepricated = useAuthContext().checkIsAppDepricated!;
 
@@ -52,7 +51,6 @@ export const useAuth = () => {
     getFirebaseToken,
     authToken,
     validateAuthToken,
-    validateAndReturnAuthToken,
     buildApolloClient,
     checkIsAppDepricated,
   };

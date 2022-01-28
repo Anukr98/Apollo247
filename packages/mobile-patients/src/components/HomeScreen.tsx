@@ -1165,7 +1165,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [membershipPlans, setMembershipPlans] = useState<any>([]);
   const [circleDataLoading, setCircleDataLoading] = useState<boolean>(true);
-  const { getPatientApiCall, buildApolloClient, validateAndReturnAuthToken, checkIsAppDepricated } = useAuth();
+  const {
+    getPatientApiCall,
+    buildApolloClient,
+    getFirebaseToken,
+    checkIsAppDepricated,
+  } = useAuth();
   const [selectedProfile, setSelectedProfile] = useState<string>('');
   const [isLocationSearchVisible, setLocationSearchVisible] = useState(false);
   const [showList, setShowList] = useState<boolean>(false);
@@ -1523,7 +1528,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       }
     });
   };
-  
+
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setVaccineLoacalStorageData();
@@ -1538,11 +1543,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     });
     setTimeout(() => {
       checkIsAppDepricated(currentPatient?.mobileNumber)
-      .then(setDepricatedAppData)
-      .catch((error) => {
-        !!error && CommonBugFender('isAppVersionDeprecated', error);
-      });
-    }, 600)
+        .then(setDepricatedAppData)
+        .catch((error) => {
+          !!error && CommonBugFender('isAppVersionDeprecated', error);
+        });
+    }, 600);
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
       apisToCall.current = [];
       homeScreenParamsOnPop.current = null;
@@ -2160,7 +2165,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED,
           'Home Screen'
         );
-        props.navigation.navigate(AppRoutes.DoctorSearch);      
+        props.navigation.navigate(AppRoutes.DoctorSearch);
       },
     },
     {
@@ -3419,9 +3424,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const saveRecentSearchTerm = async (search: string) => {
-    const authToken: string = await validateAndReturnAuthToken();
-    const apolloClient = buildApolloClient(authToken);
-    apolloClient
+    client
       .mutate<saveRecentVariables>({
         mutation: SAVE_RECENT_SEARCH,
         variables: {

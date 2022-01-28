@@ -170,12 +170,7 @@ export interface SplashScreenProps extends NavigationScreenProps {}
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { APP_ENV } = AppConfig;
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
-  const {
-    setAllPatients,
-    setMobileAPICalled,
-    validateAndReturnAuthToken,
-    buildApolloClient,
-  } = useAuth();
+  const { setAllPatients, setMobileAPICalled, getFirebaseToken, buildApolloClient } = useAuth();
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [appState, setAppState] = useState(AppState.currentState);
   const [takeToConsultRoom, settakeToConsultRoom] = useState<boolean>(false);
@@ -417,6 +412,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     };
     postWebEngageEvent(WebEngageEventName.PATIENT_DECLINED_CALL, eventAttributes);
   };
+  console.warn = (error: any) => {};
 
   const handleDeepLink = () => {
     try {
@@ -552,7 +548,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   const fetchOrderInfo = async (paymentId: string) => {
     try {
-      const authToken: string = await validateAndReturnAuthToken();
+      const authToken: string = await getFirebaseToken?.();
       const apolloClient = buildApolloClient(authToken);
       const response = await apolloClient.query({
         query: GET_ORDER_INFO,
@@ -1400,7 +1396,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   const getOffers = async () => {
     setOffersListLoading && setOffersListLoading(true);
-    const authToken: string = await validateAndReturnAuthToken();
+    const authToken: string = await getFirebaseToken?.();
     const apolloClient = buildApolloClient(authToken);
     try {
       const res = await apolloClient.query({
