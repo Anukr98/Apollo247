@@ -7,10 +7,18 @@
 // GraphQL query operation: getRescheduleAndCancellationReasons
 // ====================================================
 
+export interface getRescheduleAndCancellationReasons_getRescheduleAndCancellationReasons_cancellationReasonsv2_ctaOptions {
+  __typename: "CTAOptions";
+  ctas: (string | null)[] | null;
+  displayText: string | null;
+  userCommentsEnabled: boolean | null;
+}
+
 export interface getRescheduleAndCancellationReasons_getRescheduleAndCancellationReasons_cancellationReasonsv2 {
   __typename: "CancellationReason";
   reason: string | null;
   isDirectCancellation: boolean | null;
+  ctaOptions: getRescheduleAndCancellationReasons_getRescheduleAndCancellationReasons_cancellationReasonsv2_ctaOptions | null;
 }
 
 export interface getRescheduleAndCancellationReasons_getRescheduleAndCancellationReasons {

@@ -6453,6 +6453,11 @@ export const GET_RESCHEDULE_AND_CANCELLATION_REASONS = gql`
       cancellationReasonsv2 {
         reason
         isDirectCancellation
+        ctaOptions{
+          ctas
+          displayText
+          userCommentsEnabled
+        }
       }
     }
   }
