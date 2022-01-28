@@ -1615,7 +1615,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     // const showOneApollo = isModifyFlow
     //   ? modifiedOrder?.paymentType === DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT
     //   : true;
-    const showOneApollo = false
+    const showOneApollo = false;
     return (
       <>
         <View
