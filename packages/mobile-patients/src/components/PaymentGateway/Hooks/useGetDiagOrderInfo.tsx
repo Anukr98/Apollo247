@@ -14,7 +14,6 @@ export const useGetDiagOrderInfo = (paymentId: string, modifiedOrder: any) => {
   const initiate = async () => {
     try {
       let res: any = await getDiagnosticRefundOrders(client, paymentId);
-      console.log({ res });
       const info = res?.data?.data?.getOrderInternal?.DiagnosticsPaymentDetails;
       const getOffersResponse = res?.data?.data?.getOrderInternal?.offers;
       setOrderInfo(info);

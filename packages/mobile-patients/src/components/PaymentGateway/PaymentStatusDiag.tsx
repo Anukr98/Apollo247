@@ -258,7 +258,6 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
         fetchPolicy: 'no-cache',
       });
       if (!!res && res?.data && !res?.errors) {
-        console.log({ res });
         let getOrderDetailsResponse = res?.data?.getDiagnosticOrderDetails?.ordersList || [];
         setModifiedOrders([getOrderDetailsResponse]);
       } else {

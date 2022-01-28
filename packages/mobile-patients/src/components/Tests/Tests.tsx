@@ -769,7 +769,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
           (a: any, b: any) =>
             Number(a.diagnosticwidgetsRankOrder) - Number(b.diagnosticwidgetsRankOrder)
         );
-        console.log({ sortWidgets });
         //filter wigets to be shown on homepage
         const getWidgetsForHomePage = sortWidgets?.filter(
           (widget: any) => widget?.shownOnHomePage || widget?.shownOnHomePage == 'true'
