@@ -48,6 +48,8 @@ import { RadioSelectionItem } from './RadioSelectionItem';
 import {
   UPDATE_PATIENT_ADDRESS,
   SAVE_MEDICINE_ORDER_V3,
+  RE_UPLOAD_PRESCRIPTION,
+  UPLOAD_DOCUMENT,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   MEDICINE_DELIVERY_TYPE,
@@ -55,6 +57,8 @@ import {
   DEVICE_TYPE,
   SaveMedicineOrderV3Input,
   MEDICINE_ORDER_TYPE,
+  UPLOAD_FILE_TYPES,
+  PRISM_DOCUMENT_CATEGORY,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { ExpectCall } from '@aph/mobile-patients/src/components/Medicines/Components/ExpectCall';
 import { ProceedBar } from '@aph/mobile-patients/src/components/Medicines/Components/ProceedBar';
@@ -80,6 +84,11 @@ import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/us
 import AsyncStorage from '@react-native-community/async-storage';
 import { USER_AGENT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
 import { saveCart_saveCart_data_prescriptionDetails } from '@aph/mobile-patients/src/graphql/types/saveCart';
+import { ReUploadPrescriptionVariables } from '@aph/mobile-patients/src/graphql/types/ReUploadPrescription';
+import {
+  uploadDocument,
+  uploadDocumentVariables,
+} from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 const styles = StyleSheet.create({
   prescriptionCardStyle: {
     paddingTop: 7,
@@ -135,8 +144,8 @@ const styles = StyleSheet.create({
 
 export interface UploadPrescriptionProps
   extends NavigationScreenProps<{
-    phyPrescriptionsProp?: PhysicalPrescription[];
-    ePrescriptionsProp?: EPrescription[];
+    phyPrescriptionsProp?: any[];
+    ePrescriptionsProp?: any[];
     type?: string;
     showOptions?: boolean;
     isReUpload?: boolean;
@@ -145,6 +154,8 @@ export interface UploadPrescriptionProps
   }> {}
 
 export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => {
+  const phyPrescriptionsProp = props.navigation.getParam('phyPrescriptionsProp') || [];
+  const ePrescriptionsProp = props.navigation.getParam('ePrescriptionsProp') || [];
   const isComingFromReUpload = props.navigation.getParam('isReUpload') || false;
   const [ShowPopop, setShowPopop] = useState<boolean>(false);
   const orderId = props.navigation.getParam('orderAutoId');
@@ -177,14 +188,15 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     fetchServerCart,
     setUserActionPayload,
   } = useServerCart();
+
   const physicalPrescriptionsUploaded = cartPrescriptions?.filter((pres) => !pres?.appointmentId);
-  const [PhysicalPrescriptionsProps, setPhysicalPrescriptionsProps] = useState<
-    saveCart_saveCart_data_prescriptionDetails[]
-  >(physicalPrescriptionsUploaded);
+  const [PhysicalPrescriptionsProps, setPhysicalPrescriptionsProps] = useState<any[]>(
+    isComingFromReUpload ? phyPrescriptionsProp : physicalPrescriptionsUploaded
+  );
   const ePrescriptionsUploaded = cartPrescriptions?.filter((pres) => pres?.appointmentId);
-  const [EPrescriptionsProps, setEPrescriptionsProps] = useState<
-    saveCart_saveCart_data_prescriptionDetails[]
-  >(ePrescriptionsUploaded);
+  const [EPrescriptionsProps, setEPrescriptionsProps] = useState<any[]>(
+    isComingFromReUpload ? ePrescriptionsProp : ePrescriptionsUploaded
+  );
   const SPECIFIED_DURATION = 'Duration as specified in prescription';
   const CALL_ME = 'Call me for details';
   const NEED_ALL_MEDICINES = 'Need all medicine and for duration as per prescription';
@@ -225,8 +237,10 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const [userComment, setUserComment] = useState<string>('');
 
   useEffect(() => {
-    setPhysicalPrescriptionsProps(cartPrescriptions?.filter((pres) => !pres?.appointmentId));
-    setEPrescriptionsProps(cartPrescriptions?.filter((pres) => pres?.appointmentId));
+    if (isComingFromReUpload === false) {
+      setPhysicalPrescriptionsProps(cartPrescriptions?.filter((pres) => !pres?.appointmentId));
+      setEPrescriptionsProps(cartPrescriptions?.filter((pres) => pres?.appointmentId));
+    }
   }, [cartPrescriptions]);
 
   useEffect(() => {
@@ -235,7 +249,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
 
   useEffect(() => {
     fetchAddress();
-    fetchServerCart();
+    isComingFromReUpload === false && fetchServerCart();
     AsyncStorage.getItem(USER_AGENT).then((userAgent) => {
       setUserAgent(userAgent || '');
     });
@@ -480,11 +494,13 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   };
 
   const renderPhysicalPrescriptionRow = (
-    item: saveCart_saveCart_data_prescriptionDetails,
+    item: saveCart_saveCart_data_prescriptionDetails | PhysicalPrescription,
     i: number,
     arrayLength: number
   ) => {
-    const isPdf = item?.prescriptionImageUrl?.toLowerCase()?.endsWith('.pdf');
+    const isPdf =
+      item?.uploadedUrl?.toLowerCase()?.endsWith('.pdf') ||
+      item?.prescriptionImageUrl?.toLowerCase()?.endsWith('.pdf');
     return (
       <View key={i} style={{}}>
         <TouchableOpacity activeOpacity={1} key={i}>
@@ -524,7 +540,9 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                     width: 30,
                     borderRadius: 5,
                   }}
-                  source={{ uri: `${item?.prescriptionImageUrl}` }}
+                  source={{
+                    uri: `data:image/jpeg;base64,${item.base64}` || `${item?.prescriptionImageUrl}`,
+                  }}
                 />
               )}
             </View>
@@ -534,7 +552,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 inputStyle={{
                   marginTop: 3,
                 }}
-                value={item?.prismPrescriptionFileId || 'File'}
+                value={item?.prismPrescriptionFileId || item?.title || 'File'}
               />
             </View>
             <TouchableOpacity
@@ -544,7 +562,16 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 paddingHorizontal: 8,
               }}
               onPress={() => {
-                removePrescriptionFromCart(item?.prismPrescriptionFileId);
+                if (isComingFromReUpload) {
+                  const phyPrescription = PhysicalPrescriptionsProps;
+                  CommonLogEvent(AppRoutes.UploadPrescription, 'Physical prescription filter');
+                  const filteredPres = phyPrescription?.filter(
+                    (_item) => _item?.title != item?.title
+                  );
+                  setPhysicalPrescriptionsProps([...filteredPres]);
+                } else {
+                  removePrescriptionFromCart(item?.prismPrescriptionFileId);
+                }
               }}
             >
               <CrossYellow />
@@ -570,7 +597,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   };
 
   const renderEPrescriptionRow = (
-    item: saveCart_saveCart_data_prescriptionDetails,
+    item: saveCart_saveCart_data_prescriptionDetails | EPrescription,
     i: number,
     arrayLength: number
   ) => {
@@ -580,13 +607,17 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           marginTop: i === 0 ? 20 : 4,
           marginBottom: arrayLength === i + 1 ? 16 : 4,
         }}
-        medicines={item?.meta?.medicines}
+        medicines={item?.meta?.medicines || item?.medicines}
         actionType="removal"
-        date={item?.meta?.date}
-        doctorName={item?.meta?.doctorName}
-        forPatient={item?.meta?.forPatient}
+        date={item?.meta?.date || item?.date}
+        doctorName={item?.meta?.doctorName || item?.doctorName}
+        forPatient={item?.meta?.forPatient || item?.forPatient}
         onRemove={() => {
-          removePrescriptionFromCart(item?.prismPrescriptionFileId);
+          if (isComingFromReUpload) {
+            setEPrescriptionsProps(EPrescriptionsProps?.filter((_item) => _item?.id != item?.id));
+          } else {
+            removePrescriptionFromCart(item?.prismPrescriptionFileId);
+          }
         }}
       />
     );
@@ -966,11 +997,101 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       <Button
         disabled={disableSubmitButton()}
         title={'SUBMIT PRESCRIPTION'}
-        onPress={() => initiateOrder('')}
+        onPress={() => (isComingFromReUpload ? reUploadPrescription() : initiateOrder(''))}
         titleTextStyle={{ fontSize: 13, lineHeight: 24, marginVertical: 8 }}
         style={{ marginBottom: 10, width: '90%', alignSelf: 'center' }}
       />
     );
+  };
+
+  const reUploadPrescription = async () => {
+    try {
+      const phyPrescription = PhysicalPrescriptionsProps;
+      const e_Prescription = EPrescriptionsProps;
+      // Physical Prescription Upload
+      const uploadedPhyPrescriptionsData = await uploadMultipleFiles(phyPrescription);
+
+      const uploadedPhyPrescriptions = uploadedPhyPrescriptionsData.length
+        ? uploadedPhyPrescriptionsData.map((item) => g(item, 'data', 'uploadDocument'))
+        : [];
+
+      const phyPresUrls = uploadedPhyPrescriptions.map((item) => item!.filePath).filter((i) => i);
+      const phyPresPrismIds = uploadedPhyPrescriptions.map((item) => item?.fileId).filter((i) => i);
+      const ePresUrls = e_Prescription.map((item) => item?.uploadedUrl).filter((i) => i);
+      const ePresPrismIds = e_Prescription
+        .map((item) => item?.prismPrescriptionFileId)
+        .filter((i) => i);
+      const reUploadPrescriptionInput: ReUploadPrescriptionVariables = {
+        prescriptionInput: {
+          orderId: parseInt(orderId!),
+          fileUrl: [...phyPresUrls, ...ePresUrls].join(','),
+          prismPrescriptionFileId: [...phyPresPrismIds, ...ePresPrismIds].join(','),
+        },
+      };
+      submitReuploadPrescription(reUploadPrescriptionInput);
+    } catch (error) {
+      setLoading!(false);
+      CommonBugFender('UploadPrescription_onPressSubmit_try', error);
+      renderErrorAlert('Error occurred while uploading physical prescription(s).');
+    }
+  };
+
+  const uploadMultipleFiles = (physicalPrescription: PhysicalPrescription[]) => {
+    return Promise.all(
+      physicalPrescription.map((item) => {
+        const variables = {
+          UploadDocumentInput: {
+            base64FileInput: item?.base64,
+            category: PRISM_DOCUMENT_CATEGORY.HealthChecks,
+            fileType:
+              item?.fileType == 'jpg'
+                ? UPLOAD_FILE_TYPES.JPEG
+                : item?.fileType == 'png'
+                ? UPLOAD_FILE_TYPES.PNG
+                : item?.fileType == 'pdf' || item?.fileType == 'application/pdf'
+                ? UPLOAD_FILE_TYPES.PDF
+                : UPLOAD_FILE_TYPES.JPEG,
+            patientId: g(currentPatient, 'id')!,
+          },
+        };
+        return client.mutate<uploadDocument, uploadDocumentVariables>({
+          mutation: UPLOAD_DOCUMENT,
+          fetchPolicy: 'no-cache',
+          variables,
+        });
+      })
+    );
+  };
+
+  const submitReuploadPrescription = (variables: ReUploadPrescriptionVariables) => {
+    setLoading!(true);
+    client
+      .mutate({
+        mutation: RE_UPLOAD_PRESCRIPTION,
+        variables,
+      })
+      .then(({ data }) => {
+        if (!data.reUploadPrescription.success) {
+          renderErrorAlert(`Something went wrong, please try later.`);
+          return;
+        }
+        renderSuccessPopup(orderId!);
+        const newVal = [{ id: orderId }];
+        if (onHoldOptionOrder!.find((item) => item?.id == orderId)) {
+          setLoading!(false);
+          return;
+        }
+        const val = [...onHoldOptionOrder, ...newVal];
+        setOnHoldOptionOrder!(val);
+      })
+      .catch((e) => {
+        setLoading!(false);
+        CommonBugFender('UploadPrescription_submitPrescriptionMedicineOrder', e);
+        renderErrorAlert(`Something went wrong, please try later.`);
+      })
+      .finally(() => {
+        setLoading!(false);
+      });
   };
 
   return (

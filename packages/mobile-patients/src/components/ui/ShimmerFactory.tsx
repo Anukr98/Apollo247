@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions, Image } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Image, StyleProp, ViewStyle } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { createShimmerPlaceholder } from 'react-native-shimmer-placeholder';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -428,6 +428,13 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     height: 60,
     width: '100%',
+  },
+  imageBanner: {
+    borderRadius: 6,
+    borderColor: '#D3D3D3',
+    borderWidth: 1,
+    height: 220,
+    width: '90%',
   },
   recommendationShimmerView: {
     marginTop: 16,
@@ -1363,6 +1370,18 @@ export const renderDiagnosticWidgetTestShimmer = (showHeading: boolean) => {
   );
 };
 
+export const renderPDPComponentsShimmer = (style: StyleProp<ViewStyle>) => {
+  return (
+    <View>
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={style}
+      />
+    </View>
+  );
+};
+
 export const renderDiagnosticCardShimmer = () => {
   return (
     <View style={{ marginLeft: 16 }}>
@@ -1371,6 +1390,22 @@ export const renderDiagnosticCardShimmer = () => {
         LinearGradient={LinearGradient}
         shimmerStyle={styles.diagnosticsCardBottom}
       />
+    </View>
+  );
+};
+
+export const renderImageCarouselShimmer = (
+  imageStyle: StyleProp<ViewStyle>,
+  dotsContainerStyle: StyleProp<ViewStyle>
+) => {
+  return (
+    <View>
+      <ShimmerPlaceHolder LinearGradient={LinearGradient} shimmerStyle={imageStyle} />
+      <View style={dotsContainerStyle}>
+        <View style={styles.sliderDots} />
+        <View style={styles.sliderDots} />
+        <View style={styles.sliderDots} />
+      </View>
     </View>
   );
 };

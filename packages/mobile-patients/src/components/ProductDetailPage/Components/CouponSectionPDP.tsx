@@ -6,7 +6,7 @@ import { SpecialOffersCouponsData } from '@aph/mobile-patients/src/helpers/apiCa
 
 export const CouponSectionPDP = (props: { offersData: SpecialOffersCouponsData[] }) => {
   const { offersData } = props;
-  const newOffersData = offersData.map((ele: SpecialOffersCouponsData) => ({
+  const newOffersData = offersData?.map((ele: SpecialOffersCouponsData) => ({
     ...ele,
     knowMoreOption: false,
   }));
@@ -14,7 +14,7 @@ export const CouponSectionPDP = (props: { offersData: SpecialOffersCouponsData[]
   const [visibleCoupons, setVisibleCoupons] = useState<number>(
     couponData?.length === 1 ? couponData?.length : 2
   );
-  const totalCoupons = couponData.length;
+  const totalCoupons = couponData?.length;
   const remainingCoupons = totalCoupons - visibleCoupons;
 
   const updateKnowMore = (position: number) => {
@@ -85,7 +85,7 @@ export const CouponSectionPDP = (props: { offersData: SpecialOffersCouponsData[]
     );
   };
 
-  return (
+  return !!offersData?.length ? (
     <View style={styles.container}>
       <View style={styles.offersHeadingContainer}>
         <SpecialOffers style={styles.iconStyle} />
@@ -107,6 +107,8 @@ export const CouponSectionPDP = (props: { offersData: SpecialOffersCouponsData[]
       />
       {totalCoupons > 2 && renderViewAllOffersButton()}
     </View>
+  ) : (
+    <></>
   );
 };
 

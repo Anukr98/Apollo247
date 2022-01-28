@@ -177,13 +177,13 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
   };
 
   const renderTatDetails = () =>
-    isFromCart && (
+    isFromCart ? (
       <>
         {renderTatCard()}
         {cartAddressId != '' && isPrescriptionRequired() && renderPrescriptionMessage()}
         {!isValidCartValue && renderMinimumCartMessage()}
       </>
-    );
+    ) : null;
 
   return (
     <View style={styles.container}>

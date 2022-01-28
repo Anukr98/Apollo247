@@ -4,6 +4,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { LocationIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { formatSelectedAddress } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { SelectedAddressUserNameWithEdit } from './SelectedAddressUserNameWithEdit';
 
 export interface SelectedAddressProps {
   onPressChange?: () => void;
@@ -46,7 +47,9 @@ export const SelectedAddress: React.FC<SelectedAddressProps> = (props) => {
   const address = () => {
     return orderType == 'Delivery' ? (
       <View style={{ marginHorizontal: 25 }}>
-        <Text style={styles.name}>{selectedAddress?.name || selectedAddress?.addressType}</Text>
+        {/* <Text style={styles.name}>{selectedAddress?.name || selectedAddress?.addressType}</Text> */}
+        {selectedAddress ? <SelectedAddressUserNameWithEdit address={selectedAddress} /> : null}
+
         <Text style={styles.address}>{formatSelectedAddress(selectedAddress!)}</Text>
         <Text style={styles.address}>
           {'Mobile - '}

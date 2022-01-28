@@ -2345,6 +2345,16 @@ export interface SaveMedicineOrderV3Input {
   showPrescriptionAtStore?: boolean | null;
 }
 
+export interface GetTATStatusForDiagnosticOrderInput {
+  displayId: number;
+}
+
+export enum KB_CONTENT_TYPE {
+  html = "html",
+  text = "text",
+}
+  
+
 //==============================================================
 // END Enums and Input Objects
 //==============================================================

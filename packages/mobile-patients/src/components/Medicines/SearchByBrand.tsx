@@ -151,6 +151,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     serverCartItems,
     cartLocationDetails,
     pharmacyCircleAttributes,
+    locationCode,
   } = useShoppingCart();
   const { setUserActionPayload } = useServerCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
@@ -277,7 +278,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   };
 
   const renderHeader = () => {
-    const cartItemsCount = serverCartItems.length + diagnosticCartItems.length;
+    const cartItemsCount = serverCartItems?.length + diagnosticCartItems.length;
     return (
       <Header
         container={{
@@ -439,7 +440,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
                 }
                 return search;
               });
-              search(value);
+              search(value, cartLocationDetails?.pincode || '', locationCode, axdcCode);
             }
           }}
           onFocus={() => setSearchFocused(true)}
@@ -870,9 +871,14 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     );
   };
 
-  const onSearchMedicine = (_searchText: string) => {
+  const onSearchMedicine = (
+    _searchText: string,
+    pharmacyPincode: string,
+    locationCode: string,
+    axdcCode: string
+  ) => {
     setsearchSate('load');
-    getMedicineSearchSuggestionsApi(_searchText, axdcCode, pinCode)
+    getMedicineSearchSuggestionsApi(_searchText, axdcCode, pharmacyPincode, locationCode)
       .then(({ data }) => {
         const products = data.products || [];
         setMedicineList(products);

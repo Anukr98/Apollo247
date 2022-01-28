@@ -582,8 +582,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         setReOrderDetails({ total: totalItemsCount, unavailable: unavailableItems });
       } else {
         const resetAction = StackActions.reset({
-          index: 1,
+          index: 2,
           actions: [
+            NavigationActions.navigate({ routeName: AppRoutes.HomeScreen }),
             NavigationActions.navigate({ routeName: AppRoutes.MyOrdersScreen }),
             NavigationActions.navigate({ routeName: AppRoutes.ServerCart }),
           ],
@@ -1703,7 +1704,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           setPrescriptionPopUp(false);
           if (selectedType == 'CAMERA_AND_GALLERY') {
             if (response.length == 0) return;
-            uploadPhysicalPrescriptionsToServerCart(response);
             props.navigation.navigate(AppRoutes.UploadPrescription, {
               phyPrescriptionsProp: response,
               type,

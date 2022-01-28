@@ -93,6 +93,8 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     serverCartItems,
     setAddToCartSource,
     serverCartLoading,
+    locationCode,
+    cartLocationDetails,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
 
@@ -122,12 +124,17 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
   }, [serverCartLoading]);
 
   useEffect(() => {
-    debounce.current(searchText);
+    debounce.current(searchText, cartLocationDetails?.pincode || '', locationCode, axdcCode);
   }, [searchText]);
 
-  const onSearch = (searchText: string) => {
+  const onSearch = (
+    searchText: string,
+    pharmacyPincode: string,
+    locationCode: string,
+    axdcCode: string
+  ) => {
     if (searchText.length >= 3) {
-      fetchSearchSuggestions(searchText);
+      fetchSearchSuggestions(searchText, pharmacyPincode, locationCode, axdcCode);
     } else {
       setSearchResults([]);
       setLoading(false);
@@ -170,12 +177,22 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     });
   };
 
-  const fetchSearchSuggestions = async (searchText: string) => {
+  const fetchSearchSuggestions = async (
+    searchText: string,
+    pharmacyPincode: string,
+    locationCode: string,
+    axdcCode: string
+  ) => {
     try {
       setLoading(true);
       const {
         data: { products },
-      } = await getMedicineSearchSuggestionsApi(searchText, axdcCode, pinCode);
+      } = await getMedicineSearchSuggestionsApi(
+        searchText,
+        axdcCode,
+        pharmacyPincode,
+        locationCode
+      );
       fireSearchEvent(searchText, products.length);
       setSearchResults(products || []);
       setLoading(false);

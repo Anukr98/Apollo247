@@ -28,8 +28,8 @@ export const NudgeMessage: React.FC<NudgeMessageProps> = (props) => {
 
   const replaceTextAmount = (text: string) => {
     return text
-      .replace('<orderValue>', nudgeMessageCart?.orderValue)
-      .replace('<cashbackPer>', nudgeMessageCart?.cashbackPer);
+      .replace('<orderValue>', String(nudgeMessageCart?.orderValue))
+      .replace('<cashbackPer>', String(nudgeMessageCart?.cashbackPer));
   };
 
   const getTextComponent = () => {

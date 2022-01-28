@@ -761,7 +761,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
             KNOW MORE
           </Text>
         </TouchableOpacity>
-        {!isModal && defaultCirclePlan && <View style={styles.seperatorLine} />}
+        {!isModal && defaultCirclePlan ? <View style={styles.seperatorLine} /> : null}
         {!isModal && defaultCirclePlan ? (
           <TouchableOpacity style={styles.knowMoreBtn} onPress={() => removeAutoAddedPlan()}>
             <Text style={{ ...theme.viewStyles.text('SB', 13, theme.colors.BORDER_BOTTOM_COLOR) }}>
