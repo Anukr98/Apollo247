@@ -2093,7 +2093,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     Platform.OS == 'android' && setIsPrescriptionUpload(false);
 
     ImagePicker.openPicker({
-      cropping: true,
+      cropping: false,
       hideBottomControls: true,
       includeBase64: true,
       multiple: true,
