@@ -111,7 +111,6 @@ export interface getPatientAllAppointments_getPatientAllAppointments_activeAppoi
   isActive: boolean | null;
   id: string;
   languages: string | null;
-  skipAutoQuestions: boolean | null;
   lastName: string | null;
   mobileNumber: string;
   onlineConsultationFees: string;
