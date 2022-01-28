@@ -1590,13 +1590,6 @@ export const AlertIcon: React.FC<IconProps> = (props) => (
     source={require('./icons/ic_error.webp')}
   />
 );
-export const AlertWhiteIcon: React.FC<IconProps> = (props) => (
-  <IconBase
-    style={{ width: 25, height: 25 }}
-    {...props}
-    source={require('./icons/alertWhite.png')}
-  />
-);
 
 export const BlueDotIcon: React.FC<IconProps> = (props) => (
   <IconBase style={{ width: 5, height: 5 }} {...props} source={require('./icons/blueDot.webp')} />

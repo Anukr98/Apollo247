@@ -483,12 +483,6 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
           bankTxnId
           orderId
         }
-        bookingFee
-        consultFee
-        amountPaid
-        couponApplied
-        couponCode
-        couponAmount
         id
         hideHealthRecordNudge
         discountedAmount
