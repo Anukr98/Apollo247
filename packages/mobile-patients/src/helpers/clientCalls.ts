@@ -63,6 +63,7 @@ import {
   FIND_DIAGNOSTIC_SETTINGS,
   GET_PATIENT_ADDRESS_LIST,
   GET_RESCHEDULE_AND_CANCELLATION_REASONS,
+  GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS_V2,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -292,6 +293,7 @@ import {
   getPatientAddressListVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { getRescheduleAndCancellationReasons, getRescheduleAndCancellationReasonsVariables } from '@aph/mobile-patients/src/graphql/types/getRescheduleAndCancellationReasons';
+import { getDiagnosticPackageRecommendationsv2, getDiagnosticPackageRecommendationsv2Variables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticPackageRecommendationsv2';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -1615,6 +1617,24 @@ export const getDiagnosticsPackageRecommendations = (
     },
     variables: {
       itemId: itemId,
+      cityId: cityId,
+    },
+    fetchPolicy: 'no-cache',
+  });
+};
+
+export const getDiagnosticsPackageRecommendationsv2 = (
+  client: ApolloClient<object>,
+  recommendationInputItems: any,
+  cityId: number,
+) => {
+  return client.query<getDiagnosticPackageRecommendationsv2, getDiagnosticPackageRecommendationsv2Variables>({
+    query: GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS_V2,
+    context: {
+      sourceHeaders,
+    },
+    variables: {
+      recommendationInputItems: recommendationInputItems,
       cityId: cityId,
     },
     fetchPolicy: 'no-cache',
