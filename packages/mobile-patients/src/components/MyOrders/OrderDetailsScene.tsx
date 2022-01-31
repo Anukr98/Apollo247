@@ -363,12 +363,12 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           variables: { id: order!.patientAddressId },
         });
         formattedAddress = formatAddressWithLandmark(
-          getPatientAddressByIdResponse.data.getPatientAddressById
-            .patientAddress as savePatientAddress_savePatientAddress_patientAddress
+          getPatientAddressByIdResponse?.data?.getPatientAddressById
+            ?.patientAddress as savePatientAddress_savePatientAddress_patientAddress
         );
         nameToDisplayInDetails = getNameFromAddress(
-          getPatientAddressByIdResponse.data.getPatientAddressById
-            .patientAddress as savePatientAddress_savePatientAddress_patientAddress
+          getPatientAddressByIdResponse?.data?.getPatientAddressById
+            ?.patientAddress as savePatientAddress_savePatientAddress_patientAddress
         );
       }
       setAddressData(formattedAddress);
