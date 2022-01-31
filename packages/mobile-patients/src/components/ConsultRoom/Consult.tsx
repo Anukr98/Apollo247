@@ -838,6 +838,13 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
     const getConsultationSubTexts = () => {
       const { isAutomatedQuestionsComplete, isSeniorConsultStarted, isConsultStarted } = item || {};
+      if (
+        minutes > 0 &&
+        minutes <= 30 &&
+        (item?.status === STATUS.PENDING || item?.status === STATUS.IN_PROGRESS)
+      ) {
+        return string.common.mentionReports;
+      }
       return (!isAutomatedQuestionsComplete && !isSeniorConsultStarted) || !isConsultStarted
         ? string.common.fillVitalsText
         : !isConsultStarted && isAutomatedQuestionsComplete

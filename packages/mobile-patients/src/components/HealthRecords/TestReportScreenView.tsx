@@ -484,13 +484,14 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
         prescriptionSource
       )
         .then((_data: any) => {
-          const labResultsData = g(
+          let labResultsData = g(
             _data,
             'getPatientPrismMedicalRecords_V3',
             'labResults',
-            'response',
-            '0' as any
+            'response'
           );
+          labResultsData = labResultsData.find((item: any) => item.documentId === healthrecordId);
+          setTestResultArray(labResultsData?.testResultFiles);
           setData(labResultsData);
           data ? setApiError(false) : setApiError(true);
         })

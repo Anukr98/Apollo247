@@ -150,6 +150,7 @@ interface PaymentCheckoutProps extends NavigationScreenProps {
   nextAvailableSlot: string;
   selectedTimeSlot: string;
   whatsAppUpdate: boolean;
+  appliedCircleCouponCode?: string;
 }
 export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const [coupon, setCoupon] = useState<string>('');
@@ -175,6 +176,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const selectedTimeSlot = props.navigation.getParam('selectedTimeSlot');
   const whatsAppUpdate = props.navigation.getParam('whatsAppUpdate');
   const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
+  const appliedCircleCouponCode = props.navigation.getParam('appliedCircleCouponCode');
+
   const isOnlineConsult =
     selectedTab === string.consultModeTab.VIDEO_CONSULT ||
     selectedTab === string.consultModeTab.CONSULT_ONLINE;
@@ -282,8 +285,14 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   useEffect(() => {
     setPatientProfiles(moveSelectedToTop());
-    getAutoApplyCoupon();
     setBookingAmount();
+
+    if (appliedCircleCouponCode) {
+      //first preference is given to circle coupon else it will fetch autoapplied coupon
+      validateCircleCoupon();
+    } else {
+      getAutoApplyCoupon();
+    }
   }, []);
 
   useEffect(() => {
@@ -433,6 +442,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       for (let couponObj of couponList) {
         const { coupon } = couponObj || {};
         const couponStatus: any = await validateCoupon(coupon, true);
+       
         if (couponStatus?.applied) break;
       }
       setLoading && setLoading(false);
@@ -798,7 +808,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
                 fireBaseFCM();
               }
             } else {
-              res(resp?.data?.response?.reason);
+              rej(resp?.data?.response?.reason);
               if (fireEvent) {
                 const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_COUPON_APPLIED] = {
                   CouponCode: coupon,
@@ -881,6 +891,12 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     }
   };
 
+  const validateCircleCoupon = async () => {
+    if (appliedCircleCouponCode) {
+      const couponStatus: any = await validateCoupon(appliedCircleCouponCode, true);
+    }
+  };
+
   const verifyCoupon = async (fromPayment?: boolean) => {
     if (coupon) {
       try {
@@ -946,6 +962,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           eventAttributes['Display ID'] = `${apptmt?.displayId!}`;
           eventAttributes['User_Type'] = getUserType(allCurrentPatients);
           postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
+          postCleverTapEvent(CleverTapEventName.CONSULTATION_BOOKED, eventAttributes);
           postAppsFlyerEvent(
             AppsFlyerEventName.CONSULTATION_BOOKED,
             getConsultationBookedAppsFlyerEventAttributes(apptmt?.id!, `${apptmt?.displayId!}`)
@@ -1048,6 +1065,19 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         renderErrorPopup(
           `Slot you are trying to book is no longer available. Please try a different slot.`
         );
+        break;
+      case 'Internal Error':
+        renderErrorPopup(string.common.bookingFailedMM);
+        const eventAttributes: WebEngageEvents[WebEngageEventName.Patient_API_Error] = {
+          'Error Name': 'Medmantra_Issue',
+          'Patient Name': currentPatient?.firstName || '',
+          'Patient ID': currentPatient?.id || '',
+          'Patient Number': currentPatient?.mobileNumber || '',
+          'Doctor ID': doctor?.id || '',
+          'Screen Name': 'PaymentCheckout',
+          'API Name': 'bookAppointment',
+        };
+        postCleverTapEvent(CleverTapEventName.PATIENT_API_ERROR, eventAttributes);
         break;
       default:
         renderErrorPopup(`Something went wrong.${message ? ` Error Code: ${message}.` : ''}`);
@@ -1209,6 +1239,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       af_revenue: price,
       af_currency: 'INR',
       'Circle discount': circleDiscount,
+      currency: 'INR',
+      Value: price,
     };
     return eventAttributes;
   };

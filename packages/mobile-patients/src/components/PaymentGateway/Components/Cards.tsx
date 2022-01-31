@@ -49,7 +49,7 @@ export const Cards: React.FC<CardsProps> = (props) => {
         }}
       >
         <View style={styles.cardSubCont}>
-          <AddNewCard style={{ height: 24, width: 24 }} />
+          <AddNewCard style={{ width: 30, height: 24 }} />
           <Text style={styles.newCard}>Pay with a New Card</Text>
         </View>
         {<BlackArrowUp style={{ width: 15, height: 7, transform: [{ rotate: '90deg' }] }} />}
@@ -92,8 +92,8 @@ const styles = StyleSheet.create({
   },
   header: {
     marginHorizontal: 16,
-    paddingBottom: 12,
-    marginTop: 24,
+    paddingBottom: 8,
+    marginTop: 16,
   },
   heading: {
     ...theme.fonts.IBMPlexSansSemiBold(12),

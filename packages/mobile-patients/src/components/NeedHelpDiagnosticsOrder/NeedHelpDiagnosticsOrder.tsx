@@ -83,6 +83,7 @@ export interface Props
     isOrderRelatedIssue?: boolean;
     medicineOrderStatus?: DIAGNOSTIC_ORDER_STATUS;
     isConsult?: boolean;
+    isDiagnostics?: boolean;
     medicineOrderStatusDate?: any;
     sourcePage: WebEngageEvents[WebEngageEventName.HELP_TICKET_SUBMITTED]['Source_Page'];
   }> {}
@@ -116,6 +117,7 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const { needHelpToContactInMessage, needHelpTicketReferenceText } = useAppCommonData();
   const isConsult = navigation.getParam('isConsult') || false;
+  const isDiagnostics = true;
   const [selectedQueryId, setSelectedQueryId] = useState<string>('');
   const [comments, setComments] = useState<string>('');
   const apolloClient = useApolloClient();
@@ -342,6 +344,7 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
       queries,
       email,
       sourcePage,
+      isDiagnostics,
     });
   };
   const renderLoadMore = () => {
@@ -599,6 +602,7 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
           isOrderRelatedIssue,
           medicineOrderStatus,
           isConsult,
+          isDiagnostics,
         });
         setSelectedQueryId('');
         setComments('');
@@ -683,6 +687,7 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
         queries,
         email,
         sourcePage,
+        isDiagnostics,
         pathFollowed: string.otherIssueNotMyOrders + ' - ',
       });
     };

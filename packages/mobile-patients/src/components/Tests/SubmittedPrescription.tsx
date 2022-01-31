@@ -733,7 +733,7 @@ const styles = StyleSheet.create({
     elevation: 4,
     marginVertical: 5,
   },
-  presStyle: { flex: 1, padding: 10, height: height - 180 },
+  presStyle: { flex: 1, padding: 10 },
   containerStyle: { flex: 1, height: height },
   centerStyle: { justifyContent: 'center', alignItems: 'center' },
   centerStyleWidth: {

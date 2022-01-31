@@ -341,7 +341,10 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
-        <ScrollView contentContainerStyle={{ paddingBottom: getPaddingBottom() }}>
+        <ScrollView
+          keyboardShouldPersistTaps={'handled'}
+          contentContainerStyle={{ paddingBottom: getPaddingBottom() }}
+        >
           {renderHeader()}
           {renderAddress()}
           {renderCartItems()}

@@ -3,11 +3,7 @@ import { View, StyleSheet, SafeAreaView, Image, Text, Platform } from 'react-nat
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import {
-  Specialist,
-  VideoActiveIcon,
-  UserPackage,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+
 import moment from 'moment';
 import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -172,8 +168,8 @@ export const PackageCheckout: React.FC<PackageCheckoutProps> = (props) => {
   const initiatePackagePurchase = async () => {
     try {
       setLoading?.(true);
-      const response = await createUserSubscription();
 
+      const response = await createUserSubscription();
       const subscriptionId = g(response, 'data', 'CreateUserSubscription', 'response', '_id');
 
       const data = await createOrderInternal(subscriptionId!);
@@ -192,14 +188,17 @@ export const PackageCheckout: React.FC<PackageCheckoutProps> = (props) => {
             renderErrorPopup();
           }
         } else {
-          props.navigation.navigate(AppRoutes.PaymentMethods, {
+          const navigationParams = {
             paymentId: data?.data?.createOrderInternal?.payment_order_id!,
             amount: amountToPay,
             orderDetails: orderInfo,
             businessLine: 'doctorPackage',
             customerId: cusId,
             oneTapPatient: oneTapPatient,
-          });
+          };
+
+          props.navigation.navigate(AppRoutes.PaymentMethods, navigationParams);
+
           setLoading!(false);
         }
       } else {
@@ -296,6 +295,10 @@ export const PackageCheckout: React.FC<PackageCheckoutProps> = (props) => {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    backgroundColor: theme.colors.CARD_BG,
+  },
+  oneTapLoaderContainer: {
     flex: 1,
     backgroundColor: theme.colors.CARD_BG,
   },

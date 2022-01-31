@@ -83,7 +83,7 @@ import {
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
-import { CancelConsultation } from '../../strings/AppConfig';
+import { CancelConsultation } from '@aph/mobile-patients/src/strings/AppConfig';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { useShoppingCart } from '../ShoppingCartProvider';
@@ -714,6 +714,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
       )
     );
   };
+
 
   const resetReasonForCancelFields = () => {
     setSelectedReason('');

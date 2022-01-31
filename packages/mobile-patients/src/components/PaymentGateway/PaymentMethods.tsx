@@ -48,6 +48,7 @@ import {
   VERIFY_VPA,
   GET_PAYMENT_METHODS,
   INITIATE_DIAGNOSTIC_ORDER_PAYMENT_V2,
+  GET_ORDER_INFO,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -149,6 +150,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const paymentCodMessage = props.navigation.getParam('paymentCodMessage');
   const isCircleAddedToCart = props.navigation.getParam('isCircleAddedToCart');
   const oneTapPatient = props.navigation.getParam('oneTapPatient');
+  const transactionId = props.navigation.getParam('transactionId');
+  const orders = props.navigation.getParam('orders');
+
   const { currentPatient } = useAllCurrentPatients();
   const [banks, setBanks] = useState<any>([]);
   const [isTxnProcessing, setisTxnProcessing] = useState<boolean>(false);
@@ -162,7 +166,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const { authToken, setauthToken, pharmacyUserType } = useAppCommonData();
-  const { grandTotal, serverCartAmount } = useShoppingCart();
+  const { grandTotal, serverCartAmount, cartTat } = useShoppingCart();
   const [HCSelected, setHCSelected] = useState<boolean>(false);
   const [burnHc, setburnHc] = useState<number>(0);
   const storeCode =
@@ -256,8 +260,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const updateAmount = () => {
-    const redeemableAmount =
-      businessLine == 'pharma' ? serverCartAmount?.estimatedAmount || 0 : amount;
+    const redeemableAmount = amount;
     HCSelected
       ? healthCredits >= redeemableAmount
         ? (setburnHc(redeemableAmount), setAmount(Number(Decimal.sub(amount, redeemableAmount))))
@@ -285,7 +288,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const getPaymentOptions = () => {
     return client.query({
       query: GET_PAYMENT_METHODS,
-      variables: { is_mobile: true, payment_order_id: paymentId, prepaid_amount: amount },
+      variables: { payment_order_id: paymentId, prepaid_amount: amount },
       fetchPolicy: 'no-cache',
     });
   };
@@ -891,6 +894,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           cleverTapCheckoutEventAttributes,
           defaultClevertapEventParams: defaultClevertapEventParams,
           payload: payload,
+          transactionId,
+          orders,
+          cartTat
         });
         break;
       case 'subscription':

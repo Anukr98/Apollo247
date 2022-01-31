@@ -2464,7 +2464,7 @@ export const CREATE_HELP_TICKET = gql`
 
 export const GET_HELP_SECTION_QUERIES = gql`
   query GetHelpSectionQueries {
-    getHelpSectionQueries {
+    getHelpSectionQueriesv2 {
       needHelpQueries {
         id
         title
@@ -2473,6 +2473,7 @@ export const GET_HELP_SECTION_QUERIES = gql`
         queriesByOrderStatus
         content {
           title
+          contentType
           text
           cta {
             title
@@ -2504,6 +2505,7 @@ export const GET_HELP_SECTION_QUERIES = gql`
           content {
             title
             text
+            contentType
             cta {
               title
               appRoute
@@ -2534,6 +2536,7 @@ export const GET_HELP_SECTION_QUERIES = gql`
             content {
               title
               text
+              contentType
               cta {
                 title
                 appRoute
@@ -2564,6 +2567,7 @@ export const GET_HELP_SECTION_QUERIES = gql`
               content {
                 title
                 text
+                contentType
                 cta {
                   title
                   appRoute
@@ -5234,16 +5238,8 @@ export const ADD_DIABETIC_QUESTIONNAIRE = gql`
 `;
 
 export const GET_PAYMENT_METHODS = gql`
-  query getPaymentMethodsV3(
-    $is_juspay_pharma: Boolean
-    $payment_order_id: String!
-    $prepaid_amount: Float!
-  ) {
-    getPaymentMethodsV3(
-      is_juspay_pharma: $is_juspay_pharma
-      payment_order_id: $payment_order_id
-      prepaid_amount: $prepaid_amount
-    ) {
+  query getPaymentMethodsV3($payment_order_id: String!, $prepaid_amount: Float!) {
+    getPaymentMethodsV3(payment_order_id: $payment_order_id, prepaid_amount: $prepaid_amount) {
       linked_wallets {
         id
         object
@@ -5510,16 +5506,16 @@ export const GET_INTERNAL_ORDER = gql`
         updated_at
         amount
       }
-      offers{
+      offers {
         offer_code
-        offer_description{
+        offer_description {
           offer_code
           title
           description
         }
-        benefits{
+        benefits {
           amount
-          calculation_info{
+          calculation_info {
             value
           }
         }
@@ -6453,7 +6449,7 @@ export const GET_RESCHEDULE_AND_CANCELLATION_REASONS = gql`
     getRescheduleAndCancellationReasons(appointmentDateTimeInUTC: $appointmentDateTimeInUTC) {
       rescheduleReasons
       cancellationReasons
-      cancellationReasonsv2{
+      cancellationReasonsv2 {
         reason
         isDirectCancellation
       }
@@ -6700,7 +6696,7 @@ export const GET_DIAGNOSTICS_RECOMMENDATIONS = gql`
         diagnosticInclusions{
           itemId
           name
-          observations{
+          observations {
             observationName
             mandatoryValue
           }
@@ -7074,10 +7070,10 @@ export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS = gql`
         itemName
         inclusions
         packageCalculatedMrp
-        diagnosticInclusions{
+        diagnosticInclusions {
           itemId
           name
-          observations{
+          observations {
             observationName
             mandatoryValue
           }
@@ -7178,6 +7174,7 @@ export const SERVER_CART_SAVE_CART = gql`
           estimatedAmount
           deliveryCharges
           isDeliveryFree
+          freeDeliveryAmount
           cartSavings
           couponSavings
           totalCashBack
@@ -7305,6 +7302,7 @@ export const SERVER_CART_FETCH_CART = gql`
           estimatedAmount
           deliveryCharges
           isDeliveryFree
+          freeDeliveryAmount
           cartSavings
           couponSavings
           totalCashBack
@@ -7403,6 +7401,7 @@ export const SERVER_CART_REVIEW_CART = gql`
           estimatedAmount
           deliveryCharges
           isDeliveryFree
+          freeDeliveryAmount
           cartSavings
           couponSavings
           totalCashBack
@@ -7515,6 +7514,22 @@ export const SAVE_MEDICINE_ORDER_V3 = gql`
     }
   }
 `;
+
+export const FETCH_DIAGNOSTICS_ORDER_TAT_STATUS = gql`
+  query getTATStatus($GetTATStatusForDiagnosticOrderInput: GetTATStatusForDiagnosticOrderInput) {
+    getTATStatusForDiagnosticOrder(
+      getTATStatusForDiagnosticOrderInput: $GetTATStatusForDiagnosticOrderInput
+    ) {
+      TATBreached
+      KB {
+        contentType
+        content
+        categories
+      }
+    }
+  }
+`;
+
 export const DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS = gql`
   query getDiagnosticItemRecommendationsByPastOrders($mobileNumber: String!) {
     getDiagnosticItemRecommendationsByPastOrders(mobileNumber: $mobileNumber) {
@@ -7534,17 +7549,11 @@ export const DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS = gql`
       }
     }
   }
-`
+`;
 
 export const FETCH_BLOB_URL_WITH_PRISM = gql`
-  mutation fetchBlobURLWithPRISMData(
-    $patientId: ID!
-    $fileUrl: String!
-  ) {
-    fetchBlobURLWithPRISMData(
-      patientId: $patientId
-      fileUrl: $fileUrl
-    ) {
+  mutation fetchBlobURLWithPRISMData($patientId: ID!, $fileUrl: String!) {
+    fetchBlobURLWithPRISMData(patientId: $patientId, fileUrl: $fileUrl) {
       blobUrl
     }
   }
@@ -7555,6 +7564,14 @@ export const INSERT_REFEREE_DATA_TO_REFERRER = gql`
     addReferralRecord(referralInput: $referralDataInput) {
       id
       rewardStatus
+    }
+  }
+`;
+
+export const GET_REVIEW_POPUP_PERMISSION = gql`
+  query popUpReviewConfiguration($popupConfig: popupConfigArgs!) {
+    popUpReviewConfiguration(popupConfigArgs: $popupConfig) {
+      enable
     }
   }
 `;

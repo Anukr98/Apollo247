@@ -358,9 +358,9 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const client = useApolloClient();
 
   const isSatisfyingNameRegex = (value: string) =>
-    value == ' '
+    value == ' ' || ''
       ? false
-      : value == '' || /^[a-zA-Z]+((['’ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
+      : /^[a-zA-Z]+((['’ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
       ? true
       : false;
 

@@ -1,8 +1,8 @@
 import React from 'react';
 import { StyleSheet, Dimensions, Text, View, TouchableOpacity } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 const windowWidth = Dimensions.get('window').width;
 
 export interface CirclePurchaseProps {
@@ -13,19 +13,29 @@ export interface CirclePurchaseProps {
 
 export const CirclePurchase: React.FC<CirclePurchaseProps> = (props) => {
   const { subscriptionInfo, onPressBenefits, circleSavings } = props;
-  const amount = subscriptionInfo?.payment_reference?.amount_paid;
+  const amount = subscriptionInfo?.payment_reference?.purchase_via_HC
+    ? subscriptionInfo?.payment_reference?.HC_used
+    : subscriptionInfo?.payment_reference?.amount_paid;
   const endDate = subscriptionInfo?.end_date;
+  const duration = subscriptionInfo?.group_plan?.valid_duration;
 
   const renderSavings = () => {
     return !!circleSavings ? (
       <Text style={styles.savings}>
-        You <Text style={styles.savingsAmt}>saved ₹{circleSavings}</Text> on your purchase
+        You{' '}
+        <Text style={styles.savingsAmt}>
+          saved {string.common.Rs}
+          {circleSavings}
+        </Text>{' '}
+        on your purchase
       </Text>
     ) : null;
   };
 
   const renderValidity = () => {
-    return <Text style={styles.validity}>{`Valid till: ${new Date(endDate).toDateString()}`}</Text>;
+    return (
+      <Text style={styles.validity}>{`Valid till: ${new Date(endDate)?.toDateString()}`}</Text>
+    );
   };
 
   const renderViewDetails = () => {
@@ -41,7 +51,7 @@ export const CirclePurchase: React.FC<CirclePurchaseProps> = (props) => {
         <CircleLogo style={styles.circleIcon} />
         <View>
           <Text style={styles.message}>
-            {`Congrats! You have successfully purchased the 2 months (Trial) Circle Plan for ₹${amount}`}
+            {`Congrats! You have successfully purchased the ${duration} months (Trial) Circle Plan for ${string.common.Rs}${amount}`}
           </Text>
           {renderSavings()}
           {renderValidity()}
@@ -66,6 +76,9 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginBottom: 16,
     paddingHorizontal: 12,
+    padding: 16,
+    borderLeftColor: '#007C9D',
+    borderLeftWidth: 4,
   },
   circleIcon: {
     width: 42,
