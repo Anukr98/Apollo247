@@ -1188,6 +1188,15 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   function _navigateToHomePage() {
     const pincode = selectedAddr?.zipcode;
     DiagnosticAddToCartClicked(pincode!, currentPatient);
+    const patientId = patientCartItems?.[0]?.patientId; // for group recommandation only
+    const groupItemPresentArr = patientCartItems?.[0]?.cartItems?.filter((item) => {
+      //checking the presence if group recommendation Item in the cart
+      return groupRecommendations?.[0]?.itemId == Number(item?.id);
+    });
+    if (groupItemPresentArr?.length == 1) {
+      _onPressRemoveCartItem(groupItemPresentArr?.[0], []);
+      addPatientCartItem?.(patientId, cartItems!);
+    }
     props.navigation.navigate('TESTS', { focusSearch: false });
   }
 
@@ -1343,6 +1352,10 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     }
   }
 
+  useEffect(() => {
+    console.log('patientCartItems :>> ', patientCartItems?.[0]?.cartItems);
+  }, [patientCartItems])
+
   const renderGroupRecommendationsView = () => {
     const groupItem = groupRecommendations?.[0]
     const getDiagnosticPricingForItem = groupItem?.diagnosticPricing;
@@ -1390,7 +1403,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 
   const renderCartItems = () => {
     const getFilteredPatients = getSelectedPatientCartMapping();
-    //marginBottom : 50
     const groupItemPresentArr = patientCartItems?.[0]?.cartItems?.filter((item) => {
       //checking the presence if group recommendation Item in the cart
       return groupRecommendations?.[0]?.itemId == Number(item?.id);
@@ -1429,7 +1441,10 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                         ItemSeparatorComponent={() => renderSeparator()}
                         renderItem={({ item, index }) => _renderCartItem(item, getPatient, index)}
                       />
-                      {!!groupRecommendations?.length && patientCartItems?.length == 1 && groupItemPresentArr?.length == 0 && renderGroupRecommendationsView()}
+                      {!!groupRecommendations?.length &&
+                        patientCartItems?.length == 1 &&
+                        groupItemPresentArr?.length == 0 &&
+                        renderGroupRecommendationsView()}
                     </>
                   )}
                 </>
@@ -1667,6 +1682,11 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     const filterDuplicateItemsForPatients =
       !!duplicateNameArray &&
       duplicateNameArray?.filter((item: any) => item?.patientId == patientItems?.id);
+      const patientId = patientCartItems?.[0]?.patientId; // for group recommandation only
+      const groupItemPresentArr = patientCartItems?.[0]?.cartItems?.filter((item) => {
+        //checking the presence if group recommendation Item in the cart
+        return groupRecommendations?.[0]?.itemId == Number(item?.id);
+      });
     return (
       <CartItemCard
         index={index}
@@ -1680,6 +1700,11 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         duplicateArray={filterDuplicateItemsForPatients}
         onPressCard={(item) => _onPressCartItem(item, test)}
         onPressRemove={(item) => _onPressRemoveCartItem(item, patientItems)}
+        showUndo={groupItemPresentArr?.length == 1}
+        onPressUndo={(item)=> {
+          _onPressRemoveCartItem(item, patientItems)
+          addPatientCartItem?.(patientId,cartItems!)
+        }}
       />
     );
   };

@@ -14,53 +14,83 @@ interface RecommedationGroupCardProps {
   onPressAdd?: any;
   showAddButton?: boolean;
   showTestWorth?: boolean;
-  containerStyle?: any,
-  scrollEnabled?: boolean
+  containerStyle?: any;
+  scrollEnabled?: boolean;
 }
 
 export const RecommedationGroupCard: React.FC<RecommedationGroupCardProps> = (props) => {
-  const { showRecommedation, onPressAdd, showAddButton, showTestWorth, containerStyle, scrollEnabled, data, cartItems,patientItems } = props;
+  const {
+    showRecommedation,
+    onPressAdd,
+    showAddButton,
+    showTestWorth,
+    containerStyle,
+    scrollEnabled,
+    data,
+    cartItems,
+    patientItems,
+  } = props;
   const [isOnPopUp, setIsOnPopUp] = useState<any>(!showAddButton);
 
-  const inclusionNameArray = data?.inclusionData
-  const cartItemIds = cartItems?.map((item: { id: any; })=>{return Number(item?.id)})
-
-
+  const inclusionNameArray = data?.inclusionData;
+  const cartItemIds = cartItems?.map((item: { id: any }) => {
+    return Number(item?.id);
+  });
+  const existingItems = inclusionNameArray?.filter((item: { itemId: any }) => {
+    return cartItemIds?.includes(item?.itemId);
+  });
   const getDiagnosticPricingForItem = data?.diagnosticPricing;
   const packageMrpForItem = data?.packageCalculatedMrp!;
   const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
   return (
     <>
       {showRecommedation ? (
-        <ScrollView style={[styles.container,containerStyle]}>
+        <ScrollView style={[styles.container, containerStyle]}>
           <View style={styles.nameContainer}>
-            <Text style={styles.cartItemText}>
-              {data?.itemName}
+            <Text style={styles.cartItemText}>{data?.itemName}</Text>
+            <Text style={styles.mainPriceText}>
+              {string.common.Rs}
+              {pricesForItem?.price}
             </Text>
-            <Text style={styles.mainPriceText}>{string.common.Rs}{pricesForItem?.price}</Text>
           </View>
           <Text style={styles.textInclusionsRecom}>
-            Includes {showTestWorth ? <Text style={styles.boldTextRecom}>Tests worth {string.common.Rs}{pricesForItem?.price}</Text> : null}
+            Includes{' '}
+            {showTestWorth ? (
+              <Text style={styles.boldTextRecom}>{`Includes ${
+                existingItems?.length
+              } existing + ${inclusionNameArray?.length - existingItems?.length} new tests`}</Text>
+            ) : null}
           </Text>
           <View>
             {inclusionNameArray?.map((item: any) => {
               return (
                 <View style={styles.inclusionItemView}>
-                  <Text style={{...theme.viewStyles.text(cartItemIds?.includes(item?.itemId) && isOnPopUp ? 'B' : 'M', 12, colors.SHERPA_BLUE, 1)}}>
+                  <Text
+                    style={{
+                      ...theme.viewStyles.text(
+                        cartItemIds?.includes(item?.itemId) && isOnPopUp ? 'B' : 'M',
+                        12,
+                        colors.SHERPA_BLUE,
+                        1
+                      ),
+                    }}
+                  >
                     {' • '} {item?.name}
                   </Text>
                 </View>
               );
             })}
           </View>
-          {showAddButton ? <TouchableOpacity
-            style={styles.addButton}
-            onPress={() => {
-              onPressAdd();
-            }}
-          >
-            <Text style={styles.textButton}>{nameFormater(string.common.add,'upper')}</Text>
-          </TouchableOpacity> : null}
+          {showAddButton ? (
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={() => {
+                onPressAdd();
+              }}
+            >
+              <Text style={styles.textButton}>{nameFormater(string.common.add, 'upper')}</Text>
+            </TouchableOpacity>
+          ) : null}
         </ScrollView>
       ) : null}
     </>
