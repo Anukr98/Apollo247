@@ -3,13 +3,16 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
+import { CANCELLATION_REASONS_CTA } from "./globalTypes";
+
 // ====================================================
 // GraphQL query operation: getRescheduleAndCancellationReasons
 // ====================================================
 
 export interface getRescheduleAndCancellationReasons_getRescheduleAndCancellationReasons_cancellationReasonsv2_ctaOptions {
   __typename: "CTAOptions";
-  ctas: (string | null)[] | null;
+  cta: CANCELLATION_REASONS_CTA | null;
+  multiCtas: (string | null)[] | null;
   displayText: string | null;
   userCommentsEnabled: boolean | null;
 }
