@@ -627,7 +627,9 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   const renderSubscriptionCard = () => {
     const duration = !!subscriptionDetails && subscriptionDetails?.group_plan?.valid_duration;
     const circlePurchasePrice =
-      !!subscriptionDetails && subscriptionDetails?.payment_reference?.amount_paid;
+      !!subscriptionDetails && subscriptionDetails?.payment_reference?.purchase_via_HC
+        ? subscriptionDetails?.payment_reference?.HC_used
+        : subscriptionDetails?.payment_reference?.amount_paid;
     const validity = moment(new Date(), 'DD/MM/YYYY').add('days', subscriptionDetails?.expires_in);
     return (
       <>
@@ -743,7 +745,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
             getOffersResponse?.length > 0 &&
             getOffersResponse?.map((item) => renderOffers(item))}
           {/** commented for this release */}
-          {/* {!!getOffersResponse && getOffersResponse?.length > 0 && renderHealthCredits()} */}
+          {!!getOffersResponse && getOffersResponse?.length > 0 && renderHealthCredits()}
           {!!refundText && renderPrices(refundText, refundAmountToShow, false)}
         </View>
       </View>
