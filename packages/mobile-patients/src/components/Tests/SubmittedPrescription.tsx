@@ -475,7 +475,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
 
         <ScrollView bounces={false} scrollEventThrottle={1}>
           {isErrorOccured ? renderErrorMessage() : null}
-          <View style={styles.presStyle}>
+          <View style={[styles.presStyle, onSumbitSuccess && { height: height / 1.5 }]}>
             {!onSumbitSuccess ? (
               <>
                 {PhysicalPrescriptionsProps && PhysicalPrescriptionsProps?.length ? (
