@@ -846,7 +846,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     return array;
   }
 
-  const fetchHC_ChargesForTest = async () => {
+  const fetchHC_ChargesForTest = async (removeCoupon?: boolean) => {
     setLoading?.(true);
     setHcApiCalled(false);
     var apiInput;
@@ -940,7 +940,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         setHcCharges?.(getCharges);
         setDistanceCharges?.(isModifyFlow ? 0 : distanceCharges); //should not get applied
         setModifyHcCharges?.(updatedHcCharges); //used for calculating subtotal & topay
-        !!coupon && revalidateAppliedCoupon(coupon?.coupon, lineItemWithQuantity, false);
+        !!removeCoupon
+          ? null
+          : !!coupon && revalidateAppliedCoupon(coupon?.coupon, lineItemWithQuantity, false);
       }
       setLoading?.(false);
       setHcApiCalled(true);
@@ -1543,6 +1545,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   function _removeAppliedCoupon() {
     setCoupon?.(null);
     setCouponDiscount?.(0);
+    fetchHC_ChargesForTest(true);
   }
 
   const renderCouponView = () => {
