@@ -532,7 +532,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
       );
       const eventAttribute = {
         referrer_id: af_referrer_customer_id,
-        referee_id: data.data.updatePatient.patient.id,
+        referee_id: data?.data?.updatePatient?.patient?.id,
         campaign_id: campaign,
         reward_id: rewardId,
         short_link: shortlink,
