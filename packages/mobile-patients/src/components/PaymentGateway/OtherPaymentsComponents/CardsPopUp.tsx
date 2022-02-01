@@ -41,13 +41,15 @@ export const CardsPopUp: React.FC<CardsPopUpProps> = (props) => {
   };
 
   const renderSavedCards = () => {
-    return <View style={styles.container}>{savedCards?.map((item: any) => renderCard(item))}</View>;
+    return !!savedCards?.length ? (
+      <View style={styles.container}>{savedCards?.map((item: any) => renderCard(item))}</View>
+    ) : null;
   };
 
   const renderNewCard = () => {
     return (
       <View>
-        <Text style={styles.header}>NEW DEBIT/CREDIT CARD</Text>
+        {!!savedCards?.length && <Text style={styles.header}>NEW DEBIT/CREDIT CARD</Text>}
         <TouchableOpacity style={styles.subCont} onPress={onPressNewCard}>
           <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 12 }}>
             <Image

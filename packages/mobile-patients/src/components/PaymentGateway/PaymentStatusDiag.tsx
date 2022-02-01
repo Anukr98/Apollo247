@@ -122,6 +122,7 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
     : orderInfo?.ordersList?.map((item: any) => item?.displayId)?.join(', ');
 
   useEffect(() => {
+    setTimeout(() => setAnimationfinished(true), 2700);
     isCircleAddedToCart && setIsDiagnosticCircleSubscription?.(true);
     isModifyCod && fetchOrdersDetails(modifiedOrderDetails?.id);
     clearDiagnoticCartInfo?.();
