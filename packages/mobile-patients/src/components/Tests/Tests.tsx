@@ -326,7 +326,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
 
   const [bannerLoading, setBannerLoading] = useState(true);
-  const [imgHeight, setImgHeight] = useState<number>(AppConfig.Configuration.DIAGNOSTICS_HOME_PAGE_BANNER_HEIGHT | 160);
+  const [imgHeight, setImgHeight] = useState<number>(
+    AppConfig.Configuration.DIAGNOSTICS_HOME_PAGE_BANNER_HEIGHT | 160
+  );
   const [slideIndex, setSlideIndex] = useState(0);
   const [banners, setBanners] = useState([]);
   const [cityId, setCityId] = useState('');
@@ -961,8 +963,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   function triggerAddressSelected(servicable: 'Yes' | 'No') {
     const addressUsed = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
-    const addressToUse = !!addressUsed ? addressUsed : diagnosticLocation
-    const pinCodeFromAddress = !!addressToUse?.zipcode ? addressToUse?.zipcode : addressToUse?.pincode;
+    const addressToUse = !!addressUsed ? addressUsed : diagnosticLocation;
+    const pinCodeFromAddress = !!addressToUse?.zipcode
+      ? addressToUse?.zipcode
+      : addressToUse?.pincode;
     if (!!addressToUse) {
       DiagnosticAddresssSelected(
         newAddressAddedHomePage != '' ? 'Manual' : 'Automation',
@@ -2721,7 +2725,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
-
   const isOrderAvailable =
     diagnosticStateUserType == `"${string.user_type.REPEAT}"` ||
     diagnosticStateUserType == string.user_type.REPEAT;
@@ -2927,6 +2930,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const renderCartSummary = () => {
     return (
       <View style={styles.cartSummaryOverlay}>
+        <TouchableOpacity onPress={() => onPressShowLess()} style={{ flex: 1 }} />
         <CartPageSummary
           containerStyle={styles.cartSummaryContainer}
           _onPressShowLess={() => onPressShowLess()}
@@ -3584,7 +3588,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     marginTop: 20,
   },
-  miniIconsStyle: { height: 21, alignSelf: 'center', width:15 },
+  miniIconsStyle: { height: 21, alignSelf: 'center', width: 15 },
   precriptionContainerUpload: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -3993,9 +3997,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     bottom: 0,
-    height: winHeight / 2.5,
+    maxHeight: winHeight / 1.75,
+    flex: 1,
     backgroundColor: colors.BGK_GRAY,
     width: '100%',
+    zIndex: 1000,
   },
   recommendationsText: {
     ...theme.viewStyles.text('R', 12, colors.LIGHT_BLUE, 1, 16),

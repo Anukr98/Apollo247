@@ -9,6 +9,7 @@ import {
   FlatList,
   ScrollView,
   Dimensions,
+  TouchableOpacity,
 } from 'react-native';
 import {
   aphConsole,
@@ -16,7 +17,6 @@ import {
   extractPatientDetails,
   formatAddress,
   formatAddressForApi,
-  formatAddressWithLandmark,
   g,
   getAge,
   isAddressLatLngInValid,
@@ -43,6 +43,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { AccessLocation } from '@aph/mobile-patients/src/components/Medicines/Components/AccessLocation';
 import {
+  convertNumberToDecimal,
   diagnosticsDisplayPrice,
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   getPricesForItem,
@@ -109,11 +110,12 @@ import {
 } from '@aph/mobile-patients/src/components/Tests/components/TimelineWizard';
 import { InfoMessage } from '@aph/mobile-patients/src/components/Tests/components/InfoMessage';
 import { MultiSelectPatientListOverlay } from '@aph/mobile-patients/src/components/Tests/components/MultiSelectPatientListOverlay';
-import { LongRightArrow, TestTubes } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Down, LongRightArrow, TestTubes, Up } from '@aph/mobile-patients/src/components/ui/Icons';
 import ItemCard from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 
 type Address = savePatientAddress_savePatientAddress_patientAddress;
+type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
 
 enum SOURCE {
   ADD = 'add',
@@ -205,6 +207,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   const [widgetSelectedItem, setWidgetSelectedItem] = useState([] as any);
   const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
   const [reportTat, setReportTat] = useState([] as any);
+  const [showAllPreviousItems, setShowAllPreviousItems] = useState<boolean>(false);
 
   const isCartPresent = isDiagnosticSelectedCartEmpty(
     isModifyFlow ? modifiedPatientCart : patientCartItems
@@ -278,11 +281,11 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     newAddressAddedCartPage != '' && setNewAddressAddedCartPage?.('');
   }
   const paitentTotalCart: any[] = [];
-    patientCartItemsCopy?.map((item: any) => {
-      item?.cartItems?.map((_item: any) => {
-        paitentTotalCart?.push(_item);
-      });
+  patientCartItemsCopy?.map((item: any) => {
+    item?.cartItems?.map((_item: any) => {
+      paitentTotalCart?.push(_item);
     });
+  });
 
   function triggerCartPageViewed(isRecommendationShown: boolean, recomData: any) {
     const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
@@ -565,8 +568,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         Number(addressCityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
       );
       if (res?.data?.success) {
-        const result = g(res, 'data', 'data');
-        const widgetsData = g(res, 'data', 'widget_data', '0', 'diagnosticWidgetData');
+        const result = res?.data?.data;
+        const widgetsData = res?.data?.widget_data?.[0]?.diagnosticWidgetData;
         setReportGenDetails(result || []);
         const _itemIds = widgetsData?.map((item: any) => Number(item?.itemId));
         const _filterItemIds = _itemIds?.filter((val: any) => !cartItemsWithId?.includes(val));
@@ -1330,12 +1333,74 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                       data={patientItems}
                       ItemSeparatorComponent={() => renderSeparator()}
                       renderItem={({ item, index }) => _renderCartItem(item, getPatient, index)}
+                      ListFooterComponent={() =>
+                        isModifyFlow && !!getFilteredPatients && getFilteredPatients?.length
+                          ? renderPastOrderCart()
+                          : null
+                      }
                     />
                   )}
                 </>
               );
             })
           : renderEmptyCart()}
+      </View>
+    );
+  };
+
+  const renderPastOrderCart = () => {
+    const remainingItems = modifiedOrder?.diagnosticOrderLineItems?.length - 1;
+    const firstItem = modifiedOrder?.diagnosticOrderLineItems?.[0]?.itemName;
+    const orderLineItems = modifiedOrder?.diagnosticOrderLineItems! || [];
+    return (
+      <View style={[styles.previousView, { paddingBottom: showAllPreviousItems ? 16 : 12 }]}>
+        <TouchableOpacity
+          onPress={() => setShowAllPreviousItems(!showAllPreviousItems)}
+          style={styles.previousContainerTouch}
+        >
+          <View style={styles.previousItemInnerContainer}>
+            <Text style={styles.previousItemHeading}>
+              {nameFormater('Previously added to cart', 'default')}
+            </Text>
+
+            <View style={styles.arrowTouch}>
+              {showAllPreviousItems ? (
+                <Up style={styles.arrowIconStyle} />
+              ) : (
+                <Down style={styles.arrowIconStyle} />
+              )}
+            </View>
+          </View>
+          <Text style={[styles.previousItemHeading, styles.previousOrderItemText]}>
+            {nameFormater(firstItem?.slice(0, isSmallDevice ? 29 : 32), 'title')}{' '}
+            {remainingItems > 0 && `+ ${remainingItems} more`}
+          </Text>
+        </TouchableOpacity>
+        {showAllPreviousItems &&
+          orderLineItems?.map((item: orderListLineItems) => {
+            return renderPreviousOrderItems(item);
+          })}
+      </View>
+    );
+  };
+
+  const renderPreviousOrderItems = (item: orderListLineItems) => {
+    return (
+      <View style={styles.commonTax}>
+        <View style={{ width: '65%' }}>
+          <Text style={styles.commonText}>
+            {nameFormater(
+              !!item?.itemName ? item?.itemName! : item?.diagnostics?.itemName!,
+              'title'
+            )}
+          </Text>
+        </View>
+        <View style={styles.previousOrderView}>
+          <Text style={[styles.commonText, styles.previousOrderPrice]}>
+            {string.common.Rs}
+            {convertNumberToDecimal(item?.price) || null}
+          </Text>
+        </View>
       </View>
     );
   };
@@ -1410,7 +1475,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 
             if (comingFrom == 'diagnosticServiceablityChange') {
               product?.map((item) => {
-                const diagnosticPricing = g(item, 'diagnosticPricing');
+                const diagnosticPricing = item?.diagnosticPricing;
                 const packageMrp = item?.packageCalculatedMrp!;
                 const pricesForItem = getPricesForItem(diagnosticPricing, packageMrp);
                 if (!pricesForItem?.itemActive) {
@@ -1502,7 +1567,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         isCircleSubscribed={isDiagnosticCircleSubscription}
         reportGenItem={reportGenItem}
         reportTat={reportTAT}
-        showCartInclusions={false} //showInclusions
+        showCartInclusions={true} //showInclusions
         duplicateArray={filterDuplicateItemsForPatients}
         onPressCard={(item) => _onPressCartItem(item, test)}
         onPressRemove={(item) => _onPressRemoveCartItem(item, patientItems)}
@@ -2010,5 +2075,50 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     marginHorizontal: 16,
     marginTop: 12,
+  },
+  previousContainerTouch: {
+    flexDirection: 'column',
+  },
+  previousItemInnerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  arrowIconStyle: { height: 25, width: 30, resizeMode: 'contain' },
+  previousItemHeading: {
+    ...theme.fonts.IBMPlexSansSemiBold(isSmallDevice ? 13 : 14),
+    color: theme.colors.SHERPA_BLUE,
+    lineHeight: 22,
+    width: '87%',
+  },
+
+  arrowTouch: {
+    width: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  commonTax: {
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 18,
+  },
+  commonText: {
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 13 : 14),
+    color: theme.colors.SHERPA_BLUE,
+    marginBottom: 5,
+    lineHeight: 18,
+  },
+  previousView: {
+    backgroundColor: theme.colors.BGK_GRAY,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    marginTop: 6,
+  },
+  previousOrderView: { flex: 1, alignItems: 'flex-end' },
+  previousOrderPrice: { lineHeight: 14, ...theme.fonts.IBMPlexSansBold(isSmallDevice ? 13 : 14) },
+  previousOrderItemText: {
+    ...theme.fonts.IBMPlexSansRegular(isSmallDevice ? 11 : 12),
+    lineHeight: 18,
   },
 });

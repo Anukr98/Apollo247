@@ -81,7 +81,6 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
   const itemCountText = itemCount > 9 ? `${itemCount}` : `0${itemCount}`;
   const zipCode = !!locationDetails?.pincode ? locationDetails?.pincode : 0;
   const cartItemIds = cartItems?.map((item) => Number(item?.id));
-  var previousTat: any[];
 
   type itemReportTat = getConfigurableReportTAT_getConfigurableReportTAT_itemLevelReportTATs;
 
@@ -425,7 +424,15 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
     );
   };
 
-  const renderMainPriceView = (slashedPrice: number | null | undefined, priceToShow: number) => {
+  const renderMainPriceView = (
+    slashedPrice: number | null | undefined,
+    priceToShow: number,
+    promoteCircle: boolean,
+    circleDiscount: any,
+    promoteDiscount: any,
+    specialDiscount: any,
+    discount: any
+  ) => {
     return (
       <View style={styles.priceView}>
         <Text style={styles.mainPriceText}>
@@ -438,6 +445,16 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
           {string.common.Rs}
           {priceToShow}
         </Text>
+        {renderPercentageDiscount(
+          promoteCircle && isCircleSubscribed
+            ? circleDiscount
+            : promoteDiscount
+            ? specialDiscount
+            : discount,
+          promoteCircle && isCircleSubscribed ? true : false,
+          promoteDiscount && specialDiscount > 0 ? specialDiscount : 0,
+          discount > 0 ? discount : 0
+        )}
       </View>
     );
   };
@@ -458,29 +475,12 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
     );
   };
 
-  const renderInclusionPercentageView = (
-    promoteCircle: boolean,
-    circleDiscount: any,
-    promoteDiscount: any,
-    specialDiscount: any,
-    discount: any,
-    inclusionCount: number
-  ) => {
+  const renderInclusionPercentageView = (inclusionCount: number) => {
     return (
       <View style={styles.inclusionPercentageView}>
         <Text style={styles.perPersonText}>
           {`${inclusionCount} ${inclusionCount > 1 ? 'tests' : 'test'}`} included
         </Text>
-        {renderPercentageDiscount(
-          promoteCircle && isCircleSubscribed
-            ? circleDiscount
-            : promoteDiscount
-            ? specialDiscount
-            : discount,
-          promoteCircle && isCircleSubscribed ? true : false,
-          promoteDiscount && specialDiscount > 0 ? specialDiscount : 0,
-          discount > 0 ? discount : 0
-        )}
       </View>
     );
   };
@@ -575,18 +575,20 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
             <View style={styles.nameView}>
               <Text style={styles.itemNameText}>{nameFormater(item?.name, 'default')}</Text>
             </View>
-            {renderItemType(inclusionCount)}
+            {/**commented for now -> changeMaxWidth to 70%  */}
+            {/* {renderItemType(inclusionCount)} */}
           </View>
-          {renderMainPriceView(slashedPrice, priceToShow)}
+          {renderMainPriceView(
+            slashedPrice,
+            priceToShow,
+            promoteCircle,
+            circleDiscount,
+            promoteDiscount,
+            specialDiscount,
+            discount
+          )}
         </View>
-        {renderInclusionPercentageView(
-          promoteCircle,
-          circleDiscount,
-          promoteDiscount,
-          specialDiscount,
-          discount,
-          inclusionCount
-        )}
+        {renderInclusionPercentageView(inclusionCount)}
         {renderTATButtonView(itemReportTAT, item)}
         {index == array?.length - 1
           ? null
@@ -615,7 +617,6 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
         : !hasPackageSKU
         ? newArray.concat(recommendationsData).concat(topBookedTests)
         : recommendationsData;
-
     return (
       <View style={styles.recommendationsView}>
         <Text style={styles.recommendedForText}>Recommended for you</Text>
@@ -708,16 +709,17 @@ const styles = StyleSheet.create({
   perPersonText: { ...theme.viewStyles.text('R', 12, colors.LIGHT_BLUE, 1, 16) },
   topView: {
     flexDirection: 'row',
-    backgroundColor: colors.BGK_GRAY,
+    backgroundColor: colors.GRAY_BGK,
     justifyContent: 'space-between',
-    margin: 16,
+    padding: 16,
+    marginBottom: 8,
   },
-  itemCountText: { ...theme.viewStyles.text('M', 14, colors.SHERPA_BLUE, 1, 19) },
+  itemCountText: { ...theme.viewStyles.text('SB', 14, colors.SHERPA_BLUE, 1, 18.2) },
   showLessText: { ...theme.viewStyles.text('M', 14, colors.APP_YELLOW, 1, 19) },
   rowStyle: { flexDirection: 'row' },
   itemTypeView: {
     marginLeft: 6,
-    backgroundColor: '#F4F4F4',
+    backgroundColor: colors.GRAY_BGK,
     justifyContent: 'center',
     alignItems: 'center',
     height: 28,
@@ -744,7 +746,7 @@ const styles = StyleSheet.create({
   },
   cartItemsInnerView: { flexDirection: 'row', justifyContent: 'space-between', marginRight: 16 },
   nameTypeView: { flexDirection: 'row', width: '74%' },
-  nameView: { maxWidth: '70%', justifyContent: 'center' },
+  nameView: { maxWidth: '80%', justifyContent: 'flex-start' },
   itemNameText: { ...theme.viewStyles.text('M', 14, colors.SHERPA_BLUE, 1, 22) },
   recommendationsView: { backgroundColor: '#F2FBFF', marginTop: 12 },
   recommendedForText: {

@@ -44,7 +44,6 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     duplicateArray,
     comingFrom,
     showCartInclusions,
-    index,
   } = props;
 
   const inclusionItem =
@@ -146,13 +145,27 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
         {((!!reportGenItem && !isEmptyObject(reportGenItem)) ||
           (!!reportTat && !isEmptyObject(reportTat))) &&
           renderReportTat_preTestingReqrmnt()}
-        {comingFrom == AppRoutes.CartPage && showCartInclusions && !!inclusionItemToShow ? (
-          <View style={styles.inclusionView}>
-            <TestInfoIcon style={styles.timeIconStyle} />
-            <Text style={styles.inclusionText}>Includes {inclusionItemToShow}</Text>
-          </View>
-        ) : null}
+        {comingFrom == AppRoutes.CartPage && showCartInclusions && !!inclusionItemToShow
+          ? renderConflictingItemView()
+          : null}
       </TouchableOpacity>
+    );
+  };
+
+  const renderConflictingItemView = () => {
+    return (
+      <View style={styles.inclusionView}>
+        <Text style={styles.inclusionCommonText}>Has common parameters with </Text>
+        {!!finalFilterInclusions &&
+          finalFilterInclusions?.map((item: any) => {
+            return (
+              <View style={styles.inclusionListView}>
+                <Text style={styles.inclusionsBullet}>{'\u2B24'}</Text>
+                <Text style={styles.inclusionText}> {item}</Text>
+              </View>
+            );
+          })}
+      </View>
     );
   };
 
@@ -326,15 +339,19 @@ const styles = StyleSheet.create({
     paddingTop: 6,
   },
   inclusionView: {
-    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
-    flexDirection: 'row',
-    alignItems: 'center',
+    backgroundColor: theme.colors.GREEN_BACKGROUND,
+    margin: 12,
+    marginTop: -4,
+    justifyContent: 'center',
     flex: 1,
   },
-  inclusionText: {
-    ...theme.viewStyles.text('M', 10, theme.colors.SHERPA_BLUE, 0.6, 16),
+  inclusionCommonText: {
+    ...theme.viewStyles.text('M', 10, theme.colors.SHERPA_BLUE, 1, 16, 0.04),
     padding: 8,
-    width: '87%',
+    paddingBottom: 4,
+  },
+  inclusionText: {
+    ...theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE, 1, 18),
   },
   inclusionCountText: {
     ...theme.viewStyles.text('M', isSmallDevice ? 10 : 11, theme.colors.LIGHT_BLUE, 0.6, 18, 0.04),
@@ -386,4 +403,17 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   discountPercentageView: { alignItems: 'flex-end', marginRight: 12, marginTop: -8 },
+  inclusionsBullet: {
+    color: theme.colors.SHERPA_BLUE,
+    fontSize: 4,
+    textAlign: 'center',
+  },
+  inclusionListView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+    width: '87%',
+    paddingTop: 0,
+    marginLeft: 8,
+  },
 });

@@ -1696,7 +1696,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         onPressCard={() => _navigateToYourTestDetails(order, false)}
         onPressAddTest={() => _onPressAddTest(order)}
         onPressReschedule={() => _onPressTestReschedule(order)}
-        onPressViewDetails={() => _navigateToYourTestDetails(order, true)}
+        onPressViewDetails={() => _navigateToYourTestDetails(order, false)}
         onPressViewReport={() => _onPressViewReportAction(order)}
         phelboObject={order?.diagnosticOrderPhlebotomists}
         onPressRatingStar={(star) => _navigateToRatingScreen(star, order)}

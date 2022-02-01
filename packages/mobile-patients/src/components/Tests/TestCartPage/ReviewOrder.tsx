@@ -87,6 +87,7 @@ import {
   terminateSDK,
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import {
+  CREATE_ORDER,
   CREATE_USER_SUBSCRIPTION,
   GET_PLAN_DETAILS_BY_PLAN_ID,
   MODIFY_DIAGNOSTIC_ORDERS,
@@ -460,11 +461,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   }, [toPayPrice, isFocused]);
 
   const paitentTotalCart: any[] = [];
-    patientCartItemsCopy?.map((item: any) => {
-      item?.cartItems?.map((_item: any) => {
-        paitentTotalCart?.push(_item);
-      });
+  patientCartItemsCopy?.map((item: any) => {
+    item?.cartItems?.map((_item: any) => {
+      paitentTotalCart?.push(_item);
     });
+  });
 
   function triggerCartPageViewed() {
     const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
@@ -492,19 +493,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     );
     //add coupon code + coupon discount
   }
-
-  useEffect(() => {
-    //modify case
-    if (isModifyFlow && cartItems?.length > 0 && modifiedPatientCart?.length > 0) {
-      //if multi-uhid modify -> don't call phleboCharges api
-      // !!modifiedOrder?.attributesObj?.isMultiUhid && modifiedOrder?.attributesObj?.isMultiUhid
-      //   ? clearCollectionCharges()
-      //   : fetchHC_ChargesForTest();
-      clearCollectionCharges();
-    } else {
-      fetchHC_ChargesForTest();
-    }
-  }, [isCircleAddedToCart]);
 
   useEffect(() => {
     !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
@@ -623,10 +611,15 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
                 false
               );
             } else {
+              console.log('ye');
               const successMessage = responseData?.successMessage || '';
               //if any sku has freeCollection as true => waive off
               if (isFreeHomeCollection?.length > 0) {
                 setWaiveOffCollectionCharges?.(true);
+                setHcApiCalled(true);
+                setHcCharges?.(0);
+                setDistanceCharges?.(0);
+                setModifyHcCharges?.(0);
                 clearCollectionCharges();
               }
 
@@ -860,7 +853,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     return array;
   }
 
-  const fetchHC_ChargesForTest = async () => {
+  const fetchHC_ChargesForTest = async (removeCoupon?: boolean) => {
     setLoading?.(true);
     setHcApiCalled(false);
     var apiInput;
@@ -954,6 +947,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         setHcCharges?.(getCharges);
         setDistanceCharges?.(isModifyFlow ? 0 : distanceCharges); //should not get applied
         setModifyHcCharges?.(updatedHcCharges); //used for calculating subtotal & topay
+        !!removeCoupon
+          ? null
+          : !!coupon && revalidateAppliedCoupon(coupon?.coupon, lineItemWithQuantity, false);
       }
       setLoading?.(false);
       setHcApiCalled(true);
@@ -1119,9 +1115,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const slashedPrice = diagnosticsDisplayPrice(item, showCirclePrice)?.slashedPrice;
 
     const calTotal = priceToShow * item?.mou;
+    //removed packageMrp for showing circle savings  Number((!!item?.packageMrp && item?.packageMrp!) || mrpToDisplay)
     const savingAmount =
-      Number((!!item?.packageMrp && item?.packageMrp!) || mrpToDisplay) -
-      Number(item?.circleSpecialPrice!);
+      Number(item?.circlePrice! || item?.price) - Number(item?.circleSpecialPrice!);
 
     const totalIndiviualSavingAmount = !!savingAmount && savingAmount * item?.mou;
 
@@ -1556,6 +1552,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   function _removeAppliedCoupon() {
     setCoupon?.(null);
     setCouponDiscount?.(0);
+    fetchHC_ChargesForTest(true);
   }
 
   const renderCouponView = () => {
@@ -1623,7 +1620,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     // const showOneApollo = isModifyFlow
     //   ? modifiedOrder?.paymentType === DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT
     //   : true;
-    const showOneApollo = false
+    const showOneApollo = false;
     return (
       <>
         <View
@@ -2298,12 +2295,13 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       itemIds?.length &&
       itemIds?.map((id: number) => {
         const isFromApi = !!cartItemsMapping && cartItemsMapping?.length > 0;
-        const arrayToSelect = isFromApi ? cartItemsMapping : cartItems;
+        const apiArray = isFromApi && cartItemsMapping?.length > cartItems?.length;
+        const arrayToSelect = apiArray ? cartItemsMapping : cartItems;
         const findItem = arrayToSelect?.find(
-          (cItems: any) => Number(isFromApi ? cItems?.itemId : cItems?.id) === Number(id)
+          (cItems: any) => Number(apiArray ? cItems?.itemId : cItems?.id) === Number(id)
         );
         if (!!findItem) {
-          itemNames?.push(isFromApi ? findItem?.itemName : findItem?.name);
+          itemNames?.push(apiArray ? findItem?.itemName : findItem?.name);
         }
         //in case of modify. => only for single uhid
         if (isModifyFlow) {
@@ -2517,6 +2515,26 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     });
   };
 
+  const storeCode =
+    Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
+
+  const createJusPayOrder = (paymentId: string) => {
+    const orderInput = {
+      payment_order_id: paymentId,
+      health_credits_used: 0,
+      cash_to_collect: 0,
+      prepaid_amount: 0,
+      store_code: storeCode,
+      is_mobile_sdk: true,
+      return_url: AppConfig.Configuration.baseUrl,
+    };
+    return client.mutate({
+      mutation: CREATE_ORDER,
+      variables: { order_input: orderInput },
+      fetchPolicy: 'no-cache',
+    });
+  };
+
   //this is changed for saveBooking, for modify (need to add)
   async function callCreateInternalOrder(
     getOrderDetails: any, //getOrderId (in case of modify)
@@ -2636,18 +2654,38 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         } else {
           setLoading?.(false);
           AsyncStorage.setItem('orderInfo', JSON.stringify(orderInfo));
-          props.navigation.navigate(AppRoutes.PaymentMethods, {
-            paymentId: payId!,
-            amount: toPayPrice,
-            orderId: getOrderDetails?.[0]?.orderID, //passed only one
-            orderDetails: orderInfo,
-            orderResponse: array,
-            eventAttributes,
-            businessLine: 'diagnostics',
-            customerId: cusId,
-            isCircleAddedToCart: isCircleAddedToCart,
-            verticalSpecificData,
-          });
+          if (toPayPrice == 0) {
+            try {
+              const res = await createJusPayOrder(payId!);
+              if (res?.data?.createOrderV2?.payment_status == 'TXN_SUCCESS') {
+                _navigatetoOrderStatus(
+                  true,
+                  'success',
+                  eventAttributes,
+                  orderInfo,
+                  payId!,
+                  verticalSpecificData
+                );
+              } else {
+                renderAlert(string.common.tryAgainLater);
+              }
+            } catch (error) {
+              CommonBugFender('CreateOrder_ReviewOrder', error);
+            }
+          } else {
+            props.navigation.navigate(AppRoutes.PaymentMethods, {
+              paymentId: payId!,
+              amount: toPayPrice,
+              orderId: getOrderDetails?.[0]?.orderID, //passed only one
+              orderDetails: orderInfo,
+              orderResponse: array,
+              eventAttributes,
+              businessLine: 'diagnostics',
+              customerId: cusId,
+              isCircleAddedToCart: isCircleAddedToCart,
+              verticalSpecificData,
+            });
+          }
         }
       }
     } catch (error) {
@@ -3333,9 +3371,11 @@ const styles = StyleSheet.create({
   circleItemCartView: {
     backgroundColor: 'white',
     flexDirection: 'row',
+    paddingTop: 12,
+    paddingBottom: 12,
   },
   circleIconView: { paddingHorizontal: 10 },
   circleText: { flexDirection: 'column' },
-  circleTextPrice: { padding: 10 },
+  circleTextPrice: { padding: 10, paddingTop: 2 },
   circleTextStyle: { ...theme.viewStyles.text('M', 14, colors.SHERPA_BLUE, 1) },
 });
