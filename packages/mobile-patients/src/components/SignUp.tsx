@@ -939,7 +939,6 @@ const SignUp: React.FC<SignUpProps> = (props) => {
                 emailAddress: email.trim(),
                 photoUrl: '',
                 mobileNumber: mePatient.mobileNumber,
-                whatsappOptIn: whatsAppOptIn
               },
             },
           });
