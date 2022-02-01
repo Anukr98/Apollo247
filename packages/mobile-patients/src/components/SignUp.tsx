@@ -523,7 +523,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
   const postAppsFlyerEventAppInstallViaReferral = async (data: any) => {
     const referralData: any = await AsyncStorage.getItem('app_referral_data');
     setRefereeFlagForNewRegisterUser(referralData !== null);
-    const cleverTapProfile = { ...data?.updatePatient?.patient };
+    const cleverTapProfile = { ...data?.data?.updatePatient?.patient };
     if (whatsAppOptIn) cleverTapProfile['Msg-whatsapp'] = true;
     onCleverTapUserLogin(cleverTapProfile);
     if (referralData !== null) {
@@ -532,7 +532,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
       );
       const eventAttribute = {
         referrer_id: af_referrer_customer_id,
-        referee_id: currentPatient ? currentPatient.id : '',
+        referee_id: data?.data?.updatePatient?.patient?.id,
         campaign_id: campaign,
         reward_id: rewardId,
         short_link: shortlink,
@@ -960,10 +960,6 @@ const SignUp: React.FC<SignUpProps> = (props) => {
             },
           })
           .then((data: any) => {
-            if (preApolloExistingUser && preApolloExistingUser === 'true') {
-              setCurrentPatientId(patientDetails.id);
-              AsyncStorage.removeItem('preApolloUser');
-            }
             getPatientApiCall(),
               _postWebEngageEvent(),
               AsyncStorage.setItem('userLoggedIn', 'true'),
@@ -971,6 +967,10 @@ const SignUp: React.FC<SignUpProps> = (props) => {
               AsyncStorage.setItem('gotIt', patient ? 'true' : 'false'),
               createOneApolloUser(data?.updatePatient?.patient?.id!),
               postAppsFlyerEventAppInstallViaReferral(data);
+            if (preApolloExistingUser && preApolloExistingUser === 'true') {
+              setCurrentPatientId(patientDetails.id);
+              AsyncStorage.removeItem('preApolloUser');
+            }
           })
           .catch((error) => {
             signOut(),
