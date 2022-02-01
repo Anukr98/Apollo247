@@ -530,6 +530,13 @@ const styles = StyleSheet.create({
   horizontalContainer: {
     flexDirection: 'row',
   },
+  viewDetailBtn: {
+    flexDirection: 'row',
+    flex: 1,
+    justifyContent: 'flex-end',
+    marginBottom: 16,
+    marginTop: 8,
+  },
 });
 
 export interface ConsultProps extends NavigationScreenProps {
@@ -1284,10 +1291,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       };
       if (item.appointmentType === 'PHYSICAL') {
         return (
-          <View style={{ flexDirection: 'row' }}>
+          <View style={styles.viewDetailBtn}>
             <TouchableOpacity
               activeOpacity={1}
-              style={{ flex: 1 }}
+              style={styles.bookAgainView}
               onPress={() => {
                 props.navigation.navigate(AppRoutes.AppointmentDetailsPhysical, {
                   data: item,
@@ -1295,7 +1302,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 });
               }}
             >
-              <Text style={styles.prepareForConsult}>VIEW DETAILS</Text>
+              <Text style={styles.prepareForConsult}>{string.consultPackageList.viewDetails}</Text>
             </TouchableOpacity>
           </View>
         );
