@@ -156,6 +156,7 @@ export interface OrderSummaryViewProps {
   orderDetails: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails;
   isTest?: boolean;
   addressData?: string;
+  nameToDisplay?: string;
   onBillChangesClick?: () => void;
 }
 
@@ -163,6 +164,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
   orderDetails,
   addressData,
   onBillChangesClick,
+  nameToDisplay,
 }) => {
   const medicineOrderLineItems = orderDetails.medicineOrderLineItems || [];
   const medicineOrderShipments = orderDetails.medicineOrderShipments || [];
@@ -588,7 +590,9 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
           <View style={styles.addressDetailscard}>
             <View style={{ flexDirection: 'row', marginBottom: 6 }}>
               <Text style={styles.shippingDetails}>{string.OrderSummery.name}</Text>
-              <Text style={styles.nameStyle}>{(isStorePickup && shopName) || userName}</Text>
+              <Text style={styles.nameStyle}>
+                {(isStorePickup && shopName) || nameToDisplay || userName}
+              </Text>
             </View>
             <View style={{ flexDirection: 'row' }}>
               <Text style={styles.shippingDetails}>
