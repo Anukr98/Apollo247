@@ -276,6 +276,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const reportGenDetails = props.navigation.getParam('reportGenDetails');
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
   var slotBookedArray = ['slot', 'already', 'booked', 'select a slot'];
+  const storeCode =
+    Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
 
   const { cusId, isfetchingId } = useGetJuspayId();
   const [phleboMin, setPhleboMin] = useState(0);
@@ -718,19 +720,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   useEffect(() => {
     (isModifyFlow || phleboETA == 0) && fetchFindDiagnosticSettings();
   }, []);
-
-  useEffect(() => {
-    //modify case
-    if (isModifyFlow && cartItems?.length > 0 && modifiedPatientCart?.length > 0) {
-      //if multi-uhid modify -> don't call phleboCharges api
-      // !!modifiedOrder?.attributesObj?.isMultiUhid && modifiedOrder?.attributesObj?.isMultiUhid
-      //   ? clearCollectionCharges()
-      //   : fetchHC_ChargesForTest();
-      clearCollectionCharges();
-    } else {
-      fetchHC_ChargesForTest();
-    }
-  }, [isCircleAddedToCart]);
 
   useEffect(() => {
     !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
@@ -1220,23 +1209,28 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const defaultPlanDurationInMonths = !!selectedCirclePlan
       ? selectedCirclePlan?.durationInMonth
       : !!defaultCirclePlan && defaultCirclePlan?.durationInMonth;
+    const isSavingZero = circleSaving == 0;
     return (
       <View style={styles.circleItemCartView}>
-        <View style={styles.circleIconView}>
-          <CircleLogo style={styles.circleIcon} />
-        </View>
-        <View style={styles.circleText}>
-          <Text style={styles.circleTextStyle}>
-            Circle membership ({defaultPlanDurationInMonths} month)
-          </Text>
-          <Text style={styles.mediumText}>
-            {upperLeftText}{' '}
-            <Text style={styles.mediumGreenText}>
-              {upperMiddleText} {string.common.Rs}
-              {circleSaving}
-            </Text>{' '}
-            {upperRightText}{' '}
-          </Text>
+        <View style={{ flexDirection: 'row' }}>
+          <View style={[styles.circleIconView, isSavingZero && { justifyContent: 'center' }]}>
+            <CircleLogo style={styles.circleIcon} />
+          </View>
+          <View style={[styles.circleText, isSavingZero && { justifyContent: 'center' }]}>
+            <Text style={styles.circleTextStyle}>
+              Circle membership ({defaultPlanDurationInMonths} month)
+            </Text>
+            {!isSavingZero && (
+              <Text style={styles.mediumText}>
+                {upperLeftText}{' '}
+                <Text style={styles.mediumGreenText}>
+                  {upperMiddleText} {string.common.Rs}
+                  {circleSaving}
+                </Text>{' '}
+                {upperRightText}{' '}
+              </Text>
+            )}
+          </View>
         </View>
         <View style={styles.circleTextPrice}>
           <Text style={styles.leftTextPrice}>
@@ -1616,11 +1610,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const showCirclePurchaseAmount = isDiagnosticCircleSubscription || isCircleAddedToCart;
     const showCircleRelatedSavings =
       showCirclePurchaseAmount && circleSaving > 0 && (!!coupon ? couponCircleBenefits : true);
-    //commented for this release
-    // const showOneApollo = isModifyFlow
-    //   ? modifiedOrder?.paymentType === DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT
-    //   : true;
-    const showOneApollo = false;
+    const showOneApollo = isModifyFlow
+      ? modifiedOrder?.paymentType === DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT
+      : true;
     return (
       <>
         <View
@@ -2515,9 +2507,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     });
   };
 
-  const storeCode =
-    Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
-
   const createJusPayOrder = (paymentId: string) => {
     const orderInput = {
       payment_order_id: paymentId,
@@ -2670,7 +2659,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
                 renderAlert(string.common.tryAgainLater);
               }
             } catch (error) {
-              CommonBugFender('CreateOrder_ReviewOrder', error);
+              CommonBugFender('createJusPayOrder_ReviewOrder', error);
             }
           } else {
             props.navigation.navigate(AppRoutes.PaymentMethods, {

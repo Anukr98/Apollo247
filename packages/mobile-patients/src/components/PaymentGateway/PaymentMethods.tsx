@@ -896,7 +896,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           payload: payload,
           transactionId,
           orders,
-          cartTat
+          cartTat,
         });
         break;
       case 'subscription':
@@ -951,6 +951,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         childComponent={getChildComponent(otherPaymentSelected)}
         paymentMode={otherPaymentSelected?.name}
         UPIapps={UPIapps}
+        savedCards={savedCards}
       />
     ) : null;
   };
@@ -1239,33 +1240,27 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const renderSecureTag = () => {
     return !!all_payment_modes?.length && amount != 0 ? <SecureTags /> : null;
   };
-  const keyboardVerticalOffset = Platform.OS === 'android' ? { keyboardVerticalOffset: 50 } : {};
+  const keyboardVerticalOffset = Platform.OS === 'android' ? { keyboardVerticalOffset: 0 } : {};
 
   return (
     <>
       {!showAnimation ? (
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={{ flex: 1 }}
-          {...keyboardVerticalOffset}
-        >
-          <SafeAreaView style={{ flex: 1 }}>
-            {renderHeader()}
-            {!fetching ? (
-              <ScrollView contentContainerStyle={styles.container}>
-                {renderOffers()}
-                {renderPreferredPaymentOptions()}
-                {showPaymentOptions()}
-                {showOtherPaymentOptions()}
-                {renderSecureTag()}
-                {showOtherPaymentBottomPopUp()}
-              </ScrollView>
-            ) : (
-              <Spinner />
-            )}
-            {isTxnProcessing && <Spinner />}
-          </SafeAreaView>
-        </KeyboardAvoidingView>
+        <SafeAreaView style={{ flex: 1 }}>
+          {renderHeader()}
+          {!fetching ? (
+            <ScrollView contentContainerStyle={styles.container}>
+              {renderOffers()}
+              {renderPreferredPaymentOptions()}
+              {showPaymentOptions()}
+              {showOtherPaymentOptions()}
+              {renderSecureTag()}
+              {showOtherPaymentBottomPopUp()}
+            </ScrollView>
+          ) : (
+            <Spinner />
+          )}
+          {isTxnProcessing && <Spinner />}
+        </SafeAreaView>
       ) : (
         showPaymentAnimation()
       )}

@@ -52,6 +52,7 @@ export const PreferredPayments: React.FC<PreferredPaymentsProps> = (props) => {
   const offers: any = [];
   const [selectedCardToken, setSelectedCardToken] = useState<string>('');
   const [Apayselected, setApayselected] = useState<boolean>(false);
+  const Apay = 'https://prodaphstorage.blob.core.windows.net/paymentlogos/amazon_pay.png';
 
   const filterUPIApps = () => {
     if (availableUPIApps?.length) {
@@ -106,7 +107,9 @@ export const PreferredPayments: React.FC<PreferredPaymentsProps> = (props) => {
       <View>
         <View style={styles.subCont}>
           <TouchableOpacity style={styles.wallet} onPress={() => setApayselected(!Apayselected)}>
-            <WalletIcon imageUrl={wallet?.image_url} />
+            <WalletIcon
+              imageUrl={wallet?.payment_method_name == 'Amazon Pay' ? Apay : wallet?.image_url}
+            />
             <View style={styles.walletCont}>
               <Text style={styles.walletName}>{wallet?.payment_method_name}</Text>
               {renderBalance(linkedWallet)}

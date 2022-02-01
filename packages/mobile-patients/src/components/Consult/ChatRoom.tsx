@@ -103,6 +103,7 @@ import {
   WebEngageEvent,
   ConsultMode,
   PatientConsultEventToDoctorInput,
+  APPOINTMENT_STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   updateAppointmentSession,
@@ -941,7 +942,7 @@ const styles = StyleSheet.create({
   },
   slotDisableBtn: {
     backgroundColor: theme.colors.WHITE,
-    opacity: 0.8,
+    opacity: 0.4,
   },
   changeSlotBtn: {
     flex: 0.6,
@@ -1268,7 +1269,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     props.navigation.getParam('disableChat') ||
     moment(new Date(appointmentData.appointmentDateTime))
       .add(followUpAfterInDays, 'days')
-      .isSameOrBefore(moment(new Date()));
+      .isSameOrBefore(moment(new Date())) ||
+    (followUpAfterInDays == 0 && appointmentData?.status == APPOINTMENT_STATUS.COMPLETED);
   const isInFuture = moment(props.navigation.state.params!.data.appointmentDateTime).isAfter(
     moment(new Date())
   );
@@ -1514,7 +1516,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const isAppointmentStartsInFifteenMin = appointmentDiffMin <= 15 && appointmentDiffMin > 0;
   const isAppointmentExceedsTenMin = appointmentDiffMin <= 0 && appointmentDiffMin > -10;
   type messageType = 'PDF' | 'Text' | 'Image';
-
 
   useEffect(() => {
     handleExternalFileShareUpload();
@@ -2897,7 +2898,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         props.navigation.setParams({ callType: isAudio.current ? 'AUDIO' : 'VIDEO' });
       }
     } else if (nextAppState === 'active') {
-
       const permissionSettings: string | null = await AsyncStorage.getItem('permissionHandler');
       if (permissionSettings && permissionSettings === 'true') {
         callPermissions(
@@ -5029,6 +5029,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 disabledStyle={styles.slotDisableBtn}
                 style={styles.changeSlotBtn}
                 titleTextStyle={{ color: theme.colors.LIGHT_BLUE }}
+                disabled={status != APPOINTMENT_STATE.AWAITING_RESCHEDULE}
                 onPress={() => {
                   if (type === 'Followup' || type === 'Reschedule') {
                     CommonLogEvent(AppRoutes.ChatRoom, 'Display Overlay');
@@ -5039,8 +5040,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 }}
               />
               <Button
+                disabled={status != APPOINTMENT_STATE.AWAITING_RESCHEDULE}
                 title={'ACCEPT'}
-                // disabled={disAllowReschedule}
                 style={{
                   flex: 0.4,
                   marginRight: 16,

@@ -15,29 +15,30 @@ import {
 import Modal from 'react-native-modal';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { GreyCrossIcon } from '@aph/mobile-patients/src/components/ui/Icons';
-
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 export interface ShowBottomPopUpProps {
   onDismissPopUp: () => void;
   childComponent: React.ReactNode;
   paymentMode: string;
   UPIapps: any;
+  savedCards: any;
 }
 
 export const ShowBottomPopUp: React.FC<ShowBottomPopUpProps> = (props) => {
-  const { onDismissPopUp, childComponent, paymentMode, UPIapps } = props;
+  const { onDismissPopUp, childComponent, paymentMode, UPIapps, savedCards } = props;
 
   const getHeader = () => {
     switch (paymentMode) {
       case 'COD':
         return 'PAY ON DELIVERY';
       case 'CARD':
-        return 'SAVED CARDS';
+        return !!savedCards?.length ? 'SAVED CARDS' : 'NEW DEBIT/CREDIT CARD';
       case 'WALLET':
         return 'WALLETS';
       case 'CRED':
         return 'CRED PAY';
       case 'UPI':
-        return UPIapps?.length ? 'UPI APPS' : 'VPA ID';
+        return !!UPIapps?.length ? 'UPI APPS' : 'VPA ID';
       case 'FEATURED_BANKS':
         return 'POPULAR BANKS';
       case 'UPICOLLECT':
@@ -65,11 +66,15 @@ export const ShowBottomPopUp: React.FC<ShowBottomPopUpProps> = (props) => {
           isVisible={true}
           style={{ marginHorizontal: 0, marginBottom: 0 }}
           backdropColor="rgba(0,0,0,0.75)"
+          avoidKeyboard={false}
           // swipeDirection={'down'}
           animationOut={'slideOutDown'}
           animationOutTiming={500}
         >
-          <View style={{ flex: 1 }}>
+          <KeyboardAwareScrollView
+            contentContainerStyle={{ flexGrow: 1 }}
+            extraHeight={Platform.OS == 'ios' ? 325 : undefined}
+          >
             <TouchableWithoutFeedback onPress={() => onDismissPopUp()}>
               <View style={styles.mainContainer}>
                 <TouchableWithoutFeedback>
@@ -80,7 +85,7 @@ export const ShowBottomPopUp: React.FC<ShowBottomPopUpProps> = (props) => {
                 </TouchableWithoutFeedback>
               </View>
             </TouchableWithoutFeedback>
-          </View>
+          </KeyboardAwareScrollView>
         </Modal>
       }
     </View>
