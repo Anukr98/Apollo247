@@ -103,6 +103,7 @@ import {
   WebEngageEvent,
   ConsultMode,
   PatientConsultEventToDoctorInput,
+  APPOINTMENT_STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   updateAppointmentSession,
@@ -1268,7 +1269,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     props.navigation.getParam('disableChat') ||
     moment(new Date(appointmentData.appointmentDateTime))
       .add(followUpAfterInDays, 'days')
-      .isSameOrBefore(moment(new Date()));
+      .isSameOrBefore(moment(new Date())) ||
+    (followUpAfterInDays == 0 && appointmentData?.status == APPOINTMENT_STATUS.COMPLETED);
   const isInFuture = moment(props.navigation.state.params!.data.appointmentDateTime).isAfter(
     moment(new Date())
   );
