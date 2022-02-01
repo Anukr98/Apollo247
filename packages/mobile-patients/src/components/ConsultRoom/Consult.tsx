@@ -919,7 +919,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         ? 'Tomorrow'
         : moment(appointmentDateTime).format('ddd, DD MMM YYYY');
     const showDateText = index === 0 ? true : displayTopDateTime;
-    const pastAppointmentItem = isPastAppointment(item?.caseSheet, item);
+    const pastAppointmentItem =
+      isPastAppointment(item?.caseSheet, item) ||
+      (caseSheetChatDays && caseSheetChatDays == '0' && item?.status == STATUS.COMPLETED);
     const medicinePrescription = g(caseSheet, '0' as any, 'medicinePrescription');
     const getMedicines = (
       medicines:
