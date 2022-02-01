@@ -87,6 +87,7 @@ import {
   terminateSDK,
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import {
+  CREATE_ORDER,
   CREATE_USER_SUBSCRIPTION,
   GET_PLAN_DETAILS_BY_PLAN_ID,
   MODIFY_DIAGNOSTIC_ORDERS,
@@ -275,6 +276,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const reportGenDetails = props.navigation.getParam('reportGenDetails');
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
   var slotBookedArray = ['slot', 'already', 'booked', 'select a slot'];
+  const storeCode =
+    Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
 
   const { cusId, isfetchingId } = useGetJuspayId();
   const [phleboMin, setPhleboMin] = useState(0);
@@ -619,6 +622,10 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
               //if any sku has freeCollection as true => waive off
               if (isFreeHomeCollection?.length > 0) {
                 setWaiveOffCollectionCharges?.(true);
+                setHcApiCalled(true);
+                setHcCharges?.(0);
+                setDistanceCharges?.(0);
+                setModifyHcCharges?.(0);
                 clearCollectionCharges();
               }
 
@@ -717,19 +724,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   useEffect(() => {
     (isModifyFlow || phleboETA == 0) && fetchFindDiagnosticSettings();
   }, []);
-
-  useEffect(() => {
-    //modify case
-    if (isModifyFlow && cartItems?.length > 0 && modifiedPatientCart?.length > 0) {
-      //if multi-uhid modify -> don't call phleboCharges api
-      // !!modifiedOrder?.attributesObj?.isMultiUhid && modifiedOrder?.attributesObj?.isMultiUhid
-      //   ? clearCollectionCharges()
-      //   : fetchHC_ChargesForTest();
-      clearCollectionCharges();
-    } else {
-      fetchHC_ChargesForTest();
-    }
-  }, [isCircleAddedToCart]);
 
   useEffect(() => {
     !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
@@ -946,6 +940,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         setHcCharges?.(getCharges);
         setDistanceCharges?.(isModifyFlow ? 0 : distanceCharges); //should not get applied
         setModifyHcCharges?.(updatedHcCharges); //used for calculating subtotal & topay
+        !!coupon && revalidateAppliedCoupon(coupon?.coupon, lineItemWithQuantity, false);
       }
       setLoading?.(false);
       setHcApiCalled(true);
@@ -2509,6 +2504,23 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     });
   };
 
+  const createJusPayOrder = (paymentId: string) => {
+    const orderInput = {
+      payment_order_id: paymentId,
+      health_credits_used: 0,
+      cash_to_collect: 0,
+      prepaid_amount: 0,
+      store_code: storeCode,
+      is_mobile_sdk: true,
+      return_url: AppConfig.Configuration.baseUrl,
+    };
+    return client.mutate({
+      mutation: CREATE_ORDER,
+      variables: { order_input: orderInput },
+      fetchPolicy: 'no-cache',
+    });
+  };
+
   //this is changed for saveBooking, for modify (need to add)
   async function callCreateInternalOrder(
     getOrderDetails: any, //getOrderId (in case of modify)
@@ -2628,18 +2640,38 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         } else {
           setLoading?.(false);
           AsyncStorage.setItem('orderInfo', JSON.stringify(orderInfo));
-          props.navigation.navigate(AppRoutes.PaymentMethods, {
-            paymentId: payId!,
-            amount: toPayPrice,
-            orderId: getOrderDetails?.[0]?.orderID, //passed only one
-            orderDetails: orderInfo,
-            orderResponse: array,
-            eventAttributes,
-            businessLine: 'diagnostics',
-            customerId: cusId,
-            isCircleAddedToCart: isCircleAddedToCart,
-            verticalSpecificData,
-          });
+          if (toPayPrice == 0) {
+            try {
+              const res = await createJusPayOrder(payId!);
+              if (res?.data?.createOrderV2?.payment_status == 'TXN_SUCCESS') {
+                _navigatetoOrderStatus(
+                  true,
+                  'success',
+                  eventAttributes,
+                  orderInfo,
+                  payId!,
+                  verticalSpecificData
+                );
+              } else {
+                renderAlert(string.common.tryAgainLater);
+              }
+            } catch (error) {
+              CommonBugFender('createJusPayOrder_ReviewOrder', error);
+            }
+          } else {
+            props.navigation.navigate(AppRoutes.PaymentMethods, {
+              paymentId: payId!,
+              amount: toPayPrice,
+              orderId: getOrderDetails?.[0]?.orderID, //passed only one
+              orderDetails: orderInfo,
+              orderResponse: array,
+              eventAttributes,
+              businessLine: 'diagnostics',
+              customerId: cusId,
+              isCircleAddedToCart: isCircleAddedToCart,
+              verticalSpecificData,
+            });
+          }
         }
       }
     } catch (error) {
