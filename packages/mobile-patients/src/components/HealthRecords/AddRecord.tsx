@@ -1191,7 +1191,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         },
       })
       .then(({ data }) => {
-        const eventInputData = removeObjectProperty(inputData, 'attachmentList');
+        let dateOfBirth = g(currentPatient, 'dateOfBirth');
+        let attributes = {
+          'Nav src': 'Health Conditions',
+          'Patient UHID': g(currentPatient, 'uhid'),
+          'Patient gender': g(currentPatient, 'gender'),
+          'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+        };
         if (medicationCheckbox) {
           addMedicationRecord();
         } else if (healthRestrictionCheckbox) {
@@ -1203,33 +1209,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         } else {
           setshowSpinner(false);
           if (selectedRecord) {
-            postCleverTapPHR(
-              currentPatient,
-              CleverTapEventName.PHR_UPDATE_ALLERGY,
-              'Allergy',
-              eventInputData
-            );
-            postCleverTapIfNewSession(
-              'Allergies',
-              currentPatient,
-              eventInputData,
-              phrSession,
-              setPhrSession
-            );
+            postCleverTapEvent(CleverTapEventName.PHR_UPDATE_RECORD, attributes);
           } else {
-            postCleverTapPHR(
-              currentPatient,
-              CleverTapEventName.PHR_ADD_ALLERGY,
-              'Allergy',
-              eventInputData
-            );
-            postCleverTapIfNewSession(
-              'Allergies',
-              currentPatient,
-              eventInputData,
-              phrSession,
-              setPhrSession
-            );
+            postCleverTapEvent(CleverTapEventName.PHR_ADD_RECORD, attributes);
           }
           gotoHealthRecordsHomeScreen();
         }
@@ -1271,6 +1253,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         },
       })
       .then(({ data }) => {
+        let dateOfBirth = g(currentPatient, 'dateOfBirth');
+        let attributes = {
+          'Nav src': 'Health Conditions',
+          'Patient UHID': g(currentPatient, 'uhid'),
+          'Patient gender': g(currentPatient, 'gender'),
+          'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+        };
         if (healthRestrictionCheckbox) {
           addHealthRestrictionRecord();
         } else if (medicalConditionCheckbox) {
@@ -1280,33 +1269,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         } else {
           setshowSpinner(false);
           if (selectedRecord) {
-            postCleverTapPHR(
-              currentPatient,
-              CleverTapEventName.PHR_UPDATE_MEDICATION,
-              'Medication',
-              inputData
-            );
-            postCleverTapIfNewSession(
-              'Medications',
-              currentPatient,
-              inputData,
-              phrSession,
-              setPhrSession
-            );
+            postCleverTapEvent(CleverTapEventName.PHR_UPDATE_RECORD, attributes);
           } else {
-            postCleverTapPHR(
-              currentPatient,
-              CleverTapEventName.PHR_ADD_MEDICATION,
-              'Medication',
-              inputData
-            );
-            postCleverTapIfNewSession(
-              'Medications',
-              currentPatient,
-              inputData,
-              phrSession,
-              setPhrSession
-            );
+            postCleverTapEvent(CleverTapEventName.PHR_ADD_RECORD, attributes);
           }
           gotoHealthRecordsHomeScreen();
         }
@@ -1320,6 +1285,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
   const addHealthRestrictionRecord = () => {
     setshowSpinner(true);
+    let dateOfBirth = g(currentPatient, 'dateOfBirth');
+    let attributes = {
+      'Nav src': 'Health Conditions',
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+    };
     const inputData: AddPatientHealthRestrictionRecordInput = {
       id: selectedRecordID,
       patientId: currentPatient?.id || '',
@@ -1354,33 +1326,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         } else {
           setshowSpinner(false);
           if (selectedRecord) {
-            postCleverTapPHR(
-              currentPatient,
-              CleverTapEventName.PHR_UPDATE_HEALTH_RESTRICTIONS,
-              'Health Restriction',
-              inputData
-            );
-            postCleverTapIfNewSession(
-              'Restrictions',
-              currentPatient,
-              inputData,
-              phrSession,
-              setPhrSession
-            );
+            postCleverTapEvent(CleverTapEventName.PHR_UPDATE_RECORD, attributes);
           } else {
-            postCleverTapPHR(
-              currentPatient,
-              CleverTapEventName.PHR_ADD_HEALTH_RESTRICTIONS,
-              'Health Restriction',
-              inputData
-            );
-            postCleverTapIfNewSession(
-              'Restrictions',
-              currentPatient,
-              inputData,
-              phrSession,
-              setPhrSession
-            );
+            postCleverTapEvent(CleverTapEventName.PHR_ADD_RECORD, attributes);
           }
           gotoHealthRecordsHomeScreen();
         }
@@ -1422,40 +1370,23 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         },
       })
       .then(({ data }) => {
-        const eventInputData = removeObjectProperty(inputData, 'medicationFiles');
+        let dateOfBirth = g(currentPatient, 'dateOfBirth');
+        let attributes = {
+          'Nav src': 'Health Conditions',
+          'Patient UHID': g(currentPatient, 'uhid'),
+          'Patient gender': g(currentPatient, 'gender'),
+          'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+        };
         if (familyHistoryCheckbox) {
           addFamilyHistoryRecord();
         } else {
           setshowSpinner(false);
           if (selectedRecord) {
-            postCleverTapPHR(
-              currentPatient,
-              CleverTapEventName.PHR_UPDATE_MEDICAL_CONDITION,
-              'Medical Condition',
-              eventInputData
-            );
-            postCleverTapIfNewSession(
-              'MedicalCondition',
-              currentPatient,
-              eventInputData,
-              phrSession,
-              setPhrSession
-            );
+            postCleverTapEvent(CleverTapEventName.PHR_UPDATE_RECORD, attributes);
           } else {
-            postCleverTapPHR(
-              currentPatient,
-              CleverTapEventName.PHR_ADD_MEDICAL_CONDITION,
-              'Medical Condition',
-              eventInputData
-            );
-            postCleverTapIfNewSession(
-              'MedicalCondition',
-              currentPatient,
-              eventInputData,
-              phrSession,
-              setPhrSession
-            );
+            postCleverTapEvent(CleverTapEventName.PHR_ADD_RECORD, attributes);
           }
+
           gotoHealthRecordsHomeScreen();
         }
       })
@@ -1468,6 +1399,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
   const addFamilyHistoryRecord = () => {
     setshowSpinner(true);
+    let dateOfBirth = g(currentPatient, 'dateOfBirth');
+    let attributes = {
+      'Nav src': 'Health Conditions',
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+    };
     const inputData: FamilyHistoryParameters = {
       id: selectedRecordID,
       patientId: currentPatient?.id || '',
@@ -1490,35 +1428,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       })
       .then(({ data }) => {
         setshowSpinner(false);
-        const eventInputData = removeObjectProperty(inputData, 'attachmentList');
         if (selectedRecord) {
-          postCleverTapPHR(
-            currentPatient,
-            CleverTapEventName.PHR_UPDATE_FAMILY_HISTORY,
-            'Family History',
-            eventInputData
-          );
-          postCleverTapIfNewSession(
-            'Family History',
-            currentPatient,
-            eventInputData,
-            phrSession,
-            setPhrSession
-          );
+          postCleverTapEvent(CleverTapEventName.PHR_UPDATE_RECORD, attributes);
         } else {
-          postCleverTapPHR(
-            currentPatient,
-            CleverTapEventName.PHR_ADD_FAMILY_HISTORY,
-            'Family History',
-            eventInputData
-          );
-          postCleverTapIfNewSession(
-            'Family History',
-            currentPatient,
-            eventInputData,
-            phrSession,
-            setPhrSession
-          );
+          postCleverTapEvent(CleverTapEventName.PHR_ADD_RECORD, attributes);
         }
         gotoHealthRecordsHomeScreen();
       })
