@@ -264,7 +264,10 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
 
   const renderOrderInfo = () => {
     return (
-      <OrderInfo orderDateTime={orderInfo?.paymentDateTime} paymentMode={orderInfo?.paymentMode} />
+      <OrderInfo
+        orderDateTime={orderInfo?.paymentDateTime}
+        paymentMode={isCOD ? 'COD' : orderInfo?.paymentMode}
+      />
     );
   };
 
