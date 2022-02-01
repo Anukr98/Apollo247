@@ -108,6 +108,7 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
   const [showPassportModal, setShowPassportModal] = useState<boolean>(false);
   const [passportNo, setPassportNo] = useState<any>([]);
   const [passportData, setPassportData] = useState<any>([]);
+  const [animationfinished, setAnimationfinished] = useState<boolean>(false);
   const orderCartSaving = orderDetails?.cartSaving!;
   const orderCircleSaving = orderDetails?.circleSaving!;
   const circleSavings = isDiagnosticCircleSubscription ? Number(orderCircleSaving) : 0;
@@ -420,14 +421,12 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
     ) : null;
   };
 
-  const [animationfinished, setAnimationfinished] = useState<boolean>(false);
-
   const renderSucccessAnimation = () => {
     return (
       <View style={{ alignItems: 'center' }}>
         <LottieView
           source={require(paymentSuccess)}
-          onAnimationFinish={() => setAnimationfinished(true)}
+          onAnimationFinish={() => setTimeout(() => setAnimationfinished(true), 200)}
           autoPlay
           loop={false}
           autoSize={true}

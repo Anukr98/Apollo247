@@ -463,11 +463,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   }, [toPayPrice, isFocused]);
 
   const paitentTotalCart: any[] = [];
-    patientCartItemsCopy?.map((item: any) => {
-      item?.cartItems?.map((_item: any) => {
-        paitentTotalCart?.push(_item);
-      });
+  patientCartItemsCopy?.map((item: any) => {
+    item?.cartItems?.map((_item: any) => {
+      paitentTotalCart?.push(_item);
     });
+  });
 
   function triggerCartPageViewed() {
     const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
@@ -1221,23 +1221,28 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const defaultPlanDurationInMonths = !!selectedCirclePlan
       ? selectedCirclePlan?.durationInMonth
       : !!defaultCirclePlan && defaultCirclePlan?.durationInMonth;
+    const isSavingZero = circleSaving == 0;
     return (
       <View style={styles.circleItemCartView}>
-        <View style={styles.circleIconView}>
-          <CircleLogo style={styles.circleIcon} />
-        </View>
-        <View style={styles.circleText}>
-          <Text style={styles.circleTextStyle}>
-            Circle membership ({defaultPlanDurationInMonths} month)
-          </Text>
-          <Text style={styles.mediumText}>
-            {upperLeftText}{' '}
-            <Text style={styles.mediumGreenText}>
-              {upperMiddleText} {string.common.Rs}
-              {circleSaving}
-            </Text>{' '}
-            {upperRightText}{' '}
-          </Text>
+        <View style={{ flexDirection: 'row' }}>
+          <View style={[styles.circleIconView, isSavingZero && { justifyContent: 'center' }]}>
+            <CircleLogo style={styles.circleIcon} />
+          </View>
+          <View style={[styles.circleText, isSavingZero && { justifyContent: 'center' }]}>
+            <Text style={styles.circleTextStyle}>
+              Circle membership ({defaultPlanDurationInMonths} month)
+            </Text>
+            {!isSavingZero && (
+              <Text style={styles.mediumText}>
+                {upperLeftText}{' '}
+                <Text style={styles.mediumGreenText}>
+                  {upperMiddleText} {string.common.Rs}
+                  {circleSaving}
+                </Text>{' '}
+                {upperRightText}{' '}
+              </Text>
+            )}
+          </View>
         </View>
         <View style={styles.circleTextPrice}>
           <Text style={styles.leftTextPrice}>
@@ -1617,11 +1622,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const showCirclePurchaseAmount = isDiagnosticCircleSubscription || isCircleAddedToCart;
     const showCircleRelatedSavings =
       showCirclePurchaseAmount && circleSaving > 0 && (!!coupon ? couponCircleBenefits : true);
-    //commented for this release
-    // const showOneApollo = isModifyFlow
-    //   ? modifiedOrder?.paymentType === DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT
-    //   : true;
-    const showOneApollo = false;
+    const showOneApollo = isModifyFlow
+      ? modifiedOrder?.paymentType === DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT
+      : true;
     return (
       <>
         <View
@@ -3368,9 +3371,10 @@ const styles = StyleSheet.create({
   circleItemCartView: {
     backgroundColor: 'white',
     flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   circleIconView: { paddingHorizontal: 10 },
   circleText: { flexDirection: 'column' },
-  circleTextPrice: { padding: 10 },
+  circleTextPrice: { padding: 10, marginRight: 20 },
   circleTextStyle: { ...theme.viewStyles.text('M', 14, colors.SHERPA_BLUE, 1) },
 });
