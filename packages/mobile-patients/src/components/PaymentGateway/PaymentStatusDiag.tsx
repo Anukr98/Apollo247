@@ -479,10 +479,8 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
             {renderPaymentInfo()}
             {renderCirclePurchase()}
             {renderAddPassportInfo()}
-            {renderNoticeText()}
             {renderTestsInfo()}
             {isSingleUhid ? renderOrderSummary() : null}
-            {renderInvoiceTimeline()}
           </ScrollView>
           {renderPassportPaitentView()}
           {renderTabBar()}
