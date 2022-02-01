@@ -2313,11 +2313,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           }
         }}
         onPressSubstract={() => {
-          updateServerCartLocally(-1, item?.sku);
           setSearchItemAdded(item?.sku);
           setSearchItemLoading({ ...searchItemLoading, [item?.sku]: true });
           let qty: number = getItemQuantity(item?.sku);
           qty = qty - 1;
+          updateServerCartLocally(-1, item?.sku);
           setCurrentProductQuantityInCart(qty);
           setUserActionPayload?.({
             medicineOrderCartLineItems: [
