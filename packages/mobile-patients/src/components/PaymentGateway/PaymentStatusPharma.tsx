@@ -94,8 +94,9 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
   const cleverTapCheckoutEventAttributes = props.navigation.getParam(
     'cleverTapCheckoutEventAttributes'
   );
-  const cartTat = props.navigation.getParam('cartTat')
+  const cartTat = props.navigation.getParam('cartTat');
   useEffect(() => {
+    setTimeout(() => setAnimationfinished(true), 2700);
     initiate();
     clearCart();
     BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -118,10 +119,8 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
 
   const initiate = async () => {
     try {
-      setLoading?.(true);
       const res = await fetchOrderInfo();
       const { data } = res;
-      setLoading?.(false);
       setOrderInfo(data?.pharmaPaymentStatusV2);
       setFetching(false);
     } catch (error) {}
@@ -166,8 +165,8 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
 
   const requestInAppReview = async () => {
     try {
-      const diff = moment.duration(moment(cartTat).diff(moment())).asHours()
-      const orders = props.navigation.getParam('orderDetails')?.orders
+      const diff = moment.duration(moment(cartTat).diff(moment())).asHours();
+      const orders = props.navigation.getParam('orderDetails')?.orders;
       const popupConfig = {
         vertical: 'pharma',
         delivery_tat_hours: diff.toString(),
@@ -180,22 +179,18 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
         },
         fetchPolicy: 'no-cache',
       });
-      if(permission?.data?.popUpReviewConfiguration?.enable && InAppReview.isAvailable()) {
-        await InAppReview.RequestInAppReview()
-        .then(hasFlowFinishedSuccessfully => {
-          if(hasFlowFinishedSuccessfully)
-            InAppReviewEventPharma(currentPatient, pharmacyUserTypeAttribute, pharmacyCircleAttributes)
-        })
+      if (permission?.data?.popUpReviewConfiguration?.enable && InAppReview.isAvailable()) {
+        await InAppReview.RequestInAppReview().then((hasFlowFinishedSuccessfully) => {
+          if (hasFlowFinishedSuccessfully)
+            InAppReviewEventPharma(
+              currentPatient,
+              pharmacyUserTypeAttribute,
+              pharmacyCircleAttributes
+            );
+        });
       }
     } catch (error) {}
   };
-
-  // const fireCleverTapOrderSuccessEvent = () => {
-  //   postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, {
-  //     ...cleverTapCheckoutEventAttributes,
-  //     'Cart items': serverCartItems?.length,
-  //   });
-  // };
 
   const onPressCopy = () => {
     Clipboard.setString(paymentId);

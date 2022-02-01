@@ -1744,6 +1744,7 @@ export interface PatientProfileInput {
   mobileNumber: string;
   partnerId?: string | null;
   id?: string | null;
+  whatsappOptIn?: boolean;
 }
 
 export interface PaymentReference {

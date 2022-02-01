@@ -520,7 +520,6 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
           isActive
           id
           languages
-          skipAutoQuestions
           lastName
           mobileNumber
           onlineConsultationFees

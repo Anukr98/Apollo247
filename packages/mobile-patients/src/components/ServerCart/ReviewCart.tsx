@@ -231,28 +231,70 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
               0
             );
             if (transactionId) {
-              props.navigation.navigate(AppRoutes.PaymentMethods, {
-                orders,
-                transactionId,
-                paymentId: paymentOrderId,
-                amount: Number(newCartTotal?.toFixed(2)),
-                orderDetails: getOrderDetails(orders, transactionId, saveMedicineOrderV3Variables),
-                businessLine: 'pharma',
-                customerId: cusId,
-                checkoutEventAttributes: getCheckoutCompletedEventAttributes(
-                  shoppingCart,
-                  paymentOrderId,
-                  pharmacyUserTypeAttribute
-                ),
-                cleverTapCheckoutEventAttributes: getCleverTapCheckoutCompletedEventAttributes(
-                  shoppingCart,
-                  paymentOrderId,
-                  pharmacyUserTypeAttribute,
-                  orders
-                ),
-                disableCOD: !isCodEligible,
-                paymentCodMessage: codMessage,
-              });
+              // get order internal api is called to get exact total amount
+              // which contains circle membership charges also
+              client
+                .query({
+                  query: GET_ORDER_INFO,
+                  variables: { order_id: paymentOrderId },
+                  fetchPolicy: 'no-cache',
+                })
+                .then((response) => {
+                  if (!!response?.data?.getOrderInternal?.total_amount) {
+                    props.navigation.navigate(AppRoutes.PaymentMethods, {
+                      paymentId: paymentOrderId,
+                      amount: response?.data?.getOrderInternal?.total_amount,
+                      orderDetails: getOrderDetails(
+                        orders,
+                        transactionId,
+                        saveMedicineOrderV3Variables
+                      ),
+                      businessLine: 'pharma',
+                      customerId: cusId,
+                      checkoutEventAttributes: getCheckoutCompletedEventAttributes(
+                        shoppingCart,
+                        paymentOrderId,
+                        pharmacyUserTypeAttribute
+                      ),
+                      cleverTapCheckoutEventAttributes: getCleverTapCheckoutCompletedEventAttributes(
+                        shoppingCart,
+                        paymentOrderId,
+                        pharmacyUserTypeAttribute,
+                        orders
+                      ),
+                      disableCOD: !isCodEligible,
+                      paymentCodMessage: codMessage,
+                    });
+                  }
+                })
+                .catch((error) => {
+                  // if get order internal api fails we will send newCartTotal as amount
+                  // new cart total does not contain circle membership charges
+                  props.navigation.navigate(AppRoutes.PaymentMethods, {
+                    paymentId: paymentOrderId,
+                    amount: Number(newCartTotal?.toFixed(2)),
+                    orderDetails: getOrderDetails(
+                      orders,
+                      transactionId,
+                      saveMedicineOrderV3Variables
+                    ),
+                    businessLine: 'pharma',
+                    customerId: cusId,
+                    checkoutEventAttributes: getCheckoutCompletedEventAttributes(
+                      shoppingCart,
+                      paymentOrderId,
+                      pharmacyUserTypeAttribute
+                    ),
+                    cleverTapCheckoutEventAttributes: getCleverTapCheckoutCompletedEventAttributes(
+                      shoppingCart,
+                      paymentOrderId,
+                      pharmacyUserTypeAttribute,
+                      orders
+                    ),
+                    disableCOD: !isCodEligible,
+                    paymentCodMessage: codMessage,
+                  });
+                });
             }
             setauthToken?.('');
           }

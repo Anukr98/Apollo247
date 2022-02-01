@@ -302,6 +302,10 @@ export const formatAddressWithLandmark = (
   }
 };
 
+export const getNameFromAddress = (address: savePatientAddress_savePatientAddress_patientAddress) => {
+  return address?.name || '';
+};
+
 export const getAge = (dob: string) => {
   const now = new Date();
   let age = parse(dob);
