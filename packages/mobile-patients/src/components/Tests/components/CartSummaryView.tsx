@@ -272,7 +272,6 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
         if (source == 'fetchCartPageRecommendations') {
           const getRecommendationsArray = createRecommendationsObject(diagnosticItems, widgetsData);
           setRecommendationsData(getRecommendationsArray);
-          console.log({ getRecommendationsArray });
           setLoading?.(false);
         } else if (source == 'fetchTestReportGenDetails') {
           const getTopBookedObject = createRecommendationsObject(diagnosticItems, widgetsData);
