@@ -569,7 +569,13 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
 
   const renderExistingAccount = () => {
     return (
-      <View style={styles.userItemListMain}>
+      <View
+        style={{
+          minHeight: showReferralCode
+            ? Dimensions.get('screen').height - 415
+            : Dimensions.get('screen').height - 395,
+        }}
+      >
         <FlatList
           data={profiles || []}
           renderItem={({ item, index }) => renderUserItem(item, index)}
@@ -602,7 +608,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
         <KeyboardAwareScrollView style={styles.container} bounces={false}>
           <ScrollView>
             {renderExistingAccount()}
-            {renderReferral()}
+            {showReferralCode && renderReferral()}
             {renderWhatsAppOptIn()}
           </ScrollView>
         </KeyboardAwareScrollView>
@@ -839,8 +845,5 @@ const styles = StyleSheet.create({
     bottom: 0,
     elevation: 3,
     zIndex: 3,
-  },
-  userItemListMain: {
-    minHeight: Dimensions.get('screen').height - 415,
   },
 });

@@ -1,4 +1,4 @@
-import React, { ReactNode, useState } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import {
   Platform,
   StyleProp,
@@ -102,6 +102,9 @@ export const FloatingLabelInputComponent: React.FC<FloatingLabelInputComponentPr
   const [inputFocus, setInputFocus] = useState(false);
   const [inputFocusWhileTying, setInputFocusWhileTyping] = useState(false);
 
+  useEffect(() => {
+    props.value != '' && setInputFocus(true);
+  }, [props.value]);
   const renderTextInput = () => {
     return (
       <TextInput
