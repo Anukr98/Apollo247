@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, Platform } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -188,7 +188,7 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
       <View>
         <TextInputComponent
           conatinerstyles={styles.conatinerstyles}
-          autoFocus={true}
+          autoFocus={Platform?.OS == 'ios' ? false : true}
           inputStyle={styles.inputStyle}
           value={cardNumber}
           onChangeText={(text) => updateCard(text)}

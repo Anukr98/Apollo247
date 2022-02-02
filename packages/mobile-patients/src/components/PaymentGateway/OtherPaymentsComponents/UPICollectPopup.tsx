@@ -84,7 +84,7 @@ export const UPICollectPopup: React.FC<UPICollectProps> = (props) => {
         <View style={{ ...styles.inputCont, borderColor: isVPAvalid ? '#00B38E' : '#FF748E' }}>
           <TextInputComponent
             conatinerstyles={styles.conatinerstyles}
-            autoFocus={true}
+            autoFocus={Platform?.OS == 'ios' ? false : true}
             inputStyle={styles.inputStyle}
             value={VPA}
             onChangeText={(text) => {
@@ -127,17 +127,18 @@ export const UPICollectPopup: React.FC<UPICollectProps> = (props) => {
         horizontal={true}
         showsHorizontalScrollIndicator={false}
         renderItem={(item: any) => (
-          <TouchableOpacity onPress={() => appendUPIbank(item?.item)}>
-            <Text
+          <View>
+            <TouchableOpacity
               style={{
-                ...styles.UPIBank,
+                ...styles.UPIBankCont,
                 marginTop: isVPAvalid ? 32 : 15,
                 marginLeft: item?.index == 0 ? 0 : 12,
               }}
+              onPress={() => appendUPIbank(item?.item)}
             >
-              {item?.item}
-            </Text>
-          </TouchableOpacity>
+              <Text style={styles.UPIBank}>{item?.item}</Text>
+            </TouchableOpacity>
+          </View>
         )}
       />
     );
@@ -166,15 +167,7 @@ export const UPICollectPopup: React.FC<UPICollectProps> = (props) => {
 
   const keyboardVerticalOffset = Platform.OS === 'android' ? { keyboardVerticalOffset: -50 } : {};
 
-  return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={{ paddingTop: 12, paddingBottom: 24 }}
-      {...keyboardVerticalOffset}
-    >
-      <View style={{}}>{renderChildComponent()}</View>
-    </KeyboardAvoidingView>
-  );
+  return <View style={{ paddingTop: 12, paddingBottom: 24 }}>{renderChildComponent()}</View>;
 };
 
 const styles = StyleSheet.create({
@@ -217,14 +210,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     // borderBottomWidth: 0,
   },
-  UPIBank: {
-    marginTop: 30,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+  UPIBankCont: {
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: '#D4D4D4',
+    borderColor: '#d4d4d4',
     backgroundColor: '#fff',
+  },
+  UPIBank: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     ...theme.fonts.IBMPlexSansMedium(12),
     lineHeight: 16,
     color: '#01475B',
