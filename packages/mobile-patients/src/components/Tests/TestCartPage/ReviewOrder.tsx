@@ -613,7 +613,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
                 false
               );
             } else {
-              console.log('ye');
               const successMessage = responseData?.successMessage || '';
               //if any sku has freeCollection as true => waive off
               if (isFreeHomeCollection?.length > 0) {
