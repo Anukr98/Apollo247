@@ -1027,6 +1027,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
       } else if (!!redirectUrl) {
         props.navigation.navigate(AppRoutes.CommonWebView, {
           url: redirectUrl,
+          isGoBack: true,
         });
       } else {
         props.navigation.navigate(AppRoutes.HomeScreen);
