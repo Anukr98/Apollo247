@@ -95,17 +95,15 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
       walletCreated || linked?.filter((wallet: any) => wallet?.wallet == paymentCode)?.[0];
     return (
       <View>
-        <View
+        <TouchableOpacity
           style={{
             ...styles.subCont,
             borderBottomWidth: item?.index == wallets.length - 1 ? 0 : 1,
           }}
+          disabled={outageStatus == 'DOWN' ? true : false}
+          onPress={() => onPress(paymentCode, linkedWallet, bestOffer)}
         >
-          <TouchableOpacity
-            disabled={outageStatus == 'DOWN' ? true : false}
-            style={{ ...styles.wallet, opacity: outageStatus == 'DOWN' ? 0.5 : 1 }}
-            onPress={() => onPress(paymentCode, linkedWallet, bestOffer)}
-          >
+          <View style={{ ...styles.wallet, opacity: outageStatus == 'DOWN' ? 0.5 : 1 }}>
             <WalletIcon
               imageUrl={
                 item?.item?.payment_method_name == 'PhonePe'
@@ -125,11 +123,11 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
                 renderLoader()
               )}
             </View>
-          </TouchableOpacity>
+          </View>
           <OutagePrompt outageStatus={outageStatus} />
           {renderOffer(item, bestOffer)}
           {Apayselected && renderPayNowButton(linkedWallet, paymentCode, bestOffer)}
-        </View>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -214,7 +212,7 @@ const styles = StyleSheet.create({
   },
   subCont: {
     borderColor: 'rgba(0,0,0,0.1)',
-    marginTop: 16,
+    paddingTop: 16,
     paddingBottom: 16,
   },
   wallet: {
