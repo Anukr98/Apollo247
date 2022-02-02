@@ -2349,7 +2349,12 @@ export enum KB_CONTENT_TYPE {
   html = "html",
   text = "text",
 }
-  
+
+export interface IsAppVersionDeprecatedInput {
+  os: DEVICE_TYPE;
+  version: string;
+  mobileNumber: string;
+}
 
 //==============================================================
 // END Enums and Input Objects

@@ -252,6 +252,7 @@ import {
 } from '@aph/mobile-patients/src/components/ReferralProgramProvider';
 import { setItem, getItem } from '@aph/mobile-patients/src/helpers/TimedAsyncStorage';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
+import { UpdateAppPopup } from '@aph/mobile-patients/src/components/ui/UpdateAppPopup';
 
 const { Vitals } = NativeModules;
 
@@ -1164,7 +1165,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [membershipPlans, setMembershipPlans] = useState<any>([]);
   const [circleDataLoading, setCircleDataLoading] = useState<boolean>(true);
-  const { getPatientApiCall, buildApolloClient, validateAndReturnAuthToken } = useAuth();
+  const { getPatientApiCall, buildApolloClient, validateAndReturnAuthToken, checkIsAppDepricated } = useAuth();
   const [selectedProfile, setSelectedProfile] = useState<string>('');
   const [isLocationSearchVisible, setLocationSearchVisible] = useState(false);
   const [showList, setShowList] = useState<boolean>(false);
@@ -1259,6 +1260,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const [isSigningIn, setIsSigningIn] = useState<AuthContextProps['isSigningIn']>(false);
   const [signInError, setSignInError] = useState<AuthContextProps['signInError']>(false);
   const [authToken, setAuthToken] = useState<string>('');
+  const [depricatedAppData, setDepricatedAppData] = useState<any>(null);
   const auth = firebaseAuth();
 
   const planValiditycr = useRef<string>('');
@@ -1521,7 +1523,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       }
     });
   };
-
+  
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setVaccineLoacalStorageData();
@@ -1534,6 +1536,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         }
       });
     });
+    setTimeout(() => {
+      checkIsAppDepricated(currentPatient?.mobileNumber)
+      .then(setDepricatedAppData)
+      .catch((error) => {
+        !!error && CommonBugFender('isAppVersionDeprecated', error);
+      });
+    }, 600)
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
       apisToCall.current = [];
       homeScreenParamsOnPop.current = null;
@@ -6073,6 +6082,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           }
         />
       </Overlay>
+      <UpdateAppPopup depricatedAppData={depricatedAppData} />
     </View>
   );
 };
