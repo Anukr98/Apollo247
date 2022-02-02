@@ -268,7 +268,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
 
   useEffect(() => {
     if (gender.toLowerCase() == Gender.MALE.toLowerCase()) {
-      setRelation(undefined);
+      userType != 'prism' && setRelation(undefined);
       const maleRelationArray: RelationArray[] = [
         { key: Relation.ME, title: 'Self' },
         {
@@ -310,7 +310,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
       ];
       setSelectedGenderRelationArray(maleRelationArray);
     } else if (gender.toLowerCase() == Gender.FEMALE.toLowerCase()) {
-      setRelation(undefined);
+      userType != 'prism' && setRelation(undefined);
       const femaleRelationArray: RelationArray[] = [
         { key: Relation.ME, title: 'Self' },
         {
