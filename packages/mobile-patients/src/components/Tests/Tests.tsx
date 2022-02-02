@@ -3999,6 +3999,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     maxHeight: winHeight / 1.75,
     flex: 1,
+    minHeight: winHeight / 2.8,
     backgroundColor: colors.BGK_GRAY,
     width: '100%',
     zIndex: 1000,

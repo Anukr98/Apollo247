@@ -81,6 +81,15 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
   const itemCountText = itemCount > 9 ? `${itemCount}` : `0${itemCount}`;
   const zipCode = !!locationDetails?.pincode ? locationDetails?.pincode : 0;
   const cartItemIds = cartItems?.map((item) => Number(item?.id));
+  const findPackageSKU = cartItems?.find((_item: any) => _item?.inclusions?.length > 1);
+  const hasPackageSKU = !!findPackageSKU;
+  var newArray: string | any[] = [];
+  const dataToShow =
+    recommendationsData?.length > 2
+      ? recommendationsData
+      : !hasPackageSKU
+      ? newArray.concat(recommendationsData).concat(topBookedTests)
+      : recommendationsData;
 
   type itemReportTat = getConfigurableReportTAT_getConfigurableReportTAT_itemLevelReportTATs;
 
@@ -93,6 +102,10 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
       fetchTestReportGenDetails(cartItemIds);
     }
   }, [cartItems?.length]);
+
+  useEffect(() => {
+    props.recommendationCount(dataToShow?.length);
+  }, [dataToShow]);
 
   const updatePricesInCart = (results: any) => {
     const arrayToChoose = cartItems;
@@ -259,7 +272,7 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
         if (source == 'fetchCartPageRecommendations') {
           const getRecommendationsArray = createRecommendationsObject(diagnosticItems, widgetsData);
           setRecommendationsData(getRecommendationsArray);
-          props.recommendationCount(getRecommendationsArray?.length);
+          console.log({ getRecommendationsArray });
           setLoading?.(false);
         } else if (source == 'fetchTestReportGenDetails') {
           const getTopBookedObject = createRecommendationsObject(diagnosticItems, widgetsData);
@@ -608,15 +621,6 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
   };
 
   const renderCartRecommendations = () => {
-    const findPackageSKU = cartItems?.find((_item: any) => _item?.inclusions?.length > 1);
-    const hasPackageSKU = !!findPackageSKU;
-    var newArray: string | any[] = [];
-    const dataToShow =
-      recommendationsData?.length > 2
-        ? recommendationsData
-        : !hasPackageSKU
-        ? newArray.concat(recommendationsData).concat(topBookedTests)
-        : recommendationsData;
     return (
       <View style={styles.recommendationsView}>
         <Text style={styles.recommendedForText}>Recommended for you</Text>
@@ -635,7 +639,7 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
         {renderCartItems()}
         {recommendationShimmer
           ? renderDiagnosticRecommendationShimmer()
-          : recommendationsData?.length > 0 && renderCartRecommendations()}
+          : dataToShow?.length > 0 && renderCartRecommendations()}
       </ScrollView>
     </View>
   );
