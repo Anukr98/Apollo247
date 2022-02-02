@@ -488,6 +488,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
 
   const updateRefereeDataInReferrerRecord = async ({
     af_referrer_customer_id,
+    refereeId,
     campaign,
     rewardId,
     shortlink,
@@ -500,7 +501,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
         query: INSERT_REFEREE_DATA_TO_REFERRER,
         variables: {
           referralDataInput: {
-            refereeId: currentPatient ? currentPatient.id : '',
+            refereeId: refereeId,
             referrerId: af_referrer_customer_id,
             rewardId: rewardId,
             campaignId: campaign,
@@ -530,6 +531,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
       const { af_referrer_customer_id, campaign, rewardId, shortlink, installTime } = JSON.parse(
         referralData
       );
+      const refereeId = data?.data?.updatePatient?.patient?.id;
       const eventAttribute = {
         referrer_id: af_referrer_customer_id,
         referee_id: data?.data?.updatePatient?.patient?.id,
@@ -540,6 +542,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
       };
       updateRefereeDataInReferrerRecord({
         af_referrer_customer_id,
+        refereeId,
         campaign,
         rewardId,
         shortlink,
