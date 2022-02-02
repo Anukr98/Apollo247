@@ -53,7 +53,7 @@ export const UPIAppsPopup: React.FC<UPIAppsPopupProps> = (props) => {
 
   const renderUPICollect = () => {
     return (
-      <TouchableOpacity style={styles.upiCont} onPress={onPressUpiCollect}>
+      <TouchableOpacity style={styles.upiCont} onPress={() => onPressUpiCollect()}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <UPI style={styles.icon} />
           <Text style={styles.UPIHeader}>Pay with UPI ID</Text>
@@ -68,23 +68,21 @@ export const UPIAppsPopup: React.FC<UPIAppsPopupProps> = (props) => {
     const marginTop = index > 3 ? 12 : 0;
     const outageStatus = item?.outage_list?.[0]?.outage_status;
     return (
-      <View
+      <TouchableOpacity
         style={{
           ...styles.AppCont,
           marginLeft: marginLeft,
           marginTop: marginTop,
           opacity: outageStatus == 'DOWN' ? 0.5 : 1,
         }}
+        disabled={outageStatus == 'DOWN' ? true : false}
+        onPress={() => onPressUPIApp(item)}
       >
-        <TouchableOpacity
-          style={styles.imageCont}
-          disabled={outageStatus == 'DOWN' ? true : false}
-          onPress={() => onPressUPIApp(item)}
-        >
+        <View style={styles.imageCont}>
           <Image source={{ uri: item?.image_url }} resizeMode="contain" style={styles.image} />
-        </TouchableOpacity>
+        </View>
         <Text style={styles.App}>{item?.payment_method_name}</Text>
-      </View>
+      </TouchableOpacity>
     );
   };
 

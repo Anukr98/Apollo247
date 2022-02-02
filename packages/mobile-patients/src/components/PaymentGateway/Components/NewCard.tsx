@@ -187,7 +187,7 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
     return (
       <View>
         <TextInputComponent
-          conatinerstyles={conatinerstyles}
+          conatinerstyles={styles.conatinerstyles}
           autoFocus={true}
           inputStyle={styles.inputStyle}
           value={cardNumber}

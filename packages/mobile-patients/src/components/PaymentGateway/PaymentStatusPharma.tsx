@@ -95,6 +95,9 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
     'cleverTapCheckoutEventAttributes'
   );
   const cartTat = props.navigation.getParam('cartTat');
+  const isCOD = props.navigation.getParam('isCOD');
+  const noAnimation = isCOD && Platform.OS == 'ios';
+
   useEffect(() => {
     setTimeout(() => setAnimationfinished(true), 2700);
     initiate();
@@ -261,7 +264,10 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
 
   const renderOrderInfo = () => {
     return (
-      <OrderInfo orderDateTime={orderInfo?.paymentDateTime} paymentMode={orderInfo?.paymentMode} />
+      <OrderInfo
+        orderDateTime={orderInfo?.paymentDateTime}
+        paymentMode={isCOD ? 'COD' : orderInfo?.paymentMode}
+      />
     );
   };
 
@@ -273,7 +279,7 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
     return <TabBar onPressGoToHome={moveToHome} onPressGoToMyOrders={onPressGoToMyOrders} />;
   };
 
-  const [animationfinished, setAnimationfinished] = useState<boolean>(false);
+  const [animationfinished, setAnimationfinished] = useState<boolean>(noAnimation ? true : false);
 
   const renderSucccessAnimation = () => {
     return (
