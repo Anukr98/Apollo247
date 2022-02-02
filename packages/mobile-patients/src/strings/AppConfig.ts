@@ -335,7 +335,7 @@ const appStaticVariables = {
     frequentlyBrought: string.diagnostics.frequentlyBrought,
     topBookedTests: string.diagnostics.topBookedTests,
     similarPackages: string.diagnostics.similarPackages,
-    "topPackages": "Top Packages with "
+    topPackages: 'Top Packages with ',
   },
   DeliveryIn_TAT_Text: 'Express Delivery',
   WHATSAPP_TO_ORDER: {
@@ -1613,10 +1613,7 @@ export const DIAGNOSTIC_SUB_STATUS_TO_SHOW = [
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
 ];
 
-export const ELIGIBLE_HC_VERTICALS = [
-  'pharma',
-  'diagnostics'
-]
+export const ELIGIBLE_HC_VERTICALS = ['pharma', 'diagnostics'];
 
 export const TestsNewFeedbackData = {
   options: [
@@ -1838,7 +1835,7 @@ export const DIAGNOSTIC_ORDER_CANCELLED_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.CANCELLATION_REQUESTED,
   'ORDER_CANCELLED_AFTER_REGISTRATION',
   DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED_REQUEST,
-]
+];
 
 export const DIAGNOSTIC_ONLINE_PAYMENT_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
@@ -1865,7 +1862,7 @@ export const DIAGNOSTIC_SHOW_RESCHEDULE_CANCEL_ARRAY = [
   DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED,
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
   DIAGNOSTIC_ORDER_STATUS.ORDER_PLACED,
-]
+];
 
 type SpecialitiesType = {
   [key: string]: string[];
