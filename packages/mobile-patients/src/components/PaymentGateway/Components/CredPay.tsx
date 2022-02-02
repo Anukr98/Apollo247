@@ -115,6 +115,7 @@ const styles = StyleSheet.create({
     lineHeight: 14,
     marginLeft: 5,
     color: '#00B38E',
+    flexWrap: 'wrap',
   },
   offerCont: {
     flexDirection: 'row',
