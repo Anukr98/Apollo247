@@ -175,14 +175,14 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
         delivery_tat_hours: diff.toString(),
         order_type: orders?.length === 1 ? 'plain' : 'split',
       };
-      const permission = await client.query({
-        query: GET_REVIEW_POPUP_PERMISSION,
-        variables: {
-          popupConfig,
-        },
-        fetchPolicy: 'no-cache',
-      });
-      if (permission?.data?.popUpReviewConfiguration?.enable && InAppReview.isAvailable()) {
+      // const permission = await client.query({
+      //   query: GET_REVIEW_POPUP_PERMISSION,
+      //   variables: {
+      //     popupConfig,
+      //   },
+      //   fetchPolicy: 'no-cache',
+      // });
+      if (diff<=5 && InAppReview.isAvailable()) {
         await InAppReview.RequestInAppReview().then((hasFlowFinishedSuccessfully) => {
           if (hasFlowFinishedSuccessfully)
             InAppReviewEventPharma(
