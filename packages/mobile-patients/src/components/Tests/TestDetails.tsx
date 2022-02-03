@@ -37,6 +37,7 @@ import {
   nameFormater,
   isSmallDevice,
   isEmptyObject,
+  showDiagnosticCTA,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
