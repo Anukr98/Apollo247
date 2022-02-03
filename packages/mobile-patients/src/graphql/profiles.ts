@@ -7546,3 +7546,14 @@ export const GET_REVIEW_POPUP_PERMISSION = gql`
     }
   }
 `;
+
+export const CHECK_DEPRECATED_APP_VERSION = gql`
+  query isAppVersionDeprecated($isAppVersionDeprecatedInput: IsAppVersionDeprecatedInput) {
+    isAppVersionDeprecated(isAppVersionDeprecatedInput: $isAppVersionDeprecatedInput) {
+      statusCode
+      message
+      success
+      redirectURI
+    }
+  }
+`;

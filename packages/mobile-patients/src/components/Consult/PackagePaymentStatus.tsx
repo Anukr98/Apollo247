@@ -125,10 +125,10 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
   const [emailSent, setEmailSent] = useState<boolean>(false);
 
   const [showWaitTimer, setShowWaitTimer] = useState<boolean>(true);
-  const timerTime = AppConfig.Configuration.Payment_Processing_Timer || 10;
+  const timerTime = 59;
   const [remainingTime, setremainingTime] = useState(timerTime);
-
   const [autoBookTimerCount, setAutoBookTimerCount] = useState(6);
+  const [consultAlreadyBooked, setConsultAlreadyBooked] = useState<boolean>(false);
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -545,12 +545,17 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
 
   const fetchOrderStatus = async (autoBook: boolean, showLoader: boolean = true) => {
     try {
+      if (orderStatusLoading) {
+        // already order status loading no need to call
+        return;
+      }
+
       if (showLoader) {
         setShowSpinner?.(true);
         setOrderStatusLoading?.(true);
       }
 
-      setAutoBookTimerCount(10);
+      setAutoBookTimerCount(6);
 
       const response = await getOrderInfo();
 
@@ -595,7 +600,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
           if (txnStatus == PAYMENT_STATUS.TXN_SUCCESS) {
             let interval = setInterval(() => {
               setAutoBookTimerCount((lastTimerCount) => {
-                if (lastTimerCount <= 1) {
+                if (lastTimerCount == 1) {
                   fetchOneTapPlanFromSubscriptionBenefits(
                     response?.data?.getOrderInternal?.SubscriptionOrderDetails?.group_sub_plan
                       ?.plan_id || ''
@@ -769,13 +774,15 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
 
                 if (desiredPlan) {
                   let benefit = desiredPlan?.benefits[0];
-                  bookConsult(
-                    oneTapPatient,
-                    benefit?.attribute,
-                    benefit?._id,
-                    desiredPlan?.subscription_id,
-                    desiredPlan?.subscription_details
-                  );
+                  if (!consultAlreadyBooked) {
+                    bookConsult(
+                      oneTapPatient,
+                      benefit?.attribute,
+                      benefit?._id,
+                      desiredPlan?.subscription_id,
+                      desiredPlan?.subscription_details
+                    );
+                  }
                 } else {
                   showAphAlert!({
                     title: 'Uh oh.. :(',
@@ -840,6 +847,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
       const { isError, doctorName, appointmentId, error } =
         data?.data?.bookFreeAppointmentForPharmacy || {};
       if (!isError) {
+        setConsultAlreadyBooked(true);
         handleOrderSuccess(doctorName!, appointmentId!);
       } else {
         setLoading?.(false);
