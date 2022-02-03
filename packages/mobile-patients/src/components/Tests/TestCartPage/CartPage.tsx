@@ -1352,9 +1352,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     }
   }
 
-  useEffect(() => {
-    console.log('patientCartItems :>> ', patientCartItems?.[0]?.cartItems);
-  }, [patientCartItems])
 
   const renderGroupRecommendationsView = () => {
     const groupItem = groupRecommendations?.[0]

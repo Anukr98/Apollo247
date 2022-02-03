@@ -578,7 +578,10 @@ export function DiagnosticAppointmentTimeSlot(
   numOfSlots: number,
   slotDate: string,
   currentPatient: any,
-  isDiagnosticCircleSubscription?: boolean | undefined
+  isDiagnosticCircleSubscription?: boolean | undefined,
+  diagLocation?: any,
+  cartItems?: DiagnosticsCartItem[],
+  gTotal?: number
 ) {
   try {
     const getPatientAttributes = createPatientAttributes(currentPatient);
@@ -591,6 +594,22 @@ export function DiagnosticAppointmentTimeSlot(
       'No. of slots': numOfSlots,
       Type: slotType,
       'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+      Latitude: !!diagLocation?.latitude ? diagLocation?.latitude : 0,
+      Longitude: !!diagLocation?.longitude ? diagLocation?.longitude : 0,
+      'Address Pincode': !!diagLocation?.pincode ? diagLocation?.pincode : '',
+      City: !!diagLocation?.city ? diagLocation?.city : '',
+      itemIds: JSON.stringify(
+        cartItems?.map((item: any) => {
+            return item?.id;
+        })
+      ),
+      itemNames: JSON.stringify(
+        cartItems?.map((item: any) => {
+          return item?.name
+        })
+      ),
+      Source: 'Mobile',
+      'Cart Value': gTotal
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_SLOT_TIME_SELECTED, eventAttributes);
     postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED, eventAttributes);
