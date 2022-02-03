@@ -309,6 +309,7 @@ const appStaticVariables = {
         ctaPhoneNumber: '040-4821-3009',
         ctaText: 'Call to Order',
         ctaItemIds: [2446],
+        ctaDisplayHrsArray: [8,9,10,11]
       },
     ],
     ctaDetailsDefault: {
