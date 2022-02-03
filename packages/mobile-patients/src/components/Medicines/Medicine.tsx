@@ -122,7 +122,7 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -178,6 +178,7 @@ import { CircleBottomContainer } from '@aph/mobile-patients/src/components/Medic
 import { WhatsappRedirectionStickyNote } from '@aph/mobile-patients/src/components/Medicines/Components/WhatsappRedirectionStickyNote';
 import { WhatsappRedirectionBanner } from '@aph/mobile-patients/src/components/Medicines/Components/WhatsappRedirectionBanner';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { UpdateAppPopup } from '@aph/mobile-patients/src/components/ui/UpdateAppPopup';
 
 const styles = StyleSheet.create({
   scrollViewStyle: {
@@ -268,6 +269,7 @@ export interface MedicineProps
 type Address = savePatientAddress_savePatientAddress_patientAddress;
 
 export const Medicine: React.FC<MedicineProps> = (props) => {
+  const { checkIsAppDepricated } = useAuth();
   const focusSearch = props.navigation.getParam('focusSearch');
   const showRecommendedSection = props.navigation.getParam('showRecommendedSection');
   const comingFrom = props.navigation.getParam('comingFrom');
@@ -356,6 +358,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const pharmacyPincode = cartLocationDetails?.pincode || defaultAddress?.zipcode;
   const [isFocused, setIsFocused] = useState<boolean>(false);
   const [showWhatsappRedirectionIcon, setShowWhatsappRedirectionIcon] = useState<boolean>(true);
+  const [depricatedAppData, setDepricatedAppData] = useState<any>(null);
   const scrollViewRef = React.useRef<KeyboardAwareScrollView>(null);
   const windowHeight = Dimensions.get('window').height;
   const scrollCount = useRef<number>(0);
@@ -418,7 +421,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   useEffect(() => {
     populateCachedData();
-
+    checkIsAppDepricated(currentPatient?.mobileNumber)
+      .then(setDepricatedAppData)
+      .catch((error) => {
+        !!error && CommonBugFender('isAppVersionDeprecated_Medicine', error);
+      });
     if (comingFrom === 'deeplink') {
       BackHandler.addEventListener('hardwareBackPress', handleBack);
       return () => {
@@ -2715,6 +2722,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       {AppConfig.Configuration.WHATSAPP_TO_ORDER.iconVisibility &&
         showWhatsappRedirectionIcon &&
         medicineList?.length === 0 && <WhatsappRedirectionStickyNote />}
+        <UpdateAppPopup depricatedAppData={depricatedAppData} />
     </View>
   );
 };

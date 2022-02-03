@@ -1872,49 +1872,55 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       (key) =>
         (config.getString(key) && JSON.parse(config.getString(key))) || string.refAndEarn.global
     );
-    setReferralGlobalData?.(globalData);
+    setReferralGlobalData?.(globalData || string.refAndEarn.global);
     const mainBannerContent = getRemoteConfigValue(
       'REFERRER_MAIN_BANNER_CONTENT',
       (key) =>
         (config.getString(key) && JSON.parse(config.getString(key))) ||
         string.refAndEarn.referralMainBanner
     );
-    setReferralMainBanner?.(mainBannerContent);
+    setReferralMainBanner?.(mainBannerContent || string.refAndEarn.referralMainBanner);
     const shareReferrerLinkScreenContent = getRemoteConfigValue(
       'SHARE_REFERRER_LINK_CONENT',
       (key) =>
         (config.getString(key) && JSON.parse(config.getString(key))) ||
         string.refAndEarn.shareReferrerLink
     );
-    setShareReferrerLinkData?.(shareReferrerLinkScreenContent);
+    setShareReferrerLinkData?.(
+      shareReferrerLinkScreenContent || string.refAndEarn.shareReferrerLink
+    );
     const yourRewardScreenContent = getRemoteConfigValue(
       'YOUR_REWARD_SCREEN_DATA_CONTENT',
       (key) =>
         (config.getString(key) && JSON.parse(config.getString(key))) ||
         string.refAndEarn.yourRewards
     );
-    setYourRewardsScreenData?.(yourRewardScreenContent);
+    setYourRewardsScreenData?.(yourRewardScreenContent || string.refAndEarn.yourRewards);
     const congratulationsScreenContent = getRemoteConfigValue(
       'REFERRER_CONGRATULATIONS_PAGE',
       (key) =>
         (config.getString(key) && JSON.parse(config.getString(key))) ||
         string.refAndEarn.congratulationPage
     );
-    setCongratulationPageData?.(congratulationsScreenContent);
+    setCongratulationPageData?.(
+      congratulationsScreenContent || string.refAndEarn.congratulationPage
+    );
     const termsAndConditonsScreenContent = getRemoteConfigValue(
       'REFERRER_TERMS_AND_CONDITION_DATA',
       (key) =>
         (config.getString(key) && JSON.parse(config.getString(key))) ||
         string.refAndEarn.refererTermsAndCondition
     );
-    setRefererTermsAndConditionData?.(termsAndConditonsScreenContent);
+    setRefererTermsAndConditionData?.(
+      termsAndConditonsScreenContent || string.refAndEarn.refererTermsAndCondition
+    );
     const faqScreenContent = getRemoteConfigValue(
       'REFERRER_FAQS_DATA',
       (key) =>
         (config.getString(key) && JSON.parse(config.getString(key))) ||
         string.refAndEarn.refererFAQs
     );
-    setRefererFAQsData?.(faqScreenContent);
+    setRefererFAQsData?.(faqScreenContent || string.refAndEarn.refererFAQs);
   };
 
   const showUpdateAlert = (mandatory: boolean) => {

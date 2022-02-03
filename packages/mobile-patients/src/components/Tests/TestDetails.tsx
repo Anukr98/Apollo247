@@ -257,38 +257,26 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
     CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL
   );
-  const checkForCtaCityAvailabilty = () => {
-    for (let index = 0; index < ctaDetailArray.length; index++) {
-      const element = ctaDetailArray[index];
-      if (Number(element?.ctaCityId) == cityIdToUse) {
-        return element;
-      } else {
-        return null;
-      }
-    }
-  };
+
+  const getCTADetails = showDiagnosticCTA(CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL, cityIdToUse);
 
   const checkItemIdForCta = () => {
-    let newArray = [];
-    for (let index = 0; index < ctaDetailArray.length; index++) {
-      const element = ctaDetailArray[index];
-      if (
-        Number(element?.ctaCityId) == cityIdToUse &&
-        element?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL) &&
-        element?.ctaItemIds?.length > 0 &&
-        element?.ctaItemIds?.includes(Number(itemId))
-      ) {
-        newArray.push(element);
-        return newArray;
-      } else {
-        return null;
-      }
+    const data = getCTADetails?.[0];
+    if (
+      !!data &&
+      !!data?.ctaItemIds &&
+      data?.ctaItemIds?.length > 0 &&
+      data?.ctaItemIds?.includes(Number(itemId))
+    ) {
+      return [data];
+    } else {
+      return null;
     }
   };
 
-  const ctaDetailMatched = checkForCtaCityAvailabilty()
+  const ctaDetailMatched = !!getCTADetails?.length
     ? checkItemIdForCta()
-    : isCtaDetailDefault
+    : isCtaDetailDefault && !isDiagnosticLocationServiceable
     ? [callToOrderDetails?.ctaDetailsDefault]
     : [];
   const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);

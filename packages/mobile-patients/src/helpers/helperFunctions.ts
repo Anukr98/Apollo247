@@ -1518,7 +1518,7 @@ export const getDiscountPercentage = (price: number | string, specialPrice?: num
 /** 
  * ---------------------------------------
  * TAT and magneto price logic */
-export const isDiffLessThanDecidedPercentage = (num1: number, num2: number, decidedPercentage :number) => {
+export const isDiffLessThanDecidedPercentage = (num1: number, num2: number, decidedPercentage: number) => {
   return Math.abs(((num1 - num2) / num1) * 100) < decidedPercentage;
 };
 
@@ -1533,7 +1533,7 @@ export const getPriceAndSpecialPrice = (
   specialPrice: number | string = 0,
   mrp: number = 0,
   qty: number = 0,
-  decidedPercentage : number = 0
+  decidedPercentage: number = 0
 ) => {
   const defaultValues = {
     specialPrice,
@@ -1550,7 +1550,7 @@ export const getPriceAndSpecialPrice = (
       const sPrice = typeof specialPrice === 'number' ? specialPrice : Number(specialPrice);
       return {
         specialPrice: getSpecialPriceFromRelativePrices(price, sPrice, tatPrice),
-        price:tatPrice.toFixed(2) ,
+        price: tatPrice.toFixed(2),
       };
     }
   }
@@ -1649,13 +1649,13 @@ const webengage = new WebEngage();
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
     webengage.track(eventName, validateEventObject(attributes));
-  } catch (error) {}
+  } catch (error) { }
 };
 
 export const postCleverTapEvent = (eventName: CleverTapEventName, attributes: Object) => {
   try {
     CleverTap.recordEvent(eventName, validateEventObject(attributes));
-  } catch (error) {}
+  } catch (error) { }
 };
 
 /**
@@ -2405,10 +2405,8 @@ export const InitiateAppsFlyer = (
     isDeepLinked = true;
     if (res.is_deferred) {
       getInstallResources();
-      res?.data?.deep_link_value?.(() => {
-        const url = handleOpenURL(res?.data?.deep_link_value);
-        AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
-      });
+      const url = handleOpenURL(res?.data?.deep_link_value);
+      AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
     }
     try {
       if (!res.is_deferred) {
@@ -2430,11 +2428,9 @@ export const InitiateAppsFlyer = (
           }
         } else {
           clevertapEventForAppsflyerDeeplink(filterAppLaunchSoruceAttributesByKey(res.data));
-          res?.data?.deep_link_value?.(() => {
-            const url = handleOpenURL(res.data.deep_link_value);
-            AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
-            redirectWithOutDeferred(url);
-          });
+          const url = handleOpenURL(res.data.deep_link_value);
+          AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
+          redirectWithOutDeferred(url);
         }
       }
       if (res.status == 'success') {
@@ -4441,15 +4437,15 @@ export const shareDocument = async (
 export const setLocationCodeFromApi = (pincode: string, setLocationCode: ((value: string) => void) | null, locationCode: string) => {
   if (pincode) {
     getLocationCode(pincode)
-    .then((response) => {
-      const code = response?.data?.sr_code;
-      if (code && code !== locationCode) {
-        setLocationCode?.(code);
-      }
-    })
-    .catch((error) => {
-      CommonBugFender('setLocationCodeFromApi_helperFunction', error);
-    })
+      .then((response) => {
+        const code = response?.data?.sr_code;
+        if (code && code !== locationCode) {
+          setLocationCode?.(code);
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('setLocationCodeFromApi_helperFunction', error);
+      })
   }
 }
 
@@ -4472,20 +4468,49 @@ export const showDiagnosticCTA = (pageName: CALL_TO_ORDER_CTA_PAGE_ID, cityId: s
   const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
     pageName
   );
-  return ctaDetailArray?.filter((item: any) => {
-    if (Number(item?.ctaCityId) == Number(cityId)) {
-      if (item?.ctaProductPageArray?.includes(pageName)) {
-        return item;
-      } else {
-        return null;
+  const checkForCtaCityAvailabilty = () => {
+    for (let index = 0; index < ctaDetailArray.length; index++) {
+      const element = ctaDetailArray[index];
+      if (
+        Number(element?.ctaCityId) == cityId &&
+        element?.ctaProductPageArray?.includes(pageName)
+      ) {
+        return element;
       }
-    } else if (isCtaDetailDefault) {
-      return callToOrderDetails?.ctaDetailsDefault;
+    }
+  };
+  const checkForCtaTime = () => {
+    const element = checkForCtaCityAvailabilty();
+    if (!!element?.ctaDisplayHrsArray?.length) {
+      const object1 = element?.ctaDisplayHrsArray?.filter((item) => {
+        const timeStart = moment(item, 'HH');
+        const timeEnd = moment(timeStart, 'HH:mm').add(59, 'minutes');
+        const currentTime = moment();
+        const showCta = currentTime.isBetween(timeStart, timeEnd, 'hour', '[]');
+        if (showCta) {
+          return element;
+        } else {
+          return null;
+        }
+      });
+      return object1;
     } else {
       return null;
     }
-  });
-}
+  };
+
+  if (checkForCtaCityAvailabilty()?.ctaCityId == cityId) {
+    if (!!checkForCtaTime()?.length) {
+      return [checkForCtaCityAvailabilty()];
+    } else {
+      return null;
+    }
+  } else if (isCtaDetailDefault) {
+    return [callToOrderDetails?.ctaDetailsDefault];
+  } else {
+    return null;
+  }
+};
 
 export const calculateDiagnosticCartItems = (
   cartItem: DiagnosticsCartItem[],

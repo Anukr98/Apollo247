@@ -190,7 +190,8 @@ const Common = {
   BUTTON_ORANGE: '#fc9916eb',
   BUTTON_ORANGE_DISABLE: '#fc991661',
   LIGHT_SOIL_COLOR: '#FCF0E3',
-  INFO_RED_COLOR: '#FF637B'
+  INFO_RED_COLOR: '#FF637B',
+  GRAY_BGK: '#F4F4F4'
 };
 
 const Header = {
