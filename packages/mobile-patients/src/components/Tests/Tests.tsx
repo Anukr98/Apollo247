@@ -2748,6 +2748,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const renderCartSummary = () => {
     return (
       <View style={styles.cartSummaryOverlay}>
+        <TouchableOpacity onPress={() => onPressShowLess()} style={{ flex: 1 }} />
         <CartPageSummary
           containerStyle={styles.cartSummaryContainer}
           _onPressShowLess={() => onPressShowLess()}
@@ -3726,6 +3727,7 @@ const styles = StyleSheet.create({
     minHeight: winHeight / 2.8,
     backgroundColor: colors.BGK_GRAY,
     width: '100%',
+    zIndex: 1000,
   },
   recommendationsText: {
     ...theme.viewStyles.text('R', 12, colors.LIGHT_BLUE, 1, 16),
