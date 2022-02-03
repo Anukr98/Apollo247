@@ -5,9 +5,18 @@ import {
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
+  AgeGroupIcon,
   ClockIcon,
+  Down,
   ExpressSlotClock,
+  GenderIcon,
   InfoIconRed,
+  OrangeCartIcon,
+  OrangeFAQIcon,
+  RelatedPackageIcon,
+  SampleTypeIcon,
+  TestsIcon,
+  Up,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import {
@@ -25,11 +34,9 @@ import {
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import stripHtml from 'string-strip-html';
 import {
-  g,
   nameFormater,
   isSmallDevice,
   isEmptyObject,
-  showDiagnosticCTA,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
@@ -45,24 +52,15 @@ import {
 import { NavigationScreenProps } from 'react-navigation';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useApolloClient } from 'react-apollo-hooks';
-import {
-  GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
-  GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
-} from '@aph/mobile-patients/src/graphql/profiles';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import {
   DiagnosticData,
   LocationData,
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import {
-  findDiagnosticsByItemIDsAndCityIDVariables,
-  findDiagnosticsByItemIDsAndCityID,
-} from '@aph/mobile-patients/src/graphql/types/findDiagnosticsByItemIDsAndCityID';
 import { CircleHeading } from '@aph/mobile-patients/src/components/ui/CircleHeading';
 import {
   getPricesForItem,
-  sourceHeaders,
   convertNumberToDecimal,
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
 } from '@aph/mobile-patients/src/utils/commonUtils';
@@ -78,10 +76,6 @@ import { FAQComponent } from '@aph/mobile-patients/src/components/SubscriptionMe
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import PackageCard from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
 import ItemCard from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
-import {
-  findDiagnosticsWidgetsPricing,
-  findDiagnosticsWidgetsPricingVariables,
-} from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
 import HTML from 'react-native-render-html';
 import _ from 'lodash';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -90,7 +84,9 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
   getDiagnosticCartRecommendations,
   getDiagnosticExpressSlots,
+  getDiagnosticsByItemIdCityId,
   getDiagnosticsPackageRecommendations,
+  getDiagnosticWidgetPricing,
   getReportTAT,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import moment from 'moment';
@@ -99,6 +95,8 @@ import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/compo
 import DiscountPercentage from '@aph/mobile-patients/src/components/Tests/components/DiscountPercentage';
 import { renderDiagnosticWidgetTestShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import { DIAGNOSTICS_ITEM_TYPE } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
+import FullWidthItemCard from './components/FullWidthItemCard';
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
@@ -215,19 +213,17 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     !!modifiedOrderItemIds &&
     modifiedOrderItemIds?.length &&
     modifiedOrderItemIds?.find((id: number) => Number(id) == Number(itemId));
-
   //if passed from cartPage
   const cityIdToUse = !!addressCityId
     ? Number(addressCityId)
     : Number(
         diagnosticServiceabilityData?.cityId! || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
       );
-
   const getWidgetTitle = AppConfig.Configuration.DIAGNOSITCS_WIDGET_TITLES;
-
+  const client = useApolloClient();
+  const { currentPatient } = useAllCurrentPatients();
   const [cmsTestDetails, setCmsTestDetails] = useState((([] as unknown) as CMSTestDetails) || []);
   const [testInfo, setTestInfo] = useState(movedFrom == 'TestsCart' ? testDetails : ({} as any));
-  const [moreInclusions, setMoreInclusions] = useState(false);
   const [readMore, setReadMore] = useState(true);
   const [errorState, setErrorState] = useState(false);
   const [widgetsData, setWidgetsData] = useState([] as any);
@@ -245,6 +241,13 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const [packageRecommendationsShimmer, setPackageRecommendationsShimmer] = useState<boolean>(
     false
   );
+  const [parameterExpandedArray, setParameterExpandedArray] = useState([] as any);
+  const [frequentlyBroughtVerticalPosition, setFrequentlyBroughtVerticalPosition] = useState<
+    number
+  >(0);
+  const [faqVerticalPosition, setFaqVerticalPosition] = useState<number>(0);
+  const [relatedPackagesVerticalPosition, setRelatedPackagesVerticalPosition] = useState<number>(0);
+
   const originalItemIds =
     !!packageRecommendations?.length || !!frequentlyBroughtRecommendations?.length
       ? [itemId!]
@@ -264,6 +267,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       }
     }
   };
+
   const checkItemIdForCta = () => {
     let newArray = [];
     for (let index = 0; index < ctaDetailArray.length; index++) {
@@ -296,25 +300,24 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     testInfo?.ItemName ||
     '';
 
-  const client = useApolloClient();
-  const { currentPatient } = useAllCurrentPatients();
-
   const isAddedToCart = !!cartItems?.find((item) => item.id == testInfo?.ItemID);
   const scrollViewRef = React.useRef<ScrollView | null>(null);
   const priceViewRef = React.useRef<View>(null);
 
-  const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
-    client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
-      query: GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
-      context: {
-        sourceHeaders,
-      },
-      variables: {
-        cityID: Number(cityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
-        itemIDs: listOfId,
-      },
-      fetchPolicy: 'no-cache',
-    });
+  const HorizontalComponentOptions = [
+    {
+      icon: <RelatedPackageIcon style={styles.horizontalComponentIcon} />,
+      title: string.diagnosticsDetails.relatedPackages,
+    },
+    {
+      icon: <OrangeCartIcon style={styles.horizontalComponentIcon} />,
+      title: string.diagnosticsDetails.frequentlyBooked,
+    },
+    {
+      icon: <OrangeFAQIcon style={styles.horizontalComponentIcon} />,
+      title: string.diagnosticsDetails.frequentlyAskedQuestions,
+    },
+  ];
 
   useEffect(() => {
     getExpressSlots(diagnosticServiceabilityData!, diagnosticLocation!);
@@ -359,6 +362,62 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     }
   }
 
+  function skuParameterInclusionLogic() {
+    const isInclusionPrsent =
+      !!cmsTestDetails?.diagnosticInclusionName &&
+      cmsTestDetails?.diagnosticInclusionName?.length > 0;
+    const inclusions = isInclusionPrsent && cmsTestDetails?.diagnosticInclusionName;
+
+    const filterParamters = cmsTestDetails?.diagnosticInclusionName?.filter(
+      (item: any) => !!item?.TestObservation && item?.TestObservation != ''
+    );
+
+    const filterParamters_topFour = cmsTestDetails?.diagnosticInclusionName?.filter(
+      (item: any, index: number) =>
+        index < 4 && !!item?.TestObservation && item?.TestObservation != ''
+    );
+
+    const getDispalyedParameterCount =
+      !!filterParamters_topFour &&
+      filterParamters_topFour?.length > 0 &&
+      filterParamters_topFour?.map((inclusion: any, index: number) =>
+        !!inclusion?.TestObservation
+          ? inclusion?.TestObservation?.filter((item: any) => item?.mandatoryValue === '1')
+          : []
+      );
+
+    const getMandatoryParameterCount_topFour =
+      !!getDispalyedParameterCount &&
+      getDispalyedParameterCount?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
+
+    const getMandatoryParamter =
+      !!filterParamters &&
+      filterParamters?.length > 0 &&
+      filterParamters?.map((inclusion: any) =>
+        !!inclusion?.TestObservation
+          ? inclusion?.TestObservation?.filter((item: any) => item?.mandatoryValue === '1')
+          : []
+      );
+
+    const nonInclusionParamters = cmsTestDetails?.diagnosticInclusionName?.filter(
+      (item: any) => !!item && (!item?.TestObservation || item?.TestObservation?.length == 0)
+    );
+
+    const getMandatoryParameterCount =
+      !!getMandatoryParamter && getMandatoryParamter?.length > 0
+        ? getMandatoryParamter?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0)
+        : undefined;
+
+    return {
+      isInclusionPrsent,
+      getMandatoryParameterCount,
+      nonInclusionParamters,
+      inclusions,
+      getMandatoryParameterCount_topFour,
+      filterParamters,
+    };
+  }
+
   const fetchTestDetails_CMS = async (itemId: string | number, itemName: string | null) => {
     setLoadingContext?.(true);
     const res: any = await getDiagnosticTestDetails(
@@ -391,20 +450,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       setLoadingContext?.(true);
       const {
         data: { findDiagnosticsByItemIDsAndCityID },
-      } = await client.query<
-        findDiagnosticsByItemIDsAndCityID,
-        findDiagnosticsByItemIDsAndCityIDVariables
-      >({
-        query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
-        context: {
-          sourceHeaders,
-        },
-        variables: {
-          cityID: cityIdToUse,
-          itemIDs: listOfIds,
-        },
-        fetchPolicy: 'no-cache',
-      });
+      } = await getDiagnosticsByItemIdCityId(client, cityIdToUse, listOfIds);
       const {
         rate,
         gender,
@@ -418,7 +464,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         inclusions,
         testDescription,
         itemType,
-      } = g(findDiagnosticsByItemIDsAndCityID, 'diagnostics', '0' as any)!;
+      } = findDiagnosticsByItemIDsAndCityID?.diagnostics?.[0]!;
 
       const getDiagnosticPricingForItem = diagnosticPricing;
       const packageMrpForItem = packageCalculatedMrp!;
@@ -493,7 +539,11 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     try {
       const res = Promise.all(
         itemIds?.map((item: any) =>
-          fetchPricesForCityId(Number(cityId!), item?.length > 12 ? item?.slice(0, 12) : item)
+          getDiagnosticWidgetPricing(
+            client,
+            Number(cityId!),
+            item?.length > 12 ? item?.slice(0, 12) : item
+          )
         )
       );
       const response = (await res)
@@ -862,56 +912,73 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   }
 
   const renderDescriptionCard = () => {
-    const sampleType =
-      !!cmsTestDetails && cmsTestDetails?.diagnosticInclusionName?.length > 0
-        ? createSampleType(cmsTestDetails?.diagnosticInclusionName)
-        : [];
-    const sampleString = sampleType?.length > 0 ? sampleType?.join(', ') : false;
-    const showAge = (!!cmsTestDetails && cmsTestDetails?.diagnosticAge) || 'For all age group';
-    const showGender =
-      (!!cmsTestDetails && cmsTestDetails?.diagnosticGender) ||
-      (!_.isEmpty(testInfo) && `FOR ${gender?.[testInfo?.Gender]}`) ||
-      'Both';
     const showDescription =
       (!!cmsTestDetails &&
         cmsTestDetails?.diagnosticOverview?.length > 0 &&
         cmsTestDetails?.diagnosticOverview?.[0]?.value) ||
       (!_.isEmpty(testInfo) && testInfo?.testDescription);
+
+    return showDescription ? (
+      <View style={styles.descriptionCardOuterView}>
+        {/**
+         * if package then package otherwise, test.
+         * age if not coming from cms -> db
+         * gender if not coming from cms -> db
+         * sample type cms -> db
+         */}
+        <Text style={styles.packageDescriptionHeading}>{string.diagnosticsDetails.about}</Text>
+        {!!showDescription ? renderDescription(showDescription) : null}
+        {!!showDescription ? null : renderSkuSpecificDetails()}
+      </View>
+    ) : null;
+  };
+
+  const renderSkuSpecificDetails = () => {
+    const sampleType =
+      !!cmsTestDetails && cmsTestDetails?.diagnosticInclusionName?.length > 0
+        ? createSampleType(cmsTestDetails?.diagnosticInclusionName)
+        : [];
+    const sampleString = sampleType?.length > 0 ? sampleType?.join(', ') : '';
+    const showAge = (!!cmsTestDetails && cmsTestDetails?.diagnosticAge) || 'For all age group';
+    const showGender =
+      (!!cmsTestDetails && cmsTestDetails?.diagnosticGender) ||
+      (!_.isEmpty(testInfo) && `FOR ${gender?.[testInfo?.Gender]}`) ||
+      'Both';
     return (
-      <>
-        {sampleType || showAge || showGender || showDescription ? (
-          <View style={styles.descriptionCardOuterView}>
-            {/**
-             * if package then package otherwise, test.
-             * age if not coming from cms -> db
-             * gender if not coming from cms -> db
-             * sample type cms -> db
-             */}
-            <Text style={styles.packageDescriptionHeading}>Package Description</Text>
-            {!!sampleString ? renderDetails('Sample type', sampleString) : null}
-            {!!showGender ? renderDetails('Gender', nameFormater(showGender, 'title')) : null}
-            {!!showAge ? renderDetails('Age group', showAge) : null}
-            {!!showDescription ? renderDescription(showDescription) : null}
-          </View>
-        ) : null}
-      </>
+      <View style={styles.skuSpecificView}>
+        {!!sampleString
+          ? renderDetails(
+              string.diagnosticsDetails.sample,
+              sampleString,
+              <SampleTypeIcon style={styles.aboutIcons} />
+            )
+          : null}
+        {!!showGender
+          ? renderDetails(
+              string.diagnosticsDetails.gender,
+              nameFormater(showGender, 'title'),
+              <GenderIcon style={styles.aboutIcons} />
+            )
+          : null}
+        {!!showAge
+          ? renderDetails(
+              string.diagnosticsDetails.ageGroup,
+              showAge,
+              <AgeGroupIcon style={styles.aboutIcons} />
+            )
+          : null}
+      </View>
     );
   };
 
-  const renderDetails = (key: string, value: string) => {
+  const renderDetails = (key: string, value: string, Icon: any) => {
     return (
-      <View style={{ flexDirection: 'row', marginTop: 5, width: '90%' }}>
-        <Text style={styles.packageDescriptionText}>{key} : </Text>
-        <Text
-          style={[
-            styles.packageDescriptionText,
-            {
-              width: '83%',
-            },
-          ]}
-        >
-          {value}
-        </Text>
+      <View style={styles.detailsView}>
+        {Icon}
+        <View style={{ marginHorizontal: 8 }}>
+          <Text style={styles.packageDescriptionText}>{key} </Text>
+          <Text style={styles.skuSpecificValues}>{value}</Text>
+        </View>
       </View>
     );
   };
@@ -937,19 +1004,22 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       <>
         <View style={[styles.overViewContainer, { width: readMore ? '85%' : '100%' }]}>
           {readMore ? (
-            <Text style={styles.packageDescriptionText} numberOfLines={2}>
+            <Text style={styles.packageDescriptionText} numberOfLines={3}>
               {stripHtml(showDescription)}
             </Text>
           ) : (
             <HTML html={formattedText} baseFontStyle={styles.packageDescriptionText} />
           )}
         </View>
+        {!readMore && renderSkuSpecificDetails()}
         <TouchableOpacity
           onPress={() => onPressReadMore()}
           activeOpacity={1}
           style={styles.readMoreTouch}
         >
-          <Text style={styles.readMoreText}> {!readMore ? 'READ LESS' : 'READ MORE'}</Text>
+          <Text style={styles.readMoreText}>
+            {!readMore ? string.diagnosticsDetails.seeLess : string.diagnosticsDetails.seeMore}
+          </Text>
         </TouchableOpacity>
       </>
     );
@@ -1023,7 +1093,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           _setPriceLayoutPosition(layout, event);
         }}
       >
-        {renderSeparator()}
+        {renderSeparator(16, true, 4)}
         <View style={{ marginTop: '2%' }}>
           {renderSlashedView(slashedPrice, priceToShow, true)}
           {!_.isEmpty(testInfo) && renderMainPriceView(priceToShow, true)}
@@ -1187,9 +1257,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   };
 
   /**
-   * if not coming from the config report tat, then if not by drupal then show from local db.
+   * if not coming from the config report tat, else from drupal else from local db.
    */
-  const renderCardMidView = () => {
+  const renderReportsView = () => {
     const showReportTat =
       reportTat != ''
         ? reportTat
@@ -1215,7 +1285,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               <ClockIcon style={styles.clockIconStyle} />
               <View style={styles.midCardTextView}>
                 <Text style={styles.reportTimeText}>
-                  {!!heading ? heading : 'Get reports earliest by'}
+                  {!!heading ? `${heading.includes(':') ? heading : `${heading}:`} ` : 'Reports '}
                 </Text>
                 <Text style={styles.reportTime}>
                   {!!configurableTat
@@ -1235,71 +1305,27 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   /**
    * if not by drupal then show from local db.
    */
-  const renderCardBottomView = () => {
+  const renderPreprationDataView = () => {
     return (
-      <>
-        {renderSeparator()}
-        <View style={styles.bottomCardView}>
-          <InfoIconRed style={styles.infoIconStyle} />
-          <Text style={styles.preTestingText}>
-            {cmsTestDetails?.diagnosticPretestingRequirement}
-          </Text>
-        </View>
-        {renderSeparator()}
-      </>
+      <View style={styles.bottomCardView}>
+        <InfoIconRed style={styles.infoIconStyle} />
+        <Text style={styles.preTestingText}>{cmsTestDetails?.diagnosticPretestingRequirement}</Text>
+      </View>
     );
   };
 
-  const renderSeparator = (space?: boolean) => {
-    return <Spearator style={{ marginTop: space ? 10 : 0 }} />;
+  const renderSeparator = (topMargin: number, isFullWidth: boolean, bottomMargin: number) => {
+    return (
+      <Spearator
+        style={[
+          isFullWidth && styles.fullSepratorStyle,
+          { marginTop: topMargin, marginBottom: bottomMargin, opacity: 0.09 },
+        ]}
+      />
+    );
   };
 
   const renderCardTopView = () => {
-    const isInclusionPrsent =
-      !!cmsTestDetails?.diagnosticInclusionName &&
-      cmsTestDetails?.diagnosticInclusionName?.length > 0;
-    const inclusions = isInclusionPrsent && cmsTestDetails?.diagnosticInclusionName;
-
-    const filterParamters = cmsTestDetails?.diagnosticInclusionName?.filter(
-      (item: any) => !!item?.TestObservation && item?.TestObservation != ''
-    );
-
-    const filterParamters_topFour = cmsTestDetails?.diagnosticInclusionName?.filter(
-      (item: any, index: number) =>
-        index < 4 && !!item?.TestObservation && item?.TestObservation != ''
-    );
-
-    const getDispalyedParameterCount =
-      !!filterParamters_topFour &&
-      filterParamters_topFour?.length > 0 &&
-      filterParamters_topFour?.map((inclusion: any, index: number) =>
-        !!inclusion?.TestObservation
-          ? inclusion?.TestObservation?.filter((item: any) => item?.mandatoryValue === '1')
-          : []
-      );
-
-    const getMandatoryParameterCount_topFour =
-      !!getDispalyedParameterCount &&
-      getDispalyedParameterCount?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
-
-    const getMandatoryParamter =
-      !!filterParamters &&
-      filterParamters?.length > 0 &&
-      filterParamters?.map((inclusion: any) =>
-        !!inclusion?.TestObservation
-          ? inclusion?.TestObservation?.filter((item: any) => item?.mandatoryValue === '1')
-          : []
-      );
-
-    const nonInclusionParamters = cmsTestDetails?.diagnosticInclusionName?.filter(
-      (item: any) => !!item && (!item?.TestObservation || item?.TestObservation?.length == 0)
-    );
-
-    const getMandatoryParameterCount =
-      !!getMandatoryParamter && getMandatoryParamter?.length > 0
-        ? getMandatoryParamter?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0)
-        : undefined;
-
     return (
       <>
         <View style={{ width: '75%' }}>
@@ -1308,110 +1334,104 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           </Text>
           {renderAliasName()}
         </View>
-        {renderSeparator(true)}
-        {renderCardMidView()}
-        {!!cmsTestDetails?.diagnosticPretestingRequirement
-          ? renderCardBottomView()
-          : renderSeparator()}
-        <View style={styles.inclusionsView}>
-          {isInclusionPrsent ? (
-            <Text style={styles.testIncludedText}>
-              Total tests included :{' '}
-              {getMandatoryParameterCount + nonInclusionParamters?.length ||
-                cmsTestDetails?.diagnosticInclusionName?.length}
-            </Text>
-          ) : null}
-          {isInclusionPrsent &&
-            !moreInclusions &&
-            inclusions?.map((item: any, index: number) =>
-              index < 4 ? (
-                <>
-                  <View style={styles.rowStyle}>
-                    <Text style={styles.inclusionsBullet}>{'\u2B24'}</Text>
-                    <Text style={styles.inclusionsItemText}>
-                      {!!item?.inclusionName ? nameFormater(item?.inclusionName!, 'title') : ''}{' '}
-                      {index == 3 &&
-                        inclusions?.length - 4 > 0 &&
-                        item?.TestObservation?.length == 0 &&
-                        renderShowMore(
-                          getMandatoryParameterCount_topFour ||
-                            cmsTestDetails?.diagnosticInclusionName?.length,
-                          item?.inclusionName
-                        )}
-                    </Text>
-                  </View>
-                  {renderParamterData(
-                    item,
-                    inclusions,
-                    index,
-                    true,
-                    getMandatoryParameterCount_topFour,
-                    getMandatoryParameterCount
-                  )}
-                </>
-              ) : null
-            )}
-          {isInclusionPrsent &&
-            moreInclusions &&
-            inclusions?.map((item: any, index: number) => (
-              <>
-                <View style={styles.rowStyle}>
-                  <Text style={styles.inclusionsBullet}>{'\u2B24'}</Text>
-                  <Text style={styles.inclusionsItemText}>
-                    {!!item?.inclusionName ? nameFormater(item?.inclusionName!, 'title') : ''}{' '}
-                  </Text>
-                </View>
-                {renderParamterData(
-                  item,
-                  inclusions,
-                  index,
-                  false,
-                  getMandatoryParameterCount_topFour,
-                  getMandatoryParameterCount
-                )}
-              </>
-            ))}
-          {isInclusionPrsent && moreInclusions && (
-            <Text onPress={() => setMoreInclusions(!moreInclusions)} style={styles.showLessText}>
-              SHOW LESS
-            </Text>
-          )}
-        </View>
+        {renderReportsView()}
+        {!!cmsTestDetails?.diagnosticPretestingRequirement ? renderPreprationDataView() : null}
       </>
     );
   };
 
-  const renderShowMore = (getMandatoryParametersCount: any, name: string) => {
+  const renderTotalTestHeading = () => {
+    const { getMandatoryParameterCount, nonInclusionParamters } = skuParameterInclusionLogic();
     return (
-      <Text
-        onPress={() => setMoreInclusions(!moreInclusions)}
-        style={[
-          styles.moreText,
-          {
-            ...theme.viewStyles.text(
-              'SB',
-              isSmallDevice ? (name?.length > 25 ? 10 : 12) : name?.length > 25 ? 11 : 13,
-              theme.colors.APP_YELLOW,
-              1,
-              15
-            ),
-          },
-        ]}
-      >
-        {'   '}
-        {!moreInclusions && `+${getMandatoryParametersCount} MORE`}
-      </Text>
+      <View style={{ flexDirection: 'row', marginBottom: 16 }}>
+        <TestsIcon style={styles.infoIconStyle} />
+        <Text style={[styles.itemNameText, { marginHorizontal: 6 }]}>
+          {nameFormater(string.diagnosticsDetails.totalTests, 'title')} (
+          {getMandatoryParameterCount + nonInclusionParamters?.length ||
+            cmsTestDetails?.diagnosticInclusionName?.length}
+          )
+        </Text>
+      </View>
     );
   };
 
-  const renderParamterData = (
-    item: any,
-    inclusions: any,
-    index: number,
-    showOption: boolean,
-    count: number,
-    totalCount: number
-  ) => {
+  function expandParameter(index: number) {
+    const expandedArray = parameterExpandedArray?.concat(index);
+    setParameterExpandedArray(expandedArray);
+  }
+
+  function collapseParameter(index: number) {
+    const removeItem = parameterExpandedArray?.filter((id: number) => id !== index);
+    setParameterExpandedArray(removeItem);
+  }
+
+  function onPressInclusion(item: any, index: number) {
+    const isAlreadyPresent = parameterExpandedArray?.filter((val: number) => val == index);
+    isAlreadyPresent?.length > 0 ? collapseParameter(index) : expandParameter(index);
+  }
+
+  const renderInclusions = () => {
+    const { inclusions } = skuParameterInclusionLogic();
+    return (
+      <>
+        {inclusions?.map((item: any, index: number) => {
+          const getMandatoryParameters = item?.TestObservation?.filter(
+            (val: any) => val?.mandatoryValue == '1'
+          );
+          const isParameterPresent = !!getMandatoryParameters && getMandatoryParameters?.length > 0;
+          return (
+            <>
+              <TouchableOpacity
+                onPress={() => (isParameterPresent ? onPressInclusion(item, index) : null)}
+                style={{ marginBottom: '1.5%' }}
+              >
+                <View style={[styles.rowStyle, { justifyContent: 'space-between' }]}>
+                  <Text style={styles.inclusionsItemText}>
+                    {!!item?.inclusionName ? nameFormater(item?.inclusionName!, 'title') : ''}{' '}
+                  </Text>
+                  {isParameterPresent ? (
+                    parameterExpandedArray?.includes(index) ? (
+                      <Up />
+                    ) : (
+                      <Down />
+                    )
+                  ) : null}
+                </View>
+                {isParameterPresent ? (
+                  <View style={{ marginHorizontal: '3%' }}>
+                    <Text
+                      style={{ ...theme.viewStyles.text('R', 12, colors.SHERPA_BLUE, 0.8, 18) }}
+                    >
+                      {getMandatoryParameters?.length}{' '}
+                      {getMandatoryParameters?.length > 1 ? 'tests' : 'test'} included
+                    </Text>
+                  </View>
+                ) : null}
+              </TouchableOpacity>
+              {isParameterPresent && parameterExpandedArray?.includes(index)
+                ? renderParamterData(item)
+                : null}
+              {inclusions?.length - 1 == index ? null : renderSeparator(0, true, 12)}
+            </>
+          );
+        })}
+      </>
+    );
+  };
+
+  const renderInclusionsView = () => {
+    const { isInclusionPrsent } = skuParameterInclusionLogic();
+    return isInclusionPrsent ? (
+      <View style={styles.descriptionCardOuterView}>
+        <View style={styles.inclusionsView}>
+          {isInclusionPrsent ? renderTotalTestHeading() : null}
+          {isInclusionPrsent ? renderInclusions() : null}
+        </View>
+      </View>
+    ) : null;
+  };
+
+  const renderParamterData = (item: any) => {
     const getMandatoryParameters =
       item?.TestObservation?.length > 0 &&
       item?.TestObservation != '' &&
@@ -1419,29 +1439,16 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
     return (
       <>
-        {!!getMandatoryParameters && getMandatoryParameters?.length > 0 ? (
-          getMandatoryParameters.map((para: any, pIndex: number, array: any) => (
-            <View style={[styles.rowStyle, { marginHorizontal: '10%', width: '88%' }]}>
-              <Text style={[styles.inclusionsBullet, { fontSize: 4 }]}>{'\u2B24'}</Text>
-              <Text style={styles.parameterText}>
-                {!!para?.observationName ? nameFormater(para?.observationName!, 'title') : ''}{' '}
-                {index == 3 &&
-                  inclusions?.length - 4 > 0 &&
-                  array?.length - 1 == pIndex &&
-                  renderShowMore(
-                    totalCount - count || inclusions?.length - 4,
-                    para?.observationName
-                  )}
-              </Text>
-            </View>
-          ))
-        ) : (
-          <>
-            {index == 3 && inclusions?.length - 4 > 0 && !moreInclusions
-              ? renderShowMore(totalCount - count || inclusions?.length - 4, 'test')
-              : null}
-          </>
-        )}
+        {!!getMandatoryParameters && getMandatoryParameters?.length > 0
+          ? getMandatoryParameters.map((para: any) => (
+              <View style={[styles.rowStyle, { marginHorizontal: '10%', width: '88%' }]}>
+                <Text style={[styles.inclusionsBullet, { fontSize: 4 }]}>{'\u2B24'}</Text>
+                <Text style={styles.parameterText}>
+                  {!!para?.observationName ? nameFormater(para?.observationName!, 'title') : ''}{' '}
+                </Text>
+              </View>
+            ))
+          : null}
       </>
     );
   };
@@ -1469,15 +1476,23 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
   const renderFAQView = () => {
     return (
-      <FAQComponent
-        headingText={'Frequently Asked Questions'}
-        headingStyle={styles.faqHeadingText}
-        headerSeparatorStyle={{ marginVertical: 10 }}
-        containerStyle={{ marginLeft: 20, marginRight: 25 }}
-        data={cmsTestDetails?.diagnosticFAQs}
-        arrowStyle={{ tintColor: theme.colors.APP_YELLOW }}
-        horizontalLine={styles.faqLine}
-      />
+      <View
+        onLayout={(event) => {
+          const layout = event?.nativeEvent?.layout;
+          setFaqVerticalPosition(layout?.y);
+        }}
+      >
+        <FAQComponent
+          faqIcon={<OrangeFAQIcon style={styles.faqIcon} />}
+          headingText={string.diagnosticsDetails.frequentlyAsked}
+          headingStyle={styles.faqHeadingText}
+          headerSeparatorStyle={{ marginVertical: 10 }}
+          containerStyle={{ marginLeft: 20, marginRight: 25 }}
+          data={cmsTestDetails?.diagnosticFAQs}
+          horizontalLine={styles.faqLine}
+          questionStyle={styles.questionsStyle}
+        />
+      </View>
     );
   };
 
@@ -1681,12 +1696,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         : topBookedTests;
 
     const inclusionIdArray: any[] = [];
-    const inclusionIds =
-      !!testInfo &&
-      !!testInfo?.inclusions?.length &&
-      testInfo?.inclusions?.map((_item: any) => {
-        inclusionIdArray?.push(_item);
-      });
     const dataToRender = dataToShow?.filter((item: any) => {
       if (item?.itemId != itemId || !inclusionIdArray?.includes(item?.itemId)) {
         return item;
@@ -1697,67 +1706,199 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         {frequentlyBroughtShimmer ? (
           renderDiagnosticWidgetTestShimmer(true)
         ) : (
-          <View style={{ marginTop: 10 }}>
+          <View
+            onLayout={(event) => {
+              const layout = event?.nativeEvent?.layout;
+              setFrequentlyBroughtVerticalPosition(layout?.y);
+            }}
+            style={{ marginTop: 10 }}
+          >
             <SectionHeader
+              leftImage={<OrangeCartIcon style={styles.widgetHeadingIcon} />}
               leftText={widgetTitle}
-              leftTextStyle={styles.widgetHeading}
-              style={{ borderBottomWidth: 0, borderColor: 'transparent' }}
+              leftTextStyle={[styles.itemNameText, { marginHorizontal: 8 }]}
+              style={styles.widgetHeadingStyle}
             />
-            <ItemCard
-              diagnosticWidgetData={dataToRender}
-              onPressRemoveItemFromCart={(item) => {}}
-              data={dataToRender}
-              isCircleSubscribed={isDiagnosticCircleSubscription}
-              isServiceable={true}
-              isVertical={false}
-              navigation={props.navigation}
-              source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS}
-              sourceScreen={AppRoutes.TestDetails}
-              changeCTA={true}
-              widgetHeading={widgetTitle}
-            />
+            {renderFullWidthItemCard(dataToRender)}
           </View>
         )}
       </>
     );
   };
 
+  const renderFullWidthItemCard = (dataToRender: any) => {
+    const filterToFourItems = dataToRender?.length > 4 && dataToRender?.slice(0, 4);
+    return (
+      <FullWidthItemCard
+        diagnosticWidgetData={filterToFourItems}
+        onPressRemoveItemFromCart={(item) => {}}
+        data={filterToFourItems}
+        isCircleSubscribed={isDiagnosticCircleSubscription}
+        isServiceable={true}
+        isVertical={true}
+        columns={1}
+        navigation={props.navigation}
+        source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS}
+        sourceScreen={AppRoutes.TestDetails}
+        changeCTA={true}
+        widgetHeading={widgetTitle}
+      />
+    );
+  };
+
   const renderPackageRecommendations = () => {
-    const heading = `${getWidgetTitle?.topPackages} "${itemName}"`;
+    const heading = `${getWidgetTitle?.relatedPackages}`;
     return (
       <>
         {packageRecommendationsShimmer ? (
           renderDiagnosticWidgetTestShimmer(true)
         ) : (
-          <View style={{ marginTop: 10 }}>
+          <View
+            style={{ marginTop: 10 }}
+            onLayout={(event) => {
+              const layout = event?.nativeEvent?.layout;
+              setRelatedPackagesVerticalPosition(layout?.y);
+            }}
+          >
             <SectionHeader
+              leftImage={<RelatedPackageIcon style={styles.widgetHeadingIcon} />}
               leftText={heading}
-              leftTextStyle={styles.widgetHeading}
-              style={{ borderBottomWidth: 0, borderColor: 'transparent' }}
+              leftTextStyle={[styles.itemNameText, { marginHorizontal: 8 }]}
+              style={styles.widgetHeadingStyle}
             />
-            <PackageCard
-              diagnosticWidgetData={packageRecommendations}
-              data={packageRecommendations}
-              isCircleSubscribed={isDiagnosticCircleSubscription}
-              isServiceable={true}
-              isVertical={false}
-              navigation={props.navigation}
-              source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS}
-              sourceScreen={AppRoutes.TestDetails}
-              widgetHeading={heading}
-            />
+            {renderRecommendedPackages(heading)}
           </View>
         )}
       </>
     );
   };
 
+  const renderRecommendedPackages = (heading: string) => {
+    const filterTopFourRecommendation =
+      !!packageRecommendations &&
+      packageRecommendations?.length > 4 &&
+      packageRecommendations?.slice(0, 4);
+    return (
+      <ItemCard
+        diagnosticWidgetData={filterTopFourRecommendation}
+        data={filterTopFourRecommendation}
+        isCircleSubscribed={isDiagnosticCircleSubscription}
+        isServiceable={true}
+        isVertical={true}
+        columns={2}
+        navigation={props.navigation}
+        source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS}
+        sourceScreen={AppRoutes.TestDetails}
+        widgetHeading={heading}
+        isPackage={true}
+      />
+    );
+  };
+
+  function onPressHorizontalIcon(item: any) {
+    const title = item?.title;
+    switch (title) {
+      case string.diagnosticsDetails.relatedPackages:
+        scrollToYPosition(relatedPackagesVerticalPosition);
+        break;
+      case string.diagnosticsDetails.frequentlyBooked:
+        scrollToYPosition(frequentlyBroughtVerticalPosition);
+        break;
+      case string.diagnosticsDetails.frequentlyAskedQuestions:
+        scrollToYPosition(faqVerticalPosition);
+        break;
+    }
+  }
+
+  function scrollToYPosition(val: number) {
+    scrollViewRef?.current?.scrollTo({
+      x: 0,
+      y: val - 10,
+      animated: true,
+    });
+  }
+
+  const renderHorizontalItem = (item: any) => {
+    return (
+      <TouchableOpacity
+        style={styles.horizontalItemTouch}
+        onPress={() => onPressHorizontalIcon(item)}
+      >
+        {item?.icon}
+        <Text style={styles.horizontalItemTitle}>{item?.title}</Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderHorizontalOptions = () => {
+    return (
+      <View style={styles.horizontalOptionsView}>
+        {HorizontalComponentOptions?.map((item) => {
+          return renderHorizontalItem(item);
+        })}
+      </View>
+    );
+  };
+
+  const renderSkuContent = () => {
+    return (
+      <>
+        {!_.isEmpty(testInfo) && !!cmsTestDetails && renderItemCard()}
+        {renderDescriptionCard()}
+        {renderHorizontalOptions()}
+        {renderInclusionsView()}
+        {!!cmsTestDetails?.diagnosticWidgetsData &&
+        cmsTestDetails?.diagnosticWidgetsData?.length > 0
+          ? renderWidgetsView()
+          : null}
+        {/**packages for single test */}
+        {!!packageRecommendations &&
+          packageRecommendations?.length > 0 &&
+          renderPackageRecommendations()}
+        {/** frequently brought together */}
+        {(frequentlyBroughtRecommendations?.length > 0 || topBookedTests?.length > 0) &&
+          renderFrequentlyBrought()}
+        {!!cmsTestDetails?.diagnosticFAQs && cmsTestDetails?.diagnosticFAQs?.length > 0
+          ? renderFAQView()
+          : null}
+      </>
+    );
+  };
+
+  const renderButton = () => {
+    return (
+      <Button
+        title={
+          isAlreadyPartOfOrder
+            ? string.diagnostics.alreadyAdded
+            : movedFrom === AppRoutes.CartPage && changeCTA
+            ? string.diagnostics.addAndProceed
+            : isAddedToCart
+            ? string.diagnostics.proceedToCartCTA
+            : string.circleDoctors.addToCart
+        }
+        onPress={() =>
+          isAlreadyPartOfOrder
+            ? props.navigation.navigate(AppRoutes.CartPage, {
+                orderDetails: modifiedOrder,
+              })
+            : movedFrom === AppRoutes.CartPage && changeCTA
+            ? onPressAddToCart()
+            : isAddedToCart
+            ? isModify
+              ? props.navigation.navigate(AppRoutes.CartPage, {
+                  orderDetails: modifiedOrder,
+                })
+              : props.navigation.navigate(AppRoutes.AddPatients)
+            : onPressAddToCart()
+        }
+        style={showBottomBar ? { width: '70%' } : {}}
+      />
+    );
+  };
+
   return (
-    <SafeAreaView
-      style={{
-        ...theme.viewStyles.container,
-      }}
-    >
+    <SafeAreaView style={styles.containerStyle}>
       {!errorState ? (
         <>
           {renderHeader()}
@@ -1780,53 +1921,12 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                 );
             }}
           >
-            {!_.isEmpty(testInfo) && !!cmsTestDetails && renderItemCard()}
-            {renderDescriptionCard()}
-            {!!cmsTestDetails?.diagnosticFAQs && cmsTestDetails?.diagnosticFAQs?.length > 0
-              ? renderFAQView()
-              : null}
-            {!!cmsTestDetails?.diagnosticWidgetsData &&
-            cmsTestDetails?.diagnosticWidgetsData?.length > 0
-              ? renderWidgetsView()
-              : null}
-            {/** frequently brought together */}
-            {(frequentlyBroughtRecommendations?.length > 0 || topBookedTests?.length > 0) &&
-              renderFrequentlyBrought()}
-            {/**packages for single test */}
-            {!!packageRecommendations &&
-              packageRecommendations?.length > 0 &&
-              renderPackageRecommendations()}
+            {renderSkuContent()}
           </ScrollView>
           {renderCallToOrder()}
           <StickyBottomComponent>
             {showBottomBar && renderPriceView(true)}
-            <Button
-              title={
-                isAlreadyPartOfOrder
-                  ? 'ALREADY ADDED'
-                  : movedFrom === AppRoutes.CartPage && changeCTA
-                  ? 'ADD & PROCEED TO CART'
-                  : isAddedToCart
-                  ? 'PROCEED TO CART'
-                  : 'ADD TO CART'
-              }
-              onPress={() =>
-                isAlreadyPartOfOrder
-                  ? props.navigation.navigate(AppRoutes.CartPage, {
-                      orderDetails: modifiedOrder,
-                    })
-                  : movedFrom === AppRoutes.CartPage && changeCTA
-                  ? onPressAddToCart()
-                  : isAddedToCart
-                  ? isModify
-                    ? props.navigation.navigate(AppRoutes.CartPage, {
-                        orderDetails: modifiedOrder,
-                      })
-                    : props.navigation.navigate(AppRoutes.AddPatients)
-                  : onPressAddToCart()
-              }
-              style={showBottomBar ? { width: '70%' } : {}}
-            />
+            {renderButton()}
           </StickyBottomComponent>
         </>
       ) : (
@@ -1848,6 +1948,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 };
 
 const styles = StyleSheet.create({
+  containerStyle: {
+    ...theme.viewStyles.container,
+    backgroundColor: colors.WHITE,
+  },
   container: {
     flexDirection: 'column',
     justifyContent: 'space-between',
@@ -1875,12 +1979,11 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   descriptionCardOuterView: {
-    width: screenWidth * 0.9,
-    ...theme.viewStyles.card(16, 4, 10, '#fff', 10),
+    flex: 1,
+    ...theme.viewStyles.card(16, 4, 10, colors.WHITE, 10),
     padding: 16,
     elevation: 10,
     margin: 16,
-    flex: 1,
   },
   packageDescriptionHeading: {
     ...theme.viewStyles.text('SB', isSmallDevice ? 16.5 : 18, theme.colors.SHERPA_BLUE, 1, 25),
@@ -1888,12 +1991,11 @@ const styles = StyleSheet.create({
     marginBottom: '2%',
   },
   packageDescriptionText: {
-    ...theme.viewStyles.text('L', 13, theme.colors.SHERPA_BLUE, 1, 20),
-    textAlign: 'left',
-    letterSpacing: 0.5,
+    ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 0.8, 17),
+    letterSpacing: 0.25,
   },
   overViewContainer: {
-    marginTop: 10,
+    marginTop: 4,
   },
   readMoreTouch: { alignSelf: 'flex-end', marginTop: 10 },
   readMoreText: {
@@ -1925,22 +2027,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     alignSelf: 'center',
   },
-  midCardView: { flexDirection: 'row', height: 60, width: '90%' },
+  midCardView: { flexDirection: 'row', width: '90%' },
   clockIconStyle: {
-    height: 17,
-    width: 17,
+    height: 16,
+    width: 16,
     resizeMode: 'contain',
     alignSelf: 'flex-start',
     marginVertical: '4%',
   },
   midCardTextView: {
-    flexDirection: 'column',
     marginHorizontal: '3%',
-    justifyContent: 'center',
     alignSelf: 'center',
+    flexDirection: 'row',
   },
   reportTimeText: {
-    ...theme.viewStyles.text('M', 11, theme.colors.SHERPA_BLUE, 0.5, 13),
+    ...theme.viewStyles.text('M', 11, theme.colors.SHERPA_BLUE, 0.5, 16),
     textAlign: 'left',
     letterSpacing: 0.25,
   },
@@ -1948,25 +2049,22 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE, 1, 16),
     textAlign: 'left',
     letterSpacing: 0.25,
-    marginVertical: 4,
   },
   bottomCardView: {
     flexDirection: 'row',
-    height: 40,
     alignItems: 'center',
   },
-  infoIconStyle: { height: 17, width: 17, resizeMode: 'contain' },
+  infoIconStyle: { height: 16, width: 16, resizeMode: 'contain' },
   preTestingText: {
-    ...theme.viewStyles.text('M', 11, '#FF637B', 1, 15),
+    ...theme.viewStyles.text('M', 12, colors.INFO_RED_COLOR, 1, 16),
     textAlign: 'left',
-    letterSpacing: 0.25,
     marginHorizontal: '3%',
   },
   itemNameText: {
-    ...theme.viewStyles.text('SB', isSmallDevice ? 16.5 : 18, theme.colors.SHERPA_BLUE, 1, 25),
+    ...theme.viewStyles.text('SB', 16, theme.colors.SHERPA_BLUE, 1, 21),
     textAlign: 'left',
   },
-  inclusionsView: { width: '100%', marginVertical: '4%' },
+  inclusionsView: { width: '100%' },
   testIncludedText: {
     ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 0.5, 18),
     textAlign: 'left',
@@ -1975,20 +2073,17 @@ const styles = StyleSheet.create({
     marginBottom: '3%',
   },
   inclusionsBullet: {
-    color: '#007C9D',
+    color: colors.TURQUOISE_LIGHT_BLUE,
     fontSize: 6,
     textAlign: 'center',
     paddingTop: 3,
   },
   inclusionsItemText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 11.5 : 12, '#007C9D', 1, 17),
-    letterSpacing: 0,
-    marginBottom: '1.5%',
+    ...theme.viewStyles.text('M', isSmallDevice ? 12 : 13, colors.TURQUOISE_LIGHT_BLUE, 1, 20),
     marginHorizontal: '3%',
   },
   parameterText: {
-    ...theme.viewStyles.text('R', isSmallDevice ? 10.5 : 11, '#007C9D', 1, 15),
-    letterSpacing: 0,
+    ...theme.viewStyles.text('R', isSmallDevice ? 10.5 : 11, colors.SHERPA_BLUE, 1, 16),
     marginBottom: '1.5%',
     marginHorizontal: '3%',
   },
@@ -2010,17 +2105,19 @@ const styles = StyleSheet.create({
   },
   faqHeadingText: {
     ...theme.viewStyles.text('SB', 16, '#02475B', 1, 20, 0.35),
-    marginTop: 10,
+    marginHorizontal: 16,
   },
   widgetHeading: {
     ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE, 1, 20),
     textAlign: 'left',
   },
   faqLine: {
-    marginVertical: 8,
-    borderTopColor: '#02475B',
-    opacity: 0.3,
+    marginVertical: 6,
+    borderTopColor: colors.SHERPA_BLUE,
+    opacity: 0.1,
     borderTopWidth: 1,
+    marginLeft: -16,
+    width: screenWidth - 42,
   },
   outerExpressView: { backgroundColor: theme.colors.APP_GREEN, marginBottom: 2 },
   innerExpressView: {
@@ -2043,4 +2140,62 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   savingsOuterView: { marginLeft: '3%', justifyContent: 'center' },
+  fullSepratorStyle: {
+    marginLeft: -16,
+    width: screenWidth - 32,
+  },
+  aboutIcons: { height: 18, width: 18, resizeMode: 'contain' },
+  skuSpecificView: {
+    flexDirection: 'row',
+    marginLeft: 8,
+  },
+  skuSpecificValues: {
+    ...theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE, 1, 16),
+    letterSpacing: 0.25,
+  },
+  detailsView: {
+    flexDirection: 'row',
+    width: screenWidth / 4,
+    alignItems: 'center',
+  },
+  faqIcon: { height: 13, width: 12, resizeMode: 'contain', tintColor: colors.SHERPA_BLUE },
+  questionsStyle: {
+    ...theme.viewStyles.text('M', 14, colors.SHERPA_BLUE, 1, 18),
+    width: '80%',
+    marginBottom: -5,
+  },
+  horizontalComponentIcon: {
+    height: 20,
+    width: 20,
+    resizeMode: 'contain',
+    marginBottom: 6,
+  },
+  horizontalOptionsView: {
+    flexDirection: 'row',
+    marginLeft: 16,
+    width: screenWidth - 16,
+    justifyContent: 'space-around',
+    marginTop: 10,
+  },
+  horizontalItemTouch: {
+    width: screenWidth / 4,
+    alignItems: 'center',
+    marginRight: 10,
+    padding: 4,
+  },
+  horizontalItemTitle: {
+    ...theme.viewStyles.text('SB', 12, colors.APP_YELLOW, 1, 16, 0.25),
+    textAlign: 'center',
+  },
+  widgetHeadingIcon: {
+    tintColor: colors.SHERPA_BLUE,
+    height: 18,
+    width: 18,
+    resizeMode: 'contain',
+  },
+  widgetHeadingStyle: {
+    borderBottomWidth: 0,
+    borderColor: 'transparent',
+    justifyContent: 'flex-start',
+  },
 });

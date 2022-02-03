@@ -1,8 +1,10 @@
-import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { WidgetLiverIcon, CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { renderItemPriceShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
+import {
+  renderCircleShimmer,
+  renderItemPriceShimmer,
+} from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import React, { useCallback } from 'react';
 import {
@@ -35,9 +37,9 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { DIAGNOSTICS_ITEM_TYPE } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 const screenWidth = Dimensions.get('window').width;
-const CARD_WIDTH = screenWidth > 350 ? screenWidth * 0.44 : screenWidth * 0.5;
-const CARD_HEIGHT = 230; //210
-export interface ItemCardProps {
+const CARD_WIDTH = screenWidth - 32;
+const CARD_HEIGHT = 95; //210
+export interface FullWidthItemCardProps {
   onPress?: (item: any) => void;
   isCircleSubscribed: boolean;
   style?: ViewStyle;
@@ -62,7 +64,7 @@ export interface ItemCardProps {
   isPackage?: boolean;
 }
 
-const ItemCard: React.FC<ItemCardProps> = (props) => {
+const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
   const {
     cartItems,
     addCartItem,
@@ -85,7 +87,6 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     onPressRemoveItemFromCart,
     recommedationDataSource,
     widgetHeading,
-    isPackage,
   } = props;
   const { currentPatient } = useAllCurrentPatients();
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
@@ -165,9 +166,6 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
 
       const imageUrl = getItem?.itemImageUrl;
       const name = getItem?.itemTitle || getItem?.itemName;
-      const isAddedToCart = !!cartItems?.find(
-        (items) => Number(items?.id) == Number(getItem?.itemId)
-      );
 
       return (
         <TouchableOpacity
@@ -178,25 +176,19 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
           <View
             style={[
               styles.itemCardView,
-              {
-                minHeight: isCircleSubscribed
-                  ? isPackage
-                    ? CARD_HEIGHT - 40
-                    : CARD_HEIGHT - 15
-                  : CARD_HEIGHT,
-              },
               props?.isVertical ? {} : { marginLeft: item?.index == 0 ? 20 : 6 },
             ]}
           >
-            {renderIconView(imageUrl)}
-            {renderSkuName(name)}
-            {renderParameterInclusionCount(getItem)}
-            <Spearator
-              style={[styles.horizontalSeparator, { marginTop: isCircleSubscribed ? '4%' : '4%' }]}
-            />
-
-            {renderPricesView(pricesForItem, packageMrpForItem)}
-            {renderAddToCart(isAddedToCart, getItem, pricesForItem, packageMrpForItem)}
+            <View style={styles.topView}>
+              <View style={styles.topLeftView}>
+                {!!imageUrl && imageUrl != '' ? renderIconView(imageUrl) : null}
+                {renderSkuName(name, getItem)}
+              </View>
+              <View style={styles.topRightView}>
+                {renderPricesView(pricesForItem, packageMrpForItem)}
+              </View>
+            </View>
+            {renderBottomView(pricesForItem, packageMrpForItem, getItem)}
           </View>
         </TouchableOpacity>
       );
@@ -204,35 +196,52 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     [cartItems, patientCartItems]
   );
 
-  const renderIconView = (imageUrl: string | any) => {
+  const renderBottomView = (pricesForItem: any, packageMrpForItem: any, getItem: any) => {
+    const isAddedToCart = !!cartItems?.find(
+      (items) => Number(items?.id) == Number(getItem?.itemId)
+    );
+    const hasPrice = pricesForItem || packageMrpForItem;
+
     return (
-      <>
-        {isPackage ? null : (
-          <View style={styles.flexRow}>
-            <View style={styles.imageView}>
-              {imageUrl == '' ? (
-                <WidgetLiverIcon style={styles.imageStyle} resizeMode={'contain'} />
-              ) : (
-                <Image
-                  resizeMode={'contain'}
-                  placeholderStyle={styles.imagePlaceholderStyle}
-                  source={{ uri: imageUrl }}
-                  style={styles.imageStyle}
-                />
-              )}
-            </View>
-          </View>
-        )}
-      </>
+      <View
+        style={[
+          styles.bottomView,
+          {
+            justifyContent: hasPrice ? 'space-between' : 'flex-end',
+          },
+        ]}
+      >
+        {hasPrice
+          ? renderPercentageDiscountView(pricesForItem, packageMrpForItem, getItem)
+          : renderCircleShimmer()}
+        {renderAddToCart(isAddedToCart, getItem, pricesForItem, packageMrpForItem)}
+      </View>
     );
   };
 
-  const renderSkuName = (name: string) => {
+  const renderIconView = (imageUrl: string | any) => {
+    return (
+      <View style={styles.imageView}>
+        {imageUrl == '' ? (
+          <WidgetLiverIcon style={styles.imageStyle} resizeMode={'contain'} />
+        ) : (
+          <Image
+            placeholderStyle={styles.imagePlaceholderStyle}
+            source={{ uri: imageUrl }}
+            style={styles.imageStyle}
+          />
+        )}
+      </View>
+    );
+  };
+
+  const renderSkuName = (name: string, getItem: any) => {
     return (
       <View style={{ minHeight: 40 }}>
-        <Text style={styles.itemNameText} numberOfLines={2}>
+        <Text style={[styles.itemNameText]} numberOfLines={2}>
           {name}
         </Text>
+        {renderParameterInclusionCount(getItem)}
       </View>
     );
   };
@@ -244,10 +253,8 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     return (
       <View style={styles.parameterCountView}>
         {getMandatoryParameterCount > 0 || !!getInclusionCount ? (
-          <Text style={isPackage ? styles.packageParameterTestCount : styles.parameterText}>
-            {isPackage
-              ? `TOTAL ${countToShow == 1 ? 'TEST' : 'TESTS'} : ${countToShow}`
-              : `${countToShow} ${countToShow == 1 ? 'test' : 'tests'} included`}
+          <Text style={styles.parameterText}>
+            {`${countToShow} ${countToShow == 1 ? 'test' : 'tests'} included`}
           </Text>
         ) : null}
       </View>
@@ -319,63 +326,6 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     );
   };
 
-  const renderAnyDiscountView = (pricesForItem: any, packageMrpForItem: any) => {
-    const promoteDiscount = pricesForItem?.promoteDiscount;
-    const promoteCircle = pricesForItem?.promoteCircle;
-    const circleDiscountSaving = pricesForItem?.circleDiscountDiffPrice;
-    const specialDiscountSaving = pricesForItem?.specialDiscountDiffPrice;
-    const nonCircleDiscountSaving = pricesForItem?.discountDiffPrice;
-
-    return (
-      <View>
-        {isCircleSubscribed && circleDiscountSaving > 0 && !promoteDiscount ? (
-          <View style={styles.flexRow}>
-            {renderSavingView(
-              'savings',
-              circleDiscountSaving,
-              { marginHorizontal: '5%' },
-              styles.savingTextStyle
-            )}
-          </View>
-        ) : promoteDiscount && specialDiscountSaving > 0 && !promoteCircle ? (
-          <View style={styles.flexRow}>
-            {renderSavingView(
-              'savings',
-              specialDiscountSaving,
-              { marginHorizontal: '5%' },
-              styles.savingTextStyle
-            )}
-          </View>
-        ) : nonCircleDiscountSaving > 0 ? (
-          <View style={styles.flexRow}>
-            {renderSavingView(
-              'save',
-              nonCircleDiscountSaving,
-              { marginHorizontal: '7%' },
-              styles.savingTextStyle
-            )}
-          </View>
-        ) : null}
-      </View>
-    );
-  };
-
-  const renderSavingView = (
-    text: string,
-    price: number | string,
-    mainViewStyle: any,
-    textStyle: any
-  ) => {
-    return (
-      <View style={mainViewStyle}>
-        <Text style={textStyle}>
-          {text} {string.common.Rs}
-          {convertNumberToDecimal(price)}
-        </Text>
-      </View>
-    );
-  };
-
   const renderFallBackHeight = () => {
     return !isCircleSubscribed ? <View style={{ height: 18 }} /> : null;
   };
@@ -440,10 +390,6 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
       promoteDiscount,
       price,
       circleSpecialPrice,
-      circleDiscount,
-      specialDiscount,
-      discount,
-      totalDiscount,
     } = calculatePriceToShow(pricesForItem, packageMrpForItem);
 
     const slashedPrice =
@@ -472,7 +418,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
           renderFallBackHeight()
         )}
         {/** packageCalMrp/mrp*/}
-        <View style={{ flexDirection: 'row' }}>
+        <View style={{ alignItems: 'flex-end' }}>
           {hasSlashedPrice ? (
             <View style={styles.slashedPriceView}>
               <Text style={styles.slashedPriceText}>
@@ -486,26 +432,13 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
           ) : (
             renderSlashedPriceFallBackHeight()
           )}
-          {/**percentage dicount (main price discount + circle discount separately) */}
-          <View style={{ marginHorizontal: 4, justifyContent: 'center' }}>
-            {renderPercentageDiscount(
-              promoteCircle && isCircleSubscribed
-                ? circleDiscount
-                : promoteDiscount
-                ? specialDiscount
-                : discount,
-              promoteCircle && isCircleSubscribed ? true : false,
-              promoteDiscount && specialDiscount > 0 ? specialDiscount : 0,
-              discount > 0 ? discount : 0,
-              totalDiscount > 0 ? totalDiscount : 0
-            )}
-          </View>
         </View>
         {/** effective price + total savings */}
         <View
           style={{
             flexDirection: 'row',
             marginVertical: hasSlashedPrice ? '1%' : '0%',
+            justifyContent: 'flex-end',
           }}
         >
           {priceToShow ? (
@@ -515,10 +448,42 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
           ) : (
             renderItemPriceShimmer()
           )}
-          {promoteCircle || promoteDiscount
-            ? renderAnyDiscountView(pricesForItem, packageMrpForItem)
-            : null}
         </View>
+      </View>
+    );
+  };
+
+  /**percentage dicount (main price discount + circle discount separately) */
+
+  const renderPercentageDiscountView = (
+    pricesForItem: any,
+    packageMrpForItem: any,
+    getItem: any
+  ) => {
+    const {
+      promoteCircle,
+      promoteDiscount,
+      circleDiscount,
+      specialDiscount,
+      discount,
+      totalDiscount,
+    } = calculatePriceToShow(pricesForItem, packageMrpForItem);
+
+    const imageUrl = getItem?.imageUrl;
+    const hasImageUrl = !!imageUrl;
+    return (
+      <View style={{ marginHorizontal: hasImageUrl ? 32 : 0, justifyContent: 'center' }}>
+        {renderPercentageDiscount(
+          promoteCircle && isCircleSubscribed
+            ? circleDiscount
+            : promoteDiscount
+            ? specialDiscount
+            : discount,
+          promoteCircle && isCircleSubscribed ? true : false,
+          promoteDiscount && specialDiscount > 0 ? specialDiscount : 0,
+          discount > 0 ? discount : 0,
+          totalDiscount > 0 ? totalDiscount : 0
+        )}
       </View>
     );
   };
@@ -710,30 +675,26 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
       modifiedOrderItemIds?.length &&
       modifiedOrderItemIds?.find((id: number) => Number(id) == Number(item?.itemId || item?.id));
     return (
-      <Text
-        style={[
-          styles.addToCartText,
-          {
-            ...theme.viewStyles.text('B', isSmallDevice ? 13 : 14, colors.APP_YELLOW, 1, 20),
-            width: isAlreadyPartOfOrder ? '80%' : '70%',
-          },
-        ]}
-        onPress={() => {
-          _onPressFunction(
-            isAlreadyPartOfOrder,
-            isAddedToCart,
-            item,
-            pricesForItem,
-            packageCalculatedMrp
-          );
-        }}
-      >
-        {isAlreadyPartOfOrder
-          ? string.diagnostics.alreadyAdded
-          : isAddedToCart
-          ? string.diagnostics.removeFromCart
-          : string.circleDoctors.addToCart}
-      </Text>
+      <View style={{ alignSelf: 'flex-end' }}>
+        <Text
+          style={styles.addToCartText}
+          onPress={() => {
+            _onPressFunction(
+              isAlreadyPartOfOrder,
+              isAddedToCart,
+              item,
+              pricesForItem,
+              packageCalculatedMrp
+            );
+          }}
+        >
+          {isAlreadyPartOfOrder
+            ? string.diagnostics.alreadyAdded
+            : isAddedToCart
+            ? string.diagnostics.removeFromCart
+            : string.circleDoctors.addToCart}
+        </Text>
+      </View>
     );
   };
 
@@ -823,13 +784,13 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
   );
 };
 
-export default React.memo(ItemCard);
+export default React.memo(FullWidthItemCard);
 
 const styles = StyleSheet.create({
   itemCardView: {
     ...theme.viewStyles.card(12, 0),
     elevation: 10,
-    maxHeight: CARD_HEIGHT,
+    maxHeight: CARD_HEIGHT + 20,
     minHeight: CARD_HEIGHT,
     width: CARD_WIDTH,
     marginHorizontal: 4,
@@ -838,42 +799,16 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 16,
   },
-  imagePlaceholderStyle: { backgroundColor: '#f7f8f5', opacity: 0.5, borderRadius: 5 },
-  imageStyle: { height: 27, width: 27, marginBottom: 8 },
+  imagePlaceholderStyle: { backgroundColor: colors.CARD_BG, opacity: 0.5, borderRadius: 5 },
+  imageStyle: { height: 25, width: 25, resizeMode: 'contain' },
   itemNameText: {
-    ...theme.viewStyles.text('SB', isSmallDevice ? 15 : 16, theme.colors.SHERPA_BLUE, 1, 20),
+    ...theme.viewStyles.text('SB', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 1, 18),
     textAlign: 'left',
   },
   parameterText: {
-    ...theme.viewStyles.text('R', 11, theme.colors.SHERPA_BLUE, 1, 16),
-    textAlign: 'left',
-    marginTop: '5%',
-  },
-  packageParameterTestCount: {
     ...theme.viewStyles.text('SB', 10, theme.colors.SHERPA_BLUE, 1, 13),
     textAlign: 'left',
-    marginTop: '6%',
-    letterSpacing: 0.25,
-  },
-  horizontalSeparator: { marginBottom: 7.5, marginTop: '4%' },
-  flexRow: {
-    flexDirection: 'row',
-  },
-  testNameText: {
-    ...theme.viewStyles.text('M', 16, theme.colors.SHERPA_BLUE, 1, 24, 0),
-    width: '95%',
-  },
-  imageIcon: { height: 40, width: 40 },
-  savingTextStyle: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 10.5 : 11, theme.colors.SHERPA_BLUE, 0.6, 18),
-    textAlign: 'center',
-    alignSelf: 'center',
-  },
-  nonCirclePriceText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 12.5 : 13, theme.colors.SHERPA_BLUE),
-    lineHeight: 16,
-    textAlign: 'center',
-    alignSelf: 'center',
+    marginTop: '3%',
   },
   mainPriceText: {
     ...theme.viewStyles.text('SB', isSmallDevice ? 15 : 16, theme.colors.SHERPA_BLUE),
@@ -891,12 +826,8 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   addToCartText: {
-    textAlign: 'left',
-    position: 'absolute',
-    left: 16,
-    bottom: 6,
-    width: '70%',
-    height: 30,
+    textAlign: 'right',
+    ...theme.viewStyles.text('B', isSmallDevice ? 13 : 14, colors.APP_YELLOW, 1, 20),
   },
   errorCardContainer: {
     height: 'auto',
@@ -928,6 +859,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   centerRow: { flexDirection: 'row', alignItems: 'center' },
-  imageView: { width: screenWidth < 340 ? '60%' : '69%' },
+  imageView: { marginRight: 8 },
   parameterCountView: { minHeight: isSmallDevice ? 20 : 25 },
+  topView: {
+    flexDirection: 'row',
+    width: '100%',
+    justifyContent: 'space-between',
+  },
+  topLeftView: { flexDirection: 'row', width: '70%' },
+  topRightView: {
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+  },
+  bottomView: {
+    flexDirection: 'row',
+    width: '100%',
+    marginTop: 8,
+  },
 });

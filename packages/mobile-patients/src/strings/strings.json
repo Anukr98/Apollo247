@@ -743,6 +743,7 @@
     "addToCart": "ADD",
     "removeFromCart": "REMOVE",
     "alreadyAdded": "ALREADY ADDED",
+    "addAndProceed": "ADD & PROCEED TO CART",
     "nonServiceableMsg1": "Diagnostics services are not available.",
     "whyBookUs": "why book with us",
     "discardAllPatients": "Your cart has been updated, with the selected patient",
@@ -762,7 +763,7 @@
     "invalidFileType": "Invalid File Type. File type must be PDF.",
     "prescriptionHeading": "Place your order via prescription",
     "test247Text": "Limited period offer",
-    "frequentlyBrought": "Frequently Brought",
+    "frequentlyBrought": "Frequently booked together",
     "topBookedTests": "Top Booked Tests",
     "similarPackages": "Similar Packages",
     "needToAddPaitent": "• Do you want to edit patient details?",
@@ -818,6 +819,19 @@
     "healthCredits": "Health Credits",
     "redemmedTxt": "(Redeemed)",
     "minorAgeTestText": "We allow only RTPCR bookings for children less than 10 years old"
+  },
+  "diagnosticsDetails":{
+    "about": "About",
+    "sample": "Sample",
+    "gender": "Gender",
+    "ageGroup": "Age Group",
+    "seeMore": "SEE MORE",
+    "seeLess": "SEE LESS",
+    "frequentlyAsked": "Frequently Asked Questions (FAQs)",
+    "relatedPackages": "Related Packages",
+    "frequentlyBooked": "Frequently booked together",
+    "frequentlyAskedQuestions" : "Frequently Asked Questions",
+    "totalTests": "Total tests included :"
   },
   "orders": {
     "urOrders": "MY ORDERS",

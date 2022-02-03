@@ -624,7 +624,11 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
             : onPressAddToCart(item, pricesForItem, packageCalculatedMrp)
         }
       >
-        {isAlreadyPartOfOrder ? 'ALREADY ADDED' : isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
+        {isAlreadyPartOfOrder
+          ? string.diagnostics.alreadyAdded
+          : isAddedToCart
+          ? string.diagnostics.removeFromCart
+          : string.circleDoctors.addToCart}
       </Text>
     );
   };
