@@ -129,19 +129,20 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
             <Text style={styles.testForText}>
               Tests for {props.gender != '' && props.gender} {props.patientName}
             </Text>
+            {props.showEditIcon ? (
+              <View style={styles.editIconView}>
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={props.onPressEditPatient}
+                  style={styles.editIconTouch}
+                >
+                  <EditProfile style={styles.editIcon} />
+                </TouchableOpacity>
+              </View>
+            ) : null}
           </View>
         )}
-        {props.showEditIcon ? (
-          <View style={styles.editIconView}>
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={props.onPressEditPatient}
-              style={styles.editIconTouch}
-            >
-              <EditProfile style={styles.editIcon} />
-            </TouchableOpacity>
-          </View>
-        ) : null}
+
         {showAddTest ? (
           <TouchableOpacity
             activeOpacity={1}
@@ -926,7 +927,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   patientNameView: {
-    width: '58%',
+    width: '65%',
     justifyContent: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
