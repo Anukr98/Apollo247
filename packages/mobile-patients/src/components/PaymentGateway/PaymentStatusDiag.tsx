@@ -265,9 +265,17 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
     try {
       const { diagnosticDate, orderId } = orderDetails;
       let givenDate = new Date(diagnosticDate);
-      var diff = Math.abs((givenDate.getTime() - new Date().getTime()) / 1000);
-      diff /= 60 * 60;
-
+      const { data } = await client.query<
+        getDiagnosticOrderDetails,
+        getDiagnosticOrderDetailsVariables
+      >({
+        query: GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
+        variables: { diagnosticOrderId: orderId },
+        fetchPolicy: 'no-cache',
+      });
+      const { slotDateTimeInUTC } =
+        data?.getDiagnosticOrderDetails?.ordersList || {};
+      const diff = moment.duration(moment(slotDateTimeInUTC).diff(moment())).asHours()
       /*
         The following bit of code is going to be needed in the future
         when the backend has been deployed properly to communicate with the
