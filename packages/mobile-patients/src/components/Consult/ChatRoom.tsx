@@ -7741,24 +7741,26 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         visiblity={startAssessment}
         appointmentId={apptId}
         onCloseClicked={(data) => {
-          pubnub.publish(
-            {
-              channel: channel.current,
-              message: {
-                message: JSON.stringify(data),
-                automatedText: jdAutoAssign,
-                id: patientId,
-                isVisible: true,
-                messageDate: new Date(),
-                cardType: 'patient',
+          setTimeout(() => {
+            pubnub.publish(
+              {
+                channel: channel.current,
+                message: {
+                  message: JSON.stringify(data),
+                  automatedText: jdAutoAssign,
+                  id: patientId,
+                  isVisible: true,
+                  messageDate: new Date(),
+                  cardType: 'patient',
+                },
+                storeInHistory: true,
+                sendByPost: true,
               },
-              storeInHistory: true,
-              sendByPost: true,
-            },
-            (status, response) => {}
-          );
-          setDisplayChatQuestions(false);
-          setStartAssessment(false);
+              (status, response) => {}
+            );
+            setDisplayChatQuestions(false);
+            setStartAssessment(false);
+          }, 1000);
         }}
       />
       <StatusBar hidden={hideStatusBar} />
