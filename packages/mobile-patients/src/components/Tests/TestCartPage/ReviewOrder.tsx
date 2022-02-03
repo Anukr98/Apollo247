@@ -1117,8 +1117,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
     const calTotal = priceToShow * item?.mou;
     const savingAmount =
-      Number((!!item?.packageMrp && item?.packageMrp!) || mrpToDisplay) -
-      Number(item?.circleSpecialPrice!);
+      Number(item?.circlePrice! || item?.price) - Number(item?.circleSpecialPrice!);
 
     const totalIndiviualSavingAmount = !!savingAmount && savingAmount * item?.mou;
 
