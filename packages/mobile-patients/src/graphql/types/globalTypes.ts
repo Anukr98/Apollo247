@@ -89,6 +89,14 @@ export enum BookingStatus {
   INPROGRESS = "INPROGRESS",
 }
 
+export enum CANCELLATION_REASONS_CTA {
+  ADD_TESTS = "ADD_TESTS",
+  EDIT_PATIENT_DETAILS = "EDIT_PATIENT_DETAILS",
+  RESCHEDULE = "RESCHEDULE",
+  SAME_DAY = "SAME_DAY",
+  WITHIN_24_HOURS = "WITHIN_24_HOURS",
+}
+
 export enum CODCity {
   CHENNAI = 'CHENNAI',
 }
@@ -2306,6 +2314,11 @@ export enum DiagnosticCTJourneyType {
   WHATSAPP = 'WhatsApp'
 }
 
+export enum DiagnosticItemType {
+  LABTEST = "LABTEST",
+  PACKAGE = 'PACKAGE'
+}
+
 export interface CartInputData {
   patientId: string;
   medicineOrderCartLineItems?: (InputCartLineItems | null)[] | null;
@@ -2354,7 +2367,12 @@ export enum KB_CONTENT_TYPE {
   html = "html",
   text = "text",
 }
-  
+
+export interface IsAppVersionDeprecatedInput {
+  os: DEVICE_TYPE;
+  version: string;
+  mobileNumber: string;
+}
 
 //==============================================================
 // END Enums and Input Objects

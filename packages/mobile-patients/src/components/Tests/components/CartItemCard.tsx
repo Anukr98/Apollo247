@@ -20,6 +20,7 @@ import {
 import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
 import DiscountPercentage from '@aph/mobile-patients/src/components/Tests/components/DiscountPercentage';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 
 interface CartItemCardProps {
   index: number;
@@ -33,6 +34,8 @@ interface CartItemCardProps {
   duplicateArray?: any;
   comingFrom?: string;
   onPressCard: (test: any) => void;
+  showUndo?: boolean;
+  onPressUndo: (test: any) => void;
 }
 
 export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
@@ -44,6 +47,8 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     duplicateArray,
     comingFrom,
     showCartInclusions,
+    index,
+    showUndo,
   } = props;
 
   const inclusionItem =
@@ -126,7 +131,9 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
                     {priceToShow}
                   </Text>
                 </View>
-                <View style={styles.removeIconView}>{renderRemoveIcon(cartItem)}</View>
+                <View style={styles.removeIconView}>
+                  {!showUndo ? renderRemoveIcon(cartItem) : renderUndo(cartItem)}
+                </View>
               </View>
               {renderPercentageDiscount(
                 promoteCircle && isCircleSubscribed
@@ -245,6 +252,16 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     );
   };
 
+  const renderUndo = (cartItem: any) => {
+    return (
+      <View style={{ flex: 0.1 }}>
+        <TouchableOpacity activeOpacity={1} onPress={() => props.onPressUndo(cartItem)}>
+          <Text style={styles.undoText}>UNDO</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   const renderPercentageDiscount = (
     discount: string | number,
     isOnlyCircle: boolean,
@@ -281,6 +298,7 @@ const styles = StyleSheet.create({
   cartItemText: {
     ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 1, 22),
   },
+  undoText: { ...theme.viewStyles.text('B', 14, colors.APP_YELLOW, 1), paddingBottom: 10 },
   removeTouch: {
     height: isSmallDevice ? 28 : 30,
     width: isSmallDevice ? 28 : 30,

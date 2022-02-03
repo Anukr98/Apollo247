@@ -6427,6 +6427,12 @@ export const GET_RESCHEDULE_AND_CANCELLATION_REASONS = gql`
       cancellationReasonsv2 {
         reason
         isDirectCancellation
+        ctaOptions{
+          cta
+          multiCtas
+          displayText
+          userCommentsEnabled
+        }
       }
     }
   }
@@ -7066,6 +7072,35 @@ export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS = gql`
   }
 `;
 
+export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS_V2 = gql`
+  query getDiagnosticPackageRecommendationsv2($recommendationInputItems: [recommendationInputItem]!, $cityId: Int!) {
+    getDiagnosticPackageRecommendationsv2(recommendationInputItems: $recommendationInputItems, cityId: $cityId) {
+      packageRecommendations {
+        itemId
+        itemName
+        inclusions
+        packageCalculatedMrp
+        diagnosticInclusions{
+          itemId
+          name
+          observations{
+            observationName
+            mandatoryValue
+          }
+        }
+        diagnosticPricing {
+          mrp
+          price
+          groupPlan
+          status
+          startDate
+          endDate
+        }
+      }
+    }
+  }
+`;
+
 export const CANCELL_SUBSCRIPTION = gql`
   mutation CancelSubscription($CancelSubscriptionInput: CancelSubscriptionInput!) {
     CancelSubscription(CancelSubscriptionInput: $CancelSubscriptionInput) {
@@ -7518,6 +7553,17 @@ export const GET_REVIEW_POPUP_PERMISSION = gql`
   query popUpReviewConfiguration($popupConfig: popupConfigArgs!) {
     popUpReviewConfiguration(popupConfigArgs: $popupConfig) {
       enable
+    }
+  }
+`;
+
+export const CHECK_DEPRECATED_APP_VERSION = gql`
+  query isAppVersionDeprecated($isAppVersionDeprecatedInput: IsAppVersionDeprecatedInput) {
+    isAppVersionDeprecated(isAppVersionDeprecatedInput: $isAppVersionDeprecatedInput) {
+      statusCode
+      message
+      success
+      redirectURI
     }
   }
 `;

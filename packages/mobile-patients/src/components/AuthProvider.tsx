@@ -2,6 +2,7 @@ import {
   GET_CURRENT_PATIENTS,
   GET_PATIENTS_MOBILE,
   GET_PATIENTS_MOBILE_WITH_HISTORY,
+  CHECK_DEPRECATED_APP_VERSION,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
@@ -41,6 +42,10 @@ import WebEngage from 'react-native-webengage';
 import AsyncStorage from '@react-native-community/async-storage';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import loggingLink from '@aph/mobile-patients/src/helpers/loggingLink';
+import {
+  isAppVersionDeprecated,
+  isAppVersionDeprecatedVariables,
+} from '@aph/mobile-patients/src/graphql/types/isAppVersionDeprecated';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then(
@@ -74,6 +79,7 @@ export interface AuthContextProps {
   validateAuthToken: (() => void) | null;
   validateAndReturnAuthToken: () => Promise<string>;
   buildApolloClient: (authToken: string) => ApolloClient<NormalizedCacheObject>;
+  checkIsAppDepricated: ((mobileNumber: string) => Promise<unknown>) | null;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
@@ -103,6 +109,8 @@ export const AuthContext = React.createContext<AuthContextProps>({
   validateAuthToken: null,
   validateAndReturnAuthToken: null,
   buildApolloClient: null,
+
+  checkIsAppDepricated: null,
 });
 
 let apolloClient: ApolloClient<NormalizedCacheObject>;
@@ -349,6 +357,27 @@ export const AuthProvider: React.FC = (props) => {
     }
   };
 
+  const checkIsAppDepricated = (mobileNumber: string) => {
+    return new Promise((resolve, reject) => {
+      apolloClient
+        .query<isAppVersionDeprecated, isAppVersionDeprecatedVariables>({
+          query: CHECK_DEPRECATED_APP_VERSION,
+          variables: {
+            isAppVersionDeprecatedInput: {
+              os: Platform.OS == 'android' ? DEVICE_TYPE.ANDROID : DEVICE_TYPE.IOS,
+              mobileNumber,
+              version: DeviceInfo.getVersion(),
+            },
+          },
+        })
+        .then((data) => {
+          const depricated = !data?.data?.isAppVersionDeprecated?.success;
+          depricated ? resolve(data) : reject();
+        })
+        .catch(reject);
+    });
+  };
+
   const getPatientApiCall = async (containsHistory: boolean) => {
     return new Promise(async (resolve, reject) => {
       try {
@@ -473,6 +502,7 @@ export const AuthProvider: React.FC = (props) => {
             validateAuthToken,
             validateAndReturnAuthToken,
             buildApolloClient,
+            checkIsAppDepricated,
           }}
         >
           {props.children}

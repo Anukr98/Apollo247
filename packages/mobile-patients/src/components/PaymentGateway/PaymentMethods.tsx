@@ -8,13 +8,10 @@ import {
   NativeEventEmitter,
   ScrollView,
   Platform,
-  Text,
-  KeyboardAvoidingView,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/PaymentGateway/Components/Header';
-import { BookingInfo } from '@aph/mobile-patients/src/components/PaymentGateway/Components/BookingInfo';
 import { PayByCash } from '@aph/mobile-patients/src/components/PaymentGateway/Components/PayByCash';
 import { NetBanking } from '@aph/mobile-patients/src/components/PaymentGateway/Components/NetBanking';
 import { Cards } from '@aph/mobile-patients/src/components/PaymentGateway/Components/Cards';
@@ -48,7 +45,6 @@ import {
   VERIFY_VPA,
   GET_PAYMENT_METHODS,
   INITIATE_DIAGNOSTIC_ORDER_PAYMENT_V2,
-  GET_ORDER_INFO,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -893,6 +889,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           checkoutEventAttributes: checkoutEventAttributes,
           cleverTapCheckoutEventAttributes,
           defaultClevertapEventParams: defaultClevertapEventParams,
+          isCOD: isCOD,
           payload: payload,
           transactionId,
           orders,

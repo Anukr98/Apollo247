@@ -30,6 +30,7 @@ export const useAuth = () => {
   const validateAuthToken = useAuthContext().validateAuthToken;
   const validateAndReturnAuthToken = useAuthContext().validateAndReturnAuthToken;
   const buildApolloClient = useAuthContext().buildApolloClient;
+  const checkIsAppDepricated = useAuthContext().checkIsAppDepricated!;
 
   return {
     sendOtp,
@@ -53,6 +54,7 @@ export const useAuth = () => {
     validateAuthToken,
     validateAndReturnAuthToken,
     buildApolloClient,
+    checkIsAppDepricated,
   };
 };
 

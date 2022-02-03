@@ -210,6 +210,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
   const client = useApolloClient();
   const [isSignupEventFired, setSignupEventFired] = useState(false);
   const [offers, setOffers] = useState<any>([]);
+  const [userType, setUserType] = useState<string>('');
 
   const keyboardVerticalOffset = Platform.OS === 'android' ? { keyboardVerticalOffset: 20 } : {};
 
@@ -261,12 +262,13 @@ const SignUp: React.FC<SignUpProps> = (props) => {
     checkPatientData();
     getDeviceCountAPICall();
     getPrefillReferralCode();
+    checkUserType();
     getAllOffersForRegisterations();
   }, []);
 
   useEffect(() => {
     if (gender.toLowerCase() == Gender.MALE.toLowerCase()) {
-      setRelation(undefined);
+      userType != 'prism' && setRelation(undefined);
       const maleRelationArray: RelationArray[] = [
         { key: Relation.ME, title: 'Self' },
         {
@@ -308,7 +310,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
       ];
       setSelectedGenderRelationArray(maleRelationArray);
     } else if (gender.toLowerCase() == Gender.FEMALE.toLowerCase()) {
-      setRelation(undefined);
+      userType != 'prism' && setRelation(undefined);
       const femaleRelationArray: RelationArray[] = [
         { key: Relation.ME, title: 'Self' },
         {
@@ -376,6 +378,17 @@ const SignUp: React.FC<SignUpProps> = (props) => {
       backHandler.remove();
     };
   }, []);
+
+  const checkUserType = async () => {
+    let preApolloExistingUser = await AsyncStorage.getItem('preApolloUser');
+    if (preApolloExistingUser && preApolloExistingUser === 'true') {
+      setUserType('prism');
+      setRelation({
+        key: Relation.ME,
+        title: 'Self',
+      });
+    }
+  };
 
   const _postWebEngageEvent = async () => {
     if (isSignupEventFired) {
@@ -488,6 +501,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
 
   const updateRefereeDataInReferrerRecord = async ({
     af_referrer_customer_id,
+    refereeId,
     campaign,
     rewardId,
     shortlink,
@@ -500,7 +514,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
         query: INSERT_REFEREE_DATA_TO_REFERRER,
         variables: {
           referralDataInput: {
-            refereeId: currentPatient ? currentPatient.id : '',
+            refereeId: refereeId,
             referrerId: af_referrer_customer_id,
             rewardId: rewardId,
             campaignId: campaign,
@@ -530,6 +544,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
       const { af_referrer_customer_id, campaign, rewardId, shortlink, installTime } = JSON.parse(
         referralData
       );
+      const refereeId = data?.data?.updatePatient?.patient?.id;
       const eventAttribute = {
         referrer_id: af_referrer_customer_id,
         referee_id: data?.data?.updatePatient?.patient?.id,
@@ -540,6 +555,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
       };
       updateRefereeDataInReferrerRecord({
         af_referrer_customer_id,
+        refereeId,
         campaign,
         rewardId,
         shortlink,
@@ -811,7 +827,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
           ))}
         </View>
 
-        <View style={styles.relationContainer}>{renderRelation()}</View>
+        {userType != 'prism' && <View style={styles.relationContainer}>{renderRelation()}</View>}
         <FloatingLabelInputComponent
           label={string.registerationScreenData.Email}
           onChangeText={(text: string) => _setEmail(text)}
@@ -823,7 +839,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
           inputError={emailValidationError.error}
           errorMsg={emailValidationError.errorMsg}
         />
-        {renderReferral()}
+        {showReferralCode && renderReferral()}
         <View style={styles.whatsAppOptinContainer}>
           <View style={styles.whatsAppOptinCheckboxContainer}>
             <InputCheckBox
@@ -905,7 +921,8 @@ const SignUp: React.FC<SignUpProps> = (props) => {
         mobileNumber: mePatient.mobileNumber,
         firstName: firstName.trim(),
         lastName: lastName.trim(),
-        relation: relation == undefined ? Relation.ME : relation.key,
+        relation:
+          userType === 'prism' ? Relation.ME : relation == undefined ? Relation.ME : relation.key,
         gender:
           gender === 'Female'
             ? Gender['FEMALE']
@@ -935,11 +952,15 @@ const SignUp: React.FC<SignUpProps> = (props) => {
                     : gender === 'Male'
                     ? Gender['MALE']
                     : Gender['OTHER'],
-                relation: relation == undefined ? Relation.ME : relation.key,
+                relation:
+                  userType === 'prism'
+                    ? Relation.ME
+                    : relation == undefined
+                    ? Relation.ME
+                    : relation.key,
                 emailAddress: email.trim(),
                 photoUrl: '',
                 mobileNumber: mePatient.mobileNumber,
-                whatsappOptIn: whatsAppOptIn
               },
             },
           });

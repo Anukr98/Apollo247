@@ -39,21 +39,23 @@ export const CredPay: React.FC<CredPayProps> = (props) => {
 
   const renderCred = () => {
     return (
-      <View style={styles.ChildComponent}>
+      <TouchableOpacity
+        style={styles.ChildComponent}
+        disabled={paymentMethod?.outage_status == 'DOWN' ? true : false}
+        onPress={() => onPressPayNow(paymentMethod?.payment_method_code)}
+      >
         <OutagePrompt
           outageStatus={paymentMethod?.outage_status}
           msg={paymentMethod?.payment_method_name + ' is'}
         />
-        <TouchableOpacity
-          disabled={paymentMethod?.outage_status == 'DOWN' ? true : false}
+        <View
           style={{ ...styles.wallet, opacity: paymentMethod?.outage_status == 'DOWN' ? 0.5 : 1 }}
-          onPress={() => onPressPayNow(paymentMethod?.payment_method_code)}
         >
           {renderImage()}
           <Text style={styles.payNow}>PAY NOW</Text>
-        </TouchableOpacity>
+        </View>
         {renderOffer()}
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -113,6 +115,7 @@ const styles = StyleSheet.create({
     lineHeight: 14,
     marginLeft: 5,
     color: '#00B38E',
+    flexWrap: 'wrap',
   },
   offerCont: {
     flexDirection: 'row',
@@ -120,8 +123,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   offerIcon: {
-    height: 20,
-    width: 20,
+    height: 16,
+    width: 16,
   },
   header: {
     marginHorizontal: 16,

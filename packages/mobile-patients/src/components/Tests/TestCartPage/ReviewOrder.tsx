@@ -2645,6 +2645,14 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           if (toPayPrice == 0) {
             try {
               const res = await createJusPayOrder(payId!);
+              const defaultClevertapEventParams = {
+                mobileNumber: currentPatient?.mobileNumber,
+                vertical: 'diagnostics',
+                displayId: orderDetails?.displayId,
+                paymentId: payId,
+                amount: toPayPrice,
+                availableHc: healthCredits,
+              };
               if (res?.data?.createOrderV2?.payment_status == 'TXN_SUCCESS') {
                 _navigatetoOrderStatus(
                   true,
@@ -2652,7 +2660,10 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
                   eventAttributes,
                   orderInfo,
                   payId!,
-                  verticalSpecificData
+                  verticalSpecificData,
+                  true,
+                  defaultClevertapEventParams,
+                  toPayPrice
                 );
               } else {
                 renderAlert(string.common.tryAgainLater);
@@ -2817,7 +2828,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             eventAttributes,
             orderInfo,
             paymentId,
-            verticalSpecificData
+            verticalSpecificData,
+            false
           );
         }
       } else {
@@ -2835,18 +2847,36 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED],
     orderInfo: any,
     paymentId: string | number,
-    verticalSpecificData: any
+    verticalSpecificData: any,
+    fromZeroPayment: boolean,
+    defaultClevertapEventParams?: any,
+    amount?: string | number
   ) {
     setLoading?.(false);
-    props.navigation.navigate(AppRoutes.PaymentStatusDiag, {
-      paymentId: paymentId,
-      orderDetails: orderInfo,
-      isCOD: isCOD,
-      eventAttributes,
-      paymentStatus: paymentStatus,
-      isModify: isModifyFlow ? modifiedOrder : null,
-      verticalSpecificData,
-    });
+    if (fromZeroPayment) {
+      props.navigation.navigate(AppRoutes.PaymentStatusDiag, {
+        paymentId: paymentId,
+        orderDetails: orderInfo,
+        isCOD: isCOD,
+        eventAttributes,
+        paymentStatus: paymentStatus,
+        isModify: isModifyFlow ? modifiedOrder : null,
+        verticalSpecificData,
+        defaultClevertapEventParams: defaultClevertapEventParams,
+        isCircleAddedToCart: isCircleAddedToCart,
+        amount: amount,
+      });
+    } else {
+      props.navigation.navigate(AppRoutes.PaymentStatusDiag, {
+        paymentId: paymentId,
+        orderDetails: orderInfo,
+        isCOD: isCOD,
+        eventAttributes,
+        paymentStatus: paymentStatus,
+        isModify: isModifyFlow ? modifiedOrder : null,
+        verticalSpecificData,
+      });
+    }
   }
 
   const saveModifyOrder = (orderInfo: saveModifyDiagnosticOrderInput) =>
