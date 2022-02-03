@@ -4406,31 +4406,6 @@ export const SEARCH_DIAGNOSTICS_BY_CITY_ID = gql`
   }
 `;
 
-export const SEARCH_DIAGNOSTICS_BY_ID = gql`
-  query searchDiagnosticsById($itemIds: String) {
-    searchDiagnosticsById(itemIds: $itemIds) {
-      diagnostics {
-        id
-        itemId
-        itemName
-        itemType
-        rate
-        itemType
-        gender
-        itemRemarks
-        city
-        state
-        collectionType
-        fromAgeInDays
-        toAgeInDays
-        testDescription
-        testPreparationData
-        inclusions
-      }
-    }
-  }
-`;
-
 export const CREATE_INTERNAL_ORDER = gql`
   mutation createOrderInternal($order: OrderCreate) {
     createOrderInternal(order: $order) {
