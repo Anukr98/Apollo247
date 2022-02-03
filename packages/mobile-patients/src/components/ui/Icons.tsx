@@ -332,6 +332,13 @@ export const ArrowLeft: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_arrow_left.webp')} />
 );
 
+export const ArrowDownWhite: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/arrow_down_white3x.webp')} />
+);
+
+export const ArrowUpWhite: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/arrow_up_white3x.webp')} />
+);
 export const WhiteArrowRightIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_white_arrow_right.webp')} />
 );

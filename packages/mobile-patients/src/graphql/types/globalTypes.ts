@@ -2306,6 +2306,11 @@ export enum DiagnosticCTJourneyType {
   WHATSAPP = 'WhatsApp'
 }
 
+export enum DiagnosticItemType {
+  LABTEST = "LABTEST",
+  PACKAGE = 'PACKAGE'
+}
+
 export interface CartInputData {
   patientId: string;
   medicineOrderCartLineItems?: (InputCartLineItems | null)[] | null;
