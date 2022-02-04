@@ -503,6 +503,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   useEffect(() => {
     //modify case
     if (isModifyFlow && cartItems?.length > 0 && modifiedPatientCart?.length > 0) {
+      //commented for future ref
       //if multi-uhid modify -> don't call phleboCharges api
       // !!modifiedOrder?.attributesObj?.isMultiUhid && modifiedOrder?.attributesObj?.isMultiUhid
       //   ? clearCollectionCharges()
