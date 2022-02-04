@@ -500,6 +500,19 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
   }, [isfetchingId]);
 
+  useEffect(() => {
+    //modify case
+    if (isModifyFlow && cartItems?.length > 0 && modifiedPatientCart?.length > 0) {
+      //if multi-uhid modify -> don't call phleboCharges api
+      // !!modifiedOrder?.attributesObj?.isMultiUhid && modifiedOrder?.attributesObj?.isMultiUhid
+      //   ? clearCollectionCharges()
+      //   : fetchHC_ChargesForTest();
+      clearCollectionCharges();
+    } else {
+      fetchHC_ChargesForTest();
+    }
+  }, [isCircleAddedToCart]);
+
   async function populateCartMapping() {
     const listOfIds = cartItems?.map((item) => Number(item?.id));
     try {
