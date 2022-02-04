@@ -25,7 +25,6 @@ import {
   FlatList,
   BackHandler,
   Text,
-  Modal,
   ScrollView,
   Dimensions,
 } from 'react-native';
@@ -114,8 +113,6 @@ import {
   getRescheduleAndCancellationReasons_getRescheduleAndCancellationReasons_cancellationReasonsv2_ctaOptions,
 } from '@aph/mobile-patients/src/graphql/types/getRescheduleAndCancellationReasons';
 import { PatientListOverlay } from '@aph/mobile-patients/src/components/Tests/components/PatientListOverlay';
-
-const { width, height } = Dimensions.get('window');
 import { getDiagnosticOrdersListByParentOrderID_getDiagnosticOrdersListByParentOrderID_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByParentOrderID';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 import { PhleboCallPopup } from '@aph/mobile-patients/src/components/Tests/components/PhleboCallPopup';
@@ -129,7 +126,7 @@ type OrderRescheduleType = {
   rescheduleCount: number;
 };
 
-const screenHeight = Dimensions.get('window').height;
+const screenHeight = Dimensions.get('window')?.height;
 export interface YourOrdersTestProps extends NavigationScreenProps {
   showHeader?: boolean;
 }
@@ -138,10 +135,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const CANCEL_RESCHEDULE_OPTION = [
     string.diagnostics.reasonForCancel_TestOrder.latePhelbo,
     string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
-  ];
-  const CANCEL_REASON_OPTIONS = [
-    string.diagnostics.reasonForCancel_TestOrder.needModifyOrder,
-    string.diagnostics.reasonForCancel_TestOrder.needModifyPatient,
   ];
   const ALL = 'All';
 
@@ -159,8 +152,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setDistanceCharges,
     setModifiedPatientCart,
   } = useDiagnosticsCart();
-  const { width, height } = Dimensions.get('window');
-
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const [date, setDate] = useState<Date>(new Date());
@@ -282,7 +273,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   useEffect(() => {
     refetchOrders();
-  }, [currentOffset]);
+  }, [currentOffset, selectedPatientId]);
 
   const fetchOrders = async (isRefetch: boolean) => {
     //clear the modify data.
@@ -292,7 +283,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
     try {
       setLoading?.(true);
-      getDiagnosticsOrder(apolloClientWithAuth, currentPatient?.mobileNumber, 10, currentOffset)
+      getDiagnosticsOrder(
+        apolloClientWithAuth,
+        currentPatient?.mobileNumber,
+        10,
+        currentOffset,
+        selectedPatient === ALL ? '' : selectedPatientId
+      )
         .then((data) => {
           const ordersList = data?.data?.getDiagnosticOrdersListByMobile?.ordersList || [];
           const requestedCancelReason =
@@ -325,7 +322,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchOrders`, error);
         });
     } catch (error) {
-      console.log({ error });
       setLoading?.(false);
       setError(true);
       CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchOrders`, error);
@@ -418,19 +414,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                   findOrder?.orderPhleboDetails?.isPhleboChanged;
               }
             });
-            //ordersList => contains all results.
-            if (selectedPatient === ALL) {
-              setOrders(ordersList); // set all the orders present.
-            } else {
-              setOrders(filterResultsForPatient(ordersList));
-            }
+            setOrders(ordersList);
             setTimeout(() => setLoading?.(false), 1000);
           } else {
-            if (selectedPatient === ALL) {
-              setOrders(ordersList); // set all the orders present.
-            } else {
-              setOrders(filterResultsForPatient(ordersList));
-            }
+            setOrders(ordersList);
             setLoading?.(false);
           }
         })
@@ -2010,6 +1997,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         onPress={() => {
           setSelectedPatient(item?.firstName == null ? '' : item?.firstName);
           setSelectedPatientId(item?.id);
+          setCurrentOffset(1);
+          setOrderListData([]);
           setShowPatientsOverlay(false);
         }}
         style={[
@@ -2425,7 +2414,7 @@ const styles = StyleSheet.create({
   },
   paitentModalView: {
     backgroundColor: 'white',
-    height: height / 2,
+    height: screenHeight / 2,
     width: '100%',
     padding: 20,
     borderTopLeftRadius: 10,

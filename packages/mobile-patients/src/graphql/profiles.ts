@@ -2184,13 +2184,15 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
     $mobileNumber: String
     $paginated: Boolean
     $limit: Int
-    $offset: Int
+    $offset: Int,
+    $patientId: String
   ) {
     getDiagnosticOrdersListByMobile(
       mobileNumber: $mobileNumber
       offset: $offset
       limit: $limit
       paginated: $paginated
+      patientId: $patientId
     ) {
       ordersList {
         id

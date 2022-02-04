@@ -226,4 +226,5 @@ export interface getDiagnosticOrdersListByMobileVariables {
   paginated?: boolean | null;
   limit?: number | null;
   offset?: number | null;
+  patientId?: string | null;
 }
