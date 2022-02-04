@@ -1665,7 +1665,8 @@ export const getDiagnosticsOrder = (
   client: ApolloClient<object>,
   mobileNumber: string,
   limit: number,
-  offset: number
+  offset: number,
+  patientId?: string,
 ) => {
   return client.query<getDiagnosticOrdersListByMobile, getDiagnosticOrdersListByMobileVariables>({
     query: GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
@@ -1677,6 +1678,7 @@ export const getDiagnosticsOrder = (
       paginated: true,
       limit: limit,
       offset: offset,
+      patientId: !!patientId ? patientId: '',
     },
     fetchPolicy: 'no-cache',
   });
