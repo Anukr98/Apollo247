@@ -341,7 +341,8 @@ const appStaticVariables = {
     frequentlyBrought: string.diagnostics.frequentlyBrought,
     topBookedTests: string.diagnostics.topBookedTests,
     similarPackages: string.diagnostics.similarPackages,
-    topPackages: 'Top Packages with ',
+    topPackages: "Top Packages with ",
+    relatedPackages : string.diagnosticsDetails.relatedPackages
   },
   DeliveryIn_TAT_Text: 'Express Delivery',
   WHATSAPP_TO_ORDER: {

@@ -2336,7 +2336,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         navigation={props.navigation}
         onSubmit={(selectedEPres) => {
           setSelectPrescriptionVisible(false);
-          if (selectedEPres.length == 0) {
+          if (selectedEPres?.length == 0) {
             return;
           }
           props.navigation.navigate(AppRoutes.SubmittedPrescription, {
@@ -3512,6 +3512,8 @@ const styles = StyleSheet.create({
     width: '50%',
     justifyContent: 'center',
     padding: 5,
+    marginBottom: 16,
+    marginTop: 16,
   },
   precriptionContainerMiniUpload: {
     flexDirection: 'row',

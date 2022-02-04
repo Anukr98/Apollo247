@@ -62,7 +62,8 @@ export const AgentDetailsCard: React.FC<AgentDetailsCardProps> = (props) => {
     const showVaccinationStatus = !!phlObj?.diagnosticPhlebotomists?.vaccinationStatus;
     const allowCallingETAText = !!phlObj && phlObj?.allowCallingETAText;
     const isNewPhleboAssigned = !!phlObj && phlObj?.isPhleboChanged;
-    const changeVaccineStatusStyle = !!name && name?.length > 16 && otpToShow;
+    const changeVaccineStatusStyle =
+      source == AppRoutes.TestOrderDetails ? otpToShow : !!name && name?.length > 16 && otpToShow;
 
     return (
       <>

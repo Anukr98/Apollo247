@@ -23,6 +23,7 @@ export interface FAQComponentProps {
   containerStyle?: ViewStyle;
   arrowStyle?: ImageStyle;
   horizontalLine?: ViewStyle;
+  faqIcon?: any;
 }
 
 export const FAQComponent: React.FC<FAQComponentProps> = (props) => {
@@ -31,7 +32,7 @@ export const FAQComponent: React.FC<FAQComponentProps> = (props) => {
   const [previousIndex, setPreviousIndex] = useState<number>(-1);
 
   const renderQuestions = () => {
-    return faq.map((value: any, index: number) => {
+    return faq?.map((value: any, index: number) => {
       return (
         <View>
           <TouchableOpacity
@@ -47,7 +48,7 @@ export const FAQComponent: React.FC<FAQComponentProps> = (props) => {
             }}
           >
             <Text style={props.questionStyle}>
-              {props.data ? value?.faqQuestion : value.question}
+              {props.data ? value?.faqQuestion : value?.question}
             </Text>
             <ArrowRight
               style={[
@@ -69,11 +70,11 @@ export const FAQComponent: React.FC<FAQComponentProps> = (props) => {
           {!!(previousIndex != -1 && index === previousIndex) ? (
             <></>
           ) : activeIndex === index ? (
-            <Text style={props.answerStyle}>{props.data ? value?.faqAnswer : value.answer}</Text>
+            <Text style={props.answerStyle}>{props.data ? value?.faqAnswer : value?.answer}</Text>
           ) : (
             <></>
           )}
-          {faq.length - 1 !== index && <View style={props.horizontalLine} />}
+          {faq?.length - 1 !== index && <View style={props.horizontalLine} />}
         </View>
       );
     });
@@ -81,7 +82,10 @@ export const FAQComponent: React.FC<FAQComponentProps> = (props) => {
 
   return (
     <View style={[styles.container, props.containerStyle]}>
-      <Text style={props.headingStyle}>{props.headingText}</Text>
+      <View style={!!props.faqIcon && styles.faqIconViewStyle}>
+        {!!props.faqIcon && props.faqIcon}
+        <Text style={props.headingStyle}>{props.headingText}</Text>
+      </View>
       <View style={props.headerSeparatorStyle} />
       {renderQuestions()}
     </View>
@@ -117,6 +121,11 @@ const styles = StyleSheet.create({
   },
   faqAnswer: {
     ...theme.viewStyles.text('L', 12, '#01475B', 1, 16, 0.35),
+  },
+  faqIconViewStyle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
   },
 });
 

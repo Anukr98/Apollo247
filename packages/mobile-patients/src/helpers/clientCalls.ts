@@ -63,6 +63,7 @@ import {
   FIND_DIAGNOSTIC_SETTINGS,
   GET_PATIENT_ADDRESS_LIST,
   GET_RESCHEDULE_AND_CANCELLATION_REASONS,
+  GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
   GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS_V2,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -312,6 +313,7 @@ import {
   getRescheduleAndCancellationReasons,
   getRescheduleAndCancellationReasonsVariables,
 } from '@aph/mobile-patients/src/graphql/types/getRescheduleAndCancellationReasons';
+import { findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -1771,6 +1773,20 @@ export const getDiagnosticReasons = (client: ApolloClient<object>, orderTime: st
       sourceHeaders,
     },
     variables: { appointmentDateTimeInUTC: orderTime },
+    fetchPolicy: 'no-cache',
+  });
+};
+
+export const getDiagnosticWidgetPricing = (client: ApolloClient<object>, cityId: string | number, listOfId: []) => {
+  return client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
+    query: GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
+    context: {
+      sourceHeaders,
+    },
+    variables: {
+      cityID: Number(cityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
+      itemIDs: listOfId,
+    },
     fetchPolicy: 'no-cache',
   });
 };

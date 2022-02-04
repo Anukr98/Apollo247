@@ -55,7 +55,6 @@ import {
   handleGraphQlError,
   TestSlot,
   nameFormater,
-  navigateToScreenWithEmptyStack,
   aphConsole,
   removeWhiteSpaces,
   isSmallDevice,

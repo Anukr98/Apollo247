@@ -3030,3 +3030,51 @@ export const WhatsAppCheckTick: React.FC<IconProps> = (props) => (
     {...props}
   />
 );
+
+export const GenderIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/genderIcon.webp')}
+  />
+);
+
+export const AgeGroupIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/ageGroupIcon.webp')}
+  />
+);
+
+export const OrangeCartIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/orangeCartIcon.webp')}
+  />
+);
+
+export const OrangeFAQIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/orangeFAQIcon.webp')}
+  />
+);
+
+export const RelatedPackageIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/releatedPackageIcon.webp')}
+  />
+);
+
+export const SampleTypeIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/sampleType.webp')}
+  />
+);
