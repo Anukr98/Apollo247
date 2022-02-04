@@ -125,29 +125,37 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
             <Text style={styles.testForText}>
               Tests for {props.gender != '' && props.gender} {props.patientName}
             </Text>
+            {props.showEditIcon ? renderEditView() : null}
           </View>
         )}
-        {props.showEditIcon ? (
-          <View style={styles.editIconView}>
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={props.onPressEditPatient}
-              style={styles.editIconTouch}
-            >
-              <EditProfile style={styles.editIcon} />
-            </TouchableOpacity>
-          </View>
-        ) : null}
-        {showAddTest ? (
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={props.onPressAddTest}
-            style={styles.addTestTouch}
-          >
-            <Text style={styles.yellowText}>ADD MORE TEST</Text>
-          </TouchableOpacity>
-        ) : null}
+        {showAddTest ? renderAddTestView() : null}
       </View>
+    );
+  };
+
+  const renderEditView = () => {
+    return (
+      <View style={styles.editIconView}>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={props.onPressEditPatient}
+          style={styles.editIconTouch}
+        >
+          <EditProfile style={styles.editIcon} />
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderAddTestView = () => {
+    return (
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={props.onPressAddTest}
+        style={styles.addTestTouch}
+      >
+        <Text style={styles.yellowText}>ADD MORE TEST</Text>
+      </TouchableOpacity>
     );
   };
 
@@ -684,7 +692,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   patientNameView: {
-    width: '58%',
+    width: '65%', //58%
     justifyContent: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',

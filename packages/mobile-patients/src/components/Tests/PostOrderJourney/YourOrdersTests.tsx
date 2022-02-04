@@ -45,6 +45,7 @@ import {
   DiagnosticLineItem,
   CancellationDiagnosticsInputv2,
   CALL_TO_ORDER_CTA_PAGE_ID,
+  CANCELLATION_REASONS_CTA,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -61,6 +62,7 @@ import {
   getAge,
   extractPatientDetails,
   showDiagnosticCTA,
+  isEmptyObject,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   DisabledTickIcon,
@@ -110,6 +112,7 @@ import {
 import {
   getRescheduleAndCancellationReasons_getRescheduleAndCancellationReasons,
   getRescheduleAndCancellationReasons_getRescheduleAndCancellationReasons_cancellationReasonsv2,
+  getRescheduleAndCancellationReasons_getRescheduleAndCancellationReasons_cancellationReasonsv2_ctaOptions,
 } from '@aph/mobile-patients/src/graphql/types/getRescheduleAndCancellationReasons';
 import { PatientListOverlay } from '@aph/mobile-patients/src/components/Tests/components/PatientListOverlay';
 
@@ -1161,7 +1164,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     const selectedOrderRescheduleCount = selectedOrder?.rescheduleCount;
     let selectedOrderTime = selectedOrder?.slotDateTimeInUTC;
     selectedOrderTime = moment(selectedOrderTime);
-    const current = moment();
     const cancelReasonArray = cancelReasonList;
     return (
       <View style={{ height: height - 200 }}>
@@ -1175,6 +1177,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               index: number
             ) => {
               const reasonString = item?.reason;
+              const showAddtionalCTA = item?.ctaOptions;
+              const showAddtionalView = !!showAddtionalCTA && !isEmptyObject(showAddtionalCTA);
               return (
                 <View style={{ flex: 1 }}>
                   <TouchableOpacity
@@ -1185,8 +1189,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                         height:
                           selectCancelReason === reasonString &&
                           selectedOrderRescheduleCount! < 3 &&
-                          (CANCEL_RESCHEDULE_OPTION.includes(selectCancelReason) ||
-                            CANCEL_REASON_OPTIONS.includes(selectCancelReason))
+                          showAddtionalView
                             ? 100
                             : 40,
                         paddingTop: 10,
@@ -1195,102 +1198,123 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                       styles.marginStyle,
                     ]}
                   >
-                    <View style={styles.rowStyle}>
-                      <Text style={styles.reasonsText}>{reasonString}</Text>
-                      {selectCancelReason === reasonString ? (
-                        <TickIcon style={styles.checkIconStyle} />
-                      ) : (
-                        <DisabledTickIcon style={styles.checkIconStyle} />
-                      )}
-                    </View>
-
-                    {selectCancelReason === reasonString &&
-                    selectedOrderRescheduleCount! < 3 &&
-                    CANCEL_RESCHEDULE_OPTION.includes(selectCancelReason) ? (
-                      <View style={{ marginTop: 10, marginBottom: 5 }}>
-                        <Text style={styles.wantToReschedule}>
-                          {string.diagnostics.wantToReschedule}
-                        </Text>
-                        <TouchableOpacity
-                          activeOpacity={1}
-                          onPress={() => _onPressRescheduleNow('cancelReschedule')}
-                        >
-                          <Text style={styles.yellowText}>RESCHEDULE NOW</Text>
-                        </TouchableOpacity>
-                      </View>
-                    ) : null}
-                    {selectCancelReason === reasonString &&
-                    selectedOrderRescheduleCount! < 3 &&
-                    selectCancelReason ==
-                      string.diagnostics.reasonForCancel_TestOrder.needModifyPatient ? (
-                      <View style={{ marginTop: 10, marginBottom: 5 }}>
-                        <Text style={styles.wantToReschedule}>
-                          {string.diagnostics.needToAddPaitent}
-                        </Text>
-                        <TouchableOpacity
-                          activeOpacity={1}
-                          onPress={() => {
-                            _onPressEditPatient(selectedOrder!);
-                          }}
-                        >
-                          <Text style={styles.yellowText}>EDIT PATIENT</Text>
-                        </TouchableOpacity>
-                      </View>
-                    ) : null}
-
-                    {selectCancelReason === reasonString &&
-                    selectedOrderRescheduleCount! < 3 &&
-                    selectCancelReason ==
-                      string.diagnostics.reasonForCancel_TestOrder.needModifyOrder ? (
-                      <View style={{ marginTop: 10, marginBottom: 5 }}>
-                        <Text style={styles.wantToReschedule}>
-                          {string.diagnostics.needToAddOrder}
-                        </Text>
-                        <TouchableOpacity
-                          activeOpacity={1}
-                          onPress={() => {
-                            setShowCancelReasons(false);
-                            _onPressAddTest(selectedOrder!);
-                          }}
-                        >
-                          <Text style={styles.yellowText}>ADD TESTS</Text>
-                        </TouchableOpacity>
-                      </View>
-                    ) : null}
-
+                    {renderTickOption(reasonString!)}
+                    {showAddtionalView && selectCancelReason === reasonString
+                      ? renderCancelAddtionalView(showAddtionalCTA)
+                      : null}
                     {index === cancelReasonArray?.length - 1 ? null : (
                       <Spearator style={{ marginTop: 6 }} />
                     )}
-                    {selectCancelReason ===
-                      string.diagnostics.reasonForCancel_TestOrder.otherReasons &&
-                    reasonString === string.diagnostics.reasonForCancel_TestOrder.otherReasons ? (
-                      <TextInputComponent
-                        value={cancelReasonComment}
-                        onChangeText={(text) => {
-                          setCancelReasonComment(text);
-                        }}
-                        placeholder={string.common.return_order_comment_text}
-                        inputStyle={{ fontSize: 14 }}
-                      />
-                    ) : null}
+                    {renderOthersOption(reasonString!)}
                   </TouchableOpacity>
                 </View>
               );
             }
           )}
         </ScrollView>
-        <View style={styles.buttonView}>
-          <Button
-            title={isDirectCancelRequest ? 'CANCEL NOW' : 'SUBMIT REQUEST'}
-            style={styles.buttonStyle}
-            disabled={
-              selectCancelReason == string.diagnostics.reasonForCancel_TestOrder.otherReasons
-                ? cancelReasonComment?.trim() == '' || cancelReasonComment.length < 10
-                : selectCancelReason == ''
-            }
-            onPress={() => _onPressCancelNow()}
-          />
-        </View>
+        {renderCancelButton()}
+      </View>
+    );
+  };
+
+  const renderTickOption = (reasonString: string) => {
+    return (
+      <View style={styles.rowStyle}>
+        <Text style={styles.reasonsText}>{reasonString}</Text>
+        {selectCancelReason === reasonString ? (
+          <TickIcon style={styles.checkIconStyle} />
+        ) : (
+          <DisabledTickIcon style={styles.checkIconStyle} />
+        )}
+      </View>
+    );
+  };
+
+  function _handleCancellationReasonNavigation(sourceCTA: CANCELLATION_REASONS_CTA) {
+    switch (sourceCTA) {
+      case CANCELLATION_REASONS_CTA.ADD_TESTS:
+        setShowCancelReasons(false);
+        _onPressAddTest(selectedOrder!);
+        break;
+      case CANCELLATION_REASONS_CTA.EDIT_PATIENT_DETAILS:
+        _onPressEditPatient(selectedOrder!);
+        break;
+      case CANCELLATION_REASONS_CTA.RESCHEDULE:
+        _onPressRescheduleNow('cancelReschedule');
+        break;
+      default:
+        _onPressCancelNow();
+        break;
+    }
+  }
+
+  const renderCancelAddtionalView = (
+    ctaOptions: getRescheduleAndCancellationReasons_getRescheduleAndCancellationReasons_cancellationReasonsv2_ctaOptions
+  ) => {
+    const displayText = ctaOptions?.displayText;
+    const ctaText = ctaOptions?.cta;
+    const showTextInput = ctaOptions?.userCommentsEnabled;
+    return !!displayText || !!ctaText ? (
+      <View style={{ marginTop: 10 }}>
+        {!!displayText && <Text style={styles.wantToReschedule}>{displayText}</Text>}
+        {!!ctaText && (
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => _handleCancellationReasonNavigation(ctaText!)}
+          >
+            <Text style={styles.yellowText}>{ctaText?.replace(/[_]/g, ' ')}</Text>
+          </TouchableOpacity>
+        )}
+        {/** add code for multiple cta selection */}
+        {showTextInput && renderTextInputField()}
+      </View>
+    ) : null;
+  };
+
+  const renderTextInputField = () => {
+    return (
+      <TextInputComponent
+        conatinerstyles={{ marginTop: -10 }}
+        value={cancelReasonComment}
+        onChangeText={(text) => {
+          setCancelReasonComment(text);
+        }}
+        placeholder={string.common.return_order_comment_text}
+        inputStyle={{ fontSize: 14 }}
+      />
+    );
+  };
+
+  const renderOthersOption = (reasonString: string) => {
+    return;
+    <>
+      {selectCancelReason === string.diagnostics.reasonForCancel_TestOrder.otherReasons &&
+      reasonString === string.diagnostics.reasonForCancel_TestOrder.otherReasons ? (
+        <TextInputComponent
+          value={cancelReasonComment}
+          onChangeText={(text) => {
+            setCancelReasonComment(text);
+          }}
+          placeholder={string.common.return_order_comment_text}
+          inputStyle={{ fontSize: 14 }}
+        />
+      ) : null}
+    </>;
+  };
+
+  const renderCancelButton = () => {
+    return (
+      <View style={styles.buttonView}>
+        <Button
+          title={isDirectCancelRequest ? 'CANCEL NOW' : 'SUBMIT REQUEST'}
+          style={styles.buttonStyle}
+          disabled={
+            selectCancelReason == string.diagnostics.reasonForCancel_TestOrder.otherReasons
+              ? cancelReasonComment?.trim() == '' || cancelReasonComment.length < 10
+              : selectCancelReason == ''
+          }
+          onPress={() => _onPressCancelNow()}
+        />
       </View>
     );
   };
@@ -1696,7 +1720,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         onPressCard={() => _navigateToYourTestDetails(order, false)}
         onPressAddTest={() => _onPressAddTest(order)}
         onPressReschedule={() => _onPressTestReschedule(order)}
-        onPressViewDetails={() => _navigateToYourTestDetails(order, true)}
+        onPressViewDetails={() => _navigateToYourTestDetails(order, false)}
         onPressViewReport={() => _onPressViewReportAction(order)}
         phelboObject={order?.diagnosticOrderPhlebotomists}
         onPressRatingStar={(star) => _navigateToRatingScreen(star, order)}

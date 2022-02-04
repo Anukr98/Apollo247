@@ -497,19 +497,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   }
 
   useEffect(() => {
-    //modify case
-    if (isModifyFlow && cartItems?.length > 0 && modifiedPatientCart?.length > 0) {
-      //if multi-uhid modify -> don't call phleboCharges api
-      // !!modifiedOrder?.attributesObj?.isMultiUhid && modifiedOrder?.attributesObj?.isMultiUhid
-      //   ? clearCollectionCharges()
-      //   : fetchHC_ChargesForTest();
-      clearCollectionCharges();
-    } else {
-      fetchHC_ChargesForTest();
-    }
-  }, [isCircleAddedToCart]);
-
-  useEffect(() => {
     !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
   }, [isfetchingId]);
 
@@ -1116,9 +1103,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const slashedPrice = diagnosticsDisplayPrice(item, showCirclePrice)?.slashedPrice;
 
     const calTotal = priceToShow * item?.mou;
+    //removed packageMrp for showing circle savings  Number((!!item?.packageMrp && item?.packageMrp!) || mrpToDisplay)
     const savingAmount =
-      Number((!!item?.packageMrp && item?.packageMrp!) || mrpToDisplay) -
-      Number(item?.circleSpecialPrice!);
+      Number(item?.circlePrice! || item?.price) - Number(item?.circleSpecialPrice!);
 
     const totalIndiviualSavingAmount = !!savingAmount && savingAmount * item?.mou;
 
@@ -2299,12 +2286,13 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       itemIds?.length &&
       itemIds?.map((id: number) => {
         const isFromApi = !!cartItemsMapping && cartItemsMapping?.length > 0;
-        const arrayToSelect = isFromApi ? cartItemsMapping : cartItems;
+        const apiArray = isFromApi && cartItemsMapping?.length > cartItems?.length;
+        const arrayToSelect = apiArray ? cartItemsMapping : cartItems;
         const findItem = arrayToSelect?.find(
-          (cItems: any) => Number(isFromApi ? cItems?.itemId : cItems?.id) === Number(id)
+          (cItems: any) => Number(apiArray ? cItems?.itemId : cItems?.id) === Number(id)
         );
         if (!!findItem) {
-          itemNames?.push(isFromApi ? findItem?.itemName : findItem?.name);
+          itemNames?.push(apiArray ? findItem?.itemName : findItem?.name);
         }
         //in case of modify. => only for single uhid
         if (isModifyFlow) {
@@ -3401,10 +3389,11 @@ const styles = StyleSheet.create({
   circleItemCartView: {
     backgroundColor: 'white',
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    paddingTop: 12,
+    paddingBottom: 12,
   },
   circleIconView: { paddingHorizontal: 10 },
   circleText: { flexDirection: 'column' },
-  circleTextPrice: { padding: 10, marginRight: 20 },
+  circleTextPrice: { padding: 10, paddingTop: 2 },
   circleTextStyle: { ...theme.viewStyles.text('M', 14, colors.SHERPA_BLUE, 1) },
 });

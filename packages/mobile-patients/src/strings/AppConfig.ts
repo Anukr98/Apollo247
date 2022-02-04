@@ -5,7 +5,6 @@ import {
   CALL_TO_ORDER_CTA_PAGE_ID,
   DIAGNOSTIC_ORDER_STATUS,
   REFUND_STATUSES,
-  TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { Platform } from 'react-native';
 
@@ -309,6 +308,7 @@ const appStaticVariables = {
         ctaPhoneNumber: '040-4821-3009',
         ctaText: 'Call to Order',
         ctaItemIds: [2446],
+        ctaDisplayHrsArray: [8,9,10,11]
       },
     ],
     ctaDetailsDefault: {
