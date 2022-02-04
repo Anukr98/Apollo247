@@ -757,6 +757,13 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       (prev: any, curr: any) => prev + curr?.healthCreditsUsed,
       0
     );
+    //in case user purchases circle with hc.
+    const getHcForCircle = !!subscriptionDetails
+      ? subscriptionDetails?.payment_reference?.purchase_via_HC
+        ? subscriptionDetails?.payment_reference?.HC_used
+        : 0
+      : 0;
+    const getTotalHealthCredits = totalHealthCredits + Number(getHcForCircle! || 0);
     return (
       <View style={styles.passportView}>
         <View style={styles.flexRow}>
@@ -769,7 +776,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
         <View>
           <Text style={styles.healthCreditsText}>
             {string.common.Rs}
-            {totalHealthCredits?.toFixed(2)}
+            {getTotalHealthCredits?.toFixed(2)}
           </Text>
         </View>
       </View>
