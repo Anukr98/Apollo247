@@ -183,6 +183,8 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
                   ? isPackage
                     ? CARD_HEIGHT - 40
                     : CARD_HEIGHT - 15
+                  : isPackage
+                  ? CARD_HEIGHT - 25
                   : CARD_HEIGHT,
               },
               props?.isVertical ? {} : { marginLeft: item?.index == 0 ? 20 : 6 },

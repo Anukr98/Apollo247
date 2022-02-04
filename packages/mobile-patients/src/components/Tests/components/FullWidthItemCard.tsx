@@ -5,7 +5,6 @@ import {
   renderCircleShimmer,
   renderItemPriceShimmer,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
-import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import React, { useCallback } from 'react';
 import {
   Dimensions,
@@ -166,7 +165,24 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
 
       const imageUrl = getItem?.itemImageUrl;
       const name = getItem?.itemTitle || getItem?.itemName;
+      const {
+        priceToShow,
+        promoteCircle,
+        promoteDiscount,
+        price,
+        circleSpecialPrice,
+      } = calculatePriceToShow(pricesForItem, packageMrpForItem);
 
+      const slashedPrice =
+        !!packageMrpForItem && packageMrpForItem > price ? packageMrpForItem : price;
+
+      const hasSlashedPrice =
+        (!isCircleSubscribed && promoteCircle && priceToShow == slashedPrice) ||
+        priceToShow == slashedPrice
+          ? null
+          : slashedPrice;
+      const hasCirclePrice = promoteCircle && !promoteDiscount && priceToShow != circleSpecialPrice;
+      const changeStyle = !isCircleSubscribed && hasSlashedPrice && hasCirclePrice;
       return (
         <TouchableOpacity
           activeOpacity={1}
@@ -176,7 +192,10 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
           <View
             style={[
               styles.itemCardView,
-              props?.isVertical ? {} : { marginLeft: item?.index == 0 ? 20 : 6 },
+              {
+                minHeight: changeStyle ? CARD_HEIGHT + 10 : CARD_HEIGHT,
+              },
+              props?.isVertical ? {} : { marginLeft: item?.index == 0 ? 22 : 6 },
             ]}
           >
             <View style={styles.topView}>
@@ -188,7 +207,7 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
                 {renderPricesView(pricesForItem, packageMrpForItem)}
               </View>
             </View>
-            {renderBottomView(pricesForItem, packageMrpForItem, getItem)}
+            {renderBottomView(pricesForItem, packageMrpForItem, getItem, changeStyle)}
           </View>
         </TouchableOpacity>
       );
@@ -196,7 +215,12 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
     [cartItems, patientCartItems]
   );
 
-  const renderBottomView = (pricesForItem: any, packageMrpForItem: any, getItem: any) => {
+  const renderBottomView = (
+    pricesForItem: any,
+    packageMrpForItem: any,
+    getItem: any,
+    changeStyle: boolean
+  ) => {
     const isAddedToCart = !!cartItems?.find(
       (items) => Number(items?.id) == Number(getItem?.itemId)
     );
@@ -207,6 +231,7 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
         style={[
           styles.bottomView,
           {
+            marginTop: changeStyle ? 18 : 8,
             justifyContent: hasPrice ? 'space-between' : 'flex-end',
           },
         ]}
@@ -414,9 +439,7 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
               {circleSpecialPrice}
             </Text>
           </View>
-        ) : (
-          renderFallBackHeight()
-        )}
+        ) : null}
         {/** packageCalMrp/mrp*/}
         <View style={{ alignItems: 'flex-end' }}>
           {hasSlashedPrice ? (
@@ -429,9 +452,7 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
                 </Text>
               </Text>
             </View>
-          ) : (
-            renderSlashedPriceFallBackHeight()
-          )}
+          ) : null}
         </View>
         {/** effective price + total savings */}
         <View
@@ -713,22 +734,6 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
     }
   }
 
-  const renderError = () => {
-    if (props.isVertical)
-      return (
-        <Card
-          cardContainer={styles.errorCardContainer}
-          heading={string.common.uhOh}
-          description={string.common.somethingWentWrong}
-          descriptionTextStyle={{ fontSize: 14 }}
-          headingTextStyle={{ fontSize: 14 }}
-        />
-      );
-    else {
-      return null;
-    }
-  };
-
   const getItemLayout = useCallback(
     (data, index) => ({
       length: props.isVertical ? CARD_WIDTH : CARD_HEIGHT,
@@ -776,9 +781,7 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
             initialNumToRender={3}
             getItemLayout={getItemLayout}
           />
-        ) : (
-          renderError()
-        )}
+        ) : null}
       </View>
     </>
   );
@@ -874,6 +877,5 @@ const styles = StyleSheet.create({
   bottomView: {
     flexDirection: 'row',
     width: '100%',
-    marginTop: 8,
   },
 });
