@@ -37,7 +37,7 @@ export const InvalidOffer: React.FC<InvalidOfferProps> = (props) => {
   const renderRetry = () => {
     return (
       <Button
-        title={'RETRY WITH ANOTHER PAYENT METHOD'}
+        title={'RETRY WITH ANOTHER PAYMENT METHOD'}
         style={styles.button}
         onPress={() => hideAphAlert?.()}
       />

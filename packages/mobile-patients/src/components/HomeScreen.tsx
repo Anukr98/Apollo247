@@ -252,6 +252,7 @@ import {
 } from '@aph/mobile-patients/src/components/ReferralProgramProvider';
 import { setItem, getItem } from '@aph/mobile-patients/src/helpers/TimedAsyncStorage';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
+import { UpdateAppPopup } from '@aph/mobile-patients/src/components/ui/UpdateAppPopup';
 
 const { Vitals } = NativeModules;
 
@@ -1164,7 +1165,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [membershipPlans, setMembershipPlans] = useState<any>([]);
   const [circleDataLoading, setCircleDataLoading] = useState<boolean>(true);
-  const { getPatientApiCall, buildApolloClient, validateAndReturnAuthToken } = useAuth();
+  const { getPatientApiCall, buildApolloClient, validateAndReturnAuthToken, checkIsAppDepricated } = useAuth();
   const [selectedProfile, setSelectedProfile] = useState<string>('');
   const [isLocationSearchVisible, setLocationSearchVisible] = useState(false);
   const [showList, setShowList] = useState<boolean>(false);
@@ -1225,6 +1226,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     pinCode,
     isPharmacyPincodeServiceable,
     serverCartItems,
+    locationCode,
   } = useShoppingCart();
   const cartItemsCount = cartItems?.length + serverCartItems?.length;
 
@@ -1258,6 +1260,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const [isSigningIn, setIsSigningIn] = useState<AuthContextProps['isSigningIn']>(false);
   const [signInError, setSignInError] = useState<AuthContextProps['signInError']>(false);
   const [authToken, setAuthToken] = useState<string>('');
+  const [depricatedAppData, setDepricatedAppData] = useState<any>(null);
   const auth = firebaseAuth();
 
   const planValiditycr = useRef<string>('');
@@ -1333,7 +1336,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       cleverTapEventForSearchBarClick();
     }
     return () => handler.remove();
-  }, [isSearchFocus, searchText]);
+  }, [isSearchFocus]);
 
   const cleverTapEventForSearchBarClick = () => {
     let eventAttributes = {
@@ -1403,10 +1406,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     updateAppVersion(currentPatient);
   }, [currentPatient]);
 
-  useEffect(() => {
-    checkCleverTapLoginStatus(currentPatient);
-  }, [currentPatient]);
-
   //to be called only when the user lands via app launch
   const logHomePageViewed = async (attributes: any) => {
     const isAppOpened = await AsyncStorage.getItem('APP_OPENED');
@@ -1433,7 +1432,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     try {
       const responseCampaign = await client.query({
         query: GET_CAMPAIGN_ID_FOR_REFERRER,
-        variables: { camp: 'HC_CAMPAIGN' },
         fetchPolicy: 'no-cache',
       });
       const responseReward = await client.query({
@@ -1441,9 +1439,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         variables: { reward: 'HC' },
         fetchPolicy: 'no-cache',
       });
-      if (responseCampaign?.data?.getCampaignInfoByCampaignType?.id) {
-        const campaignId = responseCampaign?.data?.getCampaignInfoByCampaignType?.id;
-        const campaignName = responseCampaign?.data?.getCampaignInfoByCampaignType?.campaignType;
+      if (responseCampaign?.data?.getCampaignInfo?.id) {
+        const campaignId = responseCampaign?.data?.getCampaignInfo?.id;
+        const campaignName = responseCampaign?.data?.getCampaignInfo?.campaignType;
         setCampaignId?.(campaignId);
         setCampaignName?.(campaignName);
       }
@@ -1460,6 +1458,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       saveDeviceNotificationToken(currentPatient.id);
     }
   }, [currentPatient]);
+
   const phrNotificationCount = getPhrNotificationAllCount(phrNotificationData!);
 
   const askLocationPermission = () => {
@@ -1524,7 +1523,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       }
     });
   };
-
+  
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setVaccineLoacalStorageData();
@@ -1537,6 +1536,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         }
       });
     });
+    setTimeout(() => {
+      checkIsAppDepricated(currentPatient?.mobileNumber)
+      .then(setDepricatedAppData)
+      .catch((error) => {
+        !!error && CommonBugFender('isAppVersionDeprecated', error);
+      });
+    }, 600)
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
       apisToCall.current = [];
       homeScreenParamsOnPop.current = null;
@@ -2154,8 +2160,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED,
           'Home Screen'
         );
-        props.navigation.navigate(AppRoutes.DoctorSearch);
-        //props.navigation.navigate(AppRoutes.PostShareAppointmentSelectorScreen);
+        props.navigation.navigate(AppRoutes.DoctorSearch);      
       },
     },
     {
@@ -3934,7 +3939,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       <View style={styles.menuOptionsContainer}>
         <TouchableOpacity
           activeOpacity={1}
-          onPress={() => textForNotch !== 'Offer Expired' && onOfferCtaPressed(item, 1)}
+          onPress={() => {
+            postOfferCardClickEvent(item, '1', textForNotch == 'Offer Expired');
+            textForNotch !== 'Offer Expired' && onOfferCtaPressed(item, 1);
+          }}
         >
           <LinearGradientVerticalComponent
             colors={[
@@ -6074,6 +6082,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           }
         />
       </Overlay>
+      <UpdateAppPopup depricatedAppData={depricatedAppData} />
     </View>
   );
 };

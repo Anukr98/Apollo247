@@ -28,6 +28,7 @@ import {
   CREATE_INTERNAL_ORDER,
   UPDATE_ORDER,
   CANCEL_PAYMENT,
+  SAVE_MEDICINE_ORDER_V3,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
@@ -35,6 +36,12 @@ import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/a
 import {
   one_apollo_store_code,
   PaymentStatus,
+  SaveMedicineOrderV3Input,
+  PrescriptionType,
+  MEDICINE_ORDER_TYPE,
+  MEDICINE_DELIVERY_TYPE,
+  BOOKING_SOURCE,
+  DEVICE_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -67,6 +74,10 @@ import {
   saveModifyOrder,
   diagnosticSaveBookHcCollectionV2,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { USER_AGENT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
+import DeviceInfo from 'react-native-device-info';
+import { Decimal } from 'decimal.js';
+
 const windowWidth = Dimensions.get('window').width;
 
 enum BOOKING_TYPE {
@@ -86,7 +97,13 @@ export const PaymentFailed: React.FC<PaymentFailedProps> = (props) => {
   const businessLine = props.navigation.getParam('businessLine');
   const amount = props.navigation.getParam('amount');
   const client = useApolloClient();
-  const { circleSubscriptionId, circlePlanSelected, hdfcSubscriptionId } = useShoppingCart();
+  const {
+    circleSubscriptionId,
+    circlePlanSelected,
+    hdfcSubscriptionId,
+    consultProfile,
+    cartPrescriptionType,
+  } = useShoppingCart();
   const { currentPatient, allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
   const storeCode =
     Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
@@ -108,6 +125,7 @@ export const PaymentFailed: React.FC<PaymentFailedProps> = (props) => {
   const [cancelledOldPayment, setcancelledOldPayment] = useState<boolean>(false);
   const showCODonDiag = AppConfig.Configuration.Show_COD_While_Retrying_Diag_Payment;
   const showCODonPharma = AppConfig.Configuration.Show_COD_While_Retrying_Pharma_Payment;
+  const [userAgent, setUserAgent] = useState<string>('');
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -123,6 +141,9 @@ export const PaymentFailed: React.FC<PaymentFailedProps> = (props) => {
 
   useEffect(() => {
     cancelPayment();
+    AsyncStorage.getItem(USER_AGENT).then((userAgent) => {
+      setUserAgent(userAgent || '');
+    });
   }, []);
 
   const cancelPayment = async () => {
@@ -267,6 +288,33 @@ export const PaymentFailed: React.FC<PaymentFailedProps> = (props) => {
     });
   }
 
+  const saveMedicineOrder = () => {
+    const saveMedicineOrderV3Variables = {
+      patientId:
+        cartPrescriptionType === PrescriptionType.CONSULT && consultProfile?.id
+          ? consultProfile?.id
+          : currentPatient?.id,
+      cartType: MEDICINE_ORDER_TYPE.CART_ORDER,
+      medicineDeliveryType: MEDICINE_DELIVERY_TYPE.HOME_DELIVERY,
+      bookingSource: BOOKING_SOURCE.MOBILE,
+      deviceType: Platform.OS === 'ios' ? DEVICE_TYPE.IOS : DEVICE_TYPE.ANDROID,
+      appVersion: DeviceInfo.getVersion(),
+      customerComment: '',
+      showPrescriptionAtStore: false,
+      paymentOrderId: paymentId,
+    };
+    return client.mutate({
+      mutation: SAVE_MEDICINE_ORDER_V3,
+      variables: { medicineOrderInput: saveMedicineOrderV3Variables },
+      fetchPolicy: 'no-cache',
+      context: {
+        headers: {
+          'User-Agent': userAgent,
+        },
+      },
+    });
+  };
+
   const onRetryConsultPayment = async () => {
     setLoading!(true);
     try {
@@ -406,6 +454,41 @@ export const PaymentFailed: React.FC<PaymentFailedProps> = (props) => {
     }
   };
 
+  const onRetryPharmaPayment = async () => {
+    setLoading!(true);
+    try {
+      const res = await saveMedicineOrder();
+      const orderResponse = res?.data?.saveMedicineOrderV3;
+      if (orderResponse?.errorMessage) {
+        renderErrorPopup(orderResponse?.errorMessage);
+      } else {
+        const orderData = orderResponse?.data;
+        const { transactionId, orders, isCodEligible, codMessage, paymentOrderId } = orderData;
+        let orderInfo = orderDetails;
+        orderInfo['displayId'] = transactionId;
+        orderInfo['orders'] = orders;
+        const newCartTotal = orders
+          .reduce((currTotal: number, currItem: any) => currTotal + currItem.estimatedAmount, 0)
+          .toFixed(2);
+        setLoading?.(false);
+        setauthToken?.('');
+        props.navigation.navigate(AppRoutes.PaymentMethods, {
+          paymentId: paymentOrderId,
+          amount: Number(newCartTotal),
+          orderDetails: orderInfo,
+          businessLine: 'pharma',
+          customerId: cusId,
+          disableCOD: !isCodEligible,
+          paymentCodMessage: codMessage,
+        });
+      }
+    } catch {
+      renderErrorPopup();
+    } finally {
+      setLoading?.(false);
+    }
+  };
+
   const updatePaymentToCOD = async (amount: number) => {
     const orderInput = {
       payment_order_id: paymentId,
@@ -461,6 +544,8 @@ export const PaymentFailed: React.FC<PaymentFailedProps> = (props) => {
         ? onRetryConsultPayment()
         : businessLine == 'diagnostics'
         ? onRetryDiagPayment()
+        : businessLine == 'pharma'
+        ? onRetryPharmaPayment()
         : null;
     } else {
       renderErrorPopup();
@@ -475,11 +560,11 @@ export const PaymentFailed: React.FC<PaymentFailedProps> = (props) => {
       : null;
   };
 
-  const renderErrorPopup = () => {
+  const renderErrorPopup = (msg?: string) => {
     setLoading?.(false);
     showAphAlert!({
       title: 'Uh oh.. :(',
-      description: 'Something went wrong. Please try again after some time',
+      description: !!msg ? msg : 'Something went wrong. Please try again after some time',
     });
   };
 
@@ -516,7 +601,9 @@ export const PaymentFailed: React.FC<PaymentFailedProps> = (props) => {
   };
 
   const renderRetry = () => {
-    return businessLine == 'diagnostics' || businessLine == 'consult' ? (
+    return businessLine == 'diagnostics' ||
+      businessLine == 'consult' ||
+      businessLine == 'pharma' ? (
       <TouchableOpacity style={styles.retryCont} onPress={onPressRetry}>
         <Text style={styles.retry}>RETRY WITH ANOTHER PAYMENT METHOD</Text>
       </TouchableOpacity>

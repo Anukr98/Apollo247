@@ -41,6 +41,7 @@ import {
 import { ListItem } from 'react-native-elements';
 import Hyperlink from 'react-native-hyperlink';
 import { NavigationScreenProps } from 'react-navigation';
+import HTML from 'react-native-render-html';
 import {
   TicketNumberMutation,
   TicketNumberMutationVariables,
@@ -108,9 +109,20 @@ export const NeedHelpContentView: React.FC<Props> = ({ navigation }) => {
     return <Breadcrumb links={breadCrumb} containerStyle={styles.breadcrumb} />;
   };
 
+  const ignoreStyles = [
+    'line-height',
+    'margin-bottom',
+    'color',
+    'text-align',
+    'font-size',
+    'font-family',
+  ];
+
   const renderCard = () => {
     const isCircleMember = circlePlanId && circleStatus === 'active';
-    const { title, text, cta, ctaNonCircle, ctaCircle } = subQueriesData?.content || {};
+    const { title, text, cta, ctaNonCircle, ctaCircle, contentType } =
+      subQueriesData?.content || {};
+
     const { title: buttonTitle, appRoute, appRouteParams } =
       cta || (isCircleMember ? ctaCircle : ctaNonCircle) || {};
     const onPressUrl = (url: string) => {
@@ -125,7 +137,18 @@ export const NeedHelpContentView: React.FC<Props> = ({ navigation }) => {
         {!!title && <Text style={styles.cardTitle}>{title}</Text>}
         {!!text && (
           <Hyperlink onPress={(url) => onPressUrl(url)}>
-            <Text style={styles.cardText}>{text}</Text>
+            {contentType?.toUpperCase() === 'HTML' ? (
+              <HTML
+                html={text}
+                onLinkPress={(evt, href) => {
+                  Linking.openURL(href);
+                }}
+                baseFontStyle={styles.cardText}
+                ignoredStyles={ignoreStyles}
+              />
+            ) : (
+              <Text style={styles.cardText}>{text}</Text>
+            )}
           </Hyperlink>
         )}
         {!!(buttonTitle && appRoute) && (

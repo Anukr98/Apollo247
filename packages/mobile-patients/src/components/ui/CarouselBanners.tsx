@@ -98,8 +98,11 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
   const client = useApolloClient();
 
   useEffect(() => {
-    fetchCarePlans();
-  }, []);
+    if (showCirclePlans && membershipPlans.length === 0) {
+      // fetch care plans only if user is non circle and if plans have not been populated
+      fetchCarePlans();
+    }
+  }, [showCirclePlans]);
 
   useEffect(() => {
     if (currentPatient?.id) {

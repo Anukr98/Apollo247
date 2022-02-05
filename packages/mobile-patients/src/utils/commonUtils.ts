@@ -398,6 +398,7 @@ export enum DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE {
   CART_PAGE = 'Cart page',
   CONSULT_ROOM = 'Consult Room',
   PHR = 'PHR Prescription',
+  DEEP_LINK = "Deeplink"
 }
 export const diagnosticsDisplayPrice = (item: DiagnosticsCartItem , isCircleMember : boolean) =>{
   const itemPackageMrp = item?.packageMrp!;
@@ -556,5 +557,23 @@ export const createDiagnosticValidateCouponLineItems = (selectedItem: any, isCir
 })
   return {
     pricesForItemArray,
+  };
+}
+
+export function getUpdatedCartItems(arrayToUse: DiagnosticPatientCartItem[]) {
+  const getExistingItems = arrayToUse
+    ?.map((item) => item?.cartItems?.filter((idd) => idd?.id))
+    ?.flat();
+  const selectedUniqueItems = getExistingItems?.filter((i:DiagnosticPatientCartItem) => i?.isSelected);
+  const selectedUnqiueItemIds = [
+    ...new Set(selectedUniqueItems?.map((item: DiagnosticPatientCartItem) => Number(item?.id))),
+  ];
+
+  const findPackageSKU = selectedUniqueItems?.find((_item: any) => _item?.inclusions?.length > 1);
+  const hasPackageSKU = !!findPackageSKU;
+  return {
+    selectedUniqueItems,
+    selectedUnqiueItemIds,
+    hasPackageSKU,
   };
 }

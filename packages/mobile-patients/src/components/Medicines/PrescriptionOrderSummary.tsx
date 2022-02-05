@@ -343,14 +343,13 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
           UploadDocumentInput: {
             base64FileInput: item.base64,
             category: PRISM_DOCUMENT_CATEGORY.HealthChecks,
-            fileType:
-              item.fileType == 'jpg'
-                ? UPLOAD_FILE_TYPES.JPEG
-                : item.fileType == 'png'
-                ? UPLOAD_FILE_TYPES.PNG
-                : item.fileType == 'pdf'
-                ? UPLOAD_FILE_TYPES.PDF
-                : UPLOAD_FILE_TYPES.JPEG,
+            fileType: item.fileType?.includes('jpg')
+              ? UPLOAD_FILE_TYPES.JPEG
+              : item.fileType?.includes('png')
+              ? UPLOAD_FILE_TYPES.PNG
+              : item.fileType?.includes('pdf')
+              ? UPLOAD_FILE_TYPES.PDF
+              : UPLOAD_FILE_TYPES.JPEG,
             patientId: g(currentPatient, 'id')!,
           },
         };
@@ -518,7 +517,10 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
-        <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+        <ScrollView
+          keyboardShouldPersistTaps={'handled'}
+          contentContainerStyle={{ paddingBottom: 100 }}
+        >
           {renderHeader()}
           {renderAddress()}
           {renderTatCard()}

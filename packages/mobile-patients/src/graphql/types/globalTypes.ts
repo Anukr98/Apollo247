@@ -153,6 +153,7 @@ export enum DIAGNOSTIC_ORDER_PAYMENT_TYPE {
 }
 
 export enum DIAGNOSTIC_ORDER_STATUS {
+  CANCELLATION_REQUESTED = "CANCELLATION_REQUESTED",
   ORDER_CANCELLED = "ORDER_CANCELLED",
   ORDER_CANCELLED_REQUEST = "ORDER_CANCELLED_REQUEST",
   ORDER_COMPLETED = "ORDER_COMPLETED",
@@ -1132,6 +1133,7 @@ export interface CancellationDiagnosticsInputv2 {
   orderIds: (string | null)[];
   patientId: string;
   reason: string;
+  allowCancellationRequest?: boolean | null;
 }
 
 export interface ChargeDetailsInput {
@@ -1742,6 +1744,7 @@ export interface PatientProfileInput {
   mobileNumber: string;
   partnerId?: string | null;
   id?: string | null;
+  whatsappOptIn?: boolean;
 }
 
 export interface PaymentReference {
@@ -1890,28 +1893,6 @@ export interface SUBSCRIPTION_DETAILS {
 
 export interface SUBSCRIPTION_DETAILS_PHARMA {
   userSubscriptionId?: string | null;
-}
-
-export interface SaveBookHomeCollectionOrderInput {
-  patientId: string;
-  patientAddressId: string;
-  totalPrice: number;
-  prescriptionUrl: string;
-  diagnosticDate: any;
-  bookingSource?: DiagnosticsBookingSource | null;
-  deviceType?: DEVICETYPE | null;
-  items?: (DiagnosticLineItem | null)[] | null;
-  slotId: string;
-  areaId?: number | null;
-  collectionCharges: number;
-  uniqueID?: string | null;
-  slotDateTimeInUTC: any;
-  totalPriceExcludingDiscounts?: number | null;
-  userSubscriptionId?: string | null;
-  subscriptionInclusionId?: string | null;
-  attachmentData?: (Attachments | null)[] | null;
-  caseSheets?: (string | null)[] | null;
-  agentLoginID?: string | null;
 }
 
 export interface SaveBookHomeCollectionOrderInputv2 {
@@ -2074,6 +2055,7 @@ export interface UpdatePatientInput {
   partnerId?: string | null;
   appsflyerId?: string | null;
   isConsulted?: boolean | null;
+  whatsappOptIn?: boolean;
 }
 
 export interface UploadDocumentInput {
@@ -2131,6 +2113,7 @@ export interface patientObjWithLineItems {
 export interface phleboCharges {
   charges: number;
   distanceCharges?: number | null;
+  couponDiscApplied?: boolean | null;
 }
 
 export interface prescriptionPrismFileProperties {
@@ -2356,6 +2339,21 @@ export interface SaveMedicineOrderV3Input {
   appVersion?: string | null;
   customerComment?: string | null;
   showPrescriptionAtStore?: boolean | null;
+}
+
+export interface GetTATStatusForDiagnosticOrderInput {
+  displayId: number;
+}
+
+export enum KB_CONTENT_TYPE {
+  html = "html",
+  text = "text",
+}
+
+export interface IsAppVersionDeprecatedInput {
+  os: DEVICE_TYPE;
+  version: string;
+  mobileNumber: string;
 }
 
 //==============================================================

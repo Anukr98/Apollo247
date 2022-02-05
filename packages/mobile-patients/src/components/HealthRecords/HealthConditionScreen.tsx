@@ -536,57 +536,22 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
       : selectedItem?.diseaseName
       ? HEALTH_CONDITIONS_TITLE.FAMILY_HISTORY
       : '';
-    postWebEngageEventsOnRecordPress(headerTitle, selectedItem);
+    let dateOfBirth = g(currentPatient, 'dateOfBirth');
+    let doctorConsultationAttributes = {
+      'Nav src': 'Health Conditions',
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+    };
+    postCleverTapEvent(
+      CleverTapEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS,
+      doctorConsultationAttributes
+    );
     props.navigation.navigate(AppRoutes.HealthRecordDetails, {
       data: selectedItem,
       healthCondition: true,
       healthHeaderTitle: headerTitle,
     });
-  };
-
-  const healthConditionDeleteWebEngageEvents = (
-    recordType: MedicalRecordType,
-    selectedItem: any
-  ) => {
-    if (recordType === MedicalRecordType.ALLERGY) {
-      const eventInputData = removeObjectProperty(selectedItem, 'attachmentList');
-      postCleverTapPHR(
-        currentPatient,
-        CleverTapEventName.PHR_DELETE_ALLERGY,
-        'Allergy',
-        eventInputData
-      );
-    } else if (recordType === MedicalRecordType.MEDICATION) {
-      postCleverTapPHR(
-        currentPatient,
-        CleverTapEventName.PHR_DELETE_MEDICATION,
-        'Medication',
-        selectedItem
-      );
-    } else if (recordType === MedicalRecordType.HEALTHRESTRICTION) {
-      postCleverTapPHR(
-        currentPatient,
-        CleverTapEventName.PHR_DELETE_HEALTH_RESTRICTIONS,
-        'Health Restriction',
-        selectedItem
-      );
-    } else if (recordType === MedicalRecordType.MEDICALCONDITION) {
-      const eventInputData = removeObjectProperty(selectedItem, 'medicationFiles');
-      postCleverTapPHR(
-        currentPatient,
-        CleverTapEventName.PHR_DELETE_MEDICAL_CONDITION,
-        'Medical Condition',
-        eventInputData
-      );
-    } else if (recordType === MedicalRecordType.FAMILY_HISTORY) {
-      const eventInputData = removeObjectProperty(selectedItem, 'familyHistoryFiles');
-      postCleverTapPHR(
-        currentPatient,
-        CleverTapEventName.PHR_DELETE_FAMILY_HISTORY,
-        'Family History',
-        eventInputData
-      );
-    }
   };
 
   const onPressDeletePrismMedicalRecords = (selectedItem: any) => {
@@ -604,7 +569,14 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
       .then((status) => {
         if (status) {
           getLatestHealthConditionRecords();
-          healthConditionDeleteWebEngageEvents(recordType, selectedItem);
+          let dateOfBirth = g(currentPatient, 'dateOfBirth');
+          let attributes = {
+            'Nav src': 'Health Conditions',
+            'Patient UHID': g(currentPatient, 'uhid'),
+            'Patient gender': g(currentPatient, 'gender'),
+            'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+          };
+          postCleverTapEvent(CleverTapEventName.PHR_DELETE_RECORD, attributes);
         } else {
           setShowSpinner(false);
         }

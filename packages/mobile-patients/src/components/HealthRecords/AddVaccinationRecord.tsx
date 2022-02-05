@@ -394,39 +394,14 @@ export const AddVaccinationRecord: React.FC<AAddVaccinationRecordProps> = (props
           },
         })
         .then(({ data }) => {
-          const eventInputData = removeObjectProperty(vaccinationCener, 'immunizations');
-          postCleverTapPHR(
-            currentPatient,
-            updateInfo
-              ? CleverTapEventName.PHR_UPDATE_VACCINATION_REPORT
-              : CleverTapEventName.PHR_ADD_VACCINATION_REPORT,
-            'Add Vaccination Record',
-            eventInputData
-          );
-          postWebEngageIfNewSession(
-            'Vaccination',
-            currentPatient,
-            eventInputData,
-            phrSession,
-            setPhrSession
-          );
-          postCleverTapEvent(CleverTapEventName.PHR_ADD_VACCINATION_REPORT, eventInputData);
-          postCleverTapIfNewSession(
-            'Vaccination',
-            currentPatient,
-            eventInputData,
-            phrSession,
-            setPhrSession
-          );
-          postCleverTapPHR(
-            currentPatient,
-            updateInfo
-              ? CleverTapEventName.PHR_UPDATE_VACCINATION_REPORT
-              : CleverTapEventName.PHR_ADD_VACCINATION_REPORT,
-            'Add Vaccination Record',
-            eventInputData
-          );
-
+          let dateOfBirth = g(currentPatient, 'dateOfBirth');
+          let attributes = {
+            'Nav src': 'Vaccination',
+            'Patient UHID': g(currentPatient, 'uhid'),
+            'Patient gender': g(currentPatient, 'gender'),
+            'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+          };
+          postCleverTapEvent(CleverTapEventName.PHR_ADD_RECORD, attributes);
           setshowSpinner(false);
           if (data?.addPatientImmunizationRecord.status) {
             gotoHealthRecordsHomeScreen();

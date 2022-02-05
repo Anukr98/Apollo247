@@ -15,6 +15,7 @@ export const CirclePurchase: React.FC<CirclePurchaseProps> = (props) => {
   const { subscriptionInfo, onPressBenefits, circleSavings } = props;
   const amount = subscriptionInfo?.payment_reference?.amount_paid;
   const endDate = subscriptionInfo?.end_date;
+  const duration = subscriptionInfo?.group_plan?.valid_duration;
 
   const renderSavings = () => {
     return !!circleSavings ? (
@@ -41,7 +42,7 @@ export const CirclePurchase: React.FC<CirclePurchaseProps> = (props) => {
         <CircleLogo style={styles.circleIcon} />
         <View>
           <Text style={styles.message}>
-            {`Congrats! You have successfully purchased the 2 months (Trial) Circle Plan for ₹${amount}`}
+            {`Congrats! You have successfully purchased the ${duration} months (Trial) Circle Plan for ₹${amount}`}
           </Text>
           {renderSavings()}
           {renderValidity()}

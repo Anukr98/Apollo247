@@ -40,6 +40,46 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_
   homeCollectionCharges: number | null;
 }
 
+export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderTransactions_offers_offer_description {
+  __typename: "DiagnosticPaymentOffersDescription";
+  title: string | null;
+  tnc: string | null;
+  description: string | null;
+}
+
+export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderTransactions_offers_benefits_calculation_info {
+  __typename: "DiagnosticPaymentOffersCalculationInfo";
+  value: number | null;
+  max_amount: number | null;
+  calculation_rule: string | null;
+}
+
+export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderTransactions_offers_benefits {
+  __typename: "DiagnosticPaymentOffersBenefits";
+  type: string | null;
+  amount: number | null;
+  calculation_info: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderTransactions_offers_benefits_calculation_info | null;
+}
+
+export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderTransactions_offers {
+  __typename: "DiagnosticPaymentOffers";
+  offer_id: string | null;
+  offer_code: string | null;
+  offer_description: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderTransactions_offers_offer_description | null;
+  status: string | null;
+  benefits: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderTransactions_offers_benefits | null)[] | null;
+}
+
+export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderTransactions {
+  __typename: "DiagnosticOrderTransactions";
+  healthCreditsUsed: number | null;
+  paymentMethod: string | null;
+  paymentStatus: string | null;
+  effectivePrepaidAmount: number | null;
+  prepaidAmount: number | null;
+  offers: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderTransactions_offers | null)[] | null;
+}
+
 export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_itemObj {
   __typename: "ItemObj";
   itemType: string | null;
@@ -137,6 +177,7 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList 
   couponCode: string | null;
   paymentOrderId: string | null;
   passportNo: string | null;
+  diagnosticOrderTransactions: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderTransactions | null)[] | null;
   diagnosticOrderLineItems: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems | null)[] | null;
   diagnosticOrdersStatus: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrdersStatus | null)[] | null;
 }

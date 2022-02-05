@@ -44,13 +44,14 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
   );
   const testPramaterDataCount = parameterData?.length;
   const inclusionData = data?.diagnostic_inclusions;
-  const dataLength = inclusionData?.length;
+  const dataLength = !!data?.testParametersCount
+    ? data?.testParametersCount
+    : inclusionData?.length;
 
   const isModifyOrder = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   const getExisitingOrderItems = isModifyOrder
     ? !!modifiedOrderItemIds && modifiedOrderItemIds
     : [];
-
   const isAlreadyPartOfOrder =
     getExisitingOrderItems?.length > 0 &&
     getExisitingOrderItems?.find((id: number) => Number(id) == Number(data?.diagnostic_item_id));
@@ -86,7 +87,7 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
     return (
       <View style={{ flex: 1 }}>
         <View style={styles.nameAndPriceViewStyle}>
-          <View style={{ width: '66%' }}>
+          <View style={{ width: '70%' }}>
             <Text numberOfLines={2} style={styles.testNameText}>
               {name}
             </Text>
@@ -109,10 +110,9 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
   const renderTestsIncluded = () => {
     return (
       <>
-        {testPramaterDataCount > 0 && (
+        {dataLength > 0 && (
           <Text style={styles.greyedOutTextStyle}>
-            {testPramaterDataCount}{' '}
-            {testPramaterDataCount > 1 ? string.diagnostics.tests : string.diagnostics.test}
+            {dataLength} {dataLength > 1 ? 'Tests included' : 'Test included'}
           </Text>
         )}
       </>
@@ -134,7 +134,12 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
           <Text numberOfLines={2} style={styles.greyedOutTextStyle}>
             Includes:{' '}
             <Text
-              style={{ color: !!findMatchItem ? theme.colors.APP_GREEN : theme.colors.SHERPA_BLUE }}
+              style={{
+                color:
+                  !!textToHighlight && textToHighlight != ''
+                    ? theme.colors.APP_GREEN
+                    : theme.colors.SHERPA_BLUE,
+              }}
             >
               {nameFormater(textToHighlight, 'default')}
             </Text>{' '}

@@ -40,6 +40,7 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import {
   CleverTapEventName,
   CleverTapEvents,
+  DIAGNOSTICS_ITEM_TYPE,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { checkIfFollowUpBooked } from '@aph/mobile-patients/src/graphql/types/checkIfFollowUpBooked';
@@ -651,17 +652,23 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       ...removeObjectNullUndefinedProperties(currentPatient),
       'Consult ID': g(id, 'id'),
     };
-    postWebEngageEvent(CleverTapEventName.PHR_ORDER_MEDS_TESTS, eventAttributes);
     postCleverTapEvent(CleverTapEventName.PHR_ORDER_MEDS_TESTS, eventAttributes);
   };
 
-  function postDiagnosticAddToCart(itemId: string, itemName: string) {
+  function postDiagnosticAddToCart(itemId: string, itemName: string, inclusions: any) {
+    const itemType =
+      !!inclusions &&
+      inclusions?.map((item: any) =>
+        item?.count > 1 ? DIAGNOSTICS_ITEM_TYPE.PACKAGE : DIAGNOSTICS_ITEM_TYPE.TEST
+      );
     DiagnosticAddToCartEvent(
       itemName,
       itemId,
       0,
       0,
       DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PHR,
+      itemType?.join(','),
+      undefined,
       currentPatient,
       !!circleSubscriptionId
     );
@@ -792,6 +799,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
           .then((tests) => {
             const getItemNames = tests?.map((item) => item?.name)?.join(', ');
             const getItemIds = tests?.map((item) => Number(item?.id))?.join(', ');
+            const getInclusionCount = tests?.map((item) => Number(item?.inclusions));
             if (testPrescription.length) {
               addMultipleTestCartItems!(tests! || []);
               // Adding ePrescriptions to DiagnosticsCart
@@ -805,7 +813,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
                   },
                 ]);
             }
-            postDiagnosticAddToCart(getItemIds!, getItemNames!);
+            postDiagnosticAddToCart(getItemIds!, getItemNames!, getInclusionCount);
           })
           .catch((e) => {
             CommonBugFender('DoctorConsultation_getMedicineDetailsApi', e);
@@ -865,13 +873,16 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
   };
 
   const onHealthCardItemPress = (selectedItem: any) => {
-    const eventInputData = removeObjectProperty(selectedItem, 'prescriptionFiles');
-    postCleverTapIfNewSession(
-      'Doctor Consultations',
-      currentPatient,
-      eventInputData,
-      phrSession,
-      setPhrSession
+    let dateOfBirth = g(currentPatient, 'dateOfBirth');
+    let doctorConsultationAttributes = {
+      'Nav src': 'Doctor Consultations',
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+    };
+    postCleverTapEvent(
+      CleverTapEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS,
+      doctorConsultationAttributes
     );
     if (selectedItem?.patientId) {
       postConsultCardClickEvent(selectedItem?.id);
@@ -902,13 +913,14 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       .then((status) => {
         if (status) {
           getLatestPrescriptionRecords();
-          const eventInputData = removeObjectProperty(selectedItem, 'prescriptionFiles');
-          postCleverTapPHR(
-            currentPatient,
-            CleverTapEventName.PHR_DELETE_DOCTOR_CONSULTATION,
-            'Doctor Consultation',
-            eventInputData
-          );
+          let dateOfBirth = g(currentPatient, 'dateOfBirth');
+          let attributes = {
+            'Nav src': 'Doctor Consultations',
+            'Patient UHID': g(currentPatient, 'uhid'),
+            'Patient gender': g(currentPatient, 'gender'),
+            'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+          };
+          postCleverTapEvent(CleverTapEventName.PHR_DELETE_RECORD, attributes);
         } else {
           setShowSpinner(false);
         }

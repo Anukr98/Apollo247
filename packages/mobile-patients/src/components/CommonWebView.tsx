@@ -31,6 +31,8 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { postAppsFlyerCircleAddRemoveCartEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
+import { PLAN, PLAN_ID } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 export interface CommonWebViewProps extends NavigationScreenProps {}
 
@@ -56,9 +58,11 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
     setCircleSubPlanId,
     setAutoCirlcePlanAdded,
     circlePlanValidity,
+    serverCartItems,
   } = useShoppingCart();
   const { circleSubscription } = useAppCommonData();
   const { setIsCircleAddedToCart, setSelectedCirclePlan } = useDiagnosticsCart();
+  const { setUserActionPayload } = useServerCart();
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
 
   const [webviewURl, setWebViewUrl] = useState('');
@@ -212,6 +216,18 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
                   setCircleMembershipCharges(responseData?.currentSellingPrice);
                 setCircleSubPlanId && setCircleSubPlanId(responseData?.subPlanId);
                 AsyncStorage.setItem('circlePlanSelected', data);
+                setUserActionPayload?.({
+                  subscription: {
+                    planId: PLAN_ID.CIRCLEPlan,
+                    subPlanId: responseData?.subPlanId,
+                    TYPE: PLAN.CARE_PLAN,
+                    subscriptionApplied: true,
+                  },
+                });
+                if (serverCartItems?.length === 0) {
+                  props.navigation.navigate(AppRoutes.SubscriptionCart, { circleEventSource });
+                  return;
+                }
               }
 
               navigation.goBack();

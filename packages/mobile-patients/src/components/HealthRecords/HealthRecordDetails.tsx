@@ -44,10 +44,10 @@ import { ProfileImageComponent } from '@aph/mobile-patients/src/components/Healt
 import {
   g,
   handleGraphQlError,
-  postCleverTapPHR,
   getSourceName,
   HEALTH_CONDITIONS_TITLE,
   removeObjectProperty,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import {
@@ -301,9 +301,9 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   const cleverTapSource = healthCheck
     ? 'Health Check'
     : hospitalization
-    ? 'Discharge Summary'
+    ? 'Hospitalization'
     : prescriptions
-    ? 'Prescription'
+    ? 'Doctor Consultations'
     : medicalBill
     ? 'Bills'
     : medicalInsurance
@@ -325,26 +325,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     : healthCondition
     ? 'HealthConditionReport_'
     : 'TestReport_';
-
-  const cleverTapEventName: CleverTapEventName = healthCheck
-    ? CleverTapEventName.PHR_DOWNLOAD_HEALTH_CHECKS
-    : hospitalization
-    ? CleverTapEventName.PHR_DOWNLOAD_HOSPITALIZATIONS
-    : prescriptions
-    ? CleverTapEventName.PHR_DOWNLOAD_DOCTOR_CONSULTATION
-    : medicalBill
-    ? CleverTapEventName.PHR_DOWNLOAD_BILLS
-    : medicalInsurance
-    ? CleverTapEventName.PHR_DOWNLOAD_INSURANCE
-    : healthCondition
-    ? healthHeaderTitle === HEALTH_CONDITIONS_TITLE.ALLERGY
-      ? CleverTapEventName.PHR_DOWNLOAD_ALLERGY
-      : healthHeaderTitle === HEALTH_CONDITIONS_TITLE.MEDICAL_CONDITION
-      ? CleverTapEventName.PHR_DOWNLOAD_MEDICAL_CONDITION
-      : healthHeaderTitle === HEALTH_CONDITIONS_TITLE.FAMILY_HISTORY
-      ? CleverTapEventName.PHR_DOWNLOAD_FAMILY_HISTORY
-      : CleverTapEventName.PHR_DOWNLOAD_TEST_REPORT
-    : CleverTapEventName.PHR_DOWNLOAD_TEST_REPORT;
 
   useEffect(() => {
     Platform.OS === 'android' && requestReadSmsPermission();
@@ -618,6 +598,14 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   };
 
   const downloadPDFTestReport = () => {
+    let dateOfBirth = g(currentPatient, 'dateOfBirth');
+    let attributes = {
+      'Nav src': cleverTapSource,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+    };
+    postCleverTapEvent(CleverTapEventName.PHR_DOWNLOAD_RECORD, attributes);
     if (currentPatient?.id) {
       setLoading && setLoading(true);
       client
@@ -669,6 +657,14 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   };
 
   const downloadZipFile = (zipUrl: string) => {
+    let dateOfBirth = g(currentPatient, 'dateOfBirth');
+    let attributes = {
+      'Nav src': cleverTapSource,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+    };
+    postCleverTapEvent(CleverTapEventName.PHR_DOWNLOAD_RECORD, attributes);
     const dirs = RNFetchBlob.fs.dirs;
     const fileName: string =
       file_name_text + currentPatient?.uhid + '_' + new Date().getTime() + '.zip';
@@ -692,7 +688,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       .fetch('GET', zipUrl)
       .then((res) => {
         setLoading && setLoading(false);
-        postCleverTapPHR(currentPatient, cleverTapEventName, cleverTapSource, eventInputData);
+
         Platform.OS === 'ios'
           ? RNFetchBlob.ios.previewDocument(res.path())
           : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
@@ -1177,7 +1173,14 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       ? g(data, 'familyHistoryFiles', '0', 'fileName')
       : '';
     const dirs = RNFetchBlob.fs.dirs;
-
+    let dateOfBirth = g(currentPatient, 'dateOfBirth');
+    let attributes = {
+      'Nav src': cleverTapSource,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+    };
+    postCleverTapEvent(CleverTapEventName.PHR_DOWNLOAD_RECORD, attributes);
     const fileName: string = getFileName(file_name, pdfUrl);
     const downloadPath =
       Platform.OS === 'ios'
@@ -1201,7 +1204,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       })
       .then((res) => {
         setLoading && setLoading(false);
-        postCleverTapPHR(currentPatient, cleverTapEventName, cleverTapSource, eventInputData);
+        postCleverTapEvent(CleverTapEventName.PHR_DOWNLOAD_RECORD, attributes);
         Platform.OS === 'ios'
           ? RNFetchBlob.ios.previewDocument(res.path())
           : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));

@@ -15,6 +15,7 @@ import {
   getDiagnosticDoctorPrescriptionResults,
   autoCompletePlaceSearch,
   pinCodeServiceabilityApi247,
+  getLocationCode,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -248,17 +249,17 @@ export const specialOffersImagesThumbnailUrl = (filePath: string, baseUrl?: stri
 };
 
 export const formatAddress = (address: savePatientAddress_savePatientAddress_patientAddress) => {
-  const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
-  const landmark = [address.landmark];
+  const addrLine1 = [address?.addressLine1, address?.addressLine2]?.filter((v) => v)?.join(', ');
+  const landmark = [address?.landmark];
   // to handle state value getting twice
-  const addrLine2 = [address.city, address.state]
-    .filter((v) => v)
-    .join(', ')
-    .split(',')
-    .map((v) => v.trim())
-    .filter((item, idx, array) => array.indexOf(item) === idx)
-    .join(', ');
-  const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
+  const addrLine2 = [address?.city, address?.state]
+    ?.filter((v) => v)
+    ?.join(', ')
+    ?.split(',')
+    ?.map((v) => v.trim())
+    ?.filter((item, idx, array) => array?.indexOf(item) === idx)
+    ?.join(', ');
+  const formattedZipcode = address?.zipcode ? ` - ${address?.zipcode}` : '';
   return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
 };
 
@@ -280,18 +281,18 @@ export const formatAddressWithLandmark = (
   address: savePatientAddress_savePatientAddress_patientAddress
 ) => {
   const addrLine1 = removeConsecutiveComma(
-    [address?.addressLine1, address?.addressLine2].filter((v) => v).join(', ')
+    [address?.addressLine1, address?.addressLine2]?.filter((v) => v)?.join(', ')
   );
   const landmark = [address?.landmark];
   // to handle state value getting twice
   const addrLine2 = removeConsecutiveComma(
     [address?.city, address?.state]
-      .filter((v) => v)
-      .join(', ')
-      .split(',')
-      .map((v) => v.trim())
-      .filter((item, idx, array) => array.indexOf(item) === idx)
-      .join(', ')
+      ?.filter((v) => v)
+      ?.join(', ')
+      ?.split(',')
+      ?.map((v) => v?.trim())
+      ?.filter((item, idx, array) => array.indexOf(item) === idx)
+      ?.join(', ')
   );
   const formattedZipcode = address?.zipcode ? ` - ${address?.zipcode}` : '';
   if (address?.landmark != '') {
@@ -299,6 +300,10 @@ export const formatAddressWithLandmark = (
   } else {
     return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
   }
+};
+
+export const getNameFromAddress = (address: savePatientAddress_savePatientAddress_patientAddress) => {
+  return address?.name || '';
 };
 
 export const getAge = (dob: string) => {
@@ -350,10 +355,10 @@ export const formatAddressForApi = (
 };
 
 export const formatNameNumber = (address: savePatientAddress_savePatientAddress_patientAddress) => {
-  if (address.name!) {
-    return `${address.name}\n${address.mobileNumber}`;
+  if (address?.name!) {
+    return `${address?.name}\n${address?.mobileNumber}`;
   } else {
-    return `${address.mobileNumber}`;
+    return `${address?.mobileNumber}`;
   }
 };
 
@@ -618,14 +623,14 @@ export const formatOrderAddress = (
   address: savePatientAddress_savePatientAddress_patientAddress
 ) => {
   // to handle state value getting twice
-  const addrLine = [address.addressLine1, address.addressLine2, address.city, address.state]
-    .filter((v) => v)
-    .join(', ')
-    .split(',')
-    .map((v) => v.trim())
-    .filter((item, idx, array) => array.indexOf(item) === idx)
-    .join(', ');
-  const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
+  const addrLine = [address?.addressLine1, address?.addressLine2, address?.city, address?.state]
+    ?.filter((v) => v)
+    ?.join(', ')
+    ?.split(',')
+    ?.map((v) => v?.trim())
+    ?.filter((item, idx, array) => array?.indexOf(item) === idx)
+    ?.join(', ');
+  const formattedZipcode = address?.zipcode ? ` - ${address?.zipcode}` : '';
   return `${addrLine}${formattedZipcode}`;
 };
 
@@ -639,8 +644,8 @@ export const formatSelectedAddress = (
     address?.state,
     address?.zipcode,
   ]
-    .filter((item) => item)
-    .join(', ');
+    ?.filter((item) => item)
+    ?.join(', ');
   return formattedAddress;
 };
 
@@ -1105,7 +1110,7 @@ export const findAddrComponents = (
   key?: 'long_name' | 'short_name' // default long_name
 ) => {
   const _key = key || 'long_name';
-  return (addrComponents.find((item) => item.types.indexOf(proptoFind) > -1) || { [_key]: '' })[
+  return (addrComponents?.find((item) => item?.types?.indexOf(proptoFind) > -1) || { [_key]: '' })[
     _key
   ];
 };
@@ -1128,7 +1133,7 @@ export const distanceBwTwoLatLng = (lat1: number, lon1: number, lat2: number, lo
 
 export const getlocationDataFromLatLang = async (latitude: number, longitude: number) => {
   const placeInfo = await getPlaceInfoByLatLng(latitude, longitude);
-  const addrComponents = g(placeInfo, 'data', 'results', '0' as any, 'address_components') || [];
+  const addrComponents = placeInfo?.data?.results?.[0]?.address_components || [];
   if (addrComponents.length == 0) {
     throw 'Unable to get location.';
   } else {
@@ -1165,7 +1170,7 @@ const getlocationData = (
       getPlaceInfoByLatLng(latitude, longitude)
         .then((response) => {
           const addrComponents = filterPinCodeAddressFromList(response);
-          if (addrComponents.length == 0) {
+          if (addrComponents?.length == 0) {
             reject('Unable to get location.');
           } else {
             resolve(
@@ -1509,6 +1514,55 @@ export const getDiscountPercentage = (price: number | string, specialPrice?: num
   return discountPercent != 0 ? Number(Number(discountPercent).toFixed(1)) : 0;
 };
 
+
+/** 
+ * ---------------------------------------
+ * TAT and magneto price logic */
+export const isDiffLessThanDecidedPercentage = (num1: number, num2: number, decidedPercentage: number) => {
+  return Math.abs(((num1 - num2) / num1) * 100) < decidedPercentage;
+};
+
+export const getSpecialPriceFromRelativePrices = (
+  price: number,
+  specialPrice: number,
+  newPrice: number
+) => Number(((specialPrice / price) * newPrice));
+
+export const getPriceAndSpecialPrice = (
+  price: number = 0,
+  specialPrice: number | string = 0,
+  mrp: number = 0,
+  qty: number = 0,
+  decidedPercentage: number = 0
+) => {
+  const defaultValues = {
+    specialPrice,
+    price,
+  };
+
+  if (mrp && qty) {
+    const tatPrice = mrp * qty;
+    if (!tatPrice) {
+      return defaultValues;
+    }
+    const isDff = isDiffLessThanDecidedPercentage(price, tatPrice, decidedPercentage);
+    if (isDff) {
+      const sPrice = typeof specialPrice === 'number' ? specialPrice : Number(specialPrice);
+      return {
+        specialPrice: getSpecialPriceFromRelativePrices(price, sPrice, tatPrice),
+        price: tatPrice.toFixed(2),
+      };
+    }
+  }
+  return defaultValues;
+};
+
+/** 
+ * TAT and magneto price logic
+ * ---------------------------------------
+ *  */
+
+
 export const getBuildEnvironment = () => {
   switch (apiRoutes.graphql()) {
     case 'https://aph-dev-api.apollo247.com//graphql':
@@ -1595,13 +1649,13 @@ const webengage = new WebEngage();
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
     webengage.track(eventName, validateEventObject(attributes));
-  } catch (error) {}
+  } catch (error) { }
 };
 
 export const postCleverTapEvent = (eventName: CleverTapEventName, attributes: Object) => {
   try {
     CleverTap.recordEvent(eventName, validateEventObject(attributes));
-  } catch (error) {}
+  } catch (error) { }
 };
 
 /**
@@ -1639,6 +1693,9 @@ export const onCleverTapUserLogin = async (_currentPatient: any) => {
       ...(_currentPatient?.photoUrl && { Photo: _currentPatient?.photoUrl }),
       ...(_currentPatient?.createdDate && { CreatedDate: _currentPatient?.createdDate }),
     };
+    if (_currentPatient?.['Msg-whatsapp']) {
+      _userProfile['Msg-whatsapp'] = true;
+    }
     CleverTap.onUserLogin(_userProfile);
     AsyncStorage.setItem('createCleverTapProifle', 'true');
   } catch (error) {
@@ -2346,15 +2403,13 @@ export const InitiateAppsFlyer = (
   let isDeepLinked = false;
   onDeepLinkCanceller = appsFlyer.onDeepLink((res) => {
     isDeepLinked = true;
-    if (res?.isDeferred) {
+    if (res.is_deferred) {
       getInstallResources();
-      res?.data?.deep_link_value?.(() => {
-        const url = handleOpenURL(res?.data?.deep_link_value);
-        AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
-      });
+      const url = handleOpenURL(res?.data?.deep_link_value);
+      AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
     }
     try {
-      if (!res?.isDeferred) {
+      if (!res.is_deferred) {
         if (redirectUrl && checkUniversalURL(redirectUrl).universal) {
           if (Object.keys(res.data).length < 2) {
             clevertapEventForAppsflyerDeeplink(
@@ -2373,11 +2428,9 @@ export const InitiateAppsFlyer = (
           }
         } else {
           clevertapEventForAppsflyerDeeplink(filterAppLaunchSoruceAttributesByKey(res.data));
-          res?.data?.deep_link_value?.(() => {
-            const url = handleOpenURL(res.data.deep_link_value);
-            AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
-            redirectWithOutDeferred(url);
-          });
+          const url = handleOpenURL(res.data.deep_link_value);
+          AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
+          redirectWithOutDeferred(url);
         }
       }
       if (res.status == 'success') {
@@ -3308,7 +3361,6 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
   switch (status) {
     case DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED:
     case 'ORDER_CANCELLED_AFTER_REGISTRATION':
-    case DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED_REQUEST:
       statusString = 'Order cancelled';
       break;
     case DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED:
@@ -3381,6 +3433,10 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
       break;
     case DIAGNOSTIC_ORDER_STATUS.REFUND_INITIATED:
       statusString = 'Partial Refund Initiated';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.CANCELLATION_REQUESTED:
+    case DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED_REQUEST:
+      statusString = 'Cancellation Requested';
       break;
     default:
       statusString = '';
@@ -3939,17 +3995,22 @@ export const downloadDocument = (
   orderId: number,
   isReport?: boolean
 ) => {
+  const dirs = RNFetchBlob.fs.dirs;
   let filePath: string | null = null;
-  let file_url_length = fileUrl.length;
+  let file_url_length = fileUrl?.length;
   let viewReportOrderId = orderId;
   const isReportApollo = isReport ? 'labreport' : 'labinvoice';
   const dynamicFileName = `Apollo247_${orderId}_${isReportApollo}.pdf`;
-  const configOptions = { fileCache: true };
+  const downloadPath =
+    Platform.OS === 'ios'
+      ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + dynamicFileName
+      : dirs.DownloadDir + '/' + dynamicFileName;
+  const configOptions = { fileCache: true, path: downloadPath };
   RNFetchBlob.config(configOptions)
-    .fetch('GET', fileUrl.replace(/\s/g, ''))
+    .fetch('GET', fileUrl?.replace(/\s/g, ''))
     .then((resp) => {
-      filePath = resp.path();
-      return resp.readFile('base64');
+      filePath = resp?.path();
+      return resp?.readFile('base64');
     })
     .then(async (base64Data) => {
       base64Data = `data:${type};base64,` + base64Data;
@@ -3963,6 +4024,7 @@ export const downloadDocument = (
 
   return viewReportOrderId;
 };
+
 export const getIsMedicine = (typeId: string) => {
   const medicineType = {
     fmcg: '0',
@@ -4315,12 +4377,17 @@ export const shareDocument = async (
   isReport?: boolean
 ) => {
   let result = Platform.OS === 'android' && (await requestReadSmsPermission());
+  const dirs = RNFetchBlob.fs.dirs;
   let filePath: string | null = null;
-  let file_url_length = fileUrl.length;
+  let file_url_length = fileUrl?.length;
   let viewReportOrderId = orderId;
   const isReportApollo = isReport ? 'labreport' : 'labinvoice';
   const dynamicFileName = `Apollo247_${orderId}_${isReportApollo}.pdf`;
-  const configOptions = { fileCache: true };
+  const downloadPath =
+    Platform.OS === 'ios'
+      ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + dynamicFileName
+      : dirs.DownloadDir + '/' + dynamicFileName;
+  const configOptions = { fileCache: true, path: downloadPath };
 
   try {
     if (
@@ -4333,10 +4400,10 @@ export const shareDocument = async (
       Platform.OS == 'ios'
     ) {
       RNFetchBlob.config(configOptions)
-        .fetch('GET', fileUrl.replace(/\s/g, ''))
+        .fetch('GET', fileUrl?.replace(/\s/g, ''))
         .then((resp) => {
-          filePath = resp.path();
-          return resp.readFile('base64');
+          filePath = resp?.path();
+          return resp?.readFile('base64');
         })
         .then(async (base64Data) => {
           base64Data = `data:${type};base64,` + base64Data;
@@ -4367,6 +4434,28 @@ export const shareDocument = async (
   return viewReportOrderId;
 };
 
+export const setLocationCodeFromApi = (pincode: string, setLocationCode: ((value: string) => void) | null, locationCode: string) => {
+  if (pincode) {
+    getLocationCode(pincode)
+      .then((response) => {
+        const code = response?.data?.sr_code;
+        if (code && code !== locationCode) {
+          setLocationCode?.(code);
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('setLocationCodeFromApi_helperFunction', error);
+      })
+  }
+}
+
+export const getOfferDescription = (bestOffer: any, item: any) => {
+  return parseFloat(bestOffer?.discount_amount) > 50
+    ? `Get ₹${bestOffer?.discount_amount} off on ${item?.payment_method_name} wallet`
+    : parseFloat(bestOffer?.cashback_amount) > 50
+      ? `Get ₹${bestOffer?.cashback_amount} cashback on ${item?.payment_method_name} wallet`
+      : bestOffer?.description?.description;
+};
 export const addSlotDuration = (slotValue: string, slotDuration: number) => {
   return moment(slotValue, 'hh:mm A')
     ?.add(slotDuration, 'minutes')
@@ -4392,9 +4481,41 @@ export const showDiagnosticCTA = (pageName: CALL_TO_ORDER_CTA_PAGE_ID, cityId: s
       return null;
     }
   });
+}
+
+export const calculateDiagnosticCartItems = (
+  cartItem: DiagnosticsCartItem[],
+  patientCartItem: DiagnosticPatientCartItem[]
+) => {
+
+  let selectedCartItems;
+  if (!!patientCartItem && patientCartItem?.length > 0) {
+    const getPatientCartItems = patientCartItem
+      ?.map((item) => item?.cartItems?.filter((idd) => idd?.id))
+      ?.flat();
+    const getUniquePatientItems = (selectedCartItems = [
+      ...getPatientCartItems
+        ?.reduce((item: any, obj: any) => item?.set(obj?.id, obj), new Map())
+        .values(),
+    ]);
+    const getItemsInCartNotInPatientCart = cartItem?.filter(
+      ({ id: cId }) => !getUniquePatientItems?.some(({ id: pId }) => cId === pId)
+    );
+    const getSelectedItems = getPatientCartItems?.filter(
+      (i: DiagnosticsCartItem) => i?.isSelected
+    );
+    const unionArray = getSelectedItems?.concat(getItemsInCartNotInPatientCart);
+    selectedCartItems = [
+      ...unionArray?.reduce((item: any, obj: any) => item?.set(obj?.id, obj), new Map()).values(),
+    ];
+  } else {
+    selectedCartItems = cartItem?.filter((i: DiagnosticsCartItem) => i?.isSelected);
+  }
+  return selectedCartItems;
 };
 
 export const isTodaysDate = (time: string) => moment(time).isSame(new Date(), 'date');
+
 export const isTomorrowsDate = (time: string) => {
   let tommorowDate = new Date();
   tommorowDate.setDate(tommorowDate.getDate() + 1);
@@ -4403,6 +4524,10 @@ export const isTomorrowsDate = (time: string) => {
     .diff(moment(time).startOf('day'), 'days');
   return difference == 0;
 };
+
+export const isRtpcrInCart = (cartItems: DiagnosticsCartItem[]) => {
+  return !!cartItems?.find((cartItem) => AppConfig.Configuration.DIAGNOSTICS_COVID_ITEM_IDS?.includes(Number(cartItem?.id)))
+}
 
 export const getShipmentAndTatInfo = (shipments) => {
   return shipments?.length

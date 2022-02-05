@@ -678,7 +678,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
 
               {props.isComingFrom == 'testSearchResult'
                 ? renderSearchPriceView()
-                : props.isComingFrom == AppRoutes.TestsCart
+                : props.isComingFrom == AppRoutes.CartPage
                 ? renderPriceView()
                 : renderUnitDropdownAndPrice()}
             </>
@@ -686,7 +686,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
         </View>
       </View>
       <View style={{ height: 13 }} />
-      {props.isComingFrom == AppRoutes.TestsCart &&
+      {props.isComingFrom == AppRoutes.CartPage &&
         props.showCartInclusions &&
         !!inclusionItemToShow && (
           <View style={styles.inclusionsView}>

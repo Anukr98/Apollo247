@@ -6,14 +6,13 @@ import { NeedHelpEmailPopup } from '@aph/mobile-patients/src/components/NeedHelp
 import { Events, Helpers } from '@aph/mobile-patients/src/components/NeedHelpQueryDetails';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { AphListItem } from '@aph/mobile-patients/src/components/ui/AphListItem';
-import { createAddressObject, sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
+import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
   GET_MEDICINE_ORDER_OMS_DETAILS_SHIPMENT,
-  SEND_HELP_EMAIL,
   CREATE_HELP_TICKET,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -27,16 +26,8 @@ import {
   MEDICINE_ORDER_STATUS,
   ORDER_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  SendHelpEmail,
-  SendHelpEmailVariables,
-} from '@aph/mobile-patients/src/graphql/types/SendHelpEmail';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import {
-  getPatientNameById,
-  nameFormater,
-  navigateToHome,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getPatientNameById, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
   WebEngageEvents,
@@ -46,8 +37,10 @@ import {
   AppConfig,
   BLACK_LIST_CANCEL_STATUS_ARRAY,
   BLACK_LIST_RESCHEDULE_STATUS_ARRAY,
+  DIAGNOSTIC_ORDER_CANCELLED_STATUS,
+  DIAGNOSTIC_SHOW_RESCHEDULE_CANCEL_ARRAY,
 } from '@aph/mobile-patients/src/strings/AppConfig';
-import { Down, DownO, InfoIconRed, ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
+import { DownO } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
@@ -63,7 +56,7 @@ import {
   TouchableOpacity,
   Dimensions,
 } from 'react-native';
-import { SectionHeader, Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { Divider } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
 import {
@@ -78,7 +71,6 @@ import {
   TicketNumberMutationVariables,
 } from '@aph/mobile-patients/src/graphql/types/TicketNumberMutation';
 type orderList = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList;
-const screenheight = Dimensions.get('window').height;
 
 export interface Props
   extends NavigationScreenProps<{
@@ -91,6 +83,7 @@ export interface Props
     isOrderRelatedIssue?: boolean;
     medicineOrderStatus?: DIAGNOSTIC_ORDER_STATUS;
     isConsult?: boolean;
+    isDiagnostics?: boolean;
     medicineOrderStatusDate?: any;
     sourcePage: WebEngageEvents[WebEngageEventName.HELP_TICKET_SUBMITTED]['Source_Page'];
   }> {}
@@ -107,9 +100,9 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
   const isOrderRelatedIssue = navigation.getParam('isOrderRelatedIssue') || false;
   const [showEmailPopup, setShowEmailPopup] = useState<boolean>(email ? false : true);
   const [requestEmailWithoutAction, setRequestEmailWithoutAction] = useState<boolean>(true);
-  const [onPressIssue, setOnPressIssue] = useState<string>('');
   const [currentOffset, setCurrentOffset] = useState<number>(1);
   const [orderListData, setOrderListData] = useState<(orderListByMobile | null)[] | null>([]);
+  const [cancelRequestedReason, setCancelRequestedReason] = useState<string>('');
   const [resultList, setResultList] = useState<(orderListByMobile | null)[] | null>([]);
   const medicineOrderStatus = navigation.getParam('medicineOrderStatus');
   const { saveNeedHelpQuery, getQueryData, getQueryDataByOrderStatus } = Helpers;
@@ -124,13 +117,12 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const { needHelpToContactInMessage, needHelpTicketReferenceText } = useAppCommonData();
   const isConsult = navigation.getParam('isConsult') || false;
+  const isDiagnostics = true;
   const [selectedQueryId, setSelectedQueryId] = useState<string>('');
   const [comments, setComments] = useState<string>('');
   const apolloClient = useApolloClient();
   const [isPrevious, setIsPrevious] = useState<boolean>(false);
-  const [filteredOrderList, setFilteredOrderList] = useState<(orderListByMobile | null)[] | null>(
-    []
-  );
+
   const apolloClientWithAuth = buildApolloClient(authToken);
   const [orders, setOrders] = useState<any>([]);
   const { getHelpSectionQueries } = NeedHelpHelpers;
@@ -169,12 +161,15 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
   useEffect(() => {
     fetchOrders();
   }, []);
+
   useEffect(() => {
     fetchOrders();
   }, [currentOffset]);
+
   useEffect(() => {
     setOrders(resultList);
   }, [resultList]);
+
   const fetchOrders = async () => {
     try {
       setLoading?.(true);
@@ -194,7 +189,10 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
         })
         .then((data) => {
           const ordersList = data?.data?.getDiagnosticOrdersListByMobile?.ordersList || [];
+          const requestedCancelReason =
+            data?.data?.getDiagnosticOrdersListByMobile?.cancellationRequestedDisplayText;
           setOrderListData(ordersList);
+          setCancelRequestedReason(requestedCancelReason!);
           if (currentOffset == 1) {
             setResultList(ordersList);
           } else {
@@ -215,11 +213,11 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
         })
         .catch((error) => {
           setLoading?.(false);
-          CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchOrders`, error);
+          CommonBugFender(`${AppRoutes.NeedHelpDiagnosticsOrder}_fetchOrders`, error);
         });
     } catch (error) {
       setLoading?.(false);
-      CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchOrders`, error);
+      CommonBugFender(`${AppRoutes.NeedHelpDiagnosticsOrder}_fetchOrders`, error);
     }
   };
 
@@ -248,8 +246,7 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
       order?.orderStatus!
     );
     // const showReschedule = isRescheduleValid == undefined && !isPastOrder ? true : false;
-    const showReschedule =
-      isRescheduleValid == undefined && !isRescheduleValidAtOrderLevel ? true : false;
+    const showReschedule = DIAGNOSTIC_SHOW_RESCHEDULE_CANCEL_ARRAY.includes(order?.orderStatus);
 
     //show the reschedule option :-
 
@@ -282,6 +279,7 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
               : 'Ms.'
             : ''
         }
+        patientDetails={!!order?.patientObj ? order?.patientObj : null}
         showAddTest={false}
         ordersData={order?.diagnosticOrderLineItems!}
         showPretesting={false}
@@ -291,16 +289,19 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
             ? order?.slotDateTimeInUTC
             : getSlotStartTime(order?.slotTimings)
         }
+        slotDuration={
+          order?.attributesObj?.slotDurationInMinutes || AppConfig.Configuration.DEFAULT_PHELBO_ETA
+        }
         isPrepaid={order?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT}
-        isCancelled={currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED}
+        isCancelled={DIAGNOSTIC_ORDER_CANCELLED_STATUS.includes(currentStatus)}
         cancelledReason={
-          currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED &&
+          DIAGNOSTIC_ORDER_CANCELLED_STATUS.includes(currentStatus) &&
           order?.diagnosticOrderCancellation != null
             ? order?.diagnosticOrderCancellation
             : null
         }
         showRescheduleCancel={
-          showReschedule && order?.orderStatus != DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED
+          showReschedule && !DIAGNOSTIC_ORDER_CANCELLED_STATUS.includes(order?.orderStatus)
         }
         showReportOption={
           showReport || order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED
@@ -326,12 +327,13 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
           index < orders?.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },
           index == 0 ? { marginTop: 20 } : {},
         ]}
+        cancelRequestedReason={cancelRequestedReason}
       />
     );
   };
   const onPressHelp = (item: any) => {
     const currentStatusDate = item?.diagnosticOrdersStatus?.find(
-      (i) => i?.orderStatus === item?.orderStatus
+      (i: any) => i?.orderStatus === item?.orderStatus
     )?.statusDate;
     navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
       isOrderRelatedIssue: true,
@@ -342,6 +344,7 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
       queries,
       email,
       sourcePage,
+      isDiagnostics,
     });
   };
   const renderLoadMore = () => {
@@ -508,7 +511,6 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
 
   const renderTextInputAndCTAs = () => {
     const isDeliveryStatusQuery = selectedQueryId === helpSectionQueryId.deliveryStatus;
-
     return [
       <TextInputComponent
         value={comments}
@@ -600,6 +602,7 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
           isOrderRelatedIssue,
           medicineOrderStatus,
           isConsult,
+          isDiagnostics,
         });
         setSelectedQueryId('');
         setComments('');
@@ -684,6 +687,7 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
         queries,
         email,
         sourcePage,
+        isDiagnostics,
         pathFollowed: string.otherIssueNotMyOrders + ' - ',
       });
     };

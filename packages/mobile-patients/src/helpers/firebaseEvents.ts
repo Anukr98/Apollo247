@@ -82,7 +82,7 @@ export enum FirebaseEventName {
   BROWSE_PACKAGE = 'Browse Package',
   DIAGNOSTIC_ITEM_VIEWED = 'DiagnosticItemViewed',
   DIAGNOSTIC_CART_ADDRESS_SELECTED_SUCCESS = 'AddressSelected',
-  DIAGNOSTIC_ORDER_PLACE = "diagnostics_order_placed",
+  DIAGNOSTIC_ORDER_PLACE = 'diagnostics_order_placed',
 
   // Health Records
   CONSULT_RX = 'Consult & RX',
@@ -347,7 +347,7 @@ export interface FirebaseEvents {
   };
   [FirebaseEventName.PHARMACY_CHECKOUT_COMPLETED]: {
     order_id: string | number; // Order_ID
-    transaction_id?: string; // payment id 
+    transaction_id?: string; // payment id
     currency?: string;
     coupon?: string;
     shipping?: number; // delivery charges
@@ -374,7 +374,7 @@ export interface FirebaseEvents {
     Cart_ID?: string | number; // Optional
     Service_Area: 'Pharmacy' | 'Diagnostic';
     'Circle discount': number;
-    "Circle user": 'Yes' | 'No';
+    'Circle user': 'Yes' | 'No';
   };
 
   [FirebaseEventName.PRODUCT_PAGE_VIEWED]: {
@@ -552,6 +552,8 @@ export interface FirebaseEvents {
     af_revenue: number;
     af_currency: string;
     'Circle discount': number;
+    currency: string;
+    Value: number;
   };
   [FirebaseEventName.RATING_GIVEN]: {
     PatientUHID: string;

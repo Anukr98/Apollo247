@@ -71,10 +71,12 @@ import {
   postCleverTapEvent,
   getCleverTapCircleMemberValues,
   removeObjectNullUndefinedProperties,
+  requestReadSmsPermission,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   CleverTapEventName,
   CleverTapEvents,
+  DIAGNOSTICS_ITEM_TYPE,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -93,6 +95,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  PermissionsAndroid,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
@@ -441,7 +444,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   }, []);
 
   const getAddressList = () => {
-    setLoading && setLoading(true);
     client
       .query<getPatientAddressList, getPatientAddressListVariables>({
         query: GET_PATIENT_ADDRESS_LIST,
@@ -463,12 +465,10 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             if (address) {
               address?.latitude && setDefaultAddress(address);
             } else {
-              setLoading && setLoading(false);
               setPrescAvailability('unavailable');
               setTestAvailability('unavailable');
             }
           } else {
-            setLoading && setLoading(false);
             setPrescAvailability('unavailable');
             setTestAvailability('unavailable');
           }
@@ -868,13 +868,20 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     pharmacyLocation,
   } = useAppCommonData();
 
-  function postDiagnosticAddToCart(itemId: string, itemName: string) {
+  function postDiagnosticAddToCart(itemId: string, itemName: string, inclusions: any) {
+    const itemType =
+      !!inclusions &&
+      inclusions?.map((item: any) =>
+        item?.count > 1 ? DIAGNOSTICS_ITEM_TYPE.PACKAGE : DIAGNOSTICS_ITEM_TYPE.TEST
+      );
     DiagnosticAddToCartEvent(
       itemName,
       itemId,
       0,
       0,
       DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PHR,
+      itemType?.join(','),
+      undefined,
       currentPatient,
       !!circleSubscriptionId
     );
@@ -930,8 +937,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         const unAvailableItems = unAvailableItemsArray.map((item) => item.itemname).join(', ');
         const getItemNames = tests?.map((item) => item?.name)?.join(', ');
         const getItemIds = tests?.map((item) => Number(item?.id))?.join(', ');
+        const getInclusionCount = tests?.map((item) => Number(item?.inclusions));
 
-        if (tests.length) {
+        if (tests?.length) {
           addMultipleTestCartItems!(tests);
           addMultipleTestEPrescriptions!([
             {
@@ -974,7 +982,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           });
         }
         setLoading?.(false);
-        postDiagnosticAddToCart(getItemIds, getItemNames);
+        postDiagnosticAddToCart(getItemIds, getItemNames, getInclusionCount);
       })
       .catch((e) => {
         setLoading?.(false);
@@ -1168,7 +1176,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     const { isAllMedicineAtPincode, isPartialMedicineAtPincode, noPincode } = tatContent.find(
       (item) => item.isMedicine
     );
-    return prescAvailability !== 'unavailable' ? (
+    return prescAvailability !== 'unavailable' && defaultAddress?.zipcode && tat ? (
       <Text style={styles.tatText}>
         {prescAvailability == 'available'
           ? isAllMedicineAtPincode + ' at '
@@ -1475,56 +1483,70 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       );
   };
 
-  const onPressDownloadPrescripiton = () => {
+  const onPressDownloadPrescripiton = async () => {
     if (g(caseSheetDetails, 'blobName') == null) {
       Alert.alert('No Image');
       CommonLogEvent('CONSULT_DETAILS', 'No image');
     } else {
-      postWEGEvent('download prescription');
-      postCleverTapPHR(
-        currentPatient,
-        CleverTapEventName.PHR_DOWNLOAD_DOCTOR_CONSULTATION,
-        'Doctor Consultation',
-        caseSheetDetails
-      );
-      const dirs = RNFetchBlob.fs.dirs;
+      let result = Platform.OS === 'android' && (await requestReadSmsPermission());
+      if (
+        (result &&
+          Platform.OS == 'android' &&
+          result?.[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] ===
+            PermissionsAndroid.RESULTS.GRANTED &&
+          result?.[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] ===
+            PermissionsAndroid.RESULTS.GRANTED) ||
+        Platform.OS == 'ios'
+      ) {
+        let dateOfBirth = g(currentPatient, 'dateOfBirth');
+        let doctorConsultationAttributes = {
+          'Nav src': 'Doctor Consultations',
+          'Patient UHID': g(currentPatient, 'uhid'),
+          'Patient gender': g(currentPatient, 'gender'),
+          'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+        };
+        postCleverTapEvent(CleverTapEventName.PHR_DOWNLOAD_RECORD, doctorConsultationAttributes);
+        const dirs = RNFetchBlob.fs.dirs;
 
-      const fileName: string = getFileName();
+        const fileName: string = getFileName();
 
-      const downloadPath =
-        Platform.OS === 'ios'
-          ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + (fileName || 'Apollo_Prescription.pdf')
-          : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf');
-      setLoading && setLoading(true);
-      RNFetchBlob.config({
-        fileCache: true,
-        path: downloadPath,
-        addAndroidDownloads: {
-          title: fileName,
-          useDownloadManager: true,
-          notification: true,
-          path: downloadPath,
-          mime: mimeType(downloadPath),
-          description: 'File downloaded by download manager.',
-        },
-      })
-        .fetch(
-          'GET',
-          AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheetDetails!.blobName!),
-          {
-            //some headers ..
-          }
-        )
-        .then((res) => {
-          setLoading && setLoading(false);
+        const downloadPath =
           Platform.OS === 'ios'
-            ? RNFetchBlob.ios.previewDocument(res.path())
-            : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
+            ? (dirs.DocumentDir || dirs.MainBundleDir) +
+              '/' +
+              (fileName || 'Apollo_Prescription.pdf')
+            : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf');
+        setLoading && setLoading(true);
+        RNFetchBlob.config({
+          fileCache: true,
+          path: downloadPath,
+          addAndroidDownloads: {
+            title: fileName,
+            useDownloadManager: true,
+            notification: true,
+            path: downloadPath,
+            mime: mimeType(downloadPath),
+            description: 'File downloaded by download manager.',
+          },
         })
-        .catch((err) => {
-          CommonBugFender('ConsultDetails_renderFollowUp', err);
-          setLoading && setLoading(false);
-        });
+          .fetch(
+            'GET',
+            AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheetDetails!.blobName!),
+            {
+              //some headers ..
+            }
+          )
+          .then((res) => {
+            setLoading && setLoading(false);
+            Platform.OS === 'ios'
+              ? RNFetchBlob.ios.previewDocument(res.path())
+              : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
+          })
+          .catch((err) => {
+            CommonBugFender('ConsultDetails_renderFollowUp', err);
+            setLoading && setLoading(false);
+          });
+      }
     }
   };
 
