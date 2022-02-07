@@ -20,7 +20,6 @@ import { postCleverTapEvent } from '@aph/mobile-patients/src/helpers/helperFunct
 export interface ServerCartItemsListProps {
   screen: 'summary' | 'serverCart';
   onPressProduct?: (item: ShoppingCartItem) => void;
-  setloading?: (value: boolean) => void;
 }
 
 export const ServerCartItemsList: React.FC<ServerCartItemsListProps> = (props) => {
@@ -33,7 +32,7 @@ export const ServerCartItemsList: React.FC<ServerCartItemsListProps> = (props) =
     cartCoupon,
   } = useShoppingCart();
   const { setUserActionPayload, userActionPayload } = useServerCart();
-  const { screen, onPressProduct, setloading } = props;
+  const { screen, onPressProduct } = props;
   const { currentPatient } = useAllCurrentPatients();
   const { cartBankOffer } = useAppCommonData();
   const { isCircleExpired, circleSubscriptionId } = useShoppingCart();
@@ -169,7 +168,7 @@ export const ServerCartItemsList: React.FC<ServerCartItemsListProps> = (props) =
     <View>
       {renderCartItemsHeader()}
       {renderCartBankOfferBanner()}
-      {showNudgeMessage && renderNudgeMessage()}
+      {showNudgeMessage ? renderNudgeMessage() : null}
       {renderCartItems()}
     </View>
   );

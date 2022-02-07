@@ -8,13 +8,10 @@ import {
   NativeEventEmitter,
   ScrollView,
   Platform,
-  Text,
-  KeyboardAvoidingView,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/PaymentGateway/Components/Header';
-import { BookingInfo } from '@aph/mobile-patients/src/components/PaymentGateway/Components/BookingInfo';
 import { PayByCash } from '@aph/mobile-patients/src/components/PaymentGateway/Components/PayByCash';
 import { NetBanking } from '@aph/mobile-patients/src/components/PaymentGateway/Components/NetBanking';
 import { Cards } from '@aph/mobile-patients/src/components/PaymentGateway/Components/Cards';
@@ -149,6 +146,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const paymentCodMessage = props.navigation.getParam('paymentCodMessage');
   const isCircleAddedToCart = props.navigation.getParam('isCircleAddedToCart');
   const oneTapPatient = props.navigation.getParam('oneTapPatient');
+  const transactionId = props.navigation.getParam('transactionId');
+  const orders = props.navigation.getParam('orders');
+
   const { currentPatient } = useAllCurrentPatients();
   const [banks, setBanks] = useState<any>([]);
   const [isTxnProcessing, setisTxnProcessing] = useState<boolean>(false);
@@ -162,7 +162,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const { authToken, setauthToken, pharmacyUserType } = useAppCommonData();
-  const { grandTotal, serverCartAmount } = useShoppingCart();
+  const { grandTotal, serverCartAmount, cartTat } = useShoppingCart();
   const [HCSelected, setHCSelected] = useState<boolean>(false);
   const [burnHc, setburnHc] = useState<number>(0);
   const storeCode =
@@ -889,7 +889,11 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           checkoutEventAttributes: checkoutEventAttributes,
           cleverTapCheckoutEventAttributes,
           defaultClevertapEventParams: defaultClevertapEventParams,
+          isCOD: isCOD,
           payload: payload,
+          transactionId,
+          orders,
+          cartTat,
         });
         break;
       case 'subscription':
@@ -944,6 +948,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         childComponent={getChildComponent(otherPaymentSelected)}
         paymentMode={otherPaymentSelected?.name}
         UPIapps={UPIapps}
+        savedCards={savedCards}
       />
     ) : null;
   };
@@ -1232,33 +1237,27 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const renderSecureTag = () => {
     return !!all_payment_modes?.length && amount != 0 ? <SecureTags /> : null;
   };
-  const keyboardVerticalOffset = Platform.OS === 'android' ? { keyboardVerticalOffset: 50 } : {};
+  const keyboardVerticalOffset = Platform.OS === 'android' ? { keyboardVerticalOffset: 0 } : {};
 
   return (
     <>
       {!showAnimation ? (
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={{ flex: 1 }}
-          {...keyboardVerticalOffset}
-        >
-          <SafeAreaView style={{ flex: 1 }}>
-            {renderHeader()}
-            {!fetching ? (
-              <ScrollView contentContainerStyle={styles.container}>
-                {renderOffers()}
-                {renderPreferredPaymentOptions()}
-                {showPaymentOptions()}
-                {showOtherPaymentOptions()}
-                {renderSecureTag()}
-                {showOtherPaymentBottomPopUp()}
-              </ScrollView>
-            ) : (
-              <Spinner />
-            )}
-            {isTxnProcessing && <Spinner />}
-          </SafeAreaView>
-        </KeyboardAvoidingView>
+        <SafeAreaView style={{ flex: 1 }}>
+          {renderHeader()}
+          {!fetching ? (
+            <ScrollView contentContainerStyle={styles.container}>
+              {renderOffers()}
+              {renderPreferredPaymentOptions()}
+              {showPaymentOptions()}
+              {showOtherPaymentOptions()}
+              {renderSecureTag()}
+              {showOtherPaymentBottomPopUp()}
+            </ScrollView>
+          ) : (
+            <Spinner />
+          )}
+          {isTxnProcessing && <Spinner />}
+        </SafeAreaView>
       ) : (
         showPaymentAnimation()
       )}

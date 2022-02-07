@@ -15,6 +15,7 @@ import {
   getDiagnosticDoctorPrescriptionResults,
   autoCompletePlaceSearch,
   pinCodeServiceabilityApi247,
+  getLocationCode,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -299,6 +300,10 @@ export const formatAddressWithLandmark = (
   } else {
     return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
   }
+};
+
+export const getNameFromAddress = (address: savePatientAddress_savePatientAddress_patientAddress) => {
+  return address?.name || '';
 };
 
 export const getAge = (dob: string) => {
@@ -1509,6 +1514,55 @@ export const getDiscountPercentage = (price: number | string, specialPrice?: num
   return discountPercent != 0 ? Number(Number(discountPercent).toFixed(1)) : 0;
 };
 
+
+/** 
+ * ---------------------------------------
+ * TAT and magneto price logic */
+export const isDiffLessThanDecidedPercentage = (num1: number, num2: number, decidedPercentage: number) => {
+  return Math.abs(((num1 - num2) / num1) * 100) < decidedPercentage;
+};
+
+export const getSpecialPriceFromRelativePrices = (
+  price: number,
+  specialPrice: number,
+  newPrice: number
+) => Number(((specialPrice / price) * newPrice));
+
+export const getPriceAndSpecialPrice = (
+  price: number = 0,
+  specialPrice: number | string = 0,
+  mrp: number = 0,
+  qty: number = 0,
+  decidedPercentage: number = 0
+) => {
+  const defaultValues = {
+    specialPrice,
+    price,
+  };
+
+  if (mrp && qty) {
+    const tatPrice = mrp * qty;
+    if (!tatPrice) {
+      return defaultValues;
+    }
+    const isDff = isDiffLessThanDecidedPercentage(price, tatPrice, decidedPercentage);
+    if (isDff) {
+      const sPrice = typeof specialPrice === 'number' ? specialPrice : Number(specialPrice);
+      return {
+        specialPrice: getSpecialPriceFromRelativePrices(price, sPrice, tatPrice),
+        price: tatPrice.toFixed(2),
+      };
+    }
+  }
+  return defaultValues;
+};
+
+/** 
+ * TAT and magneto price logic
+ * ---------------------------------------
+ *  */
+
+
 export const getBuildEnvironment = () => {
   switch (apiRoutes.graphql()) {
     case 'https://aph-dev-api.apollo247.com//graphql':
@@ -1595,13 +1649,13 @@ const webengage = new WebEngage();
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
     webengage.track(eventName, validateEventObject(attributes));
-  } catch (error) {}
+  } catch (error) { }
 };
 
 export const postCleverTapEvent = (eventName: CleverTapEventName, attributes: Object) => {
   try {
     CleverTap.recordEvent(eventName, validateEventObject(attributes));
-  } catch (error) {}
+  } catch (error) { }
 };
 
 /**
@@ -2351,10 +2405,8 @@ export const InitiateAppsFlyer = (
     isDeepLinked = true;
     if (res.is_deferred) {
       getInstallResources();
-      res?.data?.deep_link_value?.(() => {
-        const url = handleOpenURL(res?.data?.deep_link_value);
-        AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
-      });
+      const url = handleOpenURL(res?.data?.deep_link_value);
+      AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
     }
     try {
       if (!res.is_deferred) {
@@ -2376,11 +2428,9 @@ export const InitiateAppsFlyer = (
           }
         } else {
           clevertapEventForAppsflyerDeeplink(filterAppLaunchSoruceAttributesByKey(res.data));
-          res?.data?.deep_link_value?.(() => {
-            const url = handleOpenURL(res.data.deep_link_value);
-            AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
-            redirectWithOutDeferred(url);
-          });
+          const url = handleOpenURL(res.data.deep_link_value);
+          AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
+          redirectWithOutDeferred(url);
         }
       }
       if (res.status == 'success') {
@@ -4383,6 +4433,21 @@ export const shareDocument = async (
   }
   return viewReportOrderId;
 };
+
+export const setLocationCodeFromApi = (pincode: string, setLocationCode: ((value: string) => void) | null, locationCode: string) => {
+  if (pincode) {
+    getLocationCode(pincode)
+      .then((response) => {
+        const code = response?.data?.sr_code;
+        if (code && code !== locationCode) {
+          setLocationCode?.(code);
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('setLocationCodeFromApi_helperFunction', error);
+      })
+  }
+}
 
 export const getOfferDescription = (bestOffer: any, item: any) => {
   return parseFloat(bestOffer?.discount_amount) > 50

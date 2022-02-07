@@ -73,7 +73,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
     !!coldChain ||
     !!pharmaSideEffects ||
     !!pharmaOverview?.length;
-  const [showAllContent, setShowAllContent] = useState<boolean>(!showShowMore);
+  const [showAllContent, setShowAllContent] = useState<boolean>(false);
   const ignoreStyles = [
     'line-height',
     'margin-bottom',

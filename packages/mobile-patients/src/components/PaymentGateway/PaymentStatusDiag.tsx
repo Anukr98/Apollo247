@@ -34,6 +34,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
 import {
   GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
+  GET_REVIEW_POPUP_PERMISSION,
   UPDATE_PASSPORT_DETAILS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
@@ -61,6 +62,7 @@ const paymentSuccess =
   '@aph/mobile-patients/src/components/PaymentGateway/AnimationFiles/Animation_2/tick.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { InfoIconRed } from '@aph/mobile-patients/src/components/ui/Icons';
+import moment from 'moment';
 
 export interface PaymentStatusDiagProps extends NavigationScreenProps {}
 
@@ -120,6 +122,7 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
     : orderInfo?.ordersList?.map((item: any) => item?.displayId)?.join(', ');
 
   useEffect(() => {
+    setTimeout(() => setAnimationfinished(true), 2700);
     isCircleAddedToCart && setIsDiagnosticCircleSubscription?.(true);
     isModifyCod && fetchOrdersDetails(modifiedOrderDetails?.id);
     clearDiagnoticCartInfo?.();
@@ -206,14 +209,83 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
     );
   };
 
+  const validatePermission = () => {
+    // const { data } = await client.query<
+      //   getDiagnosticOrderDetails,
+      //   getDiagnosticOrderDetailsVariables
+      // >({
+      //   query: GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
+      //   variables: { diagnosticOrderId: orderId },
+      //   fetchPolicy: 'no-cache',
+      // });
+      // const { attributesObj, createdDate, slotDateTimeInUTC } =
+      //   data?.getDiagnosticOrderDetails?.ordersList || {};
+      // const { expectedReportGenerationTime } = attributesObj || {};
+
+      // const reportGenerationDifference = moment
+      //   .duration(moment(expectedReportGenerationTime).diff(moment(createdDate)))
+      //   .asHours();
+
+      // const sampleCollectedTimeDifference = moment
+      //   .duration(moment(slotDateTimeInUTC).diff(moment(createdDate)))
+      //   .asHours();
+
+      // const popupConfig: {
+      //   vertical: string;
+      //   report_generation_time_hrs?: string;
+      //   sample_collected_time_min?: string;
+      //   diag_appointment_time_hrs?: string;
+      // } = {
+      //   vertical: 'diagnostic',
+      // };
+      // if (expectedReportGenerationTime)
+      //   popupConfig['report_generation_time_hrs'] = Math.floor(
+      //     reportGenerationDifference
+      //   ).toString();
+      // if (slotDateTimeInUTC) {
+      //   popupConfig['sample_collected_time_min'] = Math.floor(
+      //     sampleCollectedTimeDifference
+      //   ).toString();
+      //   popupConfig['diag_appointment_time_hrs'] = Math.floor(
+      //     sampleCollectedTimeDifference
+      //   ).toString();
+      // }
+
+      // const permission = await client.query({
+      //   query: GET_REVIEW_POPUP_PERMISSION,
+      //   variables: {
+      //     popupConfig,
+      //   },
+      //   fetchPolicy: 'no-cache',
+      // });
+  }
+
   const requestInAppReview = async () => {
     try {
-      const { diagnosticDate } = orderDetails;
+      const { diagnosticDate, orderId } = orderDetails;
       let givenDate = new Date(diagnosticDate);
-      var diff = (givenDate.getTime() - givenDate.getTime()) / 1000;
-      diff /= 60 * 60;
-      if (diff <= 48 && InAppReview.isAvailable()) {
-        const onfulfilled = await InAppReview.RequestInAppReview();
+      const { data } = await client.query<
+        getDiagnosticOrderDetails,
+        getDiagnosticOrderDetailsVariables
+      >({
+        query: GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
+        variables: { diagnosticOrderId: orderId },
+        fetchPolicy: 'no-cache',
+      });
+      const { slotDateTimeInUTC } =
+        data?.getDiagnosticOrderDetails?.ordersList || {};
+      const diff = moment.duration(moment(slotDateTimeInUTC).diff(moment())).asHours()
+      /*
+        The following bit of code is going to be needed in the future
+        when the backend has been deployed properly to communicate with the
+        CMS because of which the hardcoded values to display the in-app rating
+        will no longer be hardcoded but the permission to do the same would instead be
+        retrieved from the backend.
+
+        validatePermission()
+      */
+      if (diff<=48 && InAppReview.isAvailable()) {
+        const onfulfilled = await InAppReview.RequestInAppReview()
         if (!!onfulfilled) {
           InAppReviewEvent(currentPatient, pharmacyUserTypeAttribute, pharmacyCircleAttributes);
         }
@@ -431,10 +503,8 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
             {renderPaymentInfo()}
             {renderCirclePurchase()}
             {renderAddPassportInfo()}
-            {renderNoticeText()}
             {renderTestsInfo()}
             {isSingleUhid ? renderOrderSummary() : null}
-            {renderInvoiceTimeline()}
           </ScrollView>
           {renderPassportPaitentView()}
           {renderTabBar()}

@@ -21,6 +21,7 @@ import { FreeConsult } from '@aph/mobile-patients/src/components/PaymentGateway/
 import {
   UPDATE_MEDICINE_ORDER_SUBSTITUTION,
   GET_PHARMA_TRANSACTION_STATUS_V2,
+  GET_REVIEW_POPUP_PERMISSION,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   updateMedicineOrderSubstitution,
@@ -53,6 +54,7 @@ const paymentSuccess =
   '@aph/mobile-patients/src/components/PaymentGateway/AnimationFiles/Animation_2/tick.json';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
+import moment from 'moment';
 
 export interface PaymentStatusPharmaProps extends NavigationScreenProps {}
 
@@ -92,7 +94,12 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
   const cleverTapCheckoutEventAttributes = props.navigation.getParam(
     'cleverTapCheckoutEventAttributes'
   );
+  const cartTat = props.navigation.getParam('cartTat');
+  const isCOD = props.navigation.getParam('isCOD');
+  const noAnimation = isCOD && Platform.OS == 'ios';
+
   useEffect(() => {
+    setTimeout(() => setAnimationfinished(true), 2700);
     initiate();
     clearCart();
     BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -115,10 +122,8 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
 
   const initiate = async () => {
     try {
-      setLoading?.(true);
       const res = await fetchOrderInfo();
       const { data } = res;
-      setLoading?.(false);
       setOrderInfo(data?.pharmaPaymentStatusV2);
       setFetching(false);
     } catch (error) {}
@@ -163,24 +168,32 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
 
   const requestInAppReview = async () => {
     try {
-      const { shipments } = orderInfo?.medicineOrderInput;
-      const userAttributes = pharmacyUserTypeAttribute;
-      let tatHours = shipments?.[0].tatHours?.split('')[0];
-      if (tatHours <= 5 && InAppReview.isAvailable()) {
-        const onfulfilled = await InAppReview.RequestInAppReview();
-        if (!!onfulfilled) {
-          InAppReviewEventPharma(currentPatient, userAttributes, pharmacyCircleAttributes);
-        }
+      const diff = moment.duration(moment(cartTat).diff(moment())).asHours();
+      const orders = props.navigation.getParam('orderDetails')?.orders;
+      const popupConfig = {
+        vertical: 'pharma',
+        delivery_tat_hours: diff.toString(),
+        order_type: orders?.length === 1 ? 'plain' : 'split',
+      };
+      // const permission = await client.query({
+      //   query: GET_REVIEW_POPUP_PERMISSION,
+      //   variables: {
+      //     popupConfig,
+      //   },
+      //   fetchPolicy: 'no-cache',
+      // });
+      if (diff<=5 && InAppReview.isAvailable()) {
+        await InAppReview.RequestInAppReview().then((hasFlowFinishedSuccessfully) => {
+          if (hasFlowFinishedSuccessfully)
+            InAppReviewEventPharma(
+              currentPatient,
+              pharmacyUserTypeAttribute,
+              pharmacyCircleAttributes
+            );
+        });
       }
     } catch (error) {}
   };
-
-  // const fireCleverTapOrderSuccessEvent = () => {
-  //   postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, {
-  //     ...cleverTapCheckoutEventAttributes,
-  //     'Cart items': serverCartItems?.length,
-  //   });
-  // };
 
   const onPressCopy = () => {
     Clipboard.setString(paymentId);
@@ -251,7 +264,10 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
 
   const renderOrderInfo = () => {
     return (
-      <OrderInfo orderDateTime={orderInfo?.paymentDateTime} paymentMode={orderInfo?.paymentMode} />
+      <OrderInfo
+        orderDateTime={orderInfo?.paymentDateTime}
+        paymentMode={isCOD ? 'COD' : orderInfo?.paymentMode}
+      />
     );
   };
 
@@ -263,7 +279,7 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
     return <TabBar onPressGoToHome={moveToHome} onPressGoToMyOrders={onPressGoToMyOrders} />;
   };
 
-  const [animationfinished, setAnimationfinished] = useState<boolean>(false);
+  const [animationfinished, setAnimationfinished] = useState<boolean>(noAnimation ? true : false);
 
   const renderSucccessAnimation = () => {
     return (

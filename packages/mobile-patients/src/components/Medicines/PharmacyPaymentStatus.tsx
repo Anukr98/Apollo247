@@ -25,6 +25,7 @@ import {
   apiCallEnums,
   g,
   getCleverTapCircleMemberValues,
+  goToConsultRoom,
   postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -368,7 +369,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       apiCallEnums.getPlans,
       apiCallEnums.plansCashback,
     ];
-    navigateToHome(props.navigation);
+    goToConsultRoom(props.navigation);
     // clearing free consult option selected
     setSelectedPrescriptionType && setSelectedPrescriptionType('');
   };

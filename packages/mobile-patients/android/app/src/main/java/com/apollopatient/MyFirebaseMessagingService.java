@@ -265,6 +265,7 @@ public class MyFirebaseMessagingService
         }
     }
 
+
     @SuppressLint("MissingPermission")
     private void setVibration() {
         Boolean isDNDOn=false;
@@ -289,7 +290,6 @@ public class MyFirebaseMessagingService
             }
         }
     }
-
 
     private boolean isAppRunning() {
         ActivityManager m = (ActivityManager) this.getSystemService(ACTIVITY_SERVICE);

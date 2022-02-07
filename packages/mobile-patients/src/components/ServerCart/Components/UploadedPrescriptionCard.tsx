@@ -27,7 +27,11 @@ export const UploadedPrescriptionCard: React.FC<UploadedPrescriptionCardProps> =
           key={i}
         >
           <View style={styles.imageCont}>
-            <Image style={styles.image} source={{ uri: item?.prescriptionImageUrl }} />
+            {item?.meta?.fileType?.includes('pdf') ? (
+              <FileBig style={styles.pdfIcon} />
+            ) : (
+              <Image style={styles.image} source={{ uri: item?.prescriptionImageUrl }} />
+            )}
           </View>
           <View style={{ flex: 1 }}>
             <TextInputComponent
@@ -38,14 +42,14 @@ export const UploadedPrescriptionCard: React.FC<UploadedPrescriptionCardProps> =
               value={item?.prismPrescriptionFileId || 'Prescription'}
             />
           </View>
-          {showTick && (
+          {showTick ? (
             <GreenTickIcon
               style={{
                 width: 20,
                 paddingHorizontal: 8,
               }}
             />
-          )}
+          ) : null}
           <TouchableOpacity
             activeOpacity={1}
             style={{
@@ -79,6 +83,11 @@ const styles = StyleSheet.create({
   },
   image: {
     height: 30,
+    width: 30,
+    borderRadius: 5,
+  },
+  pdfIcon: {
+    height: 45,
     width: 30,
     borderRadius: 5,
   },

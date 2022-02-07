@@ -71,26 +71,24 @@ export const UPIPayments: React.FC<UPIPaymentsProps> = (props) => {
     const marginLeft = item?.index == 0 ? 0 : (newWidth - 256) * 0.33;
     const outageStatus = item?.item?.outage_list?.[0]?.outage_status;
     return (
-      <View
+      <TouchableOpacity
         style={{
           ...styles.AppCont,
           marginLeft: marginLeft,
           opacity: outageStatus == 'DOWN' ? 0.5 : 1,
         }}
+        onPress={() => onPressUPIApp(item?.item)}
+        disabled={outageStatus == 'DOWN' ? true : false}
       >
-        <TouchableOpacity
-          disabled={outageStatus == 'DOWN' ? true : false}
-          style={styles.imageCont}
-          onPress={() => onPressUPIApp(item?.item)}
-        >
+        <View style={styles.imageCont}>
           <Image
             source={{ uri: item?.item?.image_url }}
             resizeMode="contain"
             style={styles.image}
           />
-        </TouchableOpacity>
+        </View>
         <Text style={styles.App}>{item?.item?.payment_method_name}</Text>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -170,11 +168,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#D4D4D4',
     borderRadius: 4,
-    paddingBottom: 21,
     paddingHorizontal: 12,
   },
   upiCont: {
-    marginTop: 21,
+    paddingTop: 21,
+    paddingBottom: 21,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',

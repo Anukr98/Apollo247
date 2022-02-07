@@ -971,6 +971,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setPharmaHomeNudgeMessage,
     setPharmaCartNudgeMessage,
     setPharmaPDPNudgeMessage,
+    setTatDecidedPercentage,
   } = useShoppingCart();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
@@ -1306,6 +1307,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'DeliveryIn_TAT_Text_QA',
       PROD: 'DeliveryIn_TAT_Text_PROD',
     },
+    Tat_Decided_Percentage: {
+      QA: 'Tat_Decided_Percentage_QA',
+      PROD: 'Tat_Decided_Percentage_PROD',
+    },
     Radiology_Url: {
       QA: 'QA_Radiology_Url',
       PROD: 'Radiology_Url',
@@ -1353,6 +1358,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER: {
       QA: 'QA_Diagnostic_Review_Disclaimer_New',
       PROD: 'Diagnostic_Review_Disclaimer_New',
+    },
+    HOME_CTA_CONFIG: {
+      QA: 'QA_HOME_CTA_CONFIG',
+      PROD: 'PROD_HOME_CTA_CONFIG',
     },
   };
 
@@ -1519,6 +1528,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         config.getString(key)
       );
       setPdpDisclaimerMessage?.(disclaimerMessagePdp);
+
+      const tatDecidedPercentage = getRemoteConfigValue('Tat_Decided_Percentage', (key) =>
+        config.getNumber(key)
+      );
+      setTatDecidedPercentage?.(tatDecidedPercentage);
 
       setAppConfig(
         'Min_Value_For_Pharmacy_Free_Delivery',
@@ -1802,6 +1816,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         (key) => config.getString(key)
       );
 
+      setAppConfig(
+        'HOME_CTA_CONFIG',
+        'HOME_CTA_CONFIG',
+        (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.HOME_CTA_CONFIG
+      );
+
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';
       const appVersion = coerce(isIOS ? iOS_Version : Android_Version)?.version;
@@ -1833,49 +1853,55 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       (key) =>
         (config.getString(key) && JSON.parse(config.getString(key))) || string.refAndEarn.global
     );
-    setReferralGlobalData?.(globalData);
+    setReferralGlobalData?.(globalData || string.refAndEarn.global);
     const mainBannerContent = getRemoteConfigValue(
       'REFERRER_MAIN_BANNER_CONTENT',
       (key) =>
         (config.getString(key) && JSON.parse(config.getString(key))) ||
         string.refAndEarn.referralMainBanner
     );
-    setReferralMainBanner?.(mainBannerContent);
+    setReferralMainBanner?.(mainBannerContent || string.refAndEarn.referralMainBanner);
     const shareReferrerLinkScreenContent = getRemoteConfigValue(
       'SHARE_REFERRER_LINK_CONENT',
       (key) =>
         (config.getString(key) && JSON.parse(config.getString(key))) ||
         string.refAndEarn.shareReferrerLink
     );
-    setShareReferrerLinkData?.(shareReferrerLinkScreenContent);
+    setShareReferrerLinkData?.(
+      shareReferrerLinkScreenContent || string.refAndEarn.shareReferrerLink
+    );
     const yourRewardScreenContent = getRemoteConfigValue(
       'YOUR_REWARD_SCREEN_DATA_CONTENT',
       (key) =>
         (config.getString(key) && JSON.parse(config.getString(key))) ||
         string.refAndEarn.yourRewards
     );
-    setYourRewardsScreenData?.(yourRewardScreenContent);
+    setYourRewardsScreenData?.(yourRewardScreenContent || string.refAndEarn.yourRewards);
     const congratulationsScreenContent = getRemoteConfigValue(
       'REFERRER_CONGRATULATIONS_PAGE',
       (key) =>
         (config.getString(key) && JSON.parse(config.getString(key))) ||
         string.refAndEarn.congratulationPage
     );
-    setCongratulationPageData?.(congratulationsScreenContent);
+    setCongratulationPageData?.(
+      congratulationsScreenContent || string.refAndEarn.congratulationPage
+    );
     const termsAndConditonsScreenContent = getRemoteConfigValue(
       'REFERRER_TERMS_AND_CONDITION_DATA',
       (key) =>
         (config.getString(key) && JSON.parse(config.getString(key))) ||
         string.refAndEarn.refererTermsAndCondition
     );
-    setRefererTermsAndConditionData?.(termsAndConditonsScreenContent);
+    setRefererTermsAndConditionData?.(
+      termsAndConditonsScreenContent || string.refAndEarn.refererTermsAndCondition
+    );
     const faqScreenContent = getRemoteConfigValue(
       'REFERRER_FAQS_DATA',
       (key) =>
         (config.getString(key) && JSON.parse(config.getString(key))) ||
         string.refAndEarn.refererFAQs
     );
-    setRefererFAQsData?.(faqScreenContent);
+    setRefererFAQsData?.(faqScreenContent || string.refAndEarn.refererFAQs);
   };
 
   const showUpdateAlert = (mandatory: boolean) => {

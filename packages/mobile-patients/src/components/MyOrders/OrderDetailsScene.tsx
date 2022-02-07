@@ -96,6 +96,7 @@ import {
   reOrderMedicines,
   getFormattedDateTimeWithBefore,
   navigateToHome,
+  getNameFromAddress,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postPharmacyMyOrderTrackingClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
@@ -170,6 +171,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   );
   const [omsAPIError, setOMSAPIError] = useState(false);
   const [addressData, setAddressData] = useState('');
+  const [nameToDisplay, setNameToDisplay] = useState<string>('');
   const [storePhoneNumber, setStorePhoneNumber] = useState('');
   const [scrollYValue, setScrollYValue] = useState(0);
   const [reOrderDetails, setReOrderDetails] = useState<MedicineReOrderOverlayProps['itemDetails']>({
@@ -348,8 +350,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     try {
       const address = addresses.find((a) => a.id == order!.patientAddressId);
       let formattedAddress = '';
+      let nameToDisplayInDetails = '';
       if (address) {
         formattedAddress = formatAddressWithLandmark(address);
+        nameToDisplayInDetails = getNameFromAddress(address);
       } else {
         const getPatientAddressByIdResponse = await client.query<
           getPatientAddressById,
@@ -359,11 +363,20 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           variables: { id: order!.patientAddressId },
         });
         formattedAddress = formatAddressWithLandmark(
-          getPatientAddressByIdResponse.data.getPatientAddressById
-            .patientAddress as savePatientAddress_savePatientAddress_patientAddress
+          getPatientAddressByIdResponse?.data?.getPatientAddressById
+            ?.patientAddress as savePatientAddress_savePatientAddress_patientAddress
+        );
+        nameToDisplayInDetails = getNameFromAddress(
+          getPatientAddressByIdResponse?.data?.getPatientAddressById
+            ?.patientAddress as savePatientAddress_savePatientAddress_patientAddress
         );
       }
       setAddressData(formattedAddress);
+      setNameToDisplay(
+        nameToDisplayInDetails
+          ? nameToDisplayInDetails
+          : `${orderDetails?.patient?.firstName || ''} ${orderDetails?.patient?.lastName || ''}`
+      );
     } catch (error) {
       CommonBugFender(`${AppRoutes.OrderDetailsScene}_getAddressDatails`, error);
     }
@@ -582,8 +595,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         setReOrderDetails({ total: totalItemsCount, unavailable: unavailableItems });
       } else {
         const resetAction = StackActions.reset({
-          index: 1,
+          index: 2,
           actions: [
+            NavigationActions.navigate({ routeName: AppRoutes.HomeScreen }),
             NavigationActions.navigate({ routeName: AppRoutes.MyOrdersScreen }),
             NavigationActions.navigate({ routeName: AppRoutes.ServerCart }),
           ],
@@ -796,8 +810,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               {string.OrderSummery.name}
             </Text>
             <Text style={{ ...theme.viewStyles.text('R', 13, '#01475b'), flex: 1 }}>
-              {orderDetails.patient && orderDetails.patient.firstName}{' '}
-              {orderDetails.patient && orderDetails.patient.lastName}
+              {nameToDisplay}
             </Text>
           </View>
           <View style={{ flexDirection: 'row', marginTop: 4, paddingRight: 0 }}>
@@ -1703,7 +1716,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           setPrescriptionPopUp(false);
           if (selectedType == 'CAMERA_AND_GALLERY') {
             if (response.length == 0) return;
-            uploadPhysicalPrescriptionsToServerCart(response);
             props.navigation.navigate(AppRoutes.UploadPrescription, {
               phyPrescriptionsProp: response,
               type,
@@ -1942,6 +1954,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           orderDetails={orderDetails as any}
           addressData={addressData}
           onBillChangesClick={onBillChangesClick}
+          nameToDisplay={nameToDisplay}
         />
         <View style={{ marginTop: 30 }} />
       </View>

@@ -38,7 +38,11 @@ import {
   updatePatient,
   updatePatient_updatePatient_patient,
 } from '@aph/mobile-patients/src/graphql/types/updatePatient';
-import { UPDATE_PATIENT, CREATE_ONE_APOLLO_USER } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  UPDATE_PATIENT,
+  CREATE_ONE_APOLLO_USER,
+  INSERT_REFEREE_DATA_TO_REFERRER,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import { Mutation } from 'react-apollo';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import moment from 'moment';
@@ -59,6 +63,7 @@ import {
   onCleverTapUserLogin,
   postCleverTapEvent,
   getAge,
+  setRefereeFlagForNewRegisterUser,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -257,6 +262,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
         'Mobile Number': currentPatient?.mobileNumber,
         'Nav src': 'App login screen',
         'Page Name': 'Multi Signup Screen',
+        'Customer type': 'Prism',
       };
       if (referral) {
         // only send if referral has a value
@@ -329,6 +335,74 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
     );
   };
 
+  const updateRefereeDataInReferrerRecord = async ({
+    af_referrer_customer_id,
+    campaign,
+    rewardId,
+    shortlink,
+    installTime,
+  }: any) => {
+    const currentDate = new Date();
+    const installAppsflyerTime = installTime.split(' ');
+    try {
+      const response = await client.query({
+        query: INSERT_REFEREE_DATA_TO_REFERRER,
+        variables: {
+          referralDataInput: {
+            refereeId: currentPatient ? currentPatient.id : '',
+            referrerId: af_referrer_customer_id,
+            rewardId: rewardId,
+            campaignId: campaign,
+            deviceOS: Platform.OS == 'ios' ? 'IOS' : 'ANDROID',
+            installTime:
+              installAppsflyerTime[0] ||
+              `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate()}`,
+            eventName: 'Registration_Referrer',
+            shortLink: shortlink,
+          },
+        },
+        fetchPolicy: 'no-cache',
+      });
+      if (response?.data?.addReferralRecord?.rewardStatus) {
+        AsyncStorage.setItem('RefereeStatus', response?.data?.addReferralRecord?.rewardStatus);
+      }
+    } catch (e) {}
+  };
+
+  const postAppsFlyerEventAppInstallViaReferral = async (data: any) => {
+    try {
+      const referralData: any = await AsyncStorage.getItem('app_referral_data');
+      setRefereeFlagForNewRegisterUser(referralData !== null);
+      const cleverTapProfile = { ...data?.updatePatient?.patient };
+      if (whatsAppOptIn) cleverTapProfile['Msg-whatsapp'] = true;
+      onCleverTapUserLogin(cleverTapProfile);
+      if (referralData !== null) {
+        const { af_referrer_customer_id, campaign, rewardId, shortlink, installTime } = JSON.parse(
+          referralData
+        );
+        const eventAttribute = {
+          referrer_id: af_referrer_customer_id,
+          referee_id: currentPatient ? currentPatient.id : '',
+          campaign_id: campaign,
+          reward_id: rewardId,
+          short_link: shortlink,
+          device_os: Platform.OS == 'ios' ? 'IOS' : 'ANDROID',
+        };
+        updateRefereeDataInReferrerRecord({
+          af_referrer_customer_id,
+          campaign,
+          rewardId,
+          shortlink,
+          installTime,
+        });
+        postAppsFlyerEvent(AppsFlyerEventName.REGISTRATION_REFERRER, eventAttribute);
+        AsyncStorage.removeItem('app_referral_data');
+        AsyncStorage.setItem('referrerInstall', 'true');
+      }
+      handleOpenURLs();
+    } catch (e) {}
+  };
+
   const renderButtons = () => {
     return (
       <View style={styles.stickyButtonMainContainer}>
@@ -370,7 +444,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                       relation: Relation.ME, // profile ? profile.relation!.toUpperCase() : '',
                       referralCode: trimReferral || null,
                       deviceCode: deviceToken,
-                      // whatsappOptIn: whatsAppOptIn,
+                      whatsappOptIn: whatsAppOptIn,
                     };
 
                     CommonLogEvent(AppRoutes.MultiSignup, 'Update API clicked');
@@ -387,6 +461,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                           AsyncStorage.setItem('selectUserId', patient.id);
                           AsyncStorage.setItem('selectUserUHId', patient.uhid!);
                           _postWebEngageEvent(patient);
+                          postAppsFlyerEventAppInstallViaReferral(_data);
                         }
                       } catch (error) {
                         CommonLogEvent(
@@ -494,7 +569,13 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
 
   const renderExistingAccount = () => {
     return (
-      <View style={styles.userItemListMain}>
+      <View
+        style={{
+          minHeight: showReferralCode
+            ? Dimensions.get('screen').height - 415
+            : Dimensions.get('screen').height - 395,
+        }}
+      >
         <FlatList
           data={profiles || []}
           renderItem={({ item, index }) => renderUserItem(item, index)}
@@ -527,7 +608,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
         <KeyboardAwareScrollView style={styles.container} bounces={false}>
           <ScrollView>
             {renderExistingAccount()}
-            {renderReferral()}
+            {showReferralCode && renderReferral()}
             {renderWhatsAppOptIn()}
           </ScrollView>
         </KeyboardAwareScrollView>
@@ -764,8 +845,5 @@ const styles = StyleSheet.create({
     bottom: 0,
     elevation: 3,
     zIndex: 3,
-  },
-  userItemListMain: {
-    minHeight: Dimensions.get('screen').height - 400,
   },
 });

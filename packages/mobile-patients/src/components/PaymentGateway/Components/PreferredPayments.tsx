@@ -52,6 +52,7 @@ export const PreferredPayments: React.FC<PreferredPaymentsProps> = (props) => {
   const offers: any = [];
   const [selectedCardToken, setSelectedCardToken] = useState<string>('');
   const [Apayselected, setApayselected] = useState<boolean>(false);
+  const Apay = 'https://prodaphstorage.blob.core.windows.net/paymentlogos/amazon_pay.png';
 
   const filterUPIApps = () => {
     if (availableUPIApps?.length) {
@@ -104,18 +105,20 @@ export const PreferredPayments: React.FC<PreferredPaymentsProps> = (props) => {
     const bestOffer = !outageStatus ? wallet?.offers?.[0] : null;
     return !!wallet ? (
       <View>
-        <View style={styles.subCont}>
-          <TouchableOpacity style={styles.wallet} onPress={() => setApayselected(!Apayselected)}>
-            <WalletIcon imageUrl={wallet?.image_url} />
+        <TouchableOpacity style={styles.subCont} onPress={() => setApayselected(!Apayselected)}>
+          <View style={styles.wallet}>
+            <WalletIcon
+              imageUrl={wallet?.payment_method_name == 'Amazon Pay' ? Apay : wallet?.image_url}
+            />
             <View style={styles.walletCont}>
               <Text style={styles.walletName}>{wallet?.payment_method_name}</Text>
               {renderBalance(linkedWallet)}
             </View>
-          </TouchableOpacity>
+          </View>
           <OutagePrompt outageStatus={outageStatus} />
           {renderOffer(wallet, bestOffer)}
           {Apayselected && renderPayNowButton(linkedWallet, paymentCode, bestOffer)}
-        </View>
+        </TouchableOpacity>
       </View>
     ) : null;
   };
@@ -171,25 +174,25 @@ export const PreferredPayments: React.FC<PreferredPaymentsProps> = (props) => {
     const bestOffer = !outageStatus ? item?.offers?.[0] : null;
     return (
       <View>
-        <View style={styles.subCont}>
-          <TouchableOpacity
-            disabled={outageStatus == 'DOWN' ? true : false}
-            style={{ ...styles.wallet, opacity: outageStatus == 'DOWN' ? 0.5 : 1 }}
-            onPress={() => {
-              mode == 'wallet'
-                ? onPressWallet(item?.payment_method_code, item?.offers?.[0])
-                : onPressUPIApp(item);
-            }}
-          >
+        <TouchableOpacity
+          style={styles.subCont}
+          disabled={outageStatus == 'DOWN' ? true : false}
+          onPress={() => {
+            mode == 'wallet'
+              ? onPressWallet(item?.payment_method_code, item?.offers?.[0])
+              : onPressUPIApp(item);
+          }}
+        >
+          <View style={{ ...styles.wallet, opacity: outageStatus == 'DOWN' ? 0.5 : 1 }}>
             <WalletIcon imageUrl={item?.image_url} />
             <View style={styles.walletCont}>
               <Text style={styles.walletName}>{item?.payment_method_name}</Text>
             </View>
             <Text style={styles.payNow}>PAY NOW</Text>
-          </TouchableOpacity>
+          </View>
           <OutagePrompt outageStatus={outageStatus} />
           {renderOffer(item, bestOffer)}
-        </View>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -256,7 +259,7 @@ const styles = StyleSheet.create({
     color: '#01475B',
   },
   subCont: {
-    marginTop: 16,
+    paddingTop: 16,
     paddingBottom: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5E5',

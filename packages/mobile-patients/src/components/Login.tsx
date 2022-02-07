@@ -260,8 +260,7 @@ export const Login: React.FC<LoginProps> = (props) => {
       flexDirection: 'row',
       alignItems: 'center',
       marginBottom: 10,
-      justifyContent: 'flex-start',
-      paddingLeft: '2%',
+      justifyContent: 'center',
     },
     errorText: {
       ...theme.viewStyles.text('M', 13, colors.REMOVE_RED),
@@ -302,7 +301,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   useEffect(() => {
     isAndroid && initializeTruecaller();
     isAndroid && truecallerEventListeners();
-    isAndroid && renderNumberPopup();
+    // isAndroid && renderNumberPopup(); // Anubhav will look in this
     const eventAttributes: WebEngageEvents[WebEngageEventName.MOBILE_ENTRY] = {};
     postWebEngageEvent(WebEngageEventName.MOBILE_ENTRY, eventAttributes);
     postFirebaseEvent(FirebaseEventName.MOBILE_ENTRY, eventAttributes);
@@ -690,7 +689,6 @@ export const Login: React.FC<LoginProps> = (props) => {
   }, [subscriptionId]);
 
   const validateAndSetPhoneNumber = (number: string) => {
-    if (number.length) onBlur();
     setError('');
     if (/^\d+$/.test(number) || number == '') {
       setPhoneNumber(number);
@@ -912,8 +910,7 @@ export const Login: React.FC<LoginProps> = (props) => {
       <Animated.View
         style={{
           alignItems: 'center',
-          opacity: error || phoneNumber.length ? 1 : 0,
-          marginTop: floatingLabelSpace,
+          marginTop: isFocused ? 5 : 0,
         }}
       >
         <Text style={[theme.viewStyles.text('R', 12, colors.LIGHT_BLUE), { opacity: 0.65 }]}>
@@ -944,6 +941,7 @@ export const Login: React.FC<LoginProps> = (props) => {
           onBlur={onBlur}
           onSubmitEditing={onClickOkay}
           ref={inputRef}
+          multiline
         />
       </Animated.View>
       <View style={[styles.submitButtonContainer, { marginTop: !isFocused ? '6%' : '3%' }]}>
@@ -999,7 +997,6 @@ export const Login: React.FC<LoginProps> = (props) => {
             <Text
               style={{
                 color: '#02475b',
-                marginEnd: 45,
                 ...fonts.IBMPlexSansMedium(10),
               }}
             >

@@ -2890,6 +2890,12 @@ export const DoctorConsultIcon: React.FC<IconProps> = (props) => (
   />
 );
 
+export const MedicalAssessment: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/assessment.webp')}
+  />
+);
 export const PaymentSuccess: React.FC<IconProps> = (props) => (
   <IconBase
     size="sm"
@@ -2994,6 +3000,14 @@ export const CalendarIcon: React.FC<IconProps> = (props) => (
   <Image
     style={[props.style]}
     source={require('@aph/mobile-patients/src/images/signUp/calendarIcon.webp')}
+    {...props}
+  />
+);
+
+export const WhatsAppCheckTick: React.FC<IconProps> = (props) => (
+  <Image
+    style={[props.style]}
+    source={require('@aph/mobile-patients/src/images/signUp/check-tick-icon.webp')}
     {...props}
   />
 );

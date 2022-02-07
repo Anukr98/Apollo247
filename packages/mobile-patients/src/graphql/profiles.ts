@@ -7141,6 +7141,7 @@ export const SERVER_CART_SAVE_CART = gql`
           estimatedAmount
           deliveryCharges
           isDeliveryFree
+          freeDeliveryAmount
           cartSavings
           couponSavings
           totalCashBack
@@ -7268,6 +7269,7 @@ export const SERVER_CART_FETCH_CART = gql`
           estimatedAmount
           deliveryCharges
           isDeliveryFree
+          freeDeliveryAmount
           cartSavings
           couponSavings
           totalCashBack
@@ -7366,6 +7368,7 @@ export const SERVER_CART_REVIEW_CART = gql`
           estimatedAmount
           deliveryCharges
           isDeliveryFree
+          freeDeliveryAmount
           cartSavings
           couponSavings
           totalCashBack
@@ -7524,6 +7527,25 @@ export const INSERT_REFEREE_DATA_TO_REFERRER = gql`
     addReferralRecord(referralInput: $referralDataInput) {
       id
       rewardStatus
+    }
+  }
+`;
+
+export const GET_REVIEW_POPUP_PERMISSION = gql`
+  query popUpReviewConfiguration($popupConfig: popupConfigArgs!) {
+    popUpReviewConfiguration(popupConfigArgs: $popupConfig) {
+      enable
+    }
+  }
+`;
+
+export const CHECK_DEPRECATED_APP_VERSION = gql`
+  query isAppVersionDeprecated($isAppVersionDeprecatedInput: IsAppVersionDeprecatedInput) {
+    isAppVersionDeprecated(isAppVersionDeprecatedInput: $isAppVersionDeprecatedInput) {
+      statusCode
+      message
+      success
+      redirectURI
     }
   }
 `;

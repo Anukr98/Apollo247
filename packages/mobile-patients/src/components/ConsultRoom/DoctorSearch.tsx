@@ -552,6 +552,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [oneTapPlanTitle, setOneTapPlanTitle] = useState<string>();
   const consultTypeCta = props.navigation?.getParam('consultTypeCta') || '';
   const scrollCount = useRef<number>(0);
+  const [searchResults, setSearchResults] = useState<any>(null);
 
   useEffect(() => {
     if (!currentPatient) {
@@ -678,15 +679,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               symptoms,
               searchResults
             );
-            postConsultSearchCleverTapEvent(
-              searchTextString,
-              currentPatient,
-              allCurrentPatients,
-              searchResults,
-              'speciality screen',
-              !!circleSubscriptionId,
-              circleSubPlanId || ''
-            );
+            setSearchResults(searchResults);
           } catch (e) {
             CommonBugFender('DoctorSearch_fetchSearchData_try', e);
           }
@@ -1276,6 +1269,16 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                 setPastSearch(true);
                 setNeedHelp(true);
                 setdisplaySpeialist(true);
+              } else {
+                postConsultSearchCleverTapEvent(
+                  searchText,
+                  currentPatient,
+                  allCurrentPatients,
+                  searchResults,
+                  'speciality screen',
+                  !!circleSubscriptionId,
+                  circleSubPlanId || ''
+                );
               }
             }}
           />

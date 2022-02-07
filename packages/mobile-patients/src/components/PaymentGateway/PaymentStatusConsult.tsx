@@ -130,6 +130,7 @@ export const PaymentStatusConsult: React.FC<PaymentStatusConsultProps> = (props)
   };
 
   useEffect(() => {
+    setTimeout(() => setAnimationfinished(true), 2400);
     PermissionsCheck();
     requestPermission;
     BackHandler.addEventListener('hardwareBackPress', handleBack);
