@@ -43,6 +43,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
   Dimensions,
+  Platform,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -896,7 +897,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       (item: CMSTestInclusions) => nameFormater(item?.sampleTypeName),
       'title'
     );
-    const sampleTypeArray = [...new Set(array)];
+    const sampleTypeArray = [...new Set(array)]?.filter((item) => item);
     return sampleTypeArray;
   }
 
@@ -1481,6 +1482,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           horizontalLine={styles.faqLine}
           questionStyle={styles.questionsStyle}
           answerStyle={styles.faqAnswer}
+          source={'diagnostics'}
         />
       </View>
     );
@@ -1898,7 +1900,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           <ScrollView
             bounces={false}
             keyboardDismissMode="on-drag"
-            style={{ marginBottom: 60 }}
+            style={{ marginBottom: Platform.OS == 'android' ? 70 : 60 }}
             ref={scrollViewRef}
             scrollEventThrottle={16}
             onScroll={(event) => {

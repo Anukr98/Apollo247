@@ -101,6 +101,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
       : Number(cityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID;
   let deepLinkWidgetName: string;
+  const titleFromProps = props.navigation.getParam('widgetName');
 
   //handle deeplinks as well here.
   useEffect(() => {
@@ -132,18 +133,12 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     DiagnosticProductListingPageViewed(widgetType, source, widgetName!, title);
   }, []);
 
-  //commented for now
-  // useEffect(() => {
-  //   fetchWidgetsPrices(widgetsData);
-  // }, [widgetsData?.diagnosticWidgetData?.[0]]);
-
   const fetchWidgets = async (title: string) => {
     const createTitle = decodeURIComponent(title)
       ?.trim()
       ?.replace(/ /g, '-')
       ?.toLowerCase();
     let widgetName = movedFrom == AppRoutes.Tests ? `home-${createTitle}` : `${createTitle}`;
-    const titleFromProps = props.navigation.getParam('widgetName');
 
     if (widgetType == 'Category' || widgetType == 'Category_Scroll') {
       widgetName = createTitle.toLowerCase();
@@ -577,7 +572,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
                   navigation={props.navigation}
                   source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.LISTING}
                   sourceScreen={AppRoutes.TestListing}
-                  widgetHeading={widgetsData?.diagnosticWidgetTitle}
+                  widgetHeading={widgetsData?.diagnosticWidgetTitle! || titleFromProps}
                 />
               </>
             )}

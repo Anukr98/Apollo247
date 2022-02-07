@@ -24,6 +24,7 @@ export interface FAQComponentProps {
   arrowStyle?: ImageStyle;
   horizontalLine?: ViewStyle;
   faqIcon?: any;
+  source?: string;
 }
 
 export const FAQComponent: React.FC<FAQComponentProps> = (props) => {
@@ -48,7 +49,11 @@ export const FAQComponent: React.FC<FAQComponentProps> = (props) => {
             }}
           >
             <Text style={props.questionStyle}>
-              {props.data ? value?.faqQuestion : value?.question}
+              {props.data
+                ? props.source == 'diagnostics'
+                  ? decodeURIComponent(value?.faqQuestion)
+                  : value?.faqQuestion
+                : value?.question}
             </Text>
             <ArrowRight
               style={[
@@ -71,7 +76,11 @@ export const FAQComponent: React.FC<FAQComponentProps> = (props) => {
             <></>
           ) : activeIndex === index ? (
             <Text style={props.answerStyle}>
-              {props.data ? value?.faqAnswer?.trim() : value?.answer}
+              {props.data
+                ? props.source == 'diagnostics'
+                  ? decodeURIComponent(value?.faqQuestion)?.trim()
+                  : value?.faqAnswer
+                : value?.answer}
             </Text>
           ) : (
             <></>
