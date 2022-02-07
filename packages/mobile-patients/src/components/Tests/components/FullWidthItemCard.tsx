@@ -734,15 +734,6 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
     }
   }
 
-  const getItemLayout = useCallback(
-    (data, index) => ({
-      length: props.isVertical ? CARD_WIDTH : CARD_HEIGHT,
-      offset: props.isVertical ? CARD_WIDTH * index : CARD_HEIGHT * index,
-      index,
-    }),
-    []
-  );
-
   const keyExtractor = useCallback((item: any, index: number) => `${index}`, []);
   if (props.isPriceAvailable) {
     actualItemsToShow =
@@ -779,7 +770,6 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
             renderItem={renderItemCard}
             maxToRenderPerBatch={8}
             initialNumToRender={3}
-            getItemLayout={getItemLayout}
           />
         ) : null}
       </View>
