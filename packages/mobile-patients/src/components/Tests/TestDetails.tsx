@@ -1431,7 +1431,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         {!!getMandatoryParameters && getMandatoryParameters?.length > 0
           ? getMandatoryParameters.map((para: any) => (
               <View style={[styles.rowStyle, { marginHorizontal: '10%', width: '88%' }]}>
-                <Text style={[styles.inclusionsBullet, { fontSize: 4 }]}>{'\u2B24'}</Text>
+                <Text style={[styles.inclusionsBullet]}>{'\u2B24'} </Text>
                 <Text style={styles.parameterText}>
                   {!!para?.observationName ? nameFormater(para?.observationName!, 'title') : ''}{' '}
                 </Text>
@@ -1480,6 +1480,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           data={cmsTestDetails?.diagnosticFAQs}
           horizontalLine={styles.faqLine}
           questionStyle={styles.questionsStyle}
+          answerStyle={styles.faqAnswer}
         />
       </View>
     );
@@ -1716,7 +1717,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   };
 
   const renderFullWidthItemCard = (dataToRender: any) => {
-    const filterToFourItems = dataToRender?.length > 4 && dataToRender?.slice(0, 4);
+    const filterToFourItems = dataToRender?.length > 4 ? dataToRender?.slice(0, 4) : dataToRender;
     return (
       <FullWidthItemCard
         diagnosticWidgetData={filterToFourItems}
@@ -1765,8 +1766,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const renderRecommendedPackages = (heading: string) => {
     const filterTopFourRecommendation =
       !!packageRecommendations &&
-      packageRecommendations?.length > 4 &&
-      packageRecommendations?.slice(0, 4);
+      (packageRecommendations?.length > 4
+        ? packageRecommendations?.slice(0, 4)
+        : packageRecommendations);
     return (
       <ItemCard
         diagnosticWidgetData={filterTopFourRecommendation}
@@ -2063,9 +2065,9 @@ const styles = StyleSheet.create({
   },
   inclusionsBullet: {
     color: colors.TURQUOISE_LIGHT_BLUE,
-    fontSize: 6,
+    fontSize: 4,
     textAlign: 'center',
-    paddingTop: 3,
+    lineHeight: 16,
   },
   inclusionsItemText: {
     ...theme.viewStyles.text('M', isSmallDevice ? 12 : 13, colors.TURQUOISE_LIGHT_BLUE, 1, 20),
@@ -2101,7 +2103,7 @@ const styles = StyleSheet.create({
     textAlign: 'left',
   },
   faqLine: {
-    marginVertical: 6,
+    marginVertical: 8,
     borderTopColor: colors.SHERPA_BLUE,
     opacity: 0.1,
     borderTopWidth: 1,
@@ -2137,6 +2139,7 @@ const styles = StyleSheet.create({
   skuSpecificView: {
     flexDirection: 'row',
     marginLeft: 8,
+    marginTop: 16,
   },
   skuSpecificValues: {
     ...theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE, 1, 16),
@@ -2151,7 +2154,6 @@ const styles = StyleSheet.create({
   questionsStyle: {
     ...theme.viewStyles.text('M', 14, colors.SHERPA_BLUE, 1, 18),
     width: '80%',
-    marginBottom: -5,
   },
   horizontalComponentIcon: {
     height: 20,
@@ -2186,5 +2188,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
     borderColor: 'transparent',
     justifyContent: 'flex-start',
+  },
+  faqAnswer: {
+    ...theme.viewStyles.text('L', 12, '#01475B', 1, 16, 0.35),
+    marginVertical: 8,
   },
 });

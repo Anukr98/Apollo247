@@ -70,7 +70,9 @@ export const FAQComponent: React.FC<FAQComponentProps> = (props) => {
           {!!(previousIndex != -1 && index === previousIndex) ? (
             <></>
           ) : activeIndex === index ? (
-            <Text style={props.answerStyle}>{props.data ? value?.faqAnswer : value?.answer}</Text>
+            <Text style={props.answerStyle}>
+              {props.data ? value?.faqAnswer?.trim() : value?.answer}
+            </Text>
           ) : (
             <></>
           )}

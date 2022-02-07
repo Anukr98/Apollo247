@@ -316,6 +316,8 @@ const appStaticVariables = {
       ctaDelaySeconds: 3,
       ctaPhoneNumber: '040-4821-3322',
       ctaText: 'Call to Order',
+      ctaItemIds: [2446],
+      ctaDisplayHrsArray: [8,9,10,11]
     },
   },
   DIAGNOSTICS_SHOW_UPLOAD_PRESCRIPTION_SECTION: true,

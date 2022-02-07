@@ -1757,6 +1757,14 @@ export interface CleverTapEvents {
     'Slot date': string;
     Type: DIAGNOSTIC_SLOT_TYPE;
     'Circle user': string;
+    'Latitude' : number | undefined,
+    'Longitude' : number | undefined,
+    'Address Pincode': string,
+    'City': string,
+    'itemIds': any,
+    'itemNames': any,
+    'Source': string,
+    'Cart Value': number | undefined;
   };
   [CleverTapEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED]: {
     'No. of patients': number;

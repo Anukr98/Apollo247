@@ -746,7 +746,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         const getBannerToShow = bannerData?.filter((banner: any) =>
           DIANOSTIC_BANNER_VISIBLE_ARRAY.includes(banner?.VisibleOn)
         );
-        setBanners(getBannerToShow);
+        getBannerToShow?.length > 0 ? setBanners(getBannerToShow) : setBannerLoading(false);
       } else {
         setBanners([]);
         setBannerLoading(false);
@@ -1617,12 +1617,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     if (loading || bannerLoading) {
       //To do add another section shimmer
       return renderBannerShimmer();
-
-      return (
-        <View
-          style={[styles.sliderPlaceHolderStyle, { height: imgHeight, backgroundColor: '#e3e1e1' }]}
-        ></View>
-      );
     } else if (banners?.length > 0) {
       return (
         <View style={{ marginBottom: 28 }}>
