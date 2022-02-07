@@ -306,8 +306,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
     const pinCodeFromAddress = addressToUse?.zipcode!;
     const cityFromAddress = addressToUse?.city;
+    const checkIsRecomendationInCart = isRecommendationShown ? 'Cart widget' : 'cart page';
     DiagnosticCartViewed(
-      'cart page',
+      checkIsRecomendationInCart,
       currentPatient,
       cartItems,
       couponDiscount,
@@ -419,8 +420,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
       const pinCodeFromAddress = addressToUse?.zipcode!;
       const cityFromAddress = addressToUse?.city;
+      const checkIsRecomendationInCart = isRecommendationShown ? 'Cart widget' : 'cart page';
       DiagnosticCartViewed(
-        'cart page',
+        checkIsRecomendationInCart,
         currentPatient,
         cartItems,
         couponDiscount,
