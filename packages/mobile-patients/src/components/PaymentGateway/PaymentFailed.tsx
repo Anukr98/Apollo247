@@ -259,6 +259,23 @@ export const PaymentFailed: React.FC<PaymentFailedProps> = (props) => {
     });
   };
 
+  const createJusPayCODOrder = (amountToCollect: number, paymentOrderId: string) => {
+    const orderInput = {
+      payment_order_id: paymentOrderId,
+      health_credits_used: 0,
+      cash_to_collect: amountToCollect,
+      prepaid_amount: 0,
+      store_code: storeCode,
+      is_mobile_sdk: true,
+      return_url: AppConfig.Configuration.baseUrl,
+    };
+    return client.mutate({
+      mutation: CREATE_ORDER,
+      variables: { order_input: orderInput },
+      fetchPolicy: 'no-cache',
+    });
+  };
+
   const storeAppointmentId = async (appointmentId: string) => {
     if (!appointmentId) return;
     try {
@@ -489,6 +506,39 @@ export const PaymentFailed: React.FC<PaymentFailedProps> = (props) => {
     }
   };
 
+  const updatePharmaPaymentToCOD = async (amount: number) => {
+    setLoading!(true);
+    try {
+      const res = await saveMedicineOrder();
+      const orderResponse = res?.data?.saveMedicineOrderV3;
+      if (orderResponse?.errorMessage) {
+        renderErrorPopup(orderResponse?.errorMessage);
+      } else {
+        const orderData = orderResponse?.data;
+        const { transactionId, orders, isCodEligible, codMessage, paymentOrderId } = orderData;
+        let orderInfo = orderDetails;
+        orderInfo['displayId'] = transactionId;
+        orderInfo['orders'] = orders;
+        const newCartTotal = orders
+          .reduce((currTotal: number, currItem: any) => currTotal + currItem.estimatedAmount, 0)
+          .toFixed(2);
+        const response = await createJusPayCODOrder(Number(newCartTotal), paymentOrderId);
+        const { data } = response;
+        const status =
+          data?.createOrderV2?.payment_status || data?.updateOrderDetails?.payment_status;
+        if (status === 'TXN_SUCCESS') {
+          navigatetoOrderStatus(amount);
+        } else {
+          renderErrorPopup();
+        }
+      }
+    } catch {
+      renderErrorPopup();
+    } finally {
+      setLoading?.(false);
+    }
+  };
+
   const updatePaymentToCOD = async (amount: number) => {
     const orderInput = {
       payment_order_id: paymentId,
@@ -538,7 +588,6 @@ export const PaymentFailed: React.FC<PaymentFailedProps> = (props) => {
   };
 
   const onPressRetry = () => {
-    console.log('retry');
     if (cancelledOldPayment) {
       businessLine == 'consult'
         ? onRetryConsultPayment()
@@ -556,7 +605,7 @@ export const PaymentFailed: React.FC<PaymentFailedProps> = (props) => {
     businessLine == 'diagnostics'
       ? updatePaymentToCOD(grandTotal)
       : businessLine == 'pharma'
-      ? updatePaymentToCOD(amount)
+      ? updatePharmaPaymentToCOD(amount)
       : null;
   };
 
