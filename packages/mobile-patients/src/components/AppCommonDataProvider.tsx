@@ -69,6 +69,7 @@ export interface CorporateBenefits {
   benefitCTALabel: string;
   benefitCTAType: string;
   benefitCTAAction: string;
+  redirectUrl?: string;
 }
 
 export interface GroupPlan {
