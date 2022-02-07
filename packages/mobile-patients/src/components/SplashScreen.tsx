@@ -1359,6 +1359,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Diagnostic_Review_Disclaimer_New',
       PROD: 'Diagnostic_Review_Disclaimer_New',
     },
+    HOME_CTA_CONFIG: {
+      QA: 'QA_HOME_CTA_CONFIG',
+      PROD: 'PROD_HOME_CTA_CONFIG',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1810,6 +1814,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER',
         'DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER_TEXT',
         (key) => config.getString(key)
+      );
+
+      setAppConfig(
+        'HOME_CTA_CONFIG',
+        'HOME_CTA_CONFIG',
+        (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.HOME_CTA_CONFIG
       );
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
