@@ -3,8 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, Dimensions } from 'react-native';
 import { ExpressSlotClock } from '@aph/mobile-patients/src/components/ui/Icons';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import { DiagnosticData } from '../Tests';
-import { LocationData } from '../../AppCommonDataProvider';
+import { DiagnosticData } from '@aph/mobile-patients/src/components/Tests/Tests';
+import { LocationData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { getDiagnosticExpressSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 
 import { useApolloClient } from 'react-apollo-hooks';
