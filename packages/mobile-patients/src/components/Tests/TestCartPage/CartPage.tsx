@@ -1330,9 +1330,12 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   async function getGroupRecommendations() {
     let recommendationInputItems: { itemId: number; itemType: DiagnosticItemType }[] = [];
     cartItemsWithId?.map((item) => {
+      const inclusionCount = cartItems?.find(
+               (cartItem) => Number(cartItem?.id) === item
+          )?.inclusions?.length;
       const newObj = {
         itemId: item,
-        itemType: DiagnosticItemType.LABTEST,
+        itemType: !!inclusionCount && inclusionCount > 1 ? DiagnosticItemType.PACKAGE : DiagnosticItemType.LABTEST,
       };
       recommendationInputItems?.push(newObj);
     });
