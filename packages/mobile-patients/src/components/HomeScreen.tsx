@@ -252,6 +252,7 @@ import {
 } from '@aph/mobile-patients/src/components/ReferralProgramProvider';
 import { setItem, getItem } from '@aph/mobile-patients/src/helpers/TimedAsyncStorage';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
+import { UpdateAppPopup } from '@aph/mobile-patients/src/components/ui/UpdateAppPopup';
 
 const { Vitals } = NativeModules;
 
@@ -1164,7 +1165,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [membershipPlans, setMembershipPlans] = useState<any>([]);
   const [circleDataLoading, setCircleDataLoading] = useState<boolean>(true);
-  const { getPatientApiCall, buildApolloClient, validateAndReturnAuthToken } = useAuth();
+  const {
+    getPatientApiCall,
+    buildApolloClient,
+    validateAndReturnAuthToken,
+    checkIsAppDepricated,
+  } = useAuth();
   const [selectedProfile, setSelectedProfile] = useState<string>('');
   const [isLocationSearchVisible, setLocationSearchVisible] = useState(false);
   const [showList, setShowList] = useState<boolean>(false);
@@ -1225,6 +1231,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     pinCode,
     isPharmacyPincodeServiceable,
     serverCartItems,
+    locationCode,
   } = useShoppingCart();
   const cartItemsCount = cartItems?.length + serverCartItems?.length;
 
@@ -1258,6 +1265,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const [isSigningIn, setIsSigningIn] = useState<AuthContextProps['isSigningIn']>(false);
   const [signInError, setSignInError] = useState<AuthContextProps['signInError']>(false);
   const [authToken, setAuthToken] = useState<string>('');
+  const [depricatedAppData, setDepricatedAppData] = useState<any>(null);
   const auth = firebaseAuth();
 
   const planValiditycr = useRef<string>('');
@@ -1333,7 +1341,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       cleverTapEventForSearchBarClick();
     }
     return () => handler.remove();
-  }, [isSearchFocus, searchText]);
+  }, [isSearchFocus]);
 
   const cleverTapEventForSearchBarClick = () => {
     let eventAttributes = {
@@ -1403,10 +1411,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     updateAppVersion(currentPatient);
   }, [currentPatient]);
 
-  useEffect(() => {
-    checkCleverTapLoginStatus(currentPatient);
-  }, [currentPatient]);
-
   //to be called only when the user lands via app launch
   const logHomePageViewed = async (attributes: any) => {
     const isAppOpened = await AsyncStorage.getItem('APP_OPENED');
@@ -1433,7 +1437,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     try {
       const responseCampaign = await client.query({
         query: GET_CAMPAIGN_ID_FOR_REFERRER,
-        variables: { camp: 'HC_CAMPAIGN' },
         fetchPolicy: 'no-cache',
       });
       const responseReward = await client.query({
@@ -1441,9 +1444,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         variables: { reward: 'HC' },
         fetchPolicy: 'no-cache',
       });
-      if (responseCampaign?.data?.getCampaignInfoByCampaignType?.id) {
-        const campaignId = responseCampaign?.data?.getCampaignInfoByCampaignType?.id;
-        const campaignName = responseCampaign?.data?.getCampaignInfoByCampaignType?.campaignType;
+      if (responseCampaign?.data?.getCampaignInfo?.id) {
+        const campaignId = responseCampaign?.data?.getCampaignInfo?.id;
+        const campaignName = responseCampaign?.data?.getCampaignInfo?.campaignType;
         setCampaignId?.(campaignId);
         setCampaignName?.(campaignName);
       }
@@ -1460,6 +1463,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       saveDeviceNotificationToken(currentPatient.id);
     }
   }, [currentPatient]);
+
   const phrNotificationCount = getPhrNotificationAllCount(phrNotificationData!);
 
   const askLocationPermission = () => {
@@ -1537,6 +1541,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         }
       });
     });
+    setTimeout(() => {
+      checkIsAppDepricated(currentPatient?.mobileNumber)
+        .then(setDepricatedAppData)
+        .catch((error) => {
+          !!error && CommonBugFender('isAppVersionDeprecated', error);
+        });
+    }, 600);
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
       apisToCall.current = [];
       homeScreenParamsOnPop.current = null;
@@ -2094,129 +2105,237 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     ) : null;
   };
 
+  const getCTAConfigItem = (id: number) => {
+    return AppConfig.Configuration.HOME_CTA_CONFIG.find((configItem) => configItem.id === id);
+  };
+
+  const getHomeTitle = (id: number, defaultTitle: string) => {
+    let ctaConfig = getCTAConfigItem(id);
+    if (ctaConfig && ctaConfig?.title) {
+      return ctaConfig?.title;
+    }
+    return defaultTitle;
+  };
+
+  function isHexColor(hex: string) {
+    var reg = /^#([0-9a-f]{3}){1,2}$/i;
+    return !!hex && hex.length >= 3 && hex.length <= 8 && hex.startsWith('#') && reg.test(hex);
+  }
+
+  const getHomeSubTitle = (id: number, defaultSubTitle: string) => {
+    let ctaConfig = getCTAConfigItem(id);
+    if (ctaConfig && ctaConfig?.sub_title) {
+      return ctaConfig?.sub_title;
+    }
+    return defaultSubTitle;
+  };
+
+  const getSubCardColor = (id: number, defaultSubCardColor: string) => {
+    let ctaConfig = getCTAConfigItem(id);
+    if (ctaConfig && ctaConfig?.subtitle_card_color) {
+      if (isHexColor(ctaConfig?.subtitle_card_color)) {
+        return ctaConfig.subtitle_card_color;
+      } else {
+        return defaultSubCardColor;
+      }
+    }
+    return defaultSubCardColor;
+  };
+
+  const getSubTitleColor = (id: number, defaultSubTitleColor: string) => {
+    let ctaConfig = getCTAConfigItem(id);
+    if (ctaConfig && ctaConfig?.subtitle_color) {
+      if (isHexColor(ctaConfig?.subtitle_color)) {
+        return ctaConfig?.subtitle_color;
+      } else {
+        return defaultSubTitleColor;
+      }
+    }
+    return defaultSubTitleColor;
+  };
+
+  const getSubIconTintColor = (id: number) => {
+    let ctaConfig = getCTAConfigItem(id);
+    if (ctaConfig && ctaConfig.subtitle_image_tint_color) {
+      if (isHexColor(ctaConfig.subtitle_image_tint_color)) {
+        return ctaConfig.subtitle_image_tint_color;
+      }
+    }
+    return undefined;
+  };
+
+  const getHomeCTAAction = (id: number, defaultAction: any) => {
+    let ctaConfig = getCTAConfigItem(id);
+
+    if (ctaConfig) {
+      if (ctaConfig.action_deeplink) {
+        try {
+          Linking.openURL(ctaConfig.action_deeplink);
+        } catch (e) {
+          defaultAction();
+        }
+      } else {
+        defaultAction();
+      }
+    } else {
+      defaultAction();
+    }
+  };
+
+  const getHealthRecordIcons = (id: number) => {
+    let ctaConfig = getCTAConfigItem(id);
+    if (ctaConfig && ctaConfig?.title && ctaConfig.title?.toLowerCase().includes('onetap')) {
+      return <VideoConsult style={styles.menuOption2SubIconStyle} />;
+    } else {
+      return (
+        <View>
+          <PrescriptionMenu style={styles.menuOption2SubIconStyle} />
+
+          {renderBadgeView()}
+        </View>
+      );
+    }
+  };
+
   const listOptions: menuOptions[] = [
     {
       id: 1,
-      title: 'Buy Medicines and Essentials',
+      title: getHomeTitle(1, 'Buy Medicines and Essentials'),
       image: <MedicineHomeIcon style={[styles.menuOptionIconStyle]} />,
-      subCardColor: '#EAF6FF',
-      subtitleColor: '#2D6E85',
-      subtitle: 'Health Credits Available',
-      image2: <WalletHomeHC style={styles.bottom2SubImage} />,
+      subCardColor: getSubCardColor(1, '#EAF6FF'),
+      subtitleColor: getSubTitleColor(1, '#2D6E85'),
+      subtitle: getHomeSubTitle(1, 'Health Credits Available'),
+      image2: (
+        <WalletHomeHC style={[styles.bottom2SubImage, { tintColor: getSubIconTintColor(1) }]} />
+      ),
       onPress: () => {
-        postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Home Screen');
-        postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Home Screen');
-        postHomeCleverTapEvent(CleverTapEventName.BUY_MEDICINES, 'Home Screen');
-        props.navigation.navigate('MEDICINES', { focusSearch: true, comingFrom: '247 Home CTA' });
-        const eventAttributes:
-          | WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED]
-          | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED] = {
-          'Nav src': 'app home',
-        };
-        setTimeout(
-          () => postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED, eventAttributes),
-          500
-        );
-        postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
+        getHomeCTAAction(1, () => {
+          postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Home Screen');
+          postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Home Screen');
+          postHomeCleverTapEvent(CleverTapEventName.BUY_MEDICINES, 'Home Screen');
+          props.navigation.navigate('MEDICINES', { focusSearch: true, comingFrom: '247 Home CTA' });
+          const eventAttributes:
+            | WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED]
+            | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED] = {
+            'Nav src': 'app home',
+          };
+          setTimeout(
+            () => postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED, eventAttributes),
+            500
+          );
+          postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
+        });
       },
     },
     {
       id: 2,
-      title: 'Book Lab Tests',
+      title: getHomeTitle(2, 'Book Lab Tests'),
       image: <LabTestBrownIcon style={styles.menuOption2IconStyle} />,
-      image2: <PercentOffBrownIcon style={styles.bottom2SubImage} />,
-      subtitle: 'Upto 60% Off',
-      subCardColor: 'rgba(254, 231, 218, 0.6)',
-      subtitleColor: '#A05D1F',
+      image2: (
+        <PercentOffBrownIcon
+          style={[styles.bottom2SubImage, { tintColor: getSubIconTintColor(2) }]}
+        />
+      ),
+      subtitle: getHomeSubTitle(2, 'Upto 60% Off'),
+      subCardColor: getSubCardColor(2, 'rgba(254, 231, 218, 0.6)'),
+      subtitleColor: getSubTitleColor(2, '#A05D1F'),
       onPress: () => {
-        const homeScreenAttributes = {
-          'Nav src': 'hero banner',
-          'Page Name': 'Home Screen',
-          Source: DiagnosticHomePageSource.HOMEPAGE_CTA,
-        };
-        postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Home Screen');
-        postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Home Screen');
-        props.navigation.navigate('TESTS', { focusSearch: true, homeScreenAttributes });
+        getHomeCTAAction(2, () => {
+          const homeScreenAttributes = {
+            'Nav src': 'hero banner',
+            'Page Name': 'Home Screen',
+            Source: DiagnosticHomePageSource.HOMEPAGE_CTA,
+          };
+          postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Home Screen');
+          postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Home Screen');
+          props.navigation.navigate('TESTS', { focusSearch: true, homeScreenAttributes });
+        });
       },
     },
     {
       id: 3,
-      title: 'Consult a Doctor',
+      title: getHomeTitle(3, 'Consult a Doctor'),
       image: <DoctorIcon style={[styles.menuOption2IconStyle]} />,
-      image2: <TimeGreenIcon style={styles.bottom2SubImage} />,
-      subtitle: 'Consult in 15 mins',
-      subCardColor: '#E6FFFD',
-      subtitleColor: '#1FA098',
+      image2: (
+        <TimeGreenIcon style={[styles.bottom2SubImage, { tintColor: getSubIconTintColor(3) }]} />
+      ),
+      subtitle: getHomeSubTitle(3, 'Consult in 15 mins'),
+      subCardColor: getSubCardColor(3, '#E6FFFD'),
+      subtitleColor: getSubTitleColor(3, '#1FA098'),
       onPress: () => {
-        postHomeFireBaseEvent(FirebaseEventName.FIND_A_DOCTOR, 'Home Screen');
-        postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT);
-        postHomeCleverTapEvent(
-          CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED,
-          'Home Screen'
-        );
-        props.navigation.navigate(AppRoutes.DoctorSearch);
-        //props.navigation.navigate(AppRoutes.PostShareAppointmentSelectorScreen);
+        getHomeCTAAction(3, () => {
+          postHomeFireBaseEvent(FirebaseEventName.FIND_A_DOCTOR, 'Home Screen');
+          postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT);
+          postHomeCleverTapEvent(
+            CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED,
+            'Home Screen'
+          );
+          props.navigation.navigate(AppRoutes.DoctorSearch);
+        });
       },
     },
     {
       id: 4,
-      title: 'Book Doctor by Symptoms',
+      title: getHomeTitle(4, 'Book Doctor by Symptoms'),
       image: <Symptomtracker style={styles.menuOption2SubIconStyle} />,
       onPress: () => {
-        const eventAttributes:
-          | WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_PAGE_CLICKED]
-          | CleverTapEvents[CleverTapEventName.SYMPTOM_TRACKER_PAGE_CLICKED] = {
-          'Patient UHID': g(currentPatient, 'uhid'),
-          'Patient ID': g(currentPatient, 'id'),
-          'Patient Name': g(currentPatient, 'firstName'),
-          'Mobile Number': g(currentPatient, 'mobileNumber'),
-          'Date of Birth': g(currentPatient, 'dateOfBirth'),
-          Email: g(currentPatient, 'emailAddress'),
-          Relation: g(currentPatient, 'relation'),
-        };
-        postWebEngageEvent(WebEngageEventName.SYMPTOM_TRACKER_PAGE_CLICKED, eventAttributes);
-        postHomeFireBaseEvent(FirebaseEventName.TRACK_SYMPTOMS, 'Home Screen');
-        postHomeWEGEvent(WebEngageEventName.TRACK_SYMPTOMS);
-        postHomeCleverTapEvent(CleverTapEventName.TRACK_SYMPTOMS, 'Home Screen');
-        props.navigation.navigate(AppRoutes.SymptomTracker);
+        getHomeCTAAction(4, () => {
+          const eventAttributes:
+            | WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_PAGE_CLICKED]
+            | CleverTapEvents[CleverTapEventName.SYMPTOM_TRACKER_PAGE_CLICKED] = {
+            'Patient UHID': g(currentPatient, 'uhid'),
+            'Patient ID': g(currentPatient, 'id'),
+            'Patient Name': g(currentPatient, 'firstName'),
+            'Mobile Number': g(currentPatient, 'mobileNumber'),
+            'Date of Birth': g(currentPatient, 'dateOfBirth'),
+            Email: g(currentPatient, 'emailAddress'),
+            Relation: g(currentPatient, 'relation'),
+          };
+          postWebEngageEvent(WebEngageEventName.SYMPTOM_TRACKER_PAGE_CLICKED, eventAttributes);
+          postHomeFireBaseEvent(FirebaseEventName.TRACK_SYMPTOMS, 'Home Screen');
+          postHomeWEGEvent(WebEngageEventName.TRACK_SYMPTOMS);
+          postHomeCleverTapEvent(CleverTapEventName.TRACK_SYMPTOMS, 'Home Screen');
+          props.navigation.navigate(AppRoutes.SymptomTracker);
+        });
       },
     },
     {
       id: 5,
-      title: 'Book Covid Vaccination',
+      title: getHomeTitle(5, 'Book Covid Vaccination'),
       image: <BookVaccineIcon style={styles.menuOption2SubIconStyle} />,
       onPress: () => {
-        const itemTo = covidVaccineCtaV2?.data?.filter(
-          (item: any) => item?.title === 'Book Vaccination Slot'
-        );
-        handleCovidCTA(itemTo?.[0] || {});
+        getHomeCTAAction(5, () => {
+          const itemTo = covidVaccineCtaV2?.data?.filter(
+            (item: any) => item?.title === 'Book Vaccination Slot'
+          );
+          handleCovidCTA(itemTo?.[0] || {});
+        });
       },
     },
     {
       id: 6,
-      title: 'Manage Diabetes',
+      title: getHomeTitle(6, 'Manage Diabetes'),
       image: <Diabetes style={styles.menuOption2SubIconStyle} />,
       onPress: () => {
-        postHomeFireBaseEvent(FirebaseEventName.MANAGE_DIABETES, 'Home Screen');
-        postHomeWEGEvent(WebEngageEventName.MANAGE_DIABETES);
-        postHomeCleverTapEvent(CleverTapEventName.MANAGE_DIABETES, 'Home Screen');
-        getTokenforCM();
+        getHomeCTAAction(6, () => {
+          postHomeFireBaseEvent(FirebaseEventName.MANAGE_DIABETES, 'Home Screen');
+          postHomeWEGEvent(WebEngageEventName.MANAGE_DIABETES);
+          postHomeCleverTapEvent(CleverTapEventName.MANAGE_DIABETES, 'Home Screen');
+          getTokenforCM();
+        });
       },
     },
     {
       id: 7,
-      title: 'View Health Records',
-      image: (
-        <View>
-          <PrescriptionMenu style={styles.menuOption2SubIconStyle} />
-          {renderBadgeView()}
-        </View>
-      ),
+      title: getHomeTitle(7, 'View Health Records'),
+      image: getHealthRecordIcons(7),
       onPress: () => {
-        postHomeFireBaseEvent(FirebaseEventName.VIEW_HELATH_RECORDS, 'Home Screen');
-        postHomeWEGEvent(WebEngageEventName.VIEW_HELATH_RECORDS, 'Home Screen');
-        postHomeCleverTapEvent(CleverTapEventName.VIEW_HELATH_RECORDS, 'Home Screen');
-        props.navigation.navigate('HEALTH RECORDS');
+        getHomeCTAAction(7, () => {
+          postHomeFireBaseEvent(FirebaseEventName.VIEW_HELATH_RECORDS, 'Home Screen');
+          postHomeWEGEvent(WebEngageEventName.VIEW_HELATH_RECORDS, 'Home Screen');
+          postHomeCleverTapEvent(CleverTapEventName.VIEW_HELATH_RECORDS, 'Home Screen');
+          props.navigation.navigate('HEALTH RECORDS');
+        });
       },
     },
   ];
@@ -3934,7 +4053,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       <View style={styles.menuOptionsContainer}>
         <TouchableOpacity
           activeOpacity={1}
-          onPress={() => textForNotch !== 'Offer Expired' && onOfferCtaPressed(item, 1)}
+          onPress={() => {
+            postOfferCardClickEvent(item, '1', textForNotch == 'Offer Expired');
+            textForNotch !== 'Offer Expired' && onOfferCtaPressed(item, 1);
+          }}
         >
           <LinearGradientVerticalComponent
             colors={[
@@ -6074,6 +6196,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           }
         />
       </Overlay>
+      <UpdateAppPopup depricatedAppData={depricatedAppData} />
     </View>
   );
 };

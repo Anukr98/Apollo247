@@ -37,6 +37,7 @@ import { renderPackageItemPriceShimmer } from '@aph/mobile-patients/src/componen
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import DiscountPercentage from '@aph/mobile-patients/src/components/Tests/components/DiscountPercentage';
 import { CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
+import { DIAGNOSTICS_ITEM_TYPE } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 const screenWidth = Dimensions.get('window').width;
 const CARD_WIDTH = screenWidth * 0.8; //0.86
 
@@ -56,6 +57,7 @@ export interface PackageCardProps {
   onEndReached?: any;
   diagnosticWidgetData?: any;
   isPriceAvailable?: boolean;
+  widgetHeading?: string;
 }
 
 export const PackageCard: React.FC<PackageCardProps> = (props) => {
@@ -76,12 +78,22 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     navigation,
     sourceScreen,
     diagnosticWidgetData,
+    widgetHeading,
   } = props;
 
   const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   let actualItemsToShow = diagnosticWidgetData?.length > 0 && diagnosticWidgetData;
   const { currentPatient } = useAllCurrentPatients();
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
+
+  function getCount(array: any) {
+    return array?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
+  }
+
+  function getMandatoryParamterResults(arr: any) {
+    return arr?.filter((item: any) => item?.mandatoryValue === '1');
+  }
+
   const renderItemCard = useCallback(
     (item: any) => {
       const getItem = item?.item;
@@ -98,24 +110,47 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
 
       const imageUrl = getItem?.itemImageUrl;
       const name = getItem?.itemTitle;
-      const inclusions = getItem?.inclusionData;
+      const isFromRecommendendation =
+        sourceScreen == AppRoutes.TestListing &&
+        props.widgetHeading?.toLowerCase() ==
+          string.diagnostics.homepagePastOrderRecommendations?.toLowerCase();
+      const inclusions = isFromRecommendendation
+        ? getItem?.inclusions! || getItem?.inclusionData
+        : getItem?.inclusionData;
       const numberOfParametersToShow = isDiagnosticCircleSubscription ? 3 : 2;
+      var getMandatoryParamter = [] as any;
 
-      const getMandatoryParamter =
+      if (sourceScreen == AppRoutes.TestDetails || isFromRecommendendation) {
+        getMandatoryParamter =
+          !!inclusions &&
+          inclusions?.length > 0 &&
+          inclusions?.map((inclusion: any) =>
+            getMandatoryParamterResults(
+              isFromRecommendendation
+                ? !!inclusion?.observations
+                  ? inclusion?.observations
+                  : inclusion?.incObservationData
+                : inclusion?.observations
+            )
+          );
+      } else {
         !!inclusions &&
-        inclusions?.length > 0 &&
-        inclusions?.map((inclusion: any) =>
-          inclusion?.incObservationData?.filter((item: any) => item?.mandatoryValue === '1')
-        );
+          inclusions?.length > 0 &&
+          inclusions?.map((inclusion: any) =>
+            getMandatoryParamterResults(inclusion?.incObservationData)
+          );
+      }
 
-      const getMandatoryParameterCount =
-        !!getMandatoryParamter &&
-        getMandatoryParamter?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
+      const getMandatoryParameterCount = !!getMandatoryParamter && getCount(getMandatoryParamter);
 
       const getParamterData =
         !!getMandatoryParamter && getMandatoryParamter?.length > 0 && getMandatoryParamter?.flat(1);
-      const dataToShow = getMandatoryParameterCount > 0 ? getParamterData : inclusions;
 
+      const dataToShow = getMandatoryParameterCount > 0 ? getParamterData : inclusions;
+      const nonInclusionTests =
+        !!inclusions && inclusions?.length > 0
+          ? inclusions?.filter((inclusion: any) => inclusion?.incObservationData?.length == 0)
+          : [];
       return (
         <TouchableOpacity
           activeOpacity={1}
@@ -150,7 +185,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
                 >
                   <Text style={styles.inclusionsText}>
                     {getMandatoryParameterCount > 0
-                      ? `Total Tests : ${getMandatoryParameterCount}`
+                      ? `Total Tests : ${getMandatoryParameterCount + nonInclusionTests?.length}`
                       : `Total Tests : ${inclusions?.length}`}{' '}
                   </Text>
 
@@ -217,7 +252,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     return <>{!isCircleSubscribed ? <View style={{ height: 18 }} /> : null}</>;
   };
 
-  const renderPricesView = (pricesForItem: any, packageMrpForItem: any, getItem: any) => {
+  function calculatePriceToShow(pricesForItem: any, packageMrpForItem: any) {
     const promoteCircle = pricesForItem?.promoteCircle;
     const promoteDiscount = pricesForItem?.promoteDiscount;
     const specialPrice = pricesForItem?.specialPrice!;
@@ -252,6 +287,30 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
         priceToShow = specialPrice || price;
       }
     }
+    return {
+      promoteCircle,
+      promoteDiscount,
+      price,
+      circleSpecialPrice,
+      circleDiscount,
+      specialDiscount,
+      discount,
+      priceToShow,
+    };
+  }
+
+  const renderPricesView = (pricesForItem: any, packageMrpForItem: any, getItem: any) => {
+    const {
+      priceToShow,
+      promoteCircle,
+      promoteDiscount,
+      price,
+      circleSpecialPrice,
+      circleDiscount,
+      specialDiscount,
+      discount,
+    } = calculatePriceToShow(pricesForItem, packageMrpForItem);
+
     const slashedPrice =
       !!packageMrpForItem && packageMrpForItem > price ? packageMrpForItem : price;
     const hasCirclePrice = promoteCircle && !promoteDiscount && priceToShow != circleSpecialPrice;
@@ -406,7 +465,6 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     const discountPrice = pricesForItem?.discountPrice!;
     const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
     const planToConsider = pricesForItem?.planToConsider;
-    const discountToDisplay = pricesForItem?.discountToDisplay;
     const mrpToDisplay = pricesForItem?.mrpToDisplay;
     const widgetType = Array.isArray(data)
       ? sourceScreen === AppRoutes.CartPage
@@ -419,15 +477,18 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
       !!item?.inclusionData && item.inclusionData.map((item: any) => Number(item?.incItemId));
 
     DiagnosticAddToCartEvent(
-      item?.itemTitle,
+      item?.itemTitle || item?.itemName,
       `${item?.itemId}`,
-      mrpToDisplay,
-      discountToDisplay,
+      mrpToDisplay, //mrp
+      calculatePriceToShow(pricesForItem, packageCalculatedMrp)?.priceToShow, //actual selling price
       source,
+      item?.inclusionData == null || (!!inclusions && inclusions?.length < 2)
+        ? DIAGNOSTICS_ITEM_TYPE.TEST
+        : DIAGNOSTICS_ITEM_TYPE.PACKAGE,
       widgetType === string.diagnosticCategoryTitle.categoryGrid ||
         widgetType == string.diagnosticCategoryTitle.category
         ? 'Category page'
-        : data?.diagnosticWidgetTitle,
+        : data?.diagnosticWidgetTitle || widgetHeading,
       currentPatient,
       isDiagnosticCircleSubscription
     );
@@ -484,7 +545,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     const discountPrice = pricesForItem?.discountPrice!;
     const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
     const mrpToDisplay = pricesForItem?.mrpToDisplay;
-    const widgetTitle = data?.diagnosticWidgetTitle;
+    const widgetTitle = data?.diagnosticWidgetTitle || widgetHeading;
     const inclusions =
       !!item?.inclusionData && item?.inclusionData?.map((item: any) => Number(item?.incItemId));
 
@@ -493,6 +554,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
       navigation.replace(AppRoutes.TestDetails, {
         itemId: item?.itemId,
         comingFrom: sourceScreen,
+        widgetTitle: widgetTitle,
         testDetails: ({
           Rate: price,
           specialPrice: specialPrice! || price,
@@ -514,6 +576,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
       navigation.navigate(AppRoutes.TestDetails, {
         itemId: item?.itemId,
         comingFrom: sourceScreen,
+        widgetTitle: widgetTitle,
         testDetails: {
           Rate: price,
           specialPrice: specialPrice! || price,

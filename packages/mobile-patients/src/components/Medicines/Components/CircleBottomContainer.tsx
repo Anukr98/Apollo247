@@ -23,6 +23,7 @@ export const CircleBottomContainer: React.FC<CircleBottomContainerProps> = (prop
     isCircleCart,
     serverCartAmount,
     serverCartItems,
+    cartSubscriptionDetails,
   } = useShoppingCart();
   const showNudgeMessage =
     pharmaHomeNudgeMessage?.show === 'yes' &&
@@ -72,16 +73,13 @@ export const CircleBottomContainer: React.FC<CircleBottomContainerProps> = (prop
     </View>
   );
 
-  const renderCashbackSection = () =>
-    isCircleCart ? renderCircleCashback() : renderUpgradeToCircle();
-
   const renderCircleCashback = () => (
     <View style={{ width: '60%' }}>
       <View style={{ flexDirection: 'row' }}>
         <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0)}>
           MRP{'  '}
           {string.common.Rs}
-          {cartSavings ? (cartTotal - cartSavings)?.toFixed(2) : cartTotal?.toFixed(2)}
+          {estimatedAmount?.toFixed(2)}
         </Text>
         {renderCartDiscount()}
       </View>
@@ -122,16 +120,19 @@ export const CircleBottomContainer: React.FC<CircleBottomContainerProps> = (prop
     </View>
   );
 
-  const renderGoToCartCta = () => (
-    <TouchableOpacity style={circleStyles.cartButton} onPress={onPressGoToCart}>
-      <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 20, 0)}>GO TO CART</Text>
-      {!isCircleCart && totalCashback > 1 && (
-        <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0)}>
-          {`Buy for ${string.common.Rs}${serverCartAmount?.cartTotal}`}
-        </Text>
-      )}
-    </TouchableOpacity>
-  );
+  const renderGoToCartCta = () =>
+    !props.serverCartLoading ? (
+      <TouchableOpacity style={circleStyles.cartButton} onPress={onPressGoToCart}>
+        <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 20, 0)}>GO TO CART</Text>
+        {!isCircleCart && totalCashback > 1 && (
+          <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0)}>
+            {`Buy for ${string.common.Rs}${serverCartAmount?.estimatedAmount}`}
+          </Text>
+        )}
+      </TouchableOpacity>
+    ) : (
+      <View />
+    );
 
   const renderSeparator = () => {
     isCircleCart ? <View style={circleStyles.separator}></View> : null;
@@ -156,9 +157,7 @@ export const CircleBottomContainer: React.FC<CircleBottomContainerProps> = (prop
           </View>
 
           {renderSeparator()}
-
           {renderCircleBottomShimmer()}
-
           {renderGoToCartCta()}
         </View>
       </View>
@@ -175,7 +174,19 @@ export const CircleBottomContainer: React.FC<CircleBottomContainerProps> = (prop
         <View style={circleStyles.content}>
           {renderItemsCount()}
           {renderSeparator()}
-          {totalCashback > 1 ? renderCashbackSection() : renderEstimatedAmount()}
+          {totalCashback > 1
+            ? // below conditions will only be checked if total cashback > 1
+              // if user is a circle member and circle benefits are applicable so render circle cashback
+              // else render estimated amount(in case where user has applied coupon and circle benefits are not applicable)
+              // if user is not a circle member and has added circle membership to cart so render circle cashback else render upgrade to circle
+              cartSubscriptionDetails?.userSubscriptionId
+              ? !!cartSubscriptionDetails?.subscriptionApplied
+                ? renderCircleCashback()
+                : renderEstimatedAmount()
+              : !!cartSubscriptionDetails?.subscriptionApplied
+              ? renderCircleCashback()
+              : renderUpgradeToCircle()
+            : renderEstimatedAmount()}
           {renderGoToCartCta()}
         </View>
       </View>

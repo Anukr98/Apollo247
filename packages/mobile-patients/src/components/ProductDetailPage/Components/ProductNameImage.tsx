@@ -14,6 +14,10 @@ import {
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  renderImageCarouselShimmer,
+  renderPDPComponentsShimmer,
+} from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 
 export interface ProductNameImageProps {
   name: string;
@@ -31,22 +35,41 @@ export const ProductNameImage: React.FC<ProductNameImageProps> = (props) => {
   const [slideIndex, setSlideIndex] = useState(0);
 
   const renderImageCarousel = () => {
-    return (
-      <View style={{ marginTop: 20 }}>
-        <Carousel
-          onSnapToItem={setSlideIndex}
-          data={images}
-          renderItem={renderSliderItem}
-          sliderWidth={width}
-          itemWidth={width}
-        />
-        {images && images.length > 1 ? (
-          <View style={styles.sliderDotsContainer}>
-            {images?.map((_, index) => (index == slideIndex ? renderDot(true) : renderDot(false)))}
-          </View>
-        ) : null}
-      </View>
-    );
+    if (images?.length) {
+      return (
+        <View style={{ marginTop: 20 }}>
+          <Carousel
+            onSnapToItem={setSlideIndex}
+            data={images}
+            renderItem={renderSliderItem}
+            sliderWidth={width}
+            itemWidth={width}
+          />
+          {images?.length > 1 ? (
+            <View style={styles.sliderDotsContainer}>
+              {images?.map((_, index) =>
+                index == slideIndex ? renderDot(true) : renderDot(false)
+              )}
+            </View>
+          ) : null}
+        </View>
+      );
+    } else {
+      return renderImageCarouselShimmer(
+        {
+          borderRadius: 6,
+          height: 230,
+          width: '100%',
+          marginVertical: 10,
+        },
+        {
+          flexDirection: 'row',
+          justifyContent: 'center',
+          bottom: 10,
+          alignSelf: 'center',
+        }
+      );
+    }
   };
 
   const renderDot = (active: boolean) => (
@@ -60,7 +83,7 @@ export const ProductNameImage: React.FC<ProductNameImageProps> = (props) => {
       <TouchableOpacity
         activeOpacity={1}
         onPress={() => {
-          if (images.length) {
+          if (images?.length) {
             props.navigation.navigate(AppRoutes.ImageSliderScreen, {
               images: (images || []).map(
                 (imgPath) => `${AppConfig.Configuration.IMAGES_BASE_URL[0]}${imgPath}`
@@ -81,7 +104,7 @@ export const ProductNameImage: React.FC<ProductNameImageProps> = (props) => {
             width: '93%',
             resizeMode: 'contain',
           }}
-          source={{ uri: `${AppConfig.Configuration.IMAGES_BASE_URL[0]}${item}` }}
+          source={{ uri: `${AppConfig.Configuration.IMAGES_BASE_URL[0]}${item}?imwidth=200` }}
         />
       </TouchableOpacity>
     );
@@ -109,11 +132,25 @@ export const ProductNameImage: React.FC<ProductNameImageProps> = (props) => {
     }
   };
 
+  const renderName = () => {
+    if (name) {
+      return <Text style={styles.name}>{name}</Text>;
+    } else {
+      return renderPDPComponentsShimmer({
+        height: 30,
+        borderRadius: 10,
+        width: '90%',
+        marginVertical: 10,
+        marginHorizontal: 10,
+      });
+    }
+  };
+
   return (
     <View style={styles.cardStyle}>
-      <Text style={styles.name}>{name}</Text>
+      {renderName()}
       {!!merchandising && renderMerchandisingTag()}
-      {!!images.length && renderImageCarousel()}
+      {renderImageCarousel()}
       {isPrescriptionRequired && renderPrescriptionRequired()}
     </View>
   );

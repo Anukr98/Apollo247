@@ -98,6 +98,7 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { CircleBenefitCouponDialog } from './CircleBenefitCouponDialog';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -307,6 +308,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const [showAvailPopup, setShowAvailPopup] = useState<boolean>(false);
   const [benefitId, setBenefitId] = useState<string>('');
   const [showUserConstentPopUp, setShowUserConsentPopup] = useState<boolean>(false);
+  const [showCircleBenfitCouponDialog, setShowCircleBenfitCouponDialog] = useState<boolean>(false);
   const [showDiabeticQuestionaire, setShowDiabeticQuestionaire] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [upgradePlans, setUpgradePlans] = useState<SubscriptionData[]>([]);
@@ -1029,6 +1031,8 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           url: redirectUrl,
           isGoBack: true,
         });
+      } else if (action == Hdfc_values.APPLY_CIRCLE_COUPON) {
+        setShowCircleBenfitCouponDialog(!showCircleBenfitCouponDialog);
       } else {
         props.navigation.navigate(AppRoutes.HomeScreen);
       }
@@ -1474,6 +1478,23 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     );
   };
 
+  const renderCircleBenefitCouponDialog = () => {
+    return (
+      <CircleBenefitCouponDialog
+        visible={showCircleBenfitCouponDialog}
+        onDismiss={() => setShowCircleBenfitCouponDialog(false)}
+        onProceed={() => {
+          props.navigation.navigate('DoctorSearchListing', {
+            isCircleOnly: true,
+            appliedCircleCouponCode: 'CIRCLEBENEFITS',
+          });
+
+          setShowCircleBenfitCouponDialog(false);
+        }}
+      />
+    );
+  };
+
   const renderCircleSubscriptionPlans = () => {
     return (
       <CircleMembershipPlans
@@ -1584,6 +1605,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           navigation={props.navigation}
         />
       ) : null}
+      {showCircleBenfitCouponDialog && renderCircleBenefitCouponDialog()}
       {showCircleActivation && renderCircleMembershipActivated()}
       {showCirclePlans && renderCircleSubscriptionPlans()}
       {loading && <Spinner />}

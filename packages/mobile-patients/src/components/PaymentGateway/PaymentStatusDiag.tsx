@@ -22,9 +22,8 @@ import { TabBar } from '@aph/mobile-patients/src/components/PaymentGateway/Compo
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
+  clearStackAndNavigate,
   goToConsultRoom,
-  postWebEngageEvent,
-  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { apiCallEnums } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
@@ -35,6 +34,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
 import {
   GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
+  GET_REVIEW_POPUP_PERMISSION,
   UPDATE_PASSPORT_DETAILS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
@@ -53,11 +53,16 @@ import {
   firePaymentOrderStatusEvent,
 } from '@aph/mobile-patients/src/components/PaymentGateway/Events';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { firePurchaseEvent } from '@aph/mobile-patients/src/components/Tests/Events';
+import {
+  DiagnosticOrderPlaced,
+  firePurchaseEvent,
+} from '@aph/mobile-patients/src/components/Tests/Events';
+import LottieView from 'lottie-react-native';
+const paymentSuccess =
+  '@aph/mobile-patients/src/components/PaymentGateway/AnimationFiles/Animation_2/tick.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { InfoIconRed } from '@aph/mobile-patients/src/components/ui/Icons';
-import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import moment from 'moment';
 
 export interface PaymentStatusDiagProps extends NavigationScreenProps {}
 
@@ -72,6 +77,9 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
   const eventAttributes = props.navigation.getParam('eventAttributes');
   const isCOD = props.navigation.getParam('isCOD');
   const isCircleAddedToCart = props.navigation.getParam('isCircleAddedToCart');
+  const verticalSpecificEventAttributes = props.navigation.getParam(
+    'verticalSpecificEventAttributes'
+  );
   const {
     orderInfo,
     fetching,
@@ -100,7 +108,6 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
   const [showPassportModal, setShowPassportModal] = useState<boolean>(false);
   const [passportNo, setPassportNo] = useState<any>([]);
   const [passportData, setPassportData] = useState<any>([]);
-
   const orderCartSaving = orderDetails?.cartSaving!;
   const orderCircleSaving = orderDetails?.circleSaving!;
   const circleSavings = isDiagnosticCircleSubscription ? Number(orderCircleSaving) : 0;
@@ -115,6 +122,7 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
     : orderInfo?.ordersList?.map((item: any) => item?.displayId)?.join(', ');
 
   useEffect(() => {
+    setTimeout(() => setAnimationfinished(true), 2700);
     isCircleAddedToCart && setIsDiagnosticCircleSubscription?.(true);
     isModifyCod && fetchOrdersDetails(modifiedOrderDetails?.id);
     clearDiagnoticCartInfo?.();
@@ -187,26 +195,97 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
   };
 
   const postwebEngageCheckoutCompletedEvent = () => {
-    try {
-      let attributes = {
-        ...eventAttributes,
-        'Payment Mode': isCOD ? 'Cash' : 'Prepaid',
-        'Circle discount': circleSubscriptionId && orderCircleSaving ? orderCircleSaving : 0,
-        'Circle user': isDiagnosticCircleSubscription || isCircleAddedToCart ? 'Yes' : 'No',
-      };
-      postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED, attributes);
-      postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ORDER_PLACED, attributes);
-    } catch (error) {}
+    const circleDiscount = circleSubscriptionId && orderCircleSaving ? orderCircleSaving : 0;
+    const circleUser = isDiagnosticCircleSubscription || isCircleAddedToCart ? 'Yes' : 'No';
+    const mode = isCOD ? 'Cash' : 'Prepaid';
+    DiagnosticOrderPlaced(
+      currentPatient,
+      isDiagnosticCircleSubscription,
+      circleDiscount,
+      circleUser,
+      mode,
+      eventAttributes,
+      verticalSpecificEventAttributes
+    );
   };
+
+  const validatePermission = () => {
+    // const { data } = await client.query<
+      //   getDiagnosticOrderDetails,
+      //   getDiagnosticOrderDetailsVariables
+      // >({
+      //   query: GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
+      //   variables: { diagnosticOrderId: orderId },
+      //   fetchPolicy: 'no-cache',
+      // });
+      // const { attributesObj, createdDate, slotDateTimeInUTC } =
+      //   data?.getDiagnosticOrderDetails?.ordersList || {};
+      // const { expectedReportGenerationTime } = attributesObj || {};
+
+      // const reportGenerationDifference = moment
+      //   .duration(moment(expectedReportGenerationTime).diff(moment(createdDate)))
+      //   .asHours();
+
+      // const sampleCollectedTimeDifference = moment
+      //   .duration(moment(slotDateTimeInUTC).diff(moment(createdDate)))
+      //   .asHours();
+
+      // const popupConfig: {
+      //   vertical: string;
+      //   report_generation_time_hrs?: string;
+      //   sample_collected_time_min?: string;
+      //   diag_appointment_time_hrs?: string;
+      // } = {
+      //   vertical: 'diagnostic',
+      // };
+      // if (expectedReportGenerationTime)
+      //   popupConfig['report_generation_time_hrs'] = Math.floor(
+      //     reportGenerationDifference
+      //   ).toString();
+      // if (slotDateTimeInUTC) {
+      //   popupConfig['sample_collected_time_min'] = Math.floor(
+      //     sampleCollectedTimeDifference
+      //   ).toString();
+      //   popupConfig['diag_appointment_time_hrs'] = Math.floor(
+      //     sampleCollectedTimeDifference
+      //   ).toString();
+      // }
+
+      // const permission = await client.query({
+      //   query: GET_REVIEW_POPUP_PERMISSION,
+      //   variables: {
+      //     popupConfig,
+      //   },
+      //   fetchPolicy: 'no-cache',
+      // });
+  }
 
   const requestInAppReview = async () => {
     try {
-      const { diagnosticDate } = orderDetails;
+      const { diagnosticDate, orderId } = orderDetails;
       let givenDate = new Date(diagnosticDate);
-      var diff = (givenDate.getTime() - givenDate.getTime()) / 1000;
-      diff /= 60 * 60;
-      if (diff <= 48 && InAppReview.isAvailable()) {
-        const onfulfilled = await InAppReview.RequestInAppReview();
+      const { data } = await client.query<
+        getDiagnosticOrderDetails,
+        getDiagnosticOrderDetailsVariables
+      >({
+        query: GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
+        variables: { diagnosticOrderId: orderId },
+        fetchPolicy: 'no-cache',
+      });
+      const { slotDateTimeInUTC } =
+        data?.getDiagnosticOrderDetails?.ordersList || {};
+      const diff = moment.duration(moment(slotDateTimeInUTC).diff(moment())).asHours()
+      /*
+        The following bit of code is going to be needed in the future
+        when the backend has been deployed properly to communicate with the
+        CMS because of which the hardcoded values to display the in-app rating
+        will no longer be hardcoded but the permission to do the same would instead be
+        retrieved from the backend.
+
+        validatePermission()
+      */
+      if (diff<=48 && InAppReview.isAvailable()) {
+        const onfulfilled = await InAppReview.RequestInAppReview()
         if (!!onfulfilled) {
           InAppReviewEvent(currentPatient, pharmacyUserTypeAttribute, pharmacyCircleAttributes);
         }
@@ -226,13 +305,16 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
       apiCallEnums.getAllBanners,
       apiCallEnums.plansCashback,
       apiCallEnums.getUserSubscriptions,
+      apiCallEnums.getUserSubscriptionsV2,
+      apiCallEnums.oneApollo,
+      apiCallEnums.getPlans,
     ];
     goToConsultRoom(props.navigation);
   };
 
   const moveToMyOrders = () => {
-    props.navigation.push(AppRoutes.YourOrdersTest, {
-      source: AppRoutes.PaymentStatusDiag,
+    clearStackAndNavigate(props.navigation, AppRoutes.YourOrdersTest, {
+      source: AppRoutes.CartPage,
     });
   };
 
@@ -265,9 +347,14 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
 
   const navigateToOrderDetails = (showOrderSummaryTab: boolean, orderId: string) => {
     setLoading?.(false);
-    apisToCall.current = [apiCallEnums.circleSavings];
-    props.navigation.popToTop({ immediate: true });
-    props.navigation.push(AppRoutes.TestOrderDetails, {
+    apisToCall.current = [
+      apiCallEnums.circleSavings,
+      apiCallEnums.plansCashback,
+      apiCallEnums.getUserSubscriptions,
+      apiCallEnums.getUserSubscriptionsV2,
+      apiCallEnums.oneApollo,
+    ];
+    const paramObject = {
       orderId: !!modifiedOrderDetails ? modifiedOrderDetails?.id : orderId,
       setOrders: null,
       selectedOrder: null,
@@ -277,7 +364,8 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
       showOrderSummaryTab: false,
       disableTrackOrder: false,
       amount: orderDetails?.amount,
-    });
+    };
+    clearStackAndNavigate(props.navigation, AppRoutes.TestOrderDetails, paramObject);
   };
 
   const renderPaymentStatus = () => {
@@ -356,6 +444,24 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
     ) : null;
   };
 
+  const [animationfinished, setAnimationfinished] = useState<boolean>(false);
+
+  const renderSucccessAnimation = () => {
+    return (
+      <View style={{ alignItems: 'center' }}>
+        <LottieView
+          source={require(paymentSuccess)}
+          onAnimationFinish={() => setAnimationfinished(true)}
+          autoPlay
+          loop={false}
+          autoSize={true}
+          style={{ width: 225, marginBottom: 40 }}
+          imageAssetsFolder={'lottie/animation_2/images'}
+        />
+      </View>
+    );
+  };
+
   const renderNoticeText = () => {
     return (
       <View style={styles.noticeText}>
@@ -390,23 +496,21 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
 
   return (
     <>
-      {!fetching ? (
+      {animationfinished && !fetching ? (
         <SafeAreaView style={styles.container}>
           <ScrollView>
             {renderPaymentStatus()}
             {renderPaymentInfo()}
             {renderCirclePurchase()}
             {renderAddPassportInfo()}
-            {renderNoticeText()}
             {renderTestsInfo()}
             {isSingleUhid ? renderOrderSummary() : null}
-            {renderInvoiceTimeline()}
           </ScrollView>
           {renderPassportPaitentView()}
           {renderTabBar()}
         </SafeAreaView>
       ) : (
-        <Spinner />
+        renderSucccessAnimation()
       )}
     </>
   );

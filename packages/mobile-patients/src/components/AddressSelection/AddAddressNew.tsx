@@ -404,8 +404,8 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
           };
           setRegion(currentRegion);
           if (response?.latitude! && response?.longitude!) {
-            setLatitude(Number(response.latitude));
-            setLongitude(Number(response.longitude));
+            setLatitude(Number(response?.latitude));
+            setLongitude(Number(response?.longitude));
             setLocationResponse(response);
             const address = formatLocalAddress(response); //removed displayName
             setAddressString(address);

@@ -159,6 +159,10 @@ export const handleUniversalLinks = (
         pushTheView('TestsCart',navigation, data?.length === 2 ? linkId : undefined );
         break;
 
+      case 'orderstest':
+        pushTheView('ordersTest', navigation);
+        break;
+
       default:
         pushTheView('ConsultRoom', navigation, undefined);
         break;

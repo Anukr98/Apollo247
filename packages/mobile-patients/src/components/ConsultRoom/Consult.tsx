@@ -530,6 +530,13 @@ const styles = StyleSheet.create({
   horizontalContainer: {
     flexDirection: 'row',
   },
+  viewDetailBtn: {
+    flexDirection: 'row',
+    flex: 1,
+    justifyContent: 'flex-end',
+    marginBottom: 16,
+    marginTop: 8,
+  },
 });
 
 export interface ConsultProps extends NavigationScreenProps {
@@ -838,6 +845,13 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
     const getConsultationSubTexts = () => {
       const { isAutomatedQuestionsComplete, isSeniorConsultStarted, isConsultStarted } = item || {};
+      if (
+        minutes > 0 &&
+        minutes <= 30 &&
+        (item?.status === STATUS.PENDING || item?.status === STATUS.IN_PROGRESS)
+      ) {
+        return string.common.mentionReports;
+      }
       return (!isAutomatedQuestionsComplete && !isSeniorConsultStarted) || !isConsultStarted
         ? string.common.fillVitalsText
         : !isConsultStarted && isAutomatedQuestionsComplete
@@ -912,7 +926,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         ? 'Tomorrow'
         : moment(appointmentDateTime).format('ddd, DD MMM YYYY');
     const showDateText = index === 0 ? true : displayTopDateTime;
-    const pastAppointmentItem = isPastAppointment(item?.caseSheet, item);
+    const pastAppointmentItem =
+      isPastAppointment(item?.caseSheet, item) ||
+      (caseSheetChatDays && caseSheetChatDays == '0' && item?.status == STATUS.COMPLETED);
     const medicinePrescription = g(caseSheet, '0' as any, 'medicinePrescription');
     const getMedicines = (
       medicines:
@@ -1275,10 +1291,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       };
       if (item.appointmentType === 'PHYSICAL') {
         return (
-          <View style={{ flexDirection: 'row' }}>
+          <View style={styles.viewDetailBtn}>
             <TouchableOpacity
               activeOpacity={1}
-              style={{ flex: 1 }}
+              style={styles.bookAgainView}
               onPress={() => {
                 props.navigation.navigate(AppRoutes.AppointmentDetailsPhysical, {
                   data: item,
@@ -1286,7 +1302,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 });
               }}
             >
-              <Text style={styles.prepareForConsult}>VIEW DETAILS</Text>
+              <Text style={styles.prepareForConsult}>{string.consultPackageList.viewDetails}</Text>
             </TouchableOpacity>
           </View>
         );

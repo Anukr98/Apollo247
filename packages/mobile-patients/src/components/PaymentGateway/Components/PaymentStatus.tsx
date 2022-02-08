@@ -29,7 +29,6 @@ export interface PaymentStatusProps {
 
 export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   const { status, amount, orderInfo, savings, PaymentMethod } = props;
-
   const renderStatusCard = () => {
     return (
       <ImageBackground

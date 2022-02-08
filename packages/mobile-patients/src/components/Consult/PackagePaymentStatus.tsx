@@ -12,8 +12,10 @@ import {
   PermissionsAndroid,
   Platform,
   TextInput,
+  Animated,
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
+import { CountdownCircleTimer } from 'react-native-countdown-circle-timer';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -94,16 +96,11 @@ interface PackagePaymentStatusProps extends NavigationScreenProps {}
 export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props) => {
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [showPDF, setShowPDF] = useState<boolean>(false);
-  const fireLocationEvent = useRef<boolean>(false);
-  const userChangedLocation = useRef<boolean>(false);
-  const [locationSearchList, setlocationSearchList] = useState<{ name: string; placeId: string }[]>(
-    []
-  );
-  const [showLocationPopup, setShowLocationPopup] = useState<boolean>(false);
   const { locationDetails } = useAppCommonData();
   const client = useApolloClient();
 
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
+  const [orderStatusLoading, setOrderStatusLoading] = useState<boolean>(false);
 
   const [paymentStatus, setPaymentStatus] = useState<string>(
     props.navigation.getParam('paymentStatus')
@@ -127,14 +124,25 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
   const [email, setEmail] = useState<string>(currentPatient?.emailAddress || '');
   const [emailSent, setEmailSent] = useState<boolean>(false);
 
-  useEffect(() => {
-    fetchOrderStatus();
+  const [showWaitTimer, setShowWaitTimer] = useState<boolean>(true);
+  const timerTime = 59;
+  const [remainingTime, setremainingTime] = useState(timerTime);
+  const [autoBookTimerCount, setAutoBookTimerCount] = useState(6);
+  const [consultAlreadyBooked, setConsultAlreadyBooked] = useState<boolean>(false);
 
+  useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
   }, []);
+
+  useEffect(() => {
+    //polling every 6 secs for updated status
+    if (remainingTime % 6 == 0) {
+      fetchOrderStatus(true, false);
+    }
+  }, [remainingTime]);
 
   const handleBack = () => {
     navigateToSpecialtyPage(props.navigation);
@@ -181,7 +189,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
                     'Seems like the invoice is not generated and avialable to download.Press okay to recheck and download.',
                   onPressOk: () => {
                     hideAphAlert!();
-                    fetchOrderStatus();
+                    fetchOrderStatus(false);
                   },
                 });
               }
@@ -203,7 +211,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
                     'Seems like the invoice is not generated and avialable to send.Press okay to recheck.',
                   onPressOk: () => {
                     hideAphAlert!();
-                    fetchOrderStatus();
+                    fetchOrderStatus(false);
                   },
                 });
               }
@@ -249,7 +257,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
   const renderInputEmail = () => {
     return (
       <View style={styles.inputContainer}>
-        <View style={{ flex: 0.85 }}>
+        <View style={{}}>
           <TextInput
             value={`${email ? email : ''}`}
             onChangeText={(email) => setEmail(email)}
@@ -327,8 +335,9 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
           ),
           text: paymentSuccessful,
           textColor: SUCCESS_TEXT,
-          description:
-            'The health package has been purchased successfully! You can go ahead and book your first consultation. We’ll assign a doctor as per availability.',
+          description: oneTapPatient
+            ? 'Yayy! Your booking is complete.You can talk to a doctor within 15 minutes.'
+            : 'The health package has been purchased successfully! You can go ahead and book your first consultation. We’ll assign a doctor as per availability.',
         };
       case FAILED:
         return {
@@ -339,7 +348,8 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
           ),
           text: paymentFailed,
           textColor: FAILURE_TEXT,
-          description: 'Failed to purchase the health package! ',
+          description:
+            'Your payment could not be completed. We apologize for the inconvenience caused. Please try again to complete your booking.',
         };
       default:
         return {
@@ -500,7 +510,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
             paymentStatus != PAYMENT_STATUS.TXN_FAILURE) ? (
             <TouchableOpacity
               onPress={() => {
-                fetchOrderStatus();
+                fetchOrderStatus(false);
               }}
             >
               <Text
@@ -533,9 +543,19 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
     });
   };
 
-  const fetchOrderStatus = async () => {
+  const fetchOrderStatus = async (autoBook: boolean, showLoader: boolean = true) => {
     try {
-      setShowSpinner?.(true);
+      if (orderStatusLoading) {
+        // already order status loading no need to call
+        return;
+      }
+
+      if (showLoader) {
+        setShowSpinner?.(true);
+        setOrderStatusLoading?.(true);
+      }
+
+      setAutoBookTimerCount(6);
 
       const response = await getOrderInfo();
 
@@ -543,6 +563,14 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
         const txnStatus =
           response?.data?.getOrderInternal?.payment_status || PAYMENT_STATUS.PENDING;
         setPaymentStatus(txnStatus);
+
+        if (
+          oneTapPatient &&
+          (txnStatus == PAYMENT_STATUS.TXN_SUCCESS || txnStatus == PAYMENT_STATUS.TXN_FAILURE)
+        ) {
+          setShowWaitTimer(false);
+        }
+
         setPaymentAmount(response?.data?.getOrderInternal?.total_amount || 0);
         setOrderId(
           currentPatient?.mobileNumber +
@@ -561,24 +589,54 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
         setPlanId(
           response?.data?.getOrderInternal?.SubscriptionOrderDetails?.group_sub_plan?.plan_id || ''
         );
+
         setPlanValidity(response?.data?.getOrderInternal?.SubscriptionOrderDetails?.end_date);
 
         setInvoiceUrl(
           response?.data?.getOrderInternal?.SubscriptionOrderDetails?.payment_reference?.invoice_url
         );
+
+        if (oneTapPatient && autoBook && txnStatus == PAYMENT_STATUS.TXN_SUCCESS) {
+          if (txnStatus == PAYMENT_STATUS.TXN_SUCCESS) {
+            let interval = setInterval(() => {
+              setAutoBookTimerCount((lastTimerCount) => {
+                if (lastTimerCount == 1) {
+                  fetchOneTapPlanFromSubscriptionBenefits(
+                    response?.data?.getOrderInternal?.SubscriptionOrderDetails?.group_sub_plan
+                      ?.plan_id || ''
+                  );
+                  clearInterval(interval);
+                }
+                return lastTimerCount - 1;
+              });
+            }, 1000);
+          } else if (txnStatus == PAYMENT_STATUS.TXN_FAILURE) {
+            let interval = setInterval(() => {
+              setAutoBookTimerCount((lastTimerCount) => {
+                if (lastTimerCount <= 1) {
+                  navigateToSpecialtyPage(props.navigation);
+                  clearInterval(interval);
+                }
+                return lastTimerCount - 1;
+              });
+            }, 1000);
+          }
+        }
       } else {
         renderErrorPopup(
           "We could not confirm your payment at this moment. We apologize for the inconvenience caused. Please refresh this page or check your plan in the 'My Memberships' tab in the 'My Account' section."
         );
       }
-
-      setShowSpinner?.(false);
     } catch (error) {
-      setShowSpinner?.(false);
       CommonBugFender('fetchingTxnStutus', error);
       renderErrorPopup(
         "We could not confirm your payment at this moment. We apologize for the inconvenience caused. Please refresh this page or check your plan in the 'My Memberships' tab in the 'My Account' section."
       );
+    } finally {
+      if (showLoader) {
+        setShowSpinner?.(false);
+        setOrderStatusLoading?.(false);
+      }
     }
   };
 
@@ -588,7 +646,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
       description: `${desc || ''}`.trim(),
       onPressOk: () => {
         hideAphAlert!();
-        fetchOrderStatus();
+        fetchOrderStatus(false);
       },
     });
 
@@ -682,9 +740,8 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
       });
   };
 
-  const fetchOneTapPlanFromSubscriptionBenefits = () => {
+  const fetchOneTapPlanFromSubscriptionBenefits = (obtianedPlanId: string) => {
     setShowSpinner?.(true);
-
     const mobile_number = g(currentPatient, 'mobileNumber');
 
     mobile_number &&
@@ -712,24 +769,25 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
                   (plan: any) =>
                     plan.plan_vertical === 'Consult' &&
                     (plan.status === 'active' || plan.status === 'deferred_active') &&
-                    plan.sub_plan_id === planId
+                    plan.sub_plan_id === obtianedPlanId
                 );
 
                 if (desiredPlan) {
                   let benefit = desiredPlan?.benefits[0];
-                  bookConsult(
-                    oneTapPatient,
-                    benefit?.attribute,
-                    benefit?._id,
-                    desiredPlan?.subscription_id,
-                    desiredPlan?.subscription_details
-                  );
+                  if (!consultAlreadyBooked) {
+                    bookConsult(
+                      oneTapPatient,
+                      benefit?.attribute,
+                      benefit?._id,
+                      desiredPlan?.subscription_id,
+                      desiredPlan?.subscription_details
+                    );
+                  }
                 } else {
                   showAphAlert!({
                     title: 'Uh oh.. :(',
                     description: "Seems like the plan dosen't exists anymore.",
                     onPressOk: () => {
-                      props.navigation.goBack();
                       hideAphAlert!();
                     },
                   });
@@ -743,7 +801,6 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
             title: 'Uh oh.. :(',
             description: "Couldn't load the plan details. Please check internet connection.",
             onPressOk: () => {
-              props.navigation.goBack();
               hideAphAlert!();
             },
           });
@@ -790,6 +847,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
       const { isError, doctorName, appointmentId, error } =
         data?.data?.bookFreeAppointmentForPharmacy || {};
       if (!isError) {
+        setConsultAlreadyBooked(true);
         handleOrderSuccess(doctorName!, appointmentId!);
       } else {
         setLoading?.(false);
@@ -839,65 +897,196 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
       .finally(() => setLoading?.(false));
   };
 
-  return (
-    <SafeAreaView style={theme.viewStyles.container}>
-      <View style={styles.container}>
-        <ScrollView>
-          {renderPaymentStatusHeader()}
+  const renderPaymentStatusHeaderOneTap = () => {
+    const { icon, text, textColor, description } = getPaymentStatus();
 
-          {renderPaymentCard()}
+    return (
+      <View>
+        <View style={{ marginBottom: 28 }}>
+          {icon}
+          <Text style={styles.paymentSuccessfullText}>{text}</Text>
+          <Text style={[styles.purchaseStatusText, { color: textColor }]}>{description}</Text>
 
-          {renderConsultInfo()}
-
-          {locationDetails && renderSavedLocation()}
-
-          <View style={styles.consultGuideLinesContainer}>
-            <Text style={styles.consultBookText}>{string.consultPackages.consultGuildeline}</Text>
-          </View>
-        </ScrollView>
-        <Button
-          style={styles.viewPackageBtn}
-          disabled={paymentStatus == PAYMENT_STATUS.TXN_SUCCESS ? false : true}
-          onPress={() => {
-            if (paymentStatus == PAYMENT_STATUS.TXN_SUCCESS) {
-              if (oneTapPatient) {
-                fetchOneTapPlanFromSubscriptionBenefits();
-              } else {
-                props.navigation.navigate(AppRoutes.ConsultPackagePostPurchase, {
-                  planId: planId,
-                  subscriptionId,
-                  onSubscriptionCancelled: () => {
-                    props.navigation.goBack();
+          {!paymentStatus ||
+          (paymentStatus != PAYMENT_STATUS.TXN_SUCCESS &&
+            paymentStatus != PAYMENT_STATUS.TXN_FAILURE) ? (
+            <TouchableOpacity
+              onPress={() => {
+                fetchOrderStatus(false);
+              }}
+            >
+              <Text
+                style={[
+                  styles.purchaseStatusText,
+                  {
+                    color: textColor,
+                    textDecorationLine: 'underline',
+                    marginTop: 5,
+                    alignSelf: 'center',
                   },
+                ]}
+              >
+                REFRESH
+              </Text>
+            </TouchableOpacity>
+          ) : null}
+        </View>
+      </View>
+    );
+  };
+
+  const renderWaitTimer = () => {
+    return (
+      <View
+        style={{
+          alignSelf: 'center',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        <CountdownCircleTimer
+          onComplete={() => {
+            setShowWaitTimer(false);
+          }}
+          isPlaying
+          duration={timerTime}
+          colors="#F89B2D"
+          size={102}
+          strokeWidth={7}
+        >
+          {({ remainingTime }) => {
+            setremainingTime(remainingTime);
+            return (
+              <Animated.Text style={{ color: '#01475B', ...theme.fonts.IBMPlexSansSemiBold(18) }}>
+                00:{remainingTime > 9 ? remainingTime : '0' + remainingTime}
+              </Animated.Text>
+            );
+          }}
+        </CountdownCircleTimer>
+        <Text style={styles.processing}>{'Please Wait'}</Text>
+        <Text style={styles.note}>{'We are checking your payment status'}</Text>
+      </View>
+    );
+  };
+
+  const renderCenteredCircle = () => {
+    const { textColor } = getPaymentStatus();
+    if (paymentStatus != PAYMENT_STATUS.TXN_SUCCESS) {
+      return null;
+    }
+    return (
+      <View
+        style={{
+          width: windowWidth - 32,
+          height: windowWidth - 32,
+          borderRadius: (windowWidth - 32) / 2,
+          borderColor: textColor,
+          opacity: 0.4,
+          borderWidth: 4,
+          borderStyle: 'dashed',
+          position: 'absolute',
+          top: 60,
+        }}
+      />
+    );
+  };
+
+  if (oneTapPatient) {
+    return (
+      <SafeAreaView style={theme.viewStyles.container}>
+        <LinearGradient
+          start={{ x: 0, y: -0.5 }}
+          end={{ x: 0, y: 1.5 }}
+          colors={[
+            paymentStatus === PAYMENT_STATUS.TXN_SUCCESS ? '#D5F5FF' : '#FFD7D4',
+            colors.DEFAULT_BACKGROUND_COLOR,
+          ]}
+          style={styles.oneTapcontainer}
+        >
+          {showWaitTimer && renderWaitTimer()}
+
+          {!showWaitTimer && !orderStatusLoading && (
+            <View>
+              {renderPaymentStatusHeaderOneTap()}
+              {renderPaymentCard()}
+              {autoBookTimerCount != 0 ? (
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('R', 15, theme.colors.RED, 0.7),
+                    alignSelf: 'center',
+                  }}
+                >
+                  Talk to a top doctor in {autoBookTimerCount} seconds
+                </Text>
+              ) : null}
+            </View>
+          )}
+        </LinearGradient>
+
+        {showSpinner ? <Spinner /> : null}
+      </SafeAreaView>
+    );
+  } else {
+    return (
+      <SafeAreaView style={theme.viewStyles.container}>
+        <View style={styles.container}>
+          <ScrollView>
+            {renderPaymentStatusHeader()}
+
+            {renderPaymentCard()}
+
+            {renderConsultInfo()}
+
+            {locationDetails && renderSavedLocation()}
+
+            <View style={styles.consultGuideLinesContainer}>
+              <Text style={styles.consultBookText}>{string.consultPackages.consultGuildeline}</Text>
+            </View>
+          </ScrollView>
+          <Button
+            style={styles.viewPackageBtn}
+            disabled={paymentStatus == PAYMENT_STATUS.TXN_SUCCESS ? false : true}
+            onPress={() => {
+              if (paymentStatus == PAYMENT_STATUS.TXN_SUCCESS) {
+                if (oneTapPatient) {
+                  fetchOneTapPlanFromSubscriptionBenefits(planId);
+                } else {
+                  props.navigation.navigate(AppRoutes.ConsultPackagePostPurchase, {
+                    planId: planId,
+                    subscriptionId,
+                    onSubscriptionCancelled: () => {
+                      props.navigation.goBack();
+                    },
+                  });
+                }
+                logBookConsultCleverTapEvent();
+              } else {
+                showAphAlert?.({
+                  title: 'Oops!',
+                  description: string.consultPackages.paymentPendingBooking,
                 });
               }
-              logBookConsultCleverTapEvent();
-            } else {
-              showAphAlert?.({
-                title: 'Oops!',
-                description: string.consultPackages.paymentPendingBooking,
-              });
+            }}
+            title={
+              oneTapPatient ? string.consultPackages.consultNow : string.consultPackages.viewPackage
             }
-          }}
-          title={
-            oneTapPatient ? string.consultPackages.consultNow : string.consultPackages.viewPackage
-          }
-        />
-      </View>
-      {showPDF && (
-        <RenderPdf
-          uri={'https://newassets-test.apollo247.com/files/Mobile_View_Infographic.pdf'}
-          title={'Consultation guideline'}
-          isPopup={true}
-          setDisplayPdf={() => {
-            setShowPDF(false);
-          }}
-          navigation={props.navigation}
-        />
-      )}
-      {showSpinner ? <Spinner /> : null}
-    </SafeAreaView>
-  );
+          />
+        </View>
+        {showPDF && (
+          <RenderPdf
+            uri={'https://newassets-test.apollo247.com/files/Mobile_View_Infographic.pdf'}
+            title={'Consultation guideline'}
+            isPopup={true}
+            setDisplayPdf={() => {
+              setShowPDF(false);
+            }}
+            navigation={props.navigation}
+          />
+        )}
+        {showSpinner ? <Spinner /> : null}
+      </SafeAreaView>
+    );
+  }
 };
 
 const styles = StyleSheet.create({
@@ -905,8 +1094,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.CARD_BG,
   },
+  oneTapcontainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignContent: 'center',
+  },
   paymenStatusHeader: {
-    height: 270,
+    height: 280,
   },
   inputContainer: {
     flex: 1,
@@ -915,11 +1109,11 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: '#fff',
     marginHorizontal: 5,
-    marginBottom: 12,
+    marginBottom: 30,
     paddingHorizontal: 10,
     alignItems: 'center',
     borderWidth: 0.5,
-    paddingVertical: 6,
+    minHeight: 30,
     marginTop: 5,
     borderColor: theme.colors.LIGHT_GRAY_2,
   },
@@ -1163,6 +1357,18 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 12, theme.colors.LIGHT_BLUE),
     paddingVertical: 10,
     paddingHorizontal: 14,
+  },
+  processing: {
+    ...theme.fonts.IBMPlexSansSemiBold(14),
+    textAlign: 'center',
+    color: '#01475B',
+    marginTop: 15,
+  },
+  note: {
+    ...theme.fonts.IBMPlexSansRegular(12),
+    color: '#01475B',
+    marginTop: 6,
+    textAlign: 'center',
   },
   savedLocationText: {
     marginLeft: 6,

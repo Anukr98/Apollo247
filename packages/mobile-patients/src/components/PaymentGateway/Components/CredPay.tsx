@@ -30,7 +30,7 @@ export const CredPay: React.FC<CredPayProps> = (props) => {
 
   const renderOffer = () => {
     return (
-      <View style={{ flexDirection: 'row', paddingBottom: 15, alignItems: 'center' }}>
+      <View style={styles.offerCont}>
         <OffersIcon style={styles.offerIcon} />
         <Text style={styles.offermsg}>{credInfo?.layout?.subText}</Text>
       </View>
@@ -39,53 +39,73 @@ export const CredPay: React.FC<CredPayProps> = (props) => {
 
   const renderCred = () => {
     return (
-      <View style={styles.ChildComponent}>
+      <TouchableOpacity
+        style={styles.ChildComponent}
+        disabled={paymentMethod?.outage_status == 'DOWN' ? true : false}
+        onPress={() => onPressPayNow(paymentMethod?.payment_method_code)}
+      >
         <OutagePrompt
           outageStatus={paymentMethod?.outage_status}
           msg={paymentMethod?.payment_method_name + ' is'}
         />
-        <TouchableOpacity
-          disabled={paymentMethod?.outage_status == 'DOWN' ? true : false}
+        <View
           style={{ ...styles.wallet, opacity: paymentMethod?.outage_status == 'DOWN' ? 0.5 : 1 }}
-          onPress={() => onPressPayNow(paymentMethod?.payment_method_code)}
         >
           {renderImage()}
           <Text style={styles.payNow}>PAY NOW</Text>
-        </TouchableOpacity>
+        </View>
         {renderOffer()}
+      </TouchableOpacity>
+    );
+  };
+
+  const renderHeader = () => {
+    return (
+      <View style={styles.header}>
+        <Text style={styles.heading}>CRED</Text>
       </View>
     );
   };
 
-  return isWebView ? (
-    enableCredWebView ? (
-      <CollapseView isDown={true} Heading={'CRED pay'} ChildComponent={renderCred()} />
-    ) : null
-  ) : (
-    <CollapseView isDown={true} Heading={'CRED pay'} ChildComponent={renderCred()} />
-  );
+  const renderCredCont = () => {
+    return (
+      <View>
+        {renderHeader()}
+        {renderCred()}
+      </View>
+    );
+  };
+
+  return isWebView ? (enableCredWebView ? renderCredCont() : null) : renderCredCont();
 };
 
 const styles = StyleSheet.create({
   ChildComponent: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 20,
+    flex: 1,
+    backgroundColor: '#FAFEFF',
+    marginHorizontal: 16,
+    borderWidth: 1,
+    borderColor: '#D4D4D4',
+    borderRadius: 4,
+    // paddingBottom: 10,
+    paddingHorizontal: 12,
   },
   wallet: {
     flexDirection: 'row',
-    paddingBottom: 14,
-    marginTop: 15,
+    paddingBottom: 10,
+    marginTop: 12,
     borderColor: 'rgba(0,0,0,0.1)',
     justifyContent: 'space-between',
+    alignItems: 'center',
   },
   payNow: {
-    ...theme.fonts.IBMPlexSansBold(14),
-    lineHeight: 24,
+    ...theme.fonts.IBMPlexSansBold(13),
+    lineHeight: 17,
     color: '#FC9916',
   },
   name: {
-    ...theme.fonts.IBMPlexSansBold(13),
-    lineHeight: 17,
+    ...theme.fonts.IBMPlexSansMedium(14),
+    lineHeight: 18,
     color: '#01475B',
     textAlign: 'center',
     marginLeft: 8,
@@ -95,9 +115,25 @@ const styles = StyleSheet.create({
     lineHeight: 14,
     marginLeft: 5,
     color: '#00B38E',
+    flexWrap: 'wrap',
+  },
+  offerCont: {
+    flexDirection: 'row',
+    paddingBottom: 12,
+    alignItems: 'center',
   },
   offerIcon: {
-    height: 20,
-    width: 20,
+    height: 16,
+    width: 16,
+  },
+  header: {
+    marginHorizontal: 16,
+    paddingBottom: 8,
+    marginTop: 16,
+  },
+  heading: {
+    ...theme.fonts.IBMPlexSansSemiBold(12),
+    lineHeight: 18,
+    color: '#01475B',
   },
 });

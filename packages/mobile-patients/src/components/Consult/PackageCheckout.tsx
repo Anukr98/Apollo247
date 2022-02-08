@@ -3,11 +3,7 @@ import { View, StyleSheet, SafeAreaView, Image, Text, Platform } from 'react-nat
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import {
-  Specialist,
-  VideoActiveIcon,
-  UserPackage,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+
 import moment from 'moment';
 import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -29,6 +25,7 @@ import {
   one_apollo_store_code,
   OrderVerticals,
   OrderCreate,
+  PlanPurchaseType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -45,6 +42,7 @@ import {
   createOrderInternalVariables,
 } from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
 import { ConsultPackageHowItWorks } from '@aph/mobile-patients/src/components/Consult/ConsultPackageHowItWorks';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 interface PackageCheckoutProps extends NavigationScreenProps {
   packageDetailData: any;
   selectedPlanIndex: number;
@@ -54,6 +52,7 @@ interface PackageCheckoutProps extends NavigationScreenProps {
 export const PackageCheckout: React.FC<PackageCheckoutProps> = (props) => {
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
+  const { isRenew } = useAppCommonData();
   const { setLoading, showAphAlert } = useUIElements();
   const { cusId, isfetchingId } = useGetJuspayId();
   const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
@@ -103,7 +102,7 @@ export const PackageCheckout: React.FC<PackageCheckoutProps> = (props) => {
   };
 
   const createUserSubscription = () => {
-    const purchaseInput = {
+    const purchaseInput: CreateUserSubscriptionVariables = {
       userSubscription: {
         mobile_number: currentPatient?.mobileNumber,
         plan_id: packageId,
@@ -112,6 +111,9 @@ export const PackageCheckout: React.FC<PackageCheckoutProps> = (props) => {
         FirstName: currentPatient?.firstName,
         LastName: currentPatient?.lastName,
         transaction_date_time: new Date().toISOString(),
+        source_meta_data: {
+          purchase_type: isRenew ? PlanPurchaseType.renew : PlanPurchaseType.first_time,
+        },
       },
     };
 
@@ -166,8 +168,8 @@ export const PackageCheckout: React.FC<PackageCheckoutProps> = (props) => {
   const initiatePackagePurchase = async () => {
     try {
       setLoading?.(true);
-      const response = await createUserSubscription();
 
+      const response = await createUserSubscription();
       const subscriptionId = g(response, 'data', 'CreateUserSubscription', 'response', '_id');
 
       const data = await createOrderInternal(subscriptionId!);
@@ -186,14 +188,17 @@ export const PackageCheckout: React.FC<PackageCheckoutProps> = (props) => {
             renderErrorPopup();
           }
         } else {
-          props.navigation.navigate(AppRoutes.PaymentMethods, {
+          const navigationParams = {
             paymentId: data?.data?.createOrderInternal?.payment_order_id!,
             amount: amountToPay,
             orderDetails: orderInfo,
             businessLine: 'doctorPackage',
             customerId: cusId,
             oneTapPatient: oneTapPatient,
-          });
+          };
+
+          props.navigation.navigate(AppRoutes.PaymentMethods, navigationParams);
+
           setLoading!(false);
         }
       } else {
@@ -290,6 +295,10 @@ export const PackageCheckout: React.FC<PackageCheckoutProps> = (props) => {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    backgroundColor: theme.colors.CARD_BG,
+  },
+  oneTapLoaderContainer: {
     flex: 1,
     backgroundColor: theme.colors.CARD_BG,
   },
