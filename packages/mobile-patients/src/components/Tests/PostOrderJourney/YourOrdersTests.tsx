@@ -1152,7 +1152,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     selectedOrderTime = moment(selectedOrderTime);
     const cancelReasonArray = cancelReasonList;
     return (
-      <View style={{ height: height - 200 }}>
+      <View style={{ height: screenHeight - 200 }}>
         <Text style={styles.overlayHeadingText}>
           {string.diagnostics.reasonForCancellationText}
         </Text>
