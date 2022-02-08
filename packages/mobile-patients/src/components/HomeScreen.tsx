@@ -99,7 +99,6 @@ import {
   GET_DOCTOR_LIST,
   SAVE_RECENT_SEARCH,
   GET_CONFIGURATION_FOR_ASK_APOLLO_LEAD,
-  GET_HC_REFREE_RECORD,
   GET_CAMPAIGN_ID_FOR_REFERRER,
   GET_REWARD_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -156,11 +155,10 @@ import {
   getAge,
   removeObjectNullUndefinedProperties,
   isValidSearch,
-  fileToBase64,
   getAsyncStorageValues,
   formatUrl,
   checkCleverTapLoginStatus,
-  isEmptyObject,
+  postOfferCardClickEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -226,7 +224,6 @@ import {
   renderCircleShimmer,
   renderBannerShimmer,
   renderGlobalSearchShimmer,
-  renderOffersForYouShimmer,
   renderAppointmentCountShimmer,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import { ConsultedDoctorsCard } from '@aph/mobile-patients/src/components/ConsultRoom/Components/ConsultedDoctorsCard';
@@ -246,10 +243,7 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { saveRecentVariables } from '@aph/mobile-patients/src/graphql/types/saveRecent';
 import { getConfigurationForAskApolloLead } from '@aph/mobile-patients/src/graphql/types/getConfigurationForAskApolloLead';
 import { ReferralBanner } from '@aph/mobile-patients/src/components/ui/ReferralBanner';
-import {
-  InitiateRefreeType,
-  useReferralProgram,
-} from '@aph/mobile-patients/src/components/ReferralProgramProvider';
+import { useReferralProgram } from '@aph/mobile-patients/src/components/ReferralProgramProvider';
 import { setItem, getItem } from '@aph/mobile-patients/src/helpers/TimedAsyncStorage';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 import { UpdateAppPopup } from '@aph/mobile-patients/src/components/ui/UpdateAppPopup';
@@ -1951,7 +1945,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         eventName == CleverTapEventName.ORDER_TESTS ||
         eventName == CleverTapEventName.VIEW_HELATH_RECORDS ||
         eventName == CleverTapEventName.NEED_HELP ||
-        eventName == CleverTapEventName.OFFERS_CTA_CLICKED)
+        eventName == CleverTapEventName.HOMEPAGE_OFFERS_ACTIVITY)
     ) {
       (eventAttributes as HomeScreenAttributes)['Source'] = source;
     }
@@ -2011,7 +2005,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     }
     if (
       eventName == CleverTapEventName.COVID_VACCINATION_SECTION_CLICKED ||
-      CleverTapEventName.OFFERS_CTA_CLICKED
+      CleverTapEventName.HOMEPAGE_OFFERS_ACTIVITY
     ) {
       eventAttributes = { ...eventAttributes, ...attributes };
     }
@@ -3903,7 +3897,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       <TouchableOpacity
         activeOpacity={1}
         onPress={() => {
-          postOfferCardClickEvent(item, String(index + 1), textForNotch == 'Offer Expired');
+          postOfferCardClickEvent(
+            item,
+            String(index + 1),
+            textForNotch == 'Offer Expired',
+            allCurrentPatients,
+            currentPatient,
+            textForNotch,
+            !!circleSubscriptionId,
+            offersListLoading ? offersListCache?.length : offersList?.length,
+            'clicked'
+          );
           textForNotch !== 'Offer Expired' && onOfferCtaPressed(item, index + 1);
         }}
       >
@@ -3996,32 +4000,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     );
   };
 
-  const postOfferCardClickEvent = (item: any, sequence: string, offerExpired: boolean) => {
-    const eventAttributes = {
-      User_Type: getUserType(allCurrentPatients),
-      'Patient Name': currentPatient?.firstName,
-      'Patient UHID': currentPatient?.uhid,
-      'Patient age': getAge(currentPatient?.dateOfBirth),
-      'Circle Member': circleSubscriptionId ? 'True' : 'False',
-      'Customer ID': currentPatient?.id,
-      'Patient gender': currentPatient?.gender,
-      'Mobile number': currentPatient?.mobileNumber,
-      'Page name': 'HomePage',
-      'Offer Content': item?.title?.text || '',
-      Timer: offerExpired ? 'No' : 'Yes',
-      'Coupon Code': item?.coupon_code,
-      'Offer tile sequence': sequence,
-      LOB: item?.cta?.path?.vertical || '',
-      'Offer Notch Test': getNotchText(item?.expired_at, item?.notch_text?.text),
-      'Offer CTA Text': item?.cta?.text,
-      'Offer Expiry': item?.expired_at,
-      'Offer ID': item?.offer_id,
-      'Offer Subtitle': item?.subtitle?.text,
-    };
-
-    postHomeCleverTapEvent(CleverTapEventName.OFFERS_CTA_CLICKED, 'Home Screen', eventAttributes);
-  };
-
   const getNotchText = (expired_at: string, notch_text: string) => {
     let textForNotch = '';
     try {
@@ -4054,7 +4032,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         <TouchableOpacity
           activeOpacity={1}
           onPress={() => {
-            postOfferCardClickEvent(item, '1', textForNotch == 'Offer Expired');
+            postOfferCardClickEvent(
+              item,
+              '1',
+              textForNotch == 'Offer Expired',
+              allCurrentPatients,
+              currentPatient,
+              textForNotch,
+              !!circleSubscriptionId,
+              offersListLoading ? offersListCache?.length : offersList?.length,
+              'clicked'
+            );
             textForNotch !== 'Offer Expired' && onOfferCtaPressed(item, 1);
           }}
         >
