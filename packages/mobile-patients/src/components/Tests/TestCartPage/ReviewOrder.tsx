@@ -257,8 +257,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     circlePlanId,
     activeUserSubscriptions,
     isRenew,
-    diagnosticServiceabilityData,
-    diagnosticLocation,
   } = useAppCommonData();
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
