@@ -1,9 +1,7 @@
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, Dimensions } from 'react-native';
-import { ExpressSlotClock, WidgetLiverIcon } from '@aph/mobile-patients/src/components/ui/Icons';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { isSmallDevice, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { StyleSheet, Text, View, Dimensions } from 'react-native';
+import { ExpressSlotClock } from '@aph/mobile-patients/src/components/ui/Icons';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { DiagnosticData } from '../Tests';
 import { LocationData } from '../../AppCommonDataProvider';
