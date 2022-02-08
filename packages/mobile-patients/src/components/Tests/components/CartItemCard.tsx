@@ -63,7 +63,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
 
   const finalFilterInclusions = filterInclusions?.length > 0 && [...new Set(filterInclusions)];
 
-  const inclusionItemToShow = !!finalFilterInclusions && finalFilterInclusions?.join(', ');
+  // const inclusionItemToShow = !!finalFilterInclusions && finalFilterInclusions?.join(', ');
 
   const hasExtraData =
     (!!reportTat && !isEmptyObject(reportTat) && reportTat?.preOrderReportTATMessage != '') ||
@@ -152,7 +152,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
         {((!!reportGenItem && !isEmptyObject(reportGenItem)) ||
           (!!reportTat && !isEmptyObject(reportTat))) &&
           renderReportTat_preTestingReqrmnt()}
-        {comingFrom == AppRoutes.CartPage && showCartInclusions && !!inclusionItemToShow
+        {comingFrom == AppRoutes.CartPage && showCartInclusions && !!finalFilterInclusions
           ? renderConflictingItemView()
           : null}
       </TouchableOpacity>

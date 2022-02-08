@@ -78,7 +78,7 @@ export const FAQComponent: React.FC<FAQComponentProps> = (props) => {
             <Text style={props.answerStyle}>
               {props.data
                 ? props.source == 'diagnostics'
-                  ? decodeURIComponent(value?.faqQuestion)?.trim()
+                  ? decodeURIComponent(value?.faqAnswer)?.trim()
                   : value?.faqAnswer
                 : value?.answer}
             </Text>
