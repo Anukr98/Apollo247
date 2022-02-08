@@ -948,6 +948,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     justifyContent: 'center',
     alignItems: 'center',
+    width: Dimensions.get('window').width * 0.75,
   },
   medCouponContainer: {
     borderRadius: 4,
@@ -1053,6 +1054,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#E6E6E6',
     marginVertical: 6,
     marginRight: 4,
+  },
+  offerTitle: {
+    marginHorizontal: 12,
+    marginTop: 6,
+  },
+  offerSubtitle: {
+    marginHorizontal: 12,
+    marginTop: 6,
   },
 });
 
@@ -4084,10 +4093,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                       18
                     ),
                   }}
+                  numberOfLines={1}
                 >
-                  {textForNotch?.length > 36
-                    ? textForNotch?.substring(textForNotch?.length - 36, textForNotch?.length)
-                    : textForNotch}
+                  {textForNotch}
                 </Text>
               </View>
 
@@ -4097,27 +4105,23 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             </View>
 
             <Text
+              numberOfLines={1}
               style={{
+                ...styles.offerTitle,
                 ...theme.viewStyles.text('B', 20, offerDesignTemplate?.title_text_color, 1, 30),
-                marginHorizontal: 12,
-                marginTop: 6,
               }}
             >
-              {item?.title?.text?.length > 30
-                ? item?.title?.text?.substring(0, 30)
-                : item?.title?.text}
+              {item?.title?.text}
             </Text>
 
             <Text
+              numberOfLines={1}
               style={{
+                ...styles.offerSubtitle,
                 ...theme.viewStyles.text('M', 14, offerDesignTemplate?.subtitle_text_color, 1, 18),
-                marginHorizontal: 12,
-                marginTop: 6,
               }}
             >
-              {item?.subtitle?.text?.length > 30
-                ? item?.subtitle?.text?.substring(0, 30)
-                : item?.subtitle?.text}
+              {item?.subtitle?.text}
             </Text>
 
             <View style={styles.medBottomContainer}>
