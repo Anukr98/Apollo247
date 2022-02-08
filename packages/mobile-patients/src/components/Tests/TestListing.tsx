@@ -54,6 +54,7 @@ import {
   getDiagnosticsByItemIdCityId,
   getDiagnosticsPastOrderRecommendations,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { ExpressSlotMessageRibbon } from '@aph/mobile-patients/src/components/Tests/components/ExpressSlotMessageRibbon';
 
 export interface TestListingProps
   extends NavigationScreenProps<{
@@ -70,7 +71,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     isDiagnosticCircleSubscription,
   } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
-  const { isDiagnosticLocationServiceable, diagnosticServiceabilityData } = useAppCommonData();
+  const { isDiagnosticLocationServiceable, diagnosticServiceabilityData, diagnosticLocation } = useAppCommonData();
 
   const movedFrom = props.navigation.getParam('movedFrom');
   const dataFromHomePage = props.navigation.getParam('data');
@@ -647,11 +648,20 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       />
     ) : null;
   };
+  const renderExpressSlots = () => {
+    return diagnosticServiceabilityData && diagnosticLocation ? (
+      <ExpressSlotMessageRibbon
+        serviceabilityObject={diagnosticServiceabilityData}
+        selectedAddress={diagnosticLocation}
+      />
+    ) : null;
+  };
 
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...viewStyles.container }}>
         {renderHeader()}
+        {renderExpressSlots()}
         {!errorStates ? renderBreadCrumb() : null}
         {error ? renderEmptyMessage() : null}
         <View style={{ flex: 1, marginBottom: '5%' }}>{renderList()}</View>

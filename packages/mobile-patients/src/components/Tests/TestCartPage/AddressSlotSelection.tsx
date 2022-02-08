@@ -409,6 +409,7 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
     );
   };
 
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={[{ ...theme.viewStyles.container }]}>

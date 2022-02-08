@@ -209,6 +209,7 @@ import { Cache } from 'react-native-cache';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 import { TestPdfRender } from '@aph/mobile-patients/src/components/Tests/components/TestPdfRender';
 import { CartPageSummary } from '@aph/mobile-patients/src/components/Tests/components/CartSummaryView';
+import { ExpressSlotMessageRibbon } from '@aph/mobile-patients/src/components/Tests/components/ExpressSlotMessageRibbon';
 
 const rankArr = ['1', '2', '3', '4', '5', '6'];
 const { width: winWidth, height: winHeight } = Dimensions.get('window');
@@ -361,7 +362,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [serviceableObject, setServiceableObject] = useState({} as any);
   const [showNoLocationPopUp, setShowNoLocationPopUp] = useState<boolean>(false);
   const [clickedItem, setClickedItem] = useState<any>([]);
-  const [expressSlotMsg, setExpressSlotMsg] = useState<string>('');
   const [isPriceAvailable, setIsPriceAvailable] = useState<boolean>(false);
   const [priceAvailable, setPriceAvailable] = useState<boolean>(false);
   const [fetchAddressLoading, setFetchAddressLoading] = useState<boolean>(false);
@@ -813,45 +813,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   };
 
-  async function getExpressSlots(
-    serviceabilityObject: DiagnosticData,
-    selectedAddress: LocationData
-  ) {
-    const getLat = selectedAddress?.latitude!;
-    const getLng = selectedAddress?.longitude!;
-    const getZipcode = selectedAddress?.pincode;
-    const getServiceablityObject = {
-      cityID: Number(serviceabilityObject?.cityId),
-      stateID: Number(serviceabilityObject?.stateId),
-    };
-    //response when unserviceable
-    if (Number(serviceabilityObject?.stateId) == 0 && serviceabilityObject?.city == '') {
-      setExpressSlotMsg('');
-      return;
-    }
-    try {
-      const res: any = await getDiagnosticExpressSlots(
-        client,
-        getLat,
-        getLng,
-        String(getZipcode),
-        getServiceablityObject
-      );
-      if (res?.data?.getUpcomingSlotInfo) {
-        const getResponse = res?.data?.getUpcomingSlotInfo;
-        if (getResponse?.status) {
-          setExpressSlotMsg(getResponse?.slotInfo);
-        } else {
-          setExpressSlotMsg('');
-        }
-      } else {
-        setExpressSlotMsg('');
-      }
-    } catch (error) {
-      CommonBugFender('getExpressSlots_Tests', error);
-      setExpressSlotMsg('');
-    }
-  }
 
   function getFilteredWidgets(widgetsData: any, source?: string) {
     var filterWidgets, itemIds;
@@ -1132,7 +1093,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
           setNonServiceableValues(obj, pincode);
           triggerAddressSelected('No');
         }
-        getExpressSlots(obj, selectedAddress);
         getDiagnosticBanner(Number(obj?.cityId));
         getHomePageWidgets(obj?.cityId);
       } catch (error) {
@@ -2617,14 +2577,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }
 
   const renderExpressSlots = () => {
-    return (
-      <View style={styles.outerExpressView}>
-        <View style={styles.innerExpressView}>
-          <ExpressSlotClock style={styles.expressSlotIcon} />
-          <Text style={styles.expressSlotText}>{expressSlotMsg}</Text>
-        </View>
-      </View>
-    );
+    return diagnosticServiceabilityData && diagnosticLocation ? (
+      <ExpressSlotMessageRibbon
+        serviceabilityObject={diagnosticServiceabilityData}
+        selectedAddress={diagnosticLocation}
+      />
+    ) : null;
   };
 
   function getRanking(rank: string) {
@@ -3376,7 +3334,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             {renderDiagnosticHeader()}
             {renderSeperator()}
             {renderSearchBar()}
-            {expressSlotMsg != '' ? renderExpressSlots() : null}
+            {renderExpressSlots()}
             <Modal
               animationType="fade"
               transparent={true}
