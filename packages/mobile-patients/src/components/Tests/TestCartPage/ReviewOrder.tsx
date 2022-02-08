@@ -150,7 +150,6 @@ import { PaymentInitiated } from '@aph/mobile-patients/src/components/PaymentGat
 import { useFetchHealthCredits } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useFetchHealthCredits';
 import { HealthCreditsCard } from '@aph/mobile-patients/src/components/Tests/components/HealthCreditsCard';
 import AsyncStorage from '@react-native-community/async-storage';
-import { ExpressSlotMessageRibbon } from '@aph/mobile-patients/src/components/Tests/components/ExpressSlotMessageRibbon';
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
@@ -3091,21 +3090,12 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     );
   };
 
-  const renderExpressSlots = () => {
-    return diagnosticServiceabilityData && diagnosticLocation ? (
-      <ExpressSlotMessageRibbon
-        serviceabilityObject={diagnosticServiceabilityData}
-        selectedAddress={diagnosticLocation}
-      />
-    ) : null;
-  };
 
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={[{ ...theme.viewStyles.container }]}>
         {renderHeader()}
         {renderWizard()}
-        {renderExpressSlots()}
         <ScrollView
           bounces={false}
           style={{ flexGrow: 1, flex: 1 }}

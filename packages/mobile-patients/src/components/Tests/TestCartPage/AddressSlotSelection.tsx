@@ -36,7 +36,6 @@ import {
 } from '@aph/mobile-patients/src/components/Tests/components/TimelineWizard';
 import { DIAGNOSTIC_SLOT_TYPE } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { screenHeight } from 'react-native-calendars/src/expandableCalendar/commons';
-import { ExpressSlotMessageRibbon } from '@aph/mobile-patients/src/components/Tests/components/ExpressSlotMessageRibbon';
 
 export interface AddressSlotSelectionProps extends NavigationScreenProps {
   reportGenDetails: any;
@@ -410,21 +409,12 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
     );
   };
 
-  const renderExpressSlots = () => {
-    return diagnosticServiceabilityData && diagnosticLocation ? (
-      <ExpressSlotMessageRibbon
-        serviceabilityObject={diagnosticServiceabilityData}
-        selectedAddress={diagnosticLocation}
-      />
-    ) : null;
-  };
 
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={[{ ...theme.viewStyles.container }]}>
         {renderHeader()}
         {renderWizard()}
-        {renderExpressSlots()}
         {renderMainView()}
       </SafeAreaView>
       {renderStickyBottom()}
