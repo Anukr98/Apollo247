@@ -1226,7 +1226,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const isSavingZero = circleSaving == 0;
     return (
       <View style={styles.circleItemCartView}>
-        <View style={{ flexDirection: 'row' }}>
+        <View style={{ flexDirection: 'row', width: '75%' }}>
           <View style={[styles.circleIconView, isSavingZero && { justifyContent: 'center' }]}>
             <CircleLogo style={styles.circleIcon} />
           </View>
