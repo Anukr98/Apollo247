@@ -1,14 +1,27 @@
 import React from 'react';
-import { StyleSheet, Dimensions, Text, View, TouchableOpacity } from 'react-native';
+import {
+  StyleSheet,
+  Dimensions,
+  Text,
+  View,
+  TouchableOpacity,
+  StyleProp,
+  ViewStyle,
+  ImageStyle,
+} from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 const windowWidth = Dimensions.get('window').width;
 
 export interface CirclePurchaseProps {
   subscriptionInfo: any;
   onPressBenefits: () => void;
   circleSavings: any;
+  containerStyle?: StyleProp<ViewStyle>;
+  circleLogoIcon?: StyleProp<ImageStyle>;
+  textContainerStyle?: StyleProp<ViewStyle>;
 }
 
 export const CirclePurchase: React.FC<CirclePurchaseProps> = (props) => {
@@ -53,8 +66,8 @@ export const CirclePurchase: React.FC<CirclePurchaseProps> = (props) => {
   const renderCirclePurchaseInfo = () => {
     return (
       <View style={{ flexDirection: 'row' }}>
-        <CircleLogo style={styles.circleIcon} />
-        <View>
+        <CircleLogo style={!!props.circleLogoIcon ? props.circleLogoIcon : styles.circleIcon} />
+        <View style={!!props.textContainerStyle && props.textContainerStyle}>
           <Text style={styles.message}>
             {`Congrats! You have successfully purchased the ${duration} months (Trial) Circle Plan for ${string.common.Rs}${amount}`}
           </Text>
@@ -67,7 +80,9 @@ export const CirclePurchase: React.FC<CirclePurchaseProps> = (props) => {
   };
 
   return !!subscriptionInfo ? (
-    <View style={styles.container}>{renderCirclePurchaseInfo()}</View>
+    <View style={!!props.containerStyle ? props.containerStyle : styles.container}>
+      {renderCirclePurchaseInfo()}
+    </View>
   ) : null;
 };
 
@@ -100,11 +115,13 @@ const styles = StyleSheet.create({
   savings: {
     ...theme.fonts.IBMPlexSansMedium(12),
     lineHeight: 20,
-    color: '#01475B',
-    marginTop: 5,
+    color: colors.SHERPA_BLUE,
+    marginTop: 8,
+    fontWeight: '600',
   },
   savingsAmt: {
-    color: '#00B38E',
+    color: theme.colors.APP_GREEN,
+    ...theme.fonts.IBMPlexSansSemiBold(12),
   },
   savingsBlast: {
     height: 20,

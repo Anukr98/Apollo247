@@ -383,6 +383,7 @@ const appStaticVariables = {
     },
   ],
   DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER_TEXT: string.diagnosticsCartPage.reviewPagePolicyText,
+  DIAGNOSTICS_SHOW_HEALTH_CREDITS: true 
 };
 
 const DEV_top_specialties = [

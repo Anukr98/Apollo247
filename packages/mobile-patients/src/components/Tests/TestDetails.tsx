@@ -90,6 +90,7 @@ import {
   getDiagnosticsPackageRecommendations,
   getDiagnosticWidgetPricing,
   getReportTAT,
+  getUserSubscriptionStatus,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import moment from 'moment';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
@@ -100,6 +101,8 @@ import { DIAGNOSTICS_ITEM_TYPE } from '@aph/mobile-patients/src/helpers/CleverTa
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import FullWidthItemCard from './components/FullWidthItemCard';
 import { ExpressSlotMessageRibbon } from '@aph/mobile-patients/src/components/Tests/components/ExpressSlotMessageRibbon';
+import { GetSubscriptionsOfUserByStatusVariables } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
@@ -190,15 +193,25 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     deliveryAddressCityId,
     deliveryAddressStateId,
     diagnosticSlot,
+    setIsDiagnosticCircleSubscription,
   } = useDiagnosticsCart();
-  const { pharmacyCircleAttributes } = useShoppingCart();
+  const {
+    pharmacyCircleAttributes,
+    setCircleSubscriptionId,
+    setHdfcSubscriptionId,
+    setIsCircleSubscription,
+    setHdfcPlanName,
+    setIsFreeDelivery,
+    setCirclePlanValidity,
+  } = useShoppingCart();
 
   const {
+    setIsRenew,
     diagnosticServiceabilityData,
     isDiagnosticLocationServiceable,
     diagnosticLocation,
   } = useAppCommonData();
-
+  const hdfc_values = string.Hdfc_values;
   const testDetails = props.navigation.getParam('testDetails', {} as TestPackageForDetails);
   const testName = props.navigation.getParam('itemName');
   const changeCTA = props.navigation.getParam('changeCTA');
@@ -349,6 +362,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   }, [horizontalComponentElements]);
 
   useEffect(() => {
+    if (!!currentPatient && isDeep == 'deeplink') {
+      getUserSubscriptionsByStatus();
+    }
     getExpressSlots(diagnosticServiceabilityData!, diagnosticLocation!);
   }, []);
 
@@ -380,6 +396,54 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       }
     }
   }, [testInfo]);
+
+  const getUserSubscriptionsByStatus = async () => {
+    try {
+      const query: GetSubscriptionsOfUserByStatusVariables = {
+        mobile_number: currentPatient?.mobileNumber,
+        status: ['active', 'deferred_active', 'deferred_inactive', 'disabled'],
+      };
+      const res = await getUserSubscriptionStatus(client, query);
+      const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
+      const filterActiveResults = data?.APOLLO?.filter((val: any) => val?.status == 'active');
+      if (data) {
+        const circleData = !!filterActiveResults ? filterActiveResults?.[0] : data?.APOLLO?.[0];
+        if (circleData._id && circleData?.status !== 'disabled') {
+          AsyncStorage.setItem('circleSubscriptionId', circleData._id);
+          setCircleSubscriptionId && setCircleSubscriptionId(circleData._id);
+          setIsCircleSubscription && setIsCircleSubscription(true);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
+          const planValidity = {
+            startDate: circleData?.start_date,
+            endDate: circleData?.end_date,
+            plan_id: circleData?.plan_id,
+            source_identifier: circleData?.source_meta_data?.source_identifier,
+          };
+          setCirclePlanValidity && setCirclePlanValidity(planValidity);
+          setIsRenew && setIsRenew(!!circleData?.renewNow);
+        } else {
+          setCircleSubscriptionId && setCircleSubscriptionId('');
+          setIsCircleSubscription && setIsCircleSubscription(false);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
+          setCirclePlanValidity && setCirclePlanValidity(null);
+        }
+
+        if (data?.HDFC?.[0]._id) {
+          setHdfcSubscriptionId && setHdfcSubscriptionId(data?.HDFC?.[0]._id);
+          const planName = data?.HDFC?.[0].name;
+          setHdfcPlanName && setHdfcPlanName(planName);
+          if (planName === hdfc_values.PLATINUM_PLAN && data?.HDFC?.[0].status === 'active') {
+            setIsFreeDelivery && setIsFreeDelivery(true);
+          }
+        } else {
+          setHdfcSubscriptionId && setHdfcSubscriptionId('');
+          setHdfcPlanName && setHdfcPlanName('');
+        }
+      }
+    } catch (error) {
+      CommonBugFender('TestDetails_GetSubscriptionsOfUserByStatus', error);
+    }
+  };
 
   function loadWidgets(itemId: number | string) {
     /**to be shown only for single tests */
@@ -455,7 +519,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       !!itemName ? itemName : cmsTestDetails?.diagnosticUrlAlias,
       cityIdToUse
     );
-    if (res?.data?.success) {
+    if (res?.data?.success && !!res?.data?.data) {
       const result = res?.data?.data;
       !!itemName && loadTestDetails(result?.diagnosticItemID);
       setCmsTestDetails(result);
