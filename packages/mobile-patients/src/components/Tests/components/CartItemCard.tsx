@@ -171,7 +171,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
             return (
               <View style={styles.inclusionListView}>
                 <Text style={styles.inclusionsBullet}>{'\u2B24'}</Text>
-                <Text style={styles.inclusionText}> {item}</Text>
+                <Text style={styles.inclusionText}> {nameFormater(item, 'default')}</Text>
               </View>
             );
           })}
