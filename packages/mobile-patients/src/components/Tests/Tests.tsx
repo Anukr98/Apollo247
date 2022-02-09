@@ -2686,8 +2686,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     diagnosticStateUserType == string.user_type.REPEAT;
   const isPrescriptionAvailable =
     AppConfig.Configuration.DIAGNOSTICS_SHOW_UPLOAD_PRESCRIPTION_SECTION;
-    console.log('isOrderAvailable :>> ', isOrderAvailable , diagnosticStateUserType);
-    console.log('isPrescriptionAvailable :>> ', isPrescriptionAvailable);
   const renderOrderAndPrescriptionPanel = () => {
     if (isOrderAvailable && isPrescriptionAvailable) {
       return (
