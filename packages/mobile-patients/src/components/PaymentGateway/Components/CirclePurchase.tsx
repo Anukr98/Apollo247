@@ -27,7 +27,8 @@ export interface CirclePurchaseProps {
 export const CirclePurchase: React.FC<CirclePurchaseProps> = (props) => {
   const { subscriptionInfo, onPressBenefits, circleSavings } = props;
   const amount = subscriptionInfo?.payment_reference?.purchase_via_HC
-    ? subscriptionInfo?.payment_reference?.HC_used
+    ? subscriptionInfo?.payment_reference?.HC_used +
+      subscriptionInfo?.payment_reference?.amount_paid
     : subscriptionInfo?.payment_reference?.amount_paid;
   const findPlan = subscriptionInfo?.group_plan?.plan_summary?.find(
     (plan: any) => plan?.subPlanId === subscriptionInfo?.sub_plan_id
@@ -43,7 +44,7 @@ export const CirclePurchase: React.FC<CirclePurchaseProps> = (props) => {
         You{' '}
         <Text style={styles.savingsAmt}>
           saved {string.common.Rs}
-          {circleSavings}
+          {circleSavings?.toFixed(2)}
         </Text>{' '}
         on your purchase
       </Text>

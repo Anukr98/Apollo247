@@ -80,11 +80,16 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   const { showAphAlert, setLoading: setLoadingContext } = useUIElements();
 
   const isPrepaid = orderDetails?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
+  const showCircleMembershipDetails = isPrepaid && !!subscriptionDetails && isParentOrder;
   const salutation = !!orderDetails?.patientObj?.gender
     ? orderDetails?.patientObj?.gender === Gender.MALE
       ? 'Mr. '
       : 'Ms. '
     : '';
+  const circleMembershipCharges = subscriptionDetails?.payment_reference?.purchase_via_HC
+    ? subscriptionDetails?.payment_reference?.HC_used +
+      subscriptionDetails?.payment_reference?.amount_paid
+    : subscriptionDetails?.payment_reference?.amount_paid;
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
   const [showPreviousCard, setShowPreviousCard] = useState<boolean>(true);
@@ -640,6 +645,10 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   const renderPricesCard = () => {
     const totalSaving = totalCartSaving + totalDiscountSaving;
     const couponDiscount = orderDetails?.couponDiscAmount;
+    const toPayPrice =
+      showCircleMembershipDetails && !!circleMembershipCharges
+        ? circleMembershipCharges + orderDetails?.totalPrice
+        : orderDetails?.totalPrice;
     return (
       <View>
         {renderHeading('Total Charges')}
@@ -648,6 +657,8 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           {renderPrices('Discount on MRP', totalSaving, true, false, 1)} {/**totalCartSavings */}
           {renderPrices('Circle Discount', totalCircleSaving, true, false, 1)}
           {renderPrices('Coupon Discount', !!couponDiscount ? couponDiscount : 0, true, false, 1)}
+          {showCircleMembershipDetails &&
+            renderPrices('Circle Membership', circleMembershipCharges, false, false, 1)}
           {/**totalDiscountSaving */}
           {renderPrices(
             string.diagnosticsCartPage.homeCollectionText,
@@ -666,7 +677,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
             false
           )} */}
           <Spearator style={{ marginTop: 6, marginBottom: 6 }} />
-          {renderPrices('Total', orderDetails?.totalPrice, false, true, 2)}
+          {renderPrices('Total', toPayPrice, false, true, 2)}
         </View>
       </View>
     );
@@ -698,6 +709,10 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           ?.reduce((curr, prev) => prev! + curr!, 0)
       : 0;
 
+    const totalEffectivePrice = showCircleMembershipDetails
+      ? getTotalEffectivePrice + subscriptionDetails?.payment_reference?.amount_paid
+      : getTotalEffectivePrice;
+
     return (
       <View>
         {renderHeading('Payment Mode')}
@@ -705,7 +720,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           {renderPrices(
             txtToShow,
             !!getOffersResponse && getOffersResponse?.length > 0
-              ? getTotalEffectivePrice!
+              ? totalEffectivePrice!
               : orderDetails?.totalPrice,
             false
           )}
@@ -756,7 +771,8 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   };
 
   function getOffersDetails(transaction: any) {
-    const offersDetails = transaction?.offers?.[0]?.offer_description?.title;
+    const offersDetails =
+      transaction?.offers?.[0]?.offer_description?.title! || transaction?.offers?.[0]?.offer_code;
     const offerAmount = transaction?.prepaidAmount - transaction?.effectivePrepaidAmount;
     return {
       offersDetails,
@@ -869,7 +885,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
         {!!getModifiedLineItems && getModifiedLineItems?.length > 0
           ? renderOrderBreakdownCard(getModifiedLineItems, string.diagnostics.currentCharges)
           : null}
-        {isPrepaid && !!subscriptionDetails && isParentOrder ? renderSubscriptionCard() : null}
+        {showCircleMembershipDetails ? renderSubscriptionCard() : null}
         {renderPricesCard()}
         {(DIAGNOSTIC_ORDER_CANCELLED_STATUS.includes(orderDetails?.orderStatus) && !isPrepaid) ||
         DIAGNOSTIC_PAYMENT_MODE_STATUS_ARRAY.includes(orderDetails?.orderStatus)
@@ -1091,13 +1107,13 @@ const styles = StyleSheet.create({
   addressTextStyle: { ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 1, 18) },
   circlePurchaseDetailsCard: {
     ...theme.viewStyles.cardContainer,
-    marginBottom: 30,
     padding: 16,
     borderRadius: 5,
     borderWidth: 1,
     borderColor: 'transparent',
     borderLeftColor: '#007C9D',
     borderLeftWidth: 4,
+    backgroundColor: colors.WHITE,
   },
   circleLogoIcon: { height: 45, width: 45, resizeMode: 'contain', marginRight: 8 },
   circlePurchaseDetailsView: { width: '85%' },
