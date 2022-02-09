@@ -1359,6 +1359,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'APOLLO247_API_KEY',
       PROD: 'APOLLO247_API_KEY',
     },
+    HOME_CTA_CONFIG: {
+      QA: 'QA_HOME_CTA_CONFIG',
+      PROD: 'PROD_HOME_CTA_CONFIG',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1813,6 +1817,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
 
       setAppConfig('APOLLO247_API_KEY', 'APOLLO247_API_KEY', (key) => config.getString(key));
+
+      setAppConfig(
+        'HOME_CTA_CONFIG',
+        'HOME_CTA_CONFIG',
+        (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.HOME_CTA_CONFIG
+      );
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';
