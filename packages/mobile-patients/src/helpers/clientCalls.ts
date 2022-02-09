@@ -65,6 +65,7 @@ import {
   GET_RESCHEDULE_AND_CANCELLATION_REASONS,
   GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
   GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS_V2,
+  GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -314,6 +315,7 @@ import {
   getRescheduleAndCancellationReasonsVariables,
 } from '@aph/mobile-patients/src/graphql/types/getRescheduleAndCancellationReasons';
 import { findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
+import { GetSubscriptionsOfUserByStatus, GetSubscriptionsOfUserByStatusVariables } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -1792,3 +1794,11 @@ export const getDiagnosticWidgetPricing = (client: ApolloClient<object>, cityId:
     fetchPolicy: 'no-cache',
   });
 };
+
+export const getUserSubscriptionStatus = (client: ApolloClient<object>, queryVariable: GetSubscriptionsOfUserByStatusVariables) =>{
+  return client.query<GetSubscriptionsOfUserByStatus>({
+    query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+    fetchPolicy: 'no-cache',
+    variables: queryVariable,
+  });
+}

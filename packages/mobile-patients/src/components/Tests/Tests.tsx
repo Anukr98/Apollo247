@@ -128,7 +128,6 @@ import {
   diagnosticServiceability,
   fetchPatientAddressList,
   getDiagnosticClosedOrders,
-  getDiagnosticExpressSlots,
   getDiagnosticOpenOrders,
   getDiagnosticPatientPrescription,
   getDiagnosticPhelboDetails,
@@ -136,6 +135,7 @@ import {
   getDiagnosticsOrder,
   getDiagnosticsPastOrderRecommendations,
   getUserBannersList,
+  getUserSubscriptionStatus,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
@@ -403,6 +403,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   useEffect(() => {
     fetchNumberSpecificOrderDetails();
+    if (!!currentPatient && !isDiagnosticCircleSubscription) {
+      getUserSubscriptionsByStatus();
+    }
     if (movedFrom === 'deeplink') {
       BackHandler.addEventListener('hardwareBackPress', handleBack);
       return () => {
@@ -813,7 +816,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   };
 
-
   function getFilteredWidgets(widgetsData: any, source?: string) {
     var filterWidgets, itemIds;
     if (source == string.diagnostics.homepagePastOrderRecommendations) {
@@ -1153,16 +1155,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
     try {
       const query: GetSubscriptionsOfUserByStatusVariables = {
         mobile_number: currentPatient?.mobileNumber,
-        status: ['active', 'deferred_inactive'],
+        status: ['active', 'deferred_active', 'deferred_inactive', 'disabled'],
       };
-      const res = await client.query<GetSubscriptionsOfUserByStatus>({
-        query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
-        fetchPolicy: 'no-cache',
-        variables: query,
-      });
+      const res = await getUserSubscriptionStatus(client, query);
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
+      const filterActiveResults = data?.APOLLO?.filter((val: any) => val?.status == 'active');
       if (data) {
-        const circleData = data?.APOLLO?.[0];
+        const circleData = !!filterActiveResults ? filterActiveResults?.[0] : data?.APOLLO?.[0];
         if (circleData._id && circleData?.status !== 'disabled') {
           AsyncStorage.setItem('circleSubscriptionId', circleData._id);
           setCircleSubscriptionId && setCircleSubscriptionId(circleData._id);

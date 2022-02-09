@@ -263,6 +263,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const { setauthToken } = useAppCommonData();
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
+  const showHCOption = AppConfig.Configuration.DIAGNOSTICS_SHOW_HEALTH_CREDITS;
 
   type PatientsObjWithOrderIDs = saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patientsObjWithOrderIDs;
   type PatientObjWithModifyOrderIDs = saveModifyDiagnosticOrder_saveModifyDiagnosticOrder_attributes_conflictedItems;
@@ -1624,8 +1625,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const showCircleRelatedSavings =
       showCirclePurchaseAmount && circleSaving > 0 && (!!coupon ? couponCircleBenefits : true);
     const showOneApollo = isModifyFlow
-      ? modifiedOrder?.paymentType === DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT
-      : true;
+      ? modifiedOrder?.paymentType === DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT && showHCOption
+      : showHCOption;
     return (
       <>
         <View
@@ -3087,7 +3088,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       />
     );
   };
-
 
   return (
     <View style={{ flex: 1 }}>

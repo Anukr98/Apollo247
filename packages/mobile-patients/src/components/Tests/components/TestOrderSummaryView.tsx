@@ -31,13 +31,7 @@ import {
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { DiagnosticOrderSummaryViewed } from '@aph/mobile-patients/src/components/Tests/Events';
-import {
-  Down,
-  Up,
-  DownloadOrange,
-  CircleLogo,
-  OneApollo,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { Down, Up, DownloadOrange, OneApollo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { PassportPaitentOverlay } from '@aph/mobile-patients/src/components/Tests/components/PassportPaitentOverlay';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -48,6 +42,7 @@ import {
   updatePassportDetailsVariables,
 } from '@aph/mobile-patients/src/graphql/types/updatePassportDetails';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { CirclePurchase } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CirclePurchase';
 
 export interface LineItemPricing {
   packageMrp: number;
@@ -79,8 +74,10 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   const filterOrderLineItem =
     !!orderDetails &&
     orderDetails?.diagnosticOrderLineItems?.filter((item: any) => !item?.isRemoved);
+  const isParentOrder = orderDetails?.id == orderDetails?.parentOrderId;
+  const showHCOption = AppConfig.Configuration.DIAGNOSTICS_SHOW_HEALTH_CREDITS;
   const client = useApolloClient();
-  const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
+  const { showAphAlert, setLoading: setLoadingContext } = useUIElements();
 
   const isPrepaid = orderDetails?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
   const salutation = !!orderDetails?.patientObj?.gender
@@ -625,51 +622,17 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   }
 
   const renderSubscriptionCard = () => {
-    const findPlan = subscriptionDetails?.group_plan?.plan_summary?.find(
-      (plan: any) => plan?.subPlanId === subscriptionDetails?.sub_plan_id
-    );
-    const duration = !!findPlan
-      ? findPlan?.durationInMonth
-      : subscriptionDetails?.group_plan?.valid_duration;
-    const circlePurchasePrice =
-      !!subscriptionDetails && subscriptionDetails?.payment_reference?.purchase_via_HC
-        ? subscriptionDetails?.payment_reference?.HC_used
-        : subscriptionDetails?.payment_reference?.amount_paid;
-    const validity = moment(new Date(), 'DD/MM/YYYY').add('days', subscriptionDetails?.expires_in);
     return (
       <>
         {renderHeading(string.diagnosticsCircle.circleMembership)}
-        <View style={styles.circlePurchaseDetailsCard}>
-          <View style={styles.flexRow}>
-            <CircleLogo style={styles.circleLogoIcon} />
-            <View style={styles.circlePurchaseDetailsView}>
-              <Text style={styles.circlePurchaseText}>
-                Congrats! You have successfully purchased the {duration} months (Trial) Circle Plan
-                for {string.common.Rs}
-                {circlePurchasePrice}
-              </Text>
-              {!!totalCircleSaving && totalCircleSaving > 0 && (
-                <Text style={{ ...styles.savedTxt, marginTop: 8, fontWeight: '600' }}>
-                  You {''}
-                  <Text style={styles.savedAmt}>
-                    saved {string.common.Rs}
-                    {totalCircleSaving}
-                  </Text>
-                  {''} on your purchase.
-                </Text>
-              )}
-              <Text style={styles.circlePlanValidText}>
-                {`Valid till: ${moment(validity)?.format('D MMM YYYY')}`}
-              </Text>
-            </View>
-          </View>
-          <TouchableOpacity
-            onPress={() => _navigateToCircleBenefits()}
-            style={styles.viewAllBenefitsTouch}
-          >
-            <Text style={styles.yellowText}>VIEW ALL BENEFITS</Text>
-          </TouchableOpacity>
-        </View>
+        <CirclePurchase
+          subscriptionInfo={subscriptionDetails}
+          circleSavings={totalCircleSaving}
+          onPressBenefits={_navigateToCircleBenefits}
+          containerStyle={styles.circlePurchaseDetailsCard}
+          circleLogoIcon={styles.circleLogoIcon}
+          textContainerStyle={styles.circlePurchaseDetailsView}
+        />
       </>
     );
   };
@@ -749,8 +712,10 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           {!!getOffersResponse &&
             getOffersResponse?.length > 0 &&
             getOffersResponse?.map((item) => renderOffers(item))}
-          {/** commented for this release */}
-          {!!getOffersResponse && getOffersResponse?.length > 0 && renderHealthCredits()}
+          {showHCOption &&
+            !!getOffersResponse &&
+            getOffersResponse?.length > 0 &&
+            renderHealthCredits()}
           {!!refundText && renderPrices(refundText, refundAmountToShow, false)}
         </View>
       </View>
@@ -768,7 +733,9 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
         ? subscriptionDetails?.payment_reference?.HC_used
         : 0
       : 0;
-    const getTotalHealthCredits = totalHealthCredits + Number(getHcForCircle! || 0);
+    const getTotalHealthCredits = isParentOrder
+      ? totalHealthCredits + Number(getHcForCircle! || 0)
+      : totalHealthCredits;
     return (
       <View style={styles.passportView}>
         <View style={styles.flexRow}>
@@ -902,7 +869,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
         {!!getModifiedLineItems && getModifiedLineItems?.length > 0
           ? renderOrderBreakdownCard(getModifiedLineItems, string.diagnostics.currentCharges)
           : null}
-        {isPrepaid && !!subscriptionDetails ? renderSubscriptionCard() : null}
+        {isPrepaid && !!subscriptionDetails && isParentOrder ? renderSubscriptionCard() : null}
         {renderPricesCard()}
         {(DIAGNOSTIC_ORDER_CANCELLED_STATUS.includes(orderDetails?.orderStatus) && !isPrepaid) ||
         DIAGNOSTIC_PAYMENT_MODE_STATUS_ARRAY.includes(orderDetails?.orderStatus)
@@ -1132,27 +1099,8 @@ const styles = StyleSheet.create({
     borderLeftColor: '#007C9D',
     borderLeftWidth: 4,
   },
-  circleLogoIcon: { height: 45, width: 45, resizeMode: 'contain' },
-  circlePurchaseDetailsView: { width: '85%', marginHorizontal: 8 },
-  circlePurchaseText: { ...theme.viewStyles.text('R', 11, colors.SHERPA_BLUE, 1, 16) },
-  circlePlanValidText: {
-    ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 0.6, 16),
-    marginTop: 6,
-  },
-  savedTxt: {
-    color: '#02475B',
-    ...theme.fonts.IBMPlexSansRegular(12),
-    lineHeight: 16,
-  },
-  savedAmt: {
-    color: theme.colors.APP_GREEN,
-    ...theme.fonts.IBMPlexSansSemiBold(12),
-  },
-  viewAllBenefitsTouch: {
-    alignSelf: 'flex-end',
-    height: 25,
-    justifyContent: 'center',
-  },
+  circleLogoIcon: { height: 45, width: 45, resizeMode: 'contain', marginRight: 8 },
+  circlePurchaseDetailsView: { width: '85%' },
   iconSize: {
     height: 22,
     width: 27,

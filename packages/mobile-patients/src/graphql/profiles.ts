@@ -1783,6 +1783,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         id
         patientId
         patientAddressId
+        parentOrderId
         patientObj {
           firstName
           lastName
@@ -5623,6 +5624,7 @@ export const GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID = gql`
       ordersList {
         patientId
         patientAddressId
+        parentOrderId
         orderStatus
         totalPrice
         createdDate

@@ -155,6 +155,7 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList 
   id: string;
   patientId: string;
   patientAddressId: string;
+  parentOrderId: string | null;
   patientObj: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientObj | null;
   patientAddressObj: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientAddressObj | null;
   slotTimings: string;
