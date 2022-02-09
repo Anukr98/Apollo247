@@ -345,7 +345,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       });
     }
 
-    setHorizontalComponentOptions(horizontalCompArr);
+    setHorizontalComponentOptions([...new Set(horizontalCompArr)]);
   }, [horizontalComponentElements]);
 
   useEffect(() => {
