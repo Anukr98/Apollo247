@@ -101,6 +101,7 @@ import { renderDiagnosticWidgetTestShimmer } from '@aph/mobile-patients/src/comp
 import { DIAGNOSTICS_ITEM_TYPE } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import FullWidthItemCard from './components/FullWidthItemCard';
+import { ExpressSlotMessageRibbon } from '@aph/mobile-patients/src/components/Tests/components/ExpressSlotMessageRibbon';
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
@@ -1691,14 +1692,12 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   }
 
   const renderExpressSlots = () => {
-    return (
-      <View style={styles.outerExpressView}>
-        <View style={styles.innerExpressView}>
-          <ExpressSlotClock style={styles.expressSlotIcon} />
-          <Text style={styles.expressSlotText}>{expressSlotMsg}</Text>
-        </View>
-      </View>
-    );
+    return diagnosticServiceabilityData && diagnosticLocation ? (
+      <ExpressSlotMessageRibbon
+        serviceabilityObject={diagnosticServiceabilityData}
+        selectedAddress={diagnosticLocation}
+      />
+    ) : null;
   };
   const renderCallToOrder = () => {
     return ctaDetailMatched?.length ? (
@@ -1937,7 +1936,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       {!errorState ? (
         <>
           {renderHeader()}
-          {expressSlotMsg != '' ? renderExpressSlots() : null}
+          {renderExpressSlots()}
           {renderBreadCrumb()}
           <ScrollView
             bounces={false}

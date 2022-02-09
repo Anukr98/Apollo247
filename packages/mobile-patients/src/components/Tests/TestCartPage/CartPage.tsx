@@ -126,6 +126,7 @@ import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/compo
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { RecommedationGroupCard } from '@aph/mobile-patients/src/components/Tests/components/RecommedationGroupCard';
 import { Overlay } from 'react-native-elements';
+import { ExpressSlotMessageRibbon } from '@aph/mobile-patients/src/components/Tests/components/ExpressSlotMessageRibbon';
 
 type Address = savePatientAddress_savePatientAddress_patientAddress;
 type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
@@ -306,8 +307,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
     const pinCodeFromAddress = addressToUse?.zipcode!;
     const cityFromAddress = addressToUse?.city;
+    const checkIsRecomendationInCart = isRecommendationShown ? 'Cart widget' : 'cart page';
     DiagnosticCartViewed(
-      'cart page',
+      checkIsRecomendationInCart,
       currentPatient,
       cartItems,
       couponDiscount,
@@ -419,8 +421,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
       const pinCodeFromAddress = addressToUse?.zipcode!;
       const cityFromAddress = addressToUse?.city;
+      const checkIsRecomendationInCart = isRecommendationShown ? 'Cart widget' : 'cart page';
       DiagnosticCartViewed(
-        'cart page',
+        checkIsRecomendationInCart,
         currentPatient,
         cartItems,
         couponDiscount,
@@ -1327,9 +1330,12 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   async function getGroupRecommendations() {
     let recommendationInputItems: { itemId: number; itemType: DiagnosticItemType }[] = [];
     cartItemsWithId?.map((item) => {
+      const inclusionCount = cartItems?.find(
+               (cartItem) => Number(cartItem?.id) === item
+          )?.inclusions?.length;
       const newObj = {
         itemId: item,
-        itemType: DiagnosticItemType.LABTEST,
+        itemType: !!inclusionCount && inclusionCount > 1 ? DiagnosticItemType.PACKAGE : DiagnosticItemType.LABTEST,
       };
       recommendationInputItems?.push(newObj);
     });
@@ -2099,12 +2105,21 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       />
     );
   };
+  const renderExpressSlots = () => {
+    return diagnosticServiceabilityData && diagnosticLocation ? (
+      <ExpressSlotMessageRibbon
+        serviceabilityObject={diagnosticServiceabilityData}
+        selectedAddress={diagnosticLocation}
+      />
+    ) : null;
+  };
 
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={[{ ...theme.viewStyles.container }]}>
         {renderHeader()}
         {renderWizard()}
+        {renderExpressSlots()}
         <ScrollView
           bounces={false}
           style={{ flexGrow: 1 }}

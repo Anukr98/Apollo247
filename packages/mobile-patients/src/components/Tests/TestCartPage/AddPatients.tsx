@@ -88,6 +88,7 @@ import {
   editProfileVariables,
 } from '@aph/mobile-patients/src/graphql/types/editProfile';
 import moment from 'moment';
+import { ExpressSlotMessageRibbon } from '@aph/mobile-patients/src/components/Tests/components/ExpressSlotMessageRibbon';
 
 const screenHeight = Dimensions.get('window').height;
 const { SHERPA_BLUE, WHITE, APP_GREEN, NEWGRAY } = theme.colors;
@@ -1112,12 +1113,21 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
       />
     );
   };
+  const renderExpressSlots = () => {
+    return diagnosticServiceabilityData && diagnosticLocation ? (
+      <ExpressSlotMessageRibbon
+        serviceabilityObject={diagnosticServiceabilityData}
+        selectedAddress={diagnosticLocation}
+      />
+    ) : null;
+  };
 
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={[{ ...theme.viewStyles.container }]}>
         {renderHeader()}
         {renderWizard()}
+        {renderExpressSlots()}
         {renderMainView()}
         {renderPatientDetailsOverlay()}
       </SafeAreaView>
