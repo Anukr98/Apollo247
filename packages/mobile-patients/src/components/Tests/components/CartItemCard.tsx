@@ -54,9 +54,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   const inclusionItem =
     duplicateArray?.length > 0 &&
     duplicateArray?.map((item: any) =>
-      Number(item?.toKeepItemIds) == Number(cartItem?.id)
-        ? nameFormater(item?.itemsToRemovalName, 'default')
-        : ''
+      Number(item?.toKeepItemIds) == Number(cartItem?.id) ? item?.itemsToRemovalName : ''
     );
   const filterInclusions =
     duplicateArray?.length > 0 && inclusionItem?.filter((item: string) => item != '');
@@ -430,6 +428,7 @@ const styles = StyleSheet.create({
     color: theme.colors.SHERPA_BLUE,
     fontSize: 4,
     textAlign: 'center',
+    lineHeight: 18,
   },
   inclusionListView: {
     flexDirection: 'row',
