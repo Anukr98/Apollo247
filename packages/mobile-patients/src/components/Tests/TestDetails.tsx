@@ -313,7 +313,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     if (isFreqBooked) {
       setHorizontalComponentElements({ ...horizontalComponentElements, frequentlyBooked: true });
     }
-
     if (isRelatedPackage && isFreqBooked) {
       setHorizontalComponentElements({
         ...horizontalComponentElements,
@@ -328,7 +327,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       horizontalCompArr.push({
         icon: <RelatedPackageIcon style={styles.horizontalComponentIcon} />,
         title:
-          frequentlyBroughtRecommendations?.length == 0
+          packageRecommendations?.length == 0
             ? string.diagnostics.topBookedTests
             : string.diagnosticsDetails.relatedPackages,
       });
@@ -975,10 +974,12 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       (!!cmsTestDetails && cmsTestDetails?.diagnosticGender) ||
       (!_.isEmpty(testInfo) && `FOR ${gender?.[testInfo?.Gender]}`) ||
       'Both';
+    const isSamplePresent = !!sampleString && sampleString != '';
     return (
-      <View style={styles.skuSpecificView}>
-        {!!sampleString
+      <View style={[styles.skuSpecificView, { justifyContent: 'space-evenly' }]}>
+        {isSamplePresent
           ? renderDetails(
+              0,
               string.diagnosticsDetails.sample,
               sampleString,
               <SampleTypeIcon style={styles.aboutIcons} />
@@ -986,6 +987,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           : null}
         {!!showGender
           ? renderDetails(
+              1,
               string.diagnosticsDetails.gender,
               nameFormater(showGender, 'title'),
               <GenderIcon style={styles.aboutIcons} />
@@ -993,6 +995,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           : null}
         {!!showAge
           ? renderDetails(
+              2,
               string.diagnosticsDetails.ageGroup,
               showAge,
               <AgeGroupIcon style={styles.aboutIcons} />
@@ -1002,9 +1005,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     );
   };
 
-  const renderDetails = (key: string, value: string, Icon: any) => {
+  const renderDetails = (index: number, key: string, value: string, Icon: any) => {
     return (
-      <View style={styles.detailsView}>
+      <View style={[styles.detailsView, { marginLeft: index == 0 ? 0 : 4 }]}>
         {Icon}
         <View style={{ marginHorizontal: 8 }}>
           <Text style={styles.packageDescriptionText}>{key} </Text>
@@ -2188,8 +2191,8 @@ const styles = StyleSheet.create({
   },
   detailsView: {
     flexDirection: 'row',
-    width: screenWidth / 4,
     alignItems: 'center',
+    justifyContent: 'space-around',
   },
   faqIcon: { height: 13, width: 12, resizeMode: 'contain', tintColor: colors.SHERPA_BLUE },
   questionsStyle: {
