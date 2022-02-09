@@ -63,7 +63,9 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
 
   const finalFilterInclusions = filterInclusions?.length > 0 && [...new Set(filterInclusions)];
 
-  // const inclusionItemToShow = !!finalFilterInclusions && finalFilterInclusions?.join(', ');
+  const inclusionItemToShow = !!finalFilterInclusions ? finalFilterInclusions?.join(', ') : '';
+
+  const inclusionsArray = !!inclusionItemToShow ? inclusionItemToShow?.split(', ') : [];
 
   const hasExtraData =
     (!!reportTat && !isEmptyObject(reportTat) && reportTat?.preOrderReportTATMessage != '') ||
@@ -152,7 +154,10 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
         {((!!reportGenItem && !isEmptyObject(reportGenItem)) ||
           (!!reportTat && !isEmptyObject(reportTat))) &&
           renderReportTat_preTestingReqrmnt()}
-        {comingFrom == AppRoutes.CartPage && showCartInclusions && !!finalFilterInclusions
+        {comingFrom == AppRoutes.CartPage &&
+        showCartInclusions &&
+        !!inclusionsArray &&
+        inclusionsArray?.length > 0
           ? renderConflictingItemView()
           : null}
       </TouchableOpacity>
@@ -163,8 +168,8 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     return (
       <View style={styles.inclusionView}>
         <Text style={styles.inclusionCommonText}>Has common parameters with </Text>
-        {!!finalFilterInclusions &&
-          finalFilterInclusions?.map((item: any) => {
+        {!!inclusionsArray &&
+          inclusionsArray?.map((item: any) => {
             return (
               <View style={styles.inclusionListView}>
                 <Text style={styles.inclusionsBullet}>{'\u2B24'}</Text>
