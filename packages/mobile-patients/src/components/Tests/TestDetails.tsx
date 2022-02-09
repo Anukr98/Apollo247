@@ -96,7 +96,12 @@ import moment from 'moment';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 import DiscountPercentage from '@aph/mobile-patients/src/components/Tests/components/DiscountPercentage';
-import { renderDiagnosticTestDetailShimmer, renderDiagnosticWidgetTestShimmer, renderTestDetailFaqShimmer, renderTestDetailHorizontalOptionShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
+import {
+  renderDiagnosticTestDetailShimmer,
+  renderDiagnosticWidgetTestShimmer,
+  renderTestDetailFaqShimmer,
+  renderTestDetailHorizontalOptionShimmer,
+} from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import { DIAGNOSTICS_ITEM_TYPE } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import FullWidthItemCard from './components/FullWidthItemCard';
@@ -216,7 +221,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const testName = props.navigation.getParam('itemName');
   const changeCTA = props.navigation.getParam('changeCTA');
 
-  const { loading ,setLoading: setLoadingContext, showAphAlert, hideAphAlert } = useUIElements();
+  const { loading, setLoading: setLoadingContext, showAphAlert, hideAphAlert } = useUIElements();
 
   const addressCityId = props.navigation.getParam('cityId');
   const movedFrom = props.navigation.getParam('comingFrom');
@@ -316,24 +321,39 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   var horizontalCompArr: { icon: JSX.Element; title: string }[] = [];
 
   useEffect(() => {
-    const isRelatedPackage = !!packageRecommendations && packageRecommendations?.length > 0;
-    const isFreqBooked =
-      (!!frequentlyBroughtRecommendations && frequentlyBroughtRecommendations?.length > 0) ||
-      (!!topBookedTests && topBookedTests?.length > 0);
-    if (isRelatedPackage) {
-      setHorizontalComponentElements({ ...horizontalComponentElements, releatedPackage: true });
+    if (!!cmsTestDetails) {
+      const isRelatedPackage = !!packageRecommendations && packageRecommendations?.length > 0;
+      const isFreqBooked =
+        (!!frequentlyBroughtRecommendations && frequentlyBroughtRecommendations?.length > 0) ||
+        (!!topBookedTests && topBookedTests?.length > 0);
+      const isFAQ = !!cmsTestDetails && cmsTestDetails?.diagnosticFAQs?.length > 0;
+      if (isRelatedPackage) {
+        setHorizontalComponentElements({ ...horizontalComponentElements, releatedPackage: true });
+      }
+      if (isFreqBooked) {
+        setHorizontalComponentElements({ ...horizontalComponentElements, frequentlyBooked: true });
+      }
+      if (isFAQ) {
+        setHorizontalComponentElements({ ...horizontalComponentElements, faq: true });
+      }
+
+      if (isRelatedPackage && isFreqBooked) {
+        setHorizontalComponentElements({
+          ...horizontalComponentElements,
+          frequentlyBooked: true,
+          releatedPackage: true,
+        });
+      }
+      if (isRelatedPackage && isFreqBooked && isFAQ) {
+        setHorizontalComponentElements({
+          ...horizontalComponentElements,
+          frequentlyBooked: true,
+          releatedPackage: true,
+          faq: true,
+        });
+      }
     }
-    if (isFreqBooked) {
-      setHorizontalComponentElements({ ...horizontalComponentElements, frequentlyBooked: true });
-    }
-    if (isRelatedPackage && isFreqBooked) {
-      setHorizontalComponentElements({
-        ...horizontalComponentElements,
-        frequentlyBooked: true,
-        releatedPackage: true,
-      });
-    }
-  }, [packageRecommendations, frequentlyBroughtRecommendations]);
+  }, [packageRecommendations, frequentlyBroughtRecommendations, cmsTestDetails]);
 
   useEffect(() => {
     if (horizontalComponentElements?.releatedPackage == true) {
