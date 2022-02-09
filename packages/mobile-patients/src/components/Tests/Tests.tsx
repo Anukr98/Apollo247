@@ -636,7 +636,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
     try {
       const diagnosticUserType = await AsyncStorage.getItem('diagnosticUserType');
       setDiagnosticStateUserType(diagnosticUserType || '');
-      if (diagnosticUserType == null) {
+      if (
+        diagnosticUserType == null ||
+        diagnosticUserType == string.user_type.NEW ||
+        diagnosticUserType == `"${string.user_type.NEW}"`
+      ) {
         fetchOrders();
       }
     } catch (error) {
