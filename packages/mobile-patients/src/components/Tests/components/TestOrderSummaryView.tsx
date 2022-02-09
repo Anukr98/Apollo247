@@ -625,7 +625,12 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   }
 
   const renderSubscriptionCard = () => {
-    const duration = !!subscriptionDetails && subscriptionDetails?.group_plan?.valid_duration;
+    const findPlan = subscriptionDetails?.group_plan?.plan_summary?.find(
+      (plan: any) => plan?.subPlanId === subscriptionDetails?.sub_plan_id
+    );
+    const duration = !!findPlan
+      ? findPlan?.durationInMonth
+      : subscriptionDetails?.group_plan?.valid_duration;
     const circlePurchasePrice =
       !!subscriptionDetails && subscriptionDetails?.payment_reference?.purchase_via_HC
         ? subscriptionDetails?.payment_reference?.HC_used

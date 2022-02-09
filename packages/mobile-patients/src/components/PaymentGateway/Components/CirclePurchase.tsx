@@ -16,8 +16,13 @@ export const CirclePurchase: React.FC<CirclePurchaseProps> = (props) => {
   const amount = subscriptionInfo?.payment_reference?.purchase_via_HC
     ? subscriptionInfo?.payment_reference?.HC_used
     : subscriptionInfo?.payment_reference?.amount_paid;
+  const findPlan = subscriptionInfo?.group_plan?.plan_summary?.find(
+    (plan: any) => plan?.subPlanId === subscriptionInfo?.sub_plan_id
+  );
   const endDate = subscriptionInfo?.end_date;
-  const duration = subscriptionInfo?.group_plan?.valid_duration;
+  const duration = !!findPlan
+    ? findPlan?.durationInMonth
+    : subscriptionInfo?.group_plan?.valid_duration;
 
   const renderSavings = () => {
     return !!circleSavings ? (
