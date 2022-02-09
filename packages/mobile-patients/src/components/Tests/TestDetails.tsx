@@ -96,7 +96,7 @@ import moment from 'moment';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 import DiscountPercentage from '@aph/mobile-patients/src/components/Tests/components/DiscountPercentage';
-import { renderDiagnosticWidgetTestShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
+import { renderDiagnosticTestDetailShimmer, renderDiagnosticWidgetTestShimmer, renderTestDetailFaqShimmer, renderTestDetailHorizontalOptionShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import { DIAGNOSTICS_ITEM_TYPE } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import FullWidthItemCard from './components/FullWidthItemCard';
@@ -216,7 +216,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const testName = props.navigation.getParam('itemName');
   const changeCTA = props.navigation.getParam('changeCTA');
 
-  const { setLoading: setLoadingContext, showAphAlert, hideAphAlert } = useUIElements();
+  const { loading ,setLoading: setLoadingContext, showAphAlert, hideAphAlert } = useUIElements();
 
   const addressCityId = props.navigation.getParam('cityId');
   const movedFrom = props.navigation.getParam('comingFrom');
@@ -1942,22 +1942,34 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const renderSkuContent = () => {
     return (
       <>
-        {!_.isEmpty(testInfo) && !!cmsTestDetails && renderItemCard()}
-        {renderDescriptionCard()}
-        {horizontalComponentOptions?.length > 1 ? renderHorizontalOptions() : null}
-        {renderInclusionsView()}
-        {!!cmsTestDetails?.diagnosticWidgetsData &&
-        cmsTestDetails?.diagnosticWidgetsData?.length > 0
+        {loading
+          ? renderDiagnosticTestDetailShimmer()
+          : !_.isEmpty(testInfo) && !!cmsTestDetails && renderItemCard()}
+        {loading ? renderDiagnosticTestDetailShimmer() : renderDescriptionCard()}
+        {loading
+          ? renderTestDetailHorizontalOptionShimmer(horizontalComponentOptions)
+          : horizontalComponentOptions?.length > 1
+          ? renderHorizontalOptions()
+          : null}
+        {loading ? renderDiagnosticTestDetailShimmer() : renderInclusionsView()}
+        {loading
+          ? renderDiagnosticTestDetailShimmer()
+          : !!cmsTestDetails?.diagnosticWidgetsData &&
+            cmsTestDetails?.diagnosticWidgetsData?.length > 0
           ? renderWidgetsView()
           : null}
         {/**packages for single test */}
-        {!!packageRecommendations &&
-          packageRecommendations?.length > 0 &&
-          renderPackageRecommendations()}
+        {loading
+          ? renderTestDetailHorizontalOptionShimmer(Array(2))
+          : !!packageRecommendations &&
+            packageRecommendations?.length > 0 &&
+            renderPackageRecommendations()}
         {/** frequently brought together */}
         {(frequentlyBroughtRecommendations?.length > 0 || topBookedTests?.length > 0) &&
           renderFrequentlyBrought()}
-        {!!cmsTestDetails?.diagnosticFAQs && cmsTestDetails?.diagnosticFAQs?.length > 0
+        {loading
+          ? renderTestDetailFaqShimmer()
+          : !!cmsTestDetails?.diagnosticFAQs && cmsTestDetails?.diagnosticFAQs?.length > 0
           ? renderFAQView()
           : null}
       </>
