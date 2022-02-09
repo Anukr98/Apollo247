@@ -170,7 +170,7 @@ export interface SplashScreenProps extends NavigationScreenProps {}
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { APP_ENV } = AppConfig;
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
-  const { setAllPatients, setMobileAPICalled, getFirebaseToken, buildApolloClient } = useAuth();
+  const { setAllPatients, setMobileAPICalled, returnAuthToken, buildApolloClient } = useAuth();
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [appState, setAppState] = useState(AppState.currentState);
   const [takeToConsultRoom, settakeToConsultRoom] = useState<boolean>(false);
@@ -548,7 +548,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   const fetchOrderInfo = async (paymentId: string) => {
     try {
-      const authToken: string = await getFirebaseToken?.();
+      const authToken: any = await returnAuthToken?.();
       const apolloClient = buildApolloClient(authToken);
       const response = await apolloClient.query({
         query: GET_ORDER_INFO,
@@ -1355,6 +1355,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Diagnostic_Review_Disclaimer_New',
       PROD: 'Diagnostic_Review_Disclaimer_New',
     },
+    APOLLO247_API_KEY: {
+      QA: 'APOLLO247_API_KEY',
+      PROD: 'APOLLO247_API_KEY',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1396,7 +1400,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   const getOffers = async () => {
     setOffersListLoading && setOffersListLoading(true);
-    const authToken: string = await getFirebaseToken?.();
+    const authToken: any = await returnAuthToken?.();
     const apolloClient = buildApolloClient(authToken);
     try {
       const res = await apolloClient.query({
@@ -1807,6 +1811,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER_TEXT',
         (key) => config.getString(key)
       );
+
+      setAppConfig('APOLLO247_API_KEY', 'APOLLO247_API_KEY', (key) => config.getString(key));
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';

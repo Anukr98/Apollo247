@@ -25,6 +25,7 @@ export const useAuth = () => {
   const setMobileAPICalled = useAuthContext().setMobileAPICalled;
 
   const getFirebaseToken = useAuthContext().getFirebaseToken;
+  const returnAuthToken = useAuthContext().returnAuthToken;
 
   const authToken = useAuthContext().authToken;
   const validateAuthToken = useAuthContext().validateAuthToken;
@@ -49,6 +50,7 @@ export const useAuth = () => {
     mobileAPICalled,
     setMobileAPICalled,
     getFirebaseToken,
+    returnAuthToken,
     authToken,
     validateAuthToken,
     buildApolloClient,

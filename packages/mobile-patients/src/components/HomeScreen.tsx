@@ -253,6 +253,7 @@ import {
 import { setItem, getItem } from '@aph/mobile-patients/src/helpers/TimedAsyncStorage';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 import { UpdateAppPopup } from '@aph/mobile-patients/src/components/ui/UpdateAppPopup';
+import DeviceInfo from 'react-native-device-info';
 
 const { Vitals } = NativeModules;
 
@@ -1165,12 +1166,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [membershipPlans, setMembershipPlans] = useState<any>([]);
   const [circleDataLoading, setCircleDataLoading] = useState<boolean>(true);
-  const {
-    getPatientApiCall,
-    buildApolloClient,
-    getFirebaseToken,
-    checkIsAppDepricated,
-  } = useAuth();
+  const { getPatientApiCall, returnAuthToken, checkIsAppDepricated } = useAuth();
   const [selectedProfile, setSelectedProfile] = useState<string>('');
   const [isLocationSearchVisible, setLocationSearchVisible] = useState(false);
   const [showList, setShowList] = useState<boolean>(false);
@@ -1326,6 +1322,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     setVaccineLoacalStorageData();
     cleverTapEventForLoginDone();
     fetchUserAgent();
+    firebaseTokenCheck();
   }, []);
 
   const handleSearchClose = () => {
@@ -1410,6 +1407,26 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     checkCleverTapLoginStatus(currentPatient);
     updateAppVersion(currentPatient);
   }, [currentPatient]);
+
+  const getEventParams = async () => {
+    const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
+    const eventParams = {
+      PatientId: currentPatient.id,
+      OS: Platform?.OS,
+      AppVersion: DeviceInfo.getVersion(),
+      loggedIn: userLoggedIn,
+    };
+    return eventParams;
+  };
+
+  // validating whether JWT token is returned by firebase or not
+  const firebaseTokenCheck = async () => {
+    const token = await returnAuthToken?.().catch((error) => {});
+    if (!token) {
+      // Firing a webEngage event to track number of anticipated logouts (if Logout is implemented incase of missing auth token)
+      postWebEngageEvent(WebEngageEventName.LOGOUT_REQUIRED, getEventParams());
+    }
+  };
 
   //to be called only when the user lands via app launch
   const logHomePageViewed = async (attributes: any) => {

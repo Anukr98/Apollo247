@@ -25,7 +25,6 @@ import {
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { DEVICE_TYPE, Relation } from '../graphql/types/globalTypes';
 import { GetCurrentPatientsVariables } from '../graphql/types/GetCurrentPatients';
-import { AppConfig } from '../strings/AppConfig';
 import {
   CommonBugFender,
   setBugFenderLog,
@@ -46,6 +45,9 @@ import {
   isAppVersionDeprecated,
   isAppVersionDeprecatedVariables,
 } from '@aph/mobile-patients/src/graphql/types/isAppVersionDeprecated';
+const generateToken = require('jsrsasign');
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { Buffer } from 'buffer';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then(
@@ -75,6 +77,7 @@ export interface AuthContextProps {
   mobileAPICalled: boolean;
   setMobileAPICalled: ((par: boolean) => void) | null;
   getFirebaseToken: () => Promise<string>;
+  returnAuthToken: (() => Promise<string>) | null;
   authToken: string;
   validateAuthToken: (() => void) | null;
   buildApolloClient: (authToken: string) => ApolloClient<NormalizedCacheObject>;
@@ -104,6 +107,7 @@ export const AuthContext = React.createContext<AuthContextProps>({
   setMobileAPICalled: null,
 
   getFirebaseToken: null,
+  returnAuthToken: null,
   authToken: '',
   validateAuthToken: null,
   buildApolloClient: null,
@@ -121,6 +125,20 @@ export const AuthProvider: React.FC = (props) => {
   const [authToken, setAuthToken] = useState<string>('');
   const hasAuthToken = !_isEmpty(authToken);
   const auth = firebaseAuth();
+  const [currentPatientId, setCurrentPatientId] = useState<AuthContextProps['currentPatientId']>(
+    null
+  );
+
+  const getEventParams = async () => {
+    const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
+    const eventParams = {
+      PatientId: currentPatientId,
+      OS: Platform?.OS,
+      AppVersion: DeviceInfo.getVersion(),
+      loggedIn: userLoggedIn,
+    };
+    return eventParams;
+  };
 
   useEffect(() => {
     AppState.addEventListener('change', handleAppStateChange);
@@ -145,23 +163,49 @@ export const AuthProvider: React.FC = (props) => {
     auth?.onIdTokenChanged(async (user) => {
       if (user) {
         const jwt = await user.getIdToken(true).catch((error) => {
-          setIsSigningIn(false);
-          setSignInError(true);
           setAuthToken('');
           throw error;
         });
         setAuthToken(jwt);
         AsyncStorage.setItem('jwt', JSON.stringify(jwt));
-        postWebEngageEvent(WebEngageEventName.AUTHTOKEN_UPDATED, {
-          PatientId: currentPatientId,
-        });
+        postWebEngageEvent(WebEngageEventName.AUTHTOKEN_UPDATED, getEventParams());
       } else {
-        postWebEngageEvent(WebEngageEventName.NO_FIREBASE_USER, {
-          PatientId: currentPatientId,
-        });
+        postWebEngageEvent(WebEngageEventName.NO_FIREBASE_USER, getEventParams());
       }
     });
   };
+
+  const [apollo247APIKey, setApollo247APIKey] = useState<any>(undefined);
+  const SECRET_KEY = AppConfig.Configuration.APOLLO247_API_KEY;
+
+  useEffect(() => {
+    if (!!SECRET_KEY) {
+      generateJWTToken();
+    }
+  }, [SECRET_KEY]);
+
+  const generateJWTToken = async () => {
+    var secretKey = Buffer.from(SECRET_KEY!).toString('base64');
+    var options = { alg: 'HS256', typ: 'JWT' };
+    const phoneNumber = await AsyncStorage.getItem('phoneNumber');
+    var data = {
+      issuer: 'Apollo247',
+      origin: `Apollo247App~${Platform.OS}~${DeviceInfo.getVersion()}`,
+      mobileNumber: '+91' + phoneNumber,
+    };
+    var token = generateToken.jws.JWS.sign(
+      'HS256',
+      JSON.stringify(options),
+      JSON.stringify(data),
+      secretKey
+    );
+    setApollo247APIKey(token);
+  };
+
+  useEffect(() => {
+    // building apolloclient when ever there is a update in Apollo 247 JWT token
+    apolloClient = buildApolloClient(authToken);
+  }, [apollo247APIKey]);
 
   const buildApolloClient = (authToken: string) => {
     const errorLink = onError((error) => {
@@ -188,6 +232,7 @@ export const AuthProvider: React.FC = (props) => {
         Authorization: !authToken.length ? 'Bearer 3d1833da7020e0602165529446587434' : authToken,
         'x-app-OS': Platform.OS,
         'x-app-version': DeviceInfo.getVersion(),
+        'x-apollo247-api-key': apollo247APIKey,
       },
     }));
     const httpLink = createHttpLink({
@@ -206,10 +251,6 @@ export const AuthProvider: React.FC = (props) => {
   };
   apolloClient = buildApolloClient(authToken);
 
-  const [currentPatientId, setCurrentPatientId] = useState<AuthContextProps['currentPatientId']>(
-    null
-  );
-
   const [isSendingOtp, setIsSendingOtp] = useState<AuthContextProps['isSendingOtp']>(false);
   const [sendOtpError, setSendOtpError] = useState<AuthContextProps['sendOtpError']>(false);
 
@@ -218,7 +259,6 @@ export const AuthProvider: React.FC = (props) => {
   const [mobileAPICalled, setMobileAPICalled] = useState<AuthContextProps['signInError']>(false);
 
   const [allPatients, setAllPatients] = useState<AuthContextProps['allPatients']>(null);
-
   const { setSavePatientDetails, setSavePatientDetailsWithHistory } = useAppCommonData();
 
   const sendOtp = (customToken: string) => {
@@ -255,11 +295,30 @@ export const AuthProvider: React.FC = (props) => {
     }
   }, [auth]);
 
+  const returnAuthToken = async () => {
+    try {
+      return new Promise(async (resolve, reject) => {
+        const user = await auth.currentUser;
+        const token = await user?.getIdToken(true).catch((error) => {
+          reject(null);
+        });
+        resolve(token);
+      });
+    } catch (error) {}
+  };
+
   const getFirebaseToken = () => {
-    // Called on successful verfication of OTP and on Splash screen before initiating getOffers api call
+    // Called on successful verfication of OTP
     // onAuthStateChanged : an event listener that fires a callback whenever there is a change in authstate of a user
     try {
       return new Promise(async (resolve, reject) => {
+        // returns the auth token of the current logged in user
+        const user = await auth.currentUser;
+        const token = await user?.getIdToken(true).catch((error) => {
+          reject(error);
+        });
+        resolve(token);
+        // event listener: starts listening to event onAuthStateChanged
         auth.onAuthStateChanged(async (user) => {
           if (user) {
             setIsSigningIn(true);
@@ -267,28 +326,18 @@ export const AuthProvider: React.FC = (props) => {
               setIsSigningIn(false);
               setSignInError(true);
               setAuthToken('');
-              reject(error);
               throw error;
             });
             setAuthToken(jwt);
-            postWebEngageEvent(WebEngageEventName.AUTHTOKEN_UPDATED, {
-              PatientId: currentPatientId,
-            });
+            postWebEngageEvent(WebEngageEventName.AUTHTOKEN_UPDATED, getEventParams());
             AsyncStorage.setItem('jwt', JSON.stringify(jwt));
-            resolve(jwt);
           } else {
-            postWebEngageEvent(WebEngageEventName.NO_FIREBASE_USER, {
-              PatientId: currentPatientId,
-            });
+            postWebEngageEvent(WebEngageEventName.NO_FIREBASE_USER, getEventParams());
           }
           setIsSigningIn(false);
         });
       });
-    } catch (error) {
-      postWebEngageEvent(WebEngageEventName.ERROR_WHILE_FETCHING_JWT_TOKEN, {
-        PatientId: currentPatientId,
-      });
-    }
+    } catch (error) {}
   };
 
   const checkIsAppDepricated = (mobileNumber: string) => {
@@ -429,6 +478,7 @@ export const AuthProvider: React.FC = (props) => {
             mobileAPICalled,
             setMobileAPICalled,
             getFirebaseToken,
+            returnAuthToken,
             authToken,
             validateAuthToken,
             buildApolloClient,
