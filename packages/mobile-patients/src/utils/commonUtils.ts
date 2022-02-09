@@ -1,11 +1,12 @@
 import { Platform } from 'react-native';
-import { AddressObj, ConsultMode, diagnosticLineItem, DiagnosticLineItem, patientAddressObj, PLAN } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { AddressObj, ConsultMode, diagnosticLineItem, DiagnosticLineItem, GENDER, patientAddressObj, PLAN, TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { DIAGNOSTIC_GROUP_PLAN, GooglePlacesType } from '@aph/mobile-patients/src/helpers/apiCalls';
 import moment from 'moment';
 import { getDiscountPercentage, isDiagnosticSelectedCartEmpty } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import DeviceInfo from 'react-native-device-info';
 import { DiagnosticPatientCartItem, DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import Decimal from 'decimal.js';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export const getValuesArray = (arr: any) => {
   const finalArr = arr.map((item: any) => item.name);
@@ -576,4 +577,47 @@ export function getUpdatedCartItems(arrayToUse: DiagnosticPatientCartItem[]) {
     selectedUnqiueItemIds,
     hasPackageSKU,
   };
+}
+
+export enum DIAGNOSTIC_ITEM_GENDER {
+  M = 'M',
+  F = 'F',
+  B = 'B'
+}
+
+
+export function DiagnosticItemGenderMapping (gender: DIAGNOSTIC_ITEM_GENDER){
+  switch (gender){
+    case DIAGNOSTIC_ITEM_GENDER.M:
+      return GENDER.MALE;
+      break;
+    case DIAGNOSTIC_ITEM_GENDER.F:
+      return GENDER.FEMALE;
+      break;
+    default:
+      return GENDER.ALL;
+      break;
+  }
+}
+
+export function createDiagnosticAddToCartObject (itemId: number, itemName: string, gender:any, price: number, specialPrice: number,cPrice: number, cSpecialPrice: number,dPrice: number, dSpecialPrice: number, collectionType: TEST_COLLECTION_TYPE, groupPlan: DIAGNOSTIC_GROUP_PLAN | any, packageMrp: number, inclusions:any, isSelected?: boolean, thumbnail?: any  ){
+  const addToCartObject = {
+    id: `${itemId}`,
+    name: itemName,
+    gender: DiagnosticItemGenderMapping(gender),
+    price: price,
+    specialPrice: specialPrice,
+    circlePrice: cPrice,
+    circleSpecialPrice: cSpecialPrice,
+    discountPrice: dPrice,
+    discountSpecialPrice: dSpecialPrice,
+    mou: 1,
+    thumbnail: !!thumbnail ? thumbnail : '',
+    collectionMethod: collectionType! || TEST_COLLECTION_TYPE?.HC,
+    groupPlan: groupPlan,
+    packageMrp:packageMrp,
+    inclusions: inclusions,
+    isSelected: !!isSelected ? isSelected :  AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG
+  }
+ return addToCartObject;
 }

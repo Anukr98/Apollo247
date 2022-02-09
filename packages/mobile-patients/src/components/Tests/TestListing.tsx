@@ -19,7 +19,6 @@ import {
   StyleSheet,
   Text,
   View,
-  Image as ImageNative,
   ActivityIndicator,
   ScrollView,
   TouchableOpacity,

@@ -20,7 +20,10 @@ import {
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   convertNumberToDecimal,
+  createDiagnosticAddToCartObject,
+  DiagnosticItemGenderMapping,
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
+  DIAGNOSTIC_ITEM_GENDER,
   getPricesForItem,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -494,23 +497,23 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
       isDiagnosticCircleSubscription
     );
 
-    const addedItems = {
-      id: `${item?.itemId}`,
-      mou: 1,
-      name: item?.itemTitle!,
-      price: price,
-      specialPrice: specialPrice! | price,
-      circlePrice: circlePrice,
-      circleSpecialPrice: circleSpecialPrice,
-      discountPrice: discountPrice,
-      discountSpecialPrice: discountSpecialPrice,
-      thumbnail: item?.itemImageUrl,
-      collectionMethod: TEST_COLLECTION_TYPE.HC,
-      groupPlan: planToConsider?.groupPlan,
-      packageMrp: packageCalculatedMrp,
-      inclusions: item?.inclusionData == null ? [Number(item?.itemId)] : inclusions,
-      isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
-    };
+    const addedItems = createDiagnosticAddToCartObject(
+      Number(item?.itemId),
+      item?.itemTitle!,
+      item?.gender! || DIAGNOSTIC_ITEM_GENDER.B,
+      price,
+      specialPrice! | price,
+      circlePrice,
+      circleSpecialPrice,
+      discountPrice,
+      discountSpecialPrice,
+      TEST_COLLECTION_TYPE.HC,
+      planToConsider?.groupPlan,
+      item?.inclusionData == null ? [Number(item?.itemId)] : inclusions,
+      packageCalculatedMrp,
+      AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
+      item?.itemImageUrl
+    );
 
     addCartItem?.(addedItems);
     isModifyFlow &&

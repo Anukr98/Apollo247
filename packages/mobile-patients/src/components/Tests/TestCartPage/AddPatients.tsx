@@ -63,6 +63,7 @@ import {
   GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
+  DiagnosticItemGenderMapping,
   diagnosticsDisplayPrice,
   getPricesForItem,
   sourceHeaders,
@@ -732,7 +733,14 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   }
 
   function updatePatientItem(selectedPatient: any, selectedValue: boolean) {
+    const filterGenderSpecificItems = cartItems?.filter(
+      (val: DiagnosticsCartItem) =>
+        val?.gender?.toLowerCase() == selectedPatient?.gender?.toLowerCase()
+    );
     const updatedItems = JSON.parse(JSON.stringify(cartItems));
+    console.log({ filterGenderSpecificItems });
+    console.log({ updatedItems });
+    console.log({ selectedValue });
     if (selectedValue) {
       updatedItems?.map((item: any) => {
         item['isSelected'] = selectedValue;
@@ -1053,7 +1061,6 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
 
     DiagnosticPatientSelected(selectedPatientCount, patientUHID, patientName);
   }
-
   const CTAdisabled = !(
     !!patientCartItems &&
     patientCartItems?.length > 0 &&

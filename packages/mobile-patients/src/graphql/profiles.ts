@@ -6831,6 +6831,7 @@ export const GET_DIAGNOSTIC_SEARCH_RESULTS = gql`
       data {
         diagnostic_item_id
         diagnostic_item_name
+        diagnostic_item_gender
         testParametersCount
         diagnostic_inclusions
         diagnostic_item_alias

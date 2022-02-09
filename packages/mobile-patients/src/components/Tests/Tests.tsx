@@ -138,7 +138,10 @@ import {
   getUserBannersList,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
+  createDiagnosticAddToCartObject,
+  DiagnosticItemGenderMapping,
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
+  DIAGNOSTIC_ITEM_GENDER,
   DIAGNOSTIC_PINCODE_SOURCE_TYPE,
   getPricesForItem,
   sourceHeaders,
@@ -240,6 +243,7 @@ export interface DiagnosticWidgetItem {
   itemIcon: string;
   diagnosticPricing: any;
   packageCalculatedMrp: any;
+  gender?: string | DIAGNOSTIC_ITEM_GENDER;
 }
 
 export interface DiagnosticWidget {
@@ -329,6 +333,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [imgHeight, setImgHeight] = useState<number>(
     AppConfig.Configuration.DIAGNOSTICS_HOME_PAGE_BANNER_HEIGHT | 160
   );
+  const singleItem = AppConfig.Configuration.DIAGNOSTICS_HOME_SINGLE_ITEM;
   const [slideIndex, setSlideIndex] = useState(0);
   const [banners, setBanners] = useState([]);
   const [cityId, setCityId] = useState('');
@@ -881,7 +886,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         allItemIds
       );
       let newWidgetsData = [...filterWidgets];
-
       const priceResult = res?.data?.findDiagnosticsWidgetsPricing;
       if (!!priceResult && !!priceResult?.diagnostics && priceResult?.diagnostics?.length > 0) {
         const widgetPricingArr = priceResult?.diagnostics;
@@ -947,10 +951,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
           (pricingData: any) => Number(pricingData?.itemId) === Number(wItem?.itemId)
         );
         if (findIndex !== -1) {
-          (newWidgetsData[i].diagnosticWidgetData[j].packageCalculatedMrp =
-            widgetPricingArr?.[findIndex]?.packageCalculatedMrp),
-            (newWidgetsData[i].diagnosticWidgetData[j].diagnosticPricing =
-              widgetPricingArr?.[findIndex]?.diagnosticPricing);
+          newWidgetsData[i].diagnosticWidgetData[j].packageCalculatedMrp =
+            widgetPricingArr?.[findIndex]?.packageCalculatedMrp;
+          newWidgetsData[i].diagnosticWidgetData[j].diagnosticPricing =
+            widgetPricingArr?.[findIndex]?.diagnosticPricing;
+          newWidgetsData[i].diagnosticWidgetData[j].gender = widgetPricingArr?.[findIndex]?.gender;
         }
       }
     }
@@ -996,6 +1001,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             packageCalculatedMrp: _diagItems?.packageCalculatedMrp,
             inclusions: _diagItems?.inclusions,
             inclusionData: _diagItems?.inclusions,
+            gender: _diagItems?.gender,
           });
         }
       });
@@ -2643,7 +2649,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
     _navigateToPatientsPage();
   }
 
-  const singleItem = AppConfig.Configuration.DIAGNOSTICS_HOME_SINGLE_ITEM;
+  function _navigateToDetailsPage(singleItemData: any) {
+    props.navigation.navigate(AppRoutes.TestDetails, {
+      itemId: singleItemData?.itemId,
+      comingFrom: AppRoutes.Tests,
+    });
+  }
+
   const renderSingleItem = () => {
     let singleItemFilterData: any[] = [];
     for (let index = 0; index < widgetsData?.length; index++) {
@@ -2661,7 +2673,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <>
         {!!singleItemData?.itemTitle && !!pricesForItem?.price ? (
-          <View style={styles.singleItemContainer}>
+          <TouchableOpacity
+            style={styles.singleItemContainer}
+            onPress={() => _navigateToDetailsPage(singleItemData)}
+          >
             <View style={styles.itemFirst}>
               <View style={{ flexDirection: 'row' }}>
                 <VirusGreen style={{ height: 24 }} />
@@ -2687,25 +2702,26 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 title={string.diagnostics.bookNow}
                 style={styles.buttonTop}
                 onPress={() => {
-                  const singleItemObj = {
-                    circlePrice: pricesForItem?.circlePrice!,
-                    circleSpecialPrice: pricesForItem?.circleSpecialPrice!,
-                    collectionMethod: TEST_COLLECTION_TYPE.HC,
-                    discountPrice: pricesForItem?.discountPrice!,
-                    discountSpecialPrice: pricesForItem?.discountSpecialPrice!,
-                    groupPlan: pricesForItem?.planToConsider?.groupPlan!,
-                    id: singleItemData?.itemId,
-                    inclusions: singleItemData?.inclusionData?.map((item: any) => {
-                      return item?.incItemId;
-                    }),
-                    isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
-                    mou: 1,
-                    name: singleItemData?.itemTitle,
-                    packageMrp: packageMrpForItem,
-                    price: pricesForItem?.price!,
-                    specialPrice: pricesForItem?.specialPrice!,
-                    thumbnail: singleItemData?.itemImageUrl,
-                  };
+                  const inclusions = singleItemData?.inclusionData?.map((item: any) => {
+                    return item?.incItemId;
+                  });
+                  const singleItemObj = createDiagnosticAddToCartObject(
+                    singleItemData?.itemId,
+                    singleItemData?.itemTitle,
+                    singleItemData?.gender,
+                    pricesForItem?.price!,
+                    pricesForItem?.specialPrice!,
+                    pricesForItem?.circlePrice!,
+                    pricesForItem?.circleSpecialPrice!,
+                    pricesForItem?.discountPrice!,
+                    pricesForItem?.discountSpecialPrice!,
+                    TEST_COLLECTION_TYPE.HC,
+                    pricesForItem?.planToConsider?.groupPlan!,
+                    packageMrpForItem,
+                    inclusions,
+                    AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
+                    singleItemData?.itemImageUrl
+                  );
                   onPressSingleBookNow(singleItemObj);
                 }}
               />
@@ -2713,7 +2729,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             <View style={styles.bottomGreenView}>
               <Text style={styles.bottomText}>{string.diagnostics.forFamily}</Text>
             </View>
-          </View>
+          </TouchableOpacity>
         ) : null}
       </>
     );

@@ -21,7 +21,10 @@ import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/Diagnost
 import {
   convertNumberToDecimal,
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
+  DiagnosticItemGenderMapping,
+  DIAGNOSTIC_ITEM_GENDER,
   getPricesForItem,
+  createDiagnosticAddToCartObject,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
@@ -351,15 +354,6 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
     );
   };
 
-  const renderFallBackHeight = () => {
-    return !isCircleSubscribed ? <View style={{ height: 18 }} /> : null;
-  };
-
-  //38 for circle
-  const renderSlashedPriceFallBackHeight = () => {
-    return <View style={{ height: 23 }} />;
-  };
-
   function calculatePriceToShow(pricesForItem: any, packageMrpForItem: any) {
     const promoteCircle = pricesForItem?.promoteCircle;
     const promoteDiscount = pricesForItem?.promoteDiscount;
@@ -552,23 +546,24 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
       originalItemIds
     );
 
-    const addedItems = {
-      id: `${item?.itemId}`,
-      mou: 1,
-      name: item?.itemTitle! || item?.itemName,
-      price: price,
-      specialPrice: specialPrice! | price,
-      circlePrice: circlePrice,
-      circleSpecialPrice: circleSpecialPrice,
-      discountPrice: discountPrice,
-      discountSpecialPrice: discountSpecialPrice,
-      thumbnail: item?.itemImageUrl,
-      collectionMethod: TEST_COLLECTION_TYPE.HC,
-      groupPlan: planToConsider?.groupPlan,
-      packageMrp: packageCalculatedMrp,
-      inclusions: item?.inclusionData == null ? [Number(item?.itemId)] : inclusions,
-      isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
-    };
+    const addedItems = createDiagnosticAddToCartObject(
+      Number(item?.itemId),
+      item?.itemTitle! || item?.itemName,
+      item?.gender! || DIAGNOSTIC_ITEM_GENDER.B,
+      price,
+      specialPrice! | price,
+      circlePrice,
+      circleSpecialPrice,
+      discountPrice,
+      discountSpecialPrice,
+      TEST_COLLECTION_TYPE.HC,
+      planToConsider?.groupPlan,
+      packageCalculatedMrp,
+      item?.inclusionData == null ? [Number(item?.itemId)] : inclusions,
+      AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
+      item?.itemImageUrl
+    );
+
     if (sourceScreen === AppRoutes.CartPage) {
       onPressAddToCartFromCart?.(item, addedItems);
     } else {

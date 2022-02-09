@@ -16,6 +16,7 @@ import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersL
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { checkPatientAge } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { DIAGNOSTIC_ITEM_GENDER } from '@aph/mobile-patients/src/utils/commonUtils';
 
 export interface orderList
   extends getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList {}
@@ -25,6 +26,7 @@ export interface DiagnosticsCartItem {
   mou: number; // package of how many tests (eg. 10)
   price: number; //mrp
   thumbnail: string | null;
+  gender?: DIAGNOSTIC_ITEM_GENDER | string;
   specialPrice?: number | null; //price
   circlePrice?: number | null; //mrp
   circleSpecialPrice?: number | null; //price

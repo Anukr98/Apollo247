@@ -65,6 +65,8 @@ import {
   getPricesForItem,
   convertNumberToDecimal,
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
+  createDiagnosticAddToCartObject,
+  DiagnosticItemGenderMapping,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
 import {
@@ -249,6 +251,12 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   >(0);
   const [faqVerticalPosition, setFaqVerticalPosition] = useState<number>(0);
   const [relatedPackagesVerticalPosition, setRelatedPackagesVerticalPosition] = useState<number>(0);
+  const [horizontalComponentElements, setHorizontalComponentElements] = useState({
+    releatedPackage: false,
+    frequentlyBooked: false,
+    faq: false,
+  });
+  const [horizontalComponentOptions, setHorizontalComponentOptions] = useState([] as any);
 
   const originalItemIds =
     !!packageRecommendations?.length || !!frequentlyBroughtRecommendations?.length
@@ -293,21 +301,54 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const isAddedToCart = !!cartItems?.find((item) => item.id == testInfo?.ItemID);
   const scrollViewRef = React.useRef<ScrollView | null>(null);
   const priceViewRef = React.useRef<View>(null);
+  var horizontalCompArr: { icon: JSX.Element; title: string }[] = [];
 
-  const HorizontalComponentOptions = [
-    {
-      icon: <RelatedPackageIcon style={styles.horizontalComponentIcon} />,
-      title: string.diagnosticsDetails.relatedPackages,
-    },
-    {
-      icon: <OrangeCartIcon style={styles.horizontalComponentIcon} />,
-      title: string.diagnosticsDetails.frequentlyBooked,
-    },
-    {
-      icon: <OrangeFAQIcon style={styles.horizontalComponentIcon} />,
-      title: string.diagnosticsDetails.frequentlyAskedQuestions,
-    },
-  ];
+  useEffect(() => {
+    const isRelatedPackage = !!packageRecommendations && packageRecommendations?.length > 0;
+    const isFreqBooked =
+      (!!frequentlyBroughtRecommendations && frequentlyBroughtRecommendations?.length > 0) ||
+      (!!topBookedTests && topBookedTests?.length > 0);
+    if (isRelatedPackage) {
+      setHorizontalComponentElements({ ...horizontalComponentElements, releatedPackage: true });
+    }
+    if (isFreqBooked) {
+      setHorizontalComponentElements({ ...horizontalComponentElements, frequentlyBooked: true });
+    }
+
+    if (isRelatedPackage && isFreqBooked) {
+      setHorizontalComponentElements({
+        ...horizontalComponentElements,
+        frequentlyBooked: true,
+        releatedPackage: true,
+      });
+    }
+  }, [packageRecommendations, frequentlyBroughtRecommendations]);
+
+  useEffect(() => {
+    if (horizontalComponentElements?.releatedPackage == true) {
+      horizontalCompArr.push({
+        icon: <RelatedPackageIcon style={styles.horizontalComponentIcon} />,
+        title:
+          frequentlyBroughtRecommendations?.length == 0
+            ? string.diagnostics.topBookedTests
+            : string.diagnosticsDetails.relatedPackages,
+      });
+    }
+    if (horizontalComponentElements?.frequentlyBooked == true) {
+      horizontalCompArr.push({
+        icon: <OrangeCartIcon style={styles.horizontalComponentIcon} />,
+        title: string.diagnosticsDetails.frequentlyBooked,
+      });
+    }
+    if (horizontalComponentElements?.faq == true) {
+      horizontalCompArr.push({
+        icon: <OrangeFAQIcon style={styles.horizontalComponentIcon} />,
+        title: string.diagnosticsDetails.frequentlyAskedQuestions,
+      });
+    }
+
+    setHorizontalComponentOptions([...new Set(horizontalCompArr)]);
+  }, [horizontalComponentElements]);
 
   useEffect(() => {
     getExpressSlots(diagnosticServiceabilityData!, diagnosticLocation!);
@@ -421,7 +462,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       !!itemName && loadTestDetails(result?.diagnosticItemID);
       setCmsTestDetails(result);
       setLoadingContext?.(false);
-
+      result?.diagnosticFAQs?.length > 0 &&
+        setHorizontalComponentElements({ ...horizontalComponentElements, faq: true });
       !!result?.diagnosticWidgetsData &&
         result?.diagnosticWidgetsData?.length > 0 &&
         fetchWidgetPrices(result?.diagnosticWidgetsData, cityIdToUse);
@@ -1601,27 +1643,27 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       originalItemIds
     );
 
-    const addedItems = {
-      id: `${itemId}`,
-      mou: 1,
-      name: cmsTestDetails?.diagnosticItemName || testInfo?.ItemName,
-      price: price,
-      specialPrice: specialPrice! | price,
-      circlePrice: circlePrice,
-      circleSpecialPrice: circleSpecialPrice,
-      discountPrice: discountPrice,
-      discountSpecialPrice: discountSpecialPrice,
-      thumbnail: cmsTestDetails?.diagnosticItemImageUrl,
-      collectionMethod: TEST_COLLECTION_TYPE.HC,
-      groupPlan: testInfo?.promoteCircle
+    const addedItems = createDiagnosticAddToCartObject(
+      Number(itemId),
+      cmsTestDetails?.diagnosticItemName || testInfo?.ItemName,
+      testInfo?.Gender,
+      price,
+      specialPrice! | price,
+      circlePrice,
+      circleSpecialPrice,
+      discountPrice,
+      discountSpecialPrice,
+      TEST_COLLECTION_TYPE.HC,
+      testInfo?.promoteCircle
         ? DIAGNOSTIC_GROUP_PLAN.CIRCLE
         : testInfo?.promoteDiscount
         ? DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
         : DIAGNOSTIC_GROUP_PLAN.ALL,
-      packageMrp: Number(testInfo?.packageMrp!),
-      inclusions: testInclusions,
-      isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
-    };
+      Number(testInfo?.packageMrp!),
+      testInclusions,
+      AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
+      cmsTestDetails?.diagnosticItemImageUrl
+    );
 
     isModify &&
       setModifiedPatientCart?.([
@@ -1826,7 +1868,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const renderHorizontalOptions = () => {
     return (
       <View style={styles.horizontalOptionsView}>
-        {HorizontalComponentOptions?.map((item) => {
+        {horizontalComponentOptions?.map((item: any) => {
           return renderHorizontalItem(item);
         })}
       </View>
@@ -1838,7 +1880,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       <>
         {!_.isEmpty(testInfo) && !!cmsTestDetails && renderItemCard()}
         {renderDescriptionCard()}
-        {renderHorizontalOptions()}
+        {horizontalComponentOptions?.length > 1 ? renderHorizontalOptions() : null}
         {renderInclusionsView()}
         {!!cmsTestDetails?.diagnosticWidgetsData &&
         cmsTestDetails?.diagnosticWidgetsData?.length > 0

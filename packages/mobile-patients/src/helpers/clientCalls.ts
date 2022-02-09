@@ -1779,7 +1779,7 @@ export const getDiagnosticReasons = (client: ApolloClient<object>, orderTime: st
   });
 };
 
-export const getDiagnosticWidgetPricing = (client: ApolloClient<object>, cityId: string | number, listOfId: []) => {
+export const getDiagnosticWidgetPricing = (client: ApolloClient<object>, cityId: string | number, listOfId: [] | number[]) => {
   return client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
     query: GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
     context: {

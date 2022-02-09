@@ -19,7 +19,9 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { isSmallDevice, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   calculatePackageDiscounts,
+  DiagnosticItemGenderMapping,
   diagnosticsDisplayPrice,
+  DIAGNOSTIC_ITEM_GENDER,
   getPricesForItem,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import {
@@ -236,6 +238,7 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
         name: item?.itemName,
         mou: 1,
         thumbnail: null,
+        gender: DiagnosticItemGenderMapping(item?.gender! || DIAGNOSTIC_ITEM_GENDER.B),
         collectionMethod: TEST_COLLECTION_TYPE.HC,
         isSelected: true,
         price: price,
