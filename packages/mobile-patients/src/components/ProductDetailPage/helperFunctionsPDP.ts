@@ -47,6 +47,13 @@ export const getItemQuantity = (id: string, serverCartItems: saveCart_saveCart_d
   return foundItem ? foundItem.quantity : 0;
 };
 
+export const getRoundedOffPrice = (price: number, typeId: string | undefined) => {
+  if (typeId && ['FMCG', 'PL'].includes(typeId?.toUpperCase())) {
+    return (Math.round(price * 2) / 2)?.toFixed(2);
+  }
+  return Number(price)?.toFixed(2);
+};
+
 export const fireTatApiCalledEvent = (
   response: any,
   latitude: string,
