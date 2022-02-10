@@ -87,7 +87,7 @@ export const useServerCart = () => {
         ...userActionPayload,
         patientId: userActionPayload?.patientId ? userActionPayload?.patientId : currentPatient?.id,
       };
-      serverCartLoading === false ? saveServerCart(cartInputData) : {};
+      saveServerCart(cartInputData);
     }
   }, [userActionPayload]);
 
