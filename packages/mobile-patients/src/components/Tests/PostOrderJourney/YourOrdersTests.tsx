@@ -1286,30 +1286,19 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     return !!displayText || !!ctaText ? (
       <View style={{ marginTop: 10 }}>
         {!!displayText && <Text style={styles.wantToReschedule}>{displayText}</Text>}
-        {!!ctaText && renderCancellationOptions(ctaText!)}
+        {!!ctaText && renderCancellationCTA(ctaText!)}
         {!!showMulitpleCTA && showMulitpleCTA?.length > 0 && renderCTA(showMulitpleCTA)}
       </View>
     ) : null;
   };
 
-  const renderCancellationOptions = (ctaText: CANCELLATION_REASONS_CTA) => {
+  const renderCancellationCTA = (ctaText: CANCELLATION_REASONS_CTA) => {
     return (
-      <>
-        {ctaText == CANCELLATION_REASONS_CTA.RESCHEDULE ? (
-          <Button
-            title={ctaText}
-            disabled={false}
-            onPress={() => _handleCancellationReasonNavigation(ctaText!)}
-          />
-        ) : (
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => _handleCancellationReasonNavigation(ctaText!)}
-          >
-            <Text style={styles.yellowText}>{ctaText?.replace(/[_]/g, ' ')}</Text>
-          </TouchableOpacity>
-        )}
-      </>
+      <Button
+        title={ctaText?.replace(/[_]/g, ' ')}
+        disabled={false}
+        onPress={() => _handleCancellationReasonNavigation(ctaText!)}
+      />
     );
   };
 
