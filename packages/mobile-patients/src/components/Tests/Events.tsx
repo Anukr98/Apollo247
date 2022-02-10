@@ -28,13 +28,10 @@ import {
 import { circleValidity } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
-import {
-  DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
-  DIAGNOSTIC_PINCODE_SOURCE_TYPE,
-} from '@aph/mobile-patients/src/utils/commonUtils';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientObj } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { AppConfig, AppEnv } from '@aph/mobile-patients/src/strings/AppConfig';
-import { DiagnosticCTJourneyType } from '../../graphql/types/globalTypes';
+import { DiagnosticCTJourneyType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 const { APP_ENV } = AppConfig;
 
 function createPatientAttributes(currentPatient: any) {
@@ -89,8 +86,6 @@ export function DiagnosticHomePageSearchItem(
     }
   } catch (error) {}
 }
-
-
 
 export function DiagnosticHomePageWidgetClicked(
   currentPatient: any,
@@ -465,7 +460,7 @@ export function DiagnosticCartViewed(
       UHID: currentPatient?.uhid,
       city: city,
       'Prescription Needed': prescReqd ? 'Yes' : 'No',
-      'Cart Value': gTotal
+      'Cart Value': gTotal,
     };
 
     if (!!gTotal) {
@@ -600,16 +595,16 @@ export function DiagnosticAppointmentTimeSlot(
       City: !!diagLocation?.city ? diagLocation?.city : '',
       itemIds: JSON.stringify(
         cartItems?.map((item: any) => {
-            return item?.id;
+          return item?.id;
         })
       ),
       itemNames: JSON.stringify(
         cartItems?.map((item: any) => {
-          return item?.name
+          return item?.name;
         })
       ),
       Source: 'Mobile',
-      'Cart Value': gTotal
+      'Cart Value': gTotal,
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_SLOT_TIME_SELECTED, eventAttributes);
     postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED, eventAttributes);
@@ -639,10 +634,10 @@ export async function DiagnosticAddresssSelected(
       Pincode: pincode,
       Source: source,
       'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
-      'latitude': !!latitude ? latitude : 0,
-      'longitude': !!longitude ? longitude : 0,
-      'state': !!state ? state : '',
-      'city': !!city ? city : ''
+      latitude: !!latitude ? latitude : 0,
+      longitude: !!longitude ? longitude : 0,
+      state: !!state ? state : '',
+      city: !!city ? city : '',
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE, eventAttributes);
     postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE, eventAttributes);
@@ -1079,7 +1074,7 @@ export function DiagnosticPrescriptionSubmitted(
   itemName: any,
   userType: string | null,
   isDiagnosticCircleSubscription?: boolean | undefined,
-  journeyType?:  DiagnosticCTJourneyType
+  journeyType?: DiagnosticCTJourneyType
 ) {
   try {
     const getPatientAttributes = createPatientAttributes(currentPatient);
@@ -1091,7 +1086,7 @@ export function DiagnosticPrescriptionSubmitted(
       Source: 'Apollo247App',
       PrescriptionUrl: prescriptionUrl,
       'Item Name': JSON.stringify(itemName),
-      "Journey Type": journeyType
+      'Journey Type': journeyType,
     };
     postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_PRESCRIPTION_SUBMITTED, eventAttributes);
   } catch (error) {}
@@ -1207,5 +1202,34 @@ export async function DiagnosticOrderPlaced(
         : CleverTapEventName.DIAGNOSTIC_ORDER_PLACED_QA,
       cleverTapEventAttributes
     );
+  } catch (error) {}
+}
+
+export async function DiagnosticCancellationRetention(
+  preBookingId: string | number,
+  displayId: string | number,
+  slotDate: string,
+  slotTime: string,
+  reason: string,
+  cta: 'Reschedule' | 'Add Test' | 'Edit Patient',
+  patientName: string,
+  patientGender: string,
+  patientNumber: number,
+  city: string
+) {
+  try {
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.DIAGNOSTIC_RETAIN_CANCELLATION] = {
+      preBookingId,
+      displayId,
+      'Slot Date': slotDate,
+      'Slot Time': slotTime,
+      'Cancel Reason': reason,
+      'CTA clicked': cta,
+      'Patient Name': patientName,
+      'Patient Gender': patientGender,
+      'Patient Mobile': patientNumber,
+      City: city,
+    };
+    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_RETAIN_CANCELLATION, cleverTapEventAttributes);
   } catch (error) {}
 }
