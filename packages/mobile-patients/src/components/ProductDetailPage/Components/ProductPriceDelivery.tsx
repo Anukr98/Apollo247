@@ -12,6 +12,7 @@ import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareC
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { MultiVariant } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/MultiVariant';
 import { renderPDPComponentsShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
+import { getRoundedOffPrice } from '@aph/mobile-patients/src/components/ProductDetailPage/helperFunctionsPDP';
 
 export interface ProductPriceDeliveryProps {
   price: number;
@@ -32,7 +33,8 @@ export interface ProductPriceDeliveryProps {
   multiVariantProducts?: any[];
   skusInformation?: any[];
   onSelectVariant?: (sku: string) => void;
-  priceLoaded: boolean
+  priceLoaded: boolean;
+  typeId?: string;
 }
 
 export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props) => {
@@ -54,7 +56,8 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
     skusInformation,
     sku,
     onSelectVariant,
-    priceLoaded
+    priceLoaded,
+    typeId,
   } = props;
   const { currentPatient } = useAllCurrentPatients();
   const {
@@ -81,12 +84,12 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
             <Text style={styles.label}>{`Price: `}</Text>
             <Text style={styles.value}>
               {string.common.Rs}
-              {convertNumberToDecimal(price)}
+              {getRoundedOffPrice(price, typeId)}
               {'  '}
             </Text>
             <Text style={styles.smallValue}>
               {string.common.Rs}
-              {convertNumberToDecimal(specialPrice)} |
+              {getRoundedOffPrice(specialPrice, typeId)} |
             </Text>
             <Text style={styles.discountPercent}>{`  ${discountPercent}%off`}</Text>
             <Text style={theme.viewStyles.text('R', 10, '#02475B', 1, 13, 0)}>
@@ -100,7 +103,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
             <Text style={styles.label}>{`Price: `}</Text>
             <Text style={styles.smallValue}>
               {string.common.Rs}
-              {convertNumberToDecimal(price)}
+              {getRoundedOffPrice(price, typeId)}
             </Text>
             <Text style={theme.viewStyles.text('R', 10, '#02475B', 1, 13, 0)}>
               {' '}
