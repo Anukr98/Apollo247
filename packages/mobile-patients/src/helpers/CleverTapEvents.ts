@@ -250,6 +250,7 @@ export enum CleverTapEventName {
   DIAGNOSTIC_PRESCRIPTION_SUBMITTED = 'Diagnostic prescription submitted',
   DIAGNOSTIC_RADIOLOGY_HOME_PAGE = 'Diagnostic Radiology lead gen page viewed',
   DIAGNOSTIC_RADIOLOGY_BOOKING_COMPLETE = 'Diagnostic Radiology Booking completed',
+  DIAGNOSTIC_RETAIN_CANCELLATION = 'Diagnostic retain cancellation CTA clicked',
 
   //Conult Package Purchase Attribite
   CONSULT_PACKAGE_CLICKED = 'Consult Package Clicked',
@@ -3525,4 +3526,16 @@ export interface CleverTapEvents {
     URL: string;
     'Circle user': 'Yes' | 'No';
   };
+  [CleverTapEventName.DIAGNOSTIC_RETAIN_CANCELLATION]:{
+    preBookingId: string| number;
+    displayId: string| number;
+    "Slot Date": string;
+    "Slot Time": string;
+    "Cancel Reason": string;
+    "CTA clicked": 'Reschedule' | 'Add Test' | 'Edit Patient',
+    "Patient Name": string;
+    "Patient Gender": string;
+    "Patient Mobile": number;
+    City : string;
+  }
 }

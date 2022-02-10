@@ -84,6 +84,7 @@ import {
   DiagnosticPhleboCallingClicked,
   DiagnosticAddTestClicked,
   DiagnosticRescheduleOrder,
+  DiagnosticCancellationRetention,
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import { OrderTestCard } from '@aph/mobile-patients/src/components/Tests/components/OrderTestCard';
 import {
@@ -198,6 +199,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [orderListData, setOrderListData] = useState<(orderListByMobile | null)[] | null>([]);
   const [diagnosticSlotDuration, setDiagnosticSlotDuration] = useState<number>(0);
   const [slotInput, setSlotInput] = useState({});
+  const [switchPatientResponse, setSwitchPatientResponse] = useState<any>('');
+  const [selectedCTAOption, setSelectedCTAOption] = useState<string>('');
   const [profileArray, setProfileArray] = useState<
     GetCurrentPatients_getCurrentPatients_patients[] | null
   >(allCurrentPatients);
@@ -210,6 +213,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const getCTADetails = showDiagnosticCTA(CALL_TO_ORDER_CTA_PAGE_ID.MYORDERS, cityId);
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const apolloClientWithAuth = buildApolloClient(authToken);
+  const ctaColumn = 3;
 
   var rescheduleDate: Date,
     rescheduleSlotObject: {
@@ -445,7 +449,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       comment: comment?.length != 0 ? comment : '',
       orderIds: [String(selectedOrderId)],
       patientId: String(selectedOrder?.patientId),
-      reason: reason,
+      reason: selectedCTAOption != '' ? reason + ' - ' + selectedCTAOption : reason,
       allowCancellationRequest: true,
     };
     diagnosticCancelOrder(client, orderCancellationInput)
@@ -455,6 +459,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         if (!!cancelResponse && cancelResponse === true) {
           // updateCancelCard(selectedOrderId);
           setTimeout(() => refetchOrders(), 1000);
+          setSelectedCTAOption('');
           showAphAlert?.({
             unDismissable: true,
             title: string.common.hiWithSmiley,
@@ -474,6 +479,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         setSelectCancelReason('');
         setCancelReasonComment('');
         setSelectRescheduleReason('');
+        setSelectedCTAOption('');
         //refetch the orders
       })
       .catch((error) => {
@@ -481,10 +487,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         // DIAGNOSTIC_CANCELLATION_ALLOWED_BEFORE_IN_HOURS
         CommonBugFender('YourOrdersTests_callApiAndRefetchOrderDetails', error);
         handleGraphQlError(error);
-        setLoading!(false);
+        setLoading?.(false);
         setSelectCancelReason('');
         setCancelReasonComment('');
         setSelectRescheduleReason('');
+        setSelectedCTAOption('');
       });
   };
 
@@ -1165,10 +1172,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               const reasonString = item?.reason;
               const showAddtionalCTA = item?.ctaOptions;
               const showAddtionalView = !!showAddtionalCTA && !isEmptyObject(showAddtionalCTA);
+              const showMulitpleCTA = showAddtionalCTA?.multiCtas;
+              const isMultiCTA = showAddtionalView && showMulitpleCTA;
+
               return (
                 <View style={{ flex: 1 }}>
                   <TouchableOpacity
-                    onPress={() => _onPressCancelReason(item)}
+                    onPress={() => _onPressCancelReason(item, isMultiCTA)}
                     style={[
                       styles.reasonsTouch,
                       {
@@ -1176,7 +1186,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                           selectCancelReason === reasonString &&
                           selectedOrderRescheduleCount! < 3 &&
                           showAddtionalView
-                            ? 100
+                            ? !!isMultiCTA
+                              ? showMulitpleCTA?.length > ctaColumn
+                                ? 120
+                                : 110
+                              : 100
                             : 40,
                         paddingTop: 10,
                         justifyContent: 'space-between',
@@ -1216,17 +1230,40 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     );
   };
 
+  function triggerCTEventForCancelRetention(sourceCTA: 'Reschedule' | 'Add Test' | 'Edit Patient') {
+    const date = moment(selectedOrder?.slotDateTimeInUTC)?.format('DD/MM/YYYY');
+    const time = moment(selectedOrder?.slotDateTimeInUTC)?.format('hh:mm A');
+    const pName = `${selectedOrder?.patientObj?.firstName} ${selectedOrder?.patientObj?.lastName}`;
+    const pGender = selectedOrder?.patientObj?.gender === Gender.MALE ? 'Mr.' : 'Ms.';
+    const city = selectedOrder?.patientAddressObj?.city;
+    DiagnosticCancellationRetention(
+      selectedOrder?.preBookingId!,
+      selectedOrder?.displayId!,
+      date,
+      time,
+      selectCancelReason,
+      sourceCTA,
+      pName,
+      pGender,
+      currentPatient?.mobileNumber,
+      city!
+    );
+  }
+
   function _handleCancellationReasonNavigation(sourceCTA: CANCELLATION_REASONS_CTA) {
     switch (sourceCTA) {
       case CANCELLATION_REASONS_CTA.ADD_TESTS:
         setShowCancelReasons(false);
-        _onPressAddTest(selectedOrder!);
+        _onPressAddTest(selectedOrder!, 'cancelModify');
+        triggerCTEventForCancelRetention('Add Test');
         break;
       case CANCELLATION_REASONS_CTA.EDIT_PATIENT_DETAILS:
         _onPressEditPatient(selectedOrder!);
+        triggerCTEventForCancelRetention('Edit Patient');
         break;
       case CANCELLATION_REASONS_CTA.RESCHEDULE:
         _onPressRescheduleNow('cancelReschedule');
+        triggerCTEventForCancelRetention('Reschedule');
         break;
       default:
         _onPressCancelNow();
@@ -1239,7 +1276,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   ) => {
     const displayText = ctaOptions?.displayText;
     const ctaText = ctaOptions?.cta;
-    const showTextInput = ctaOptions?.userCommentsEnabled;
+    const showMulitpleCTA = ctaOptions?.multiCtas;
     return !!displayText || !!ctaText ? (
       <View style={{ marginTop: 10 }}>
         {!!displayText && <Text style={styles.wantToReschedule}>{displayText}</Text>}
@@ -1251,23 +1288,48 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             <Text style={styles.yellowText}>{ctaText?.replace(/[_]/g, ' ')}</Text>
           </TouchableOpacity>
         )}
-        {/** add code for multiple cta selection */}
-        {showTextInput && renderTextInputField()}
+        {!!showMulitpleCTA && showMulitpleCTA?.length > 0 && renderCTA(showMulitpleCTA)}
       </View>
     ) : null;
   };
 
-  const renderTextInputField = () => {
+  const renderCTA = (ctaArray: any) => {
     return (
-      <TextInputComponent
-        conatinerstyles={{ marginTop: -10 }}
-        value={cancelReasonComment}
-        onChangeText={(text) => {
-          setCancelReasonComment(text);
-        }}
-        placeholder={string.common.return_order_comment_text}
-        inputStyle={{ fontSize: 14 }}
+      <FlatList
+        data={ctaArray}
+        numColumns={ctaColumn}
+        renderItem={({ item, index }) => renderView(item, index)}
       />
+    );
+  };
+
+  function _selectOption(item: string) {
+    setSelectedCTAOption(item);
+  }
+
+  const renderView = (item: string, index: number) => {
+    return (
+      <TouchableOpacity
+        onPress={() => _selectOption(item)}
+        style={[
+          styles.ctaTouch,
+          { backgroundColor: selectedCTAOption == item ? colors.APP_GREEN : colors.BGK_GRAY },
+        ]}
+      >
+        <Text
+          style={{
+            ...theme.viewStyles.text(
+              'M',
+              12,
+              selectedCTAOption == item ? colors.WHITE : colors.SHERPA_BLUE,
+              1,
+              18
+            ),
+          }}
+        >
+          {item}
+        </Text>
+      </TouchableOpacity>
     );
   };
 
@@ -1292,7 +1354,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     return (
       <View style={styles.buttonView}>
         <Button
-          title={isDirectCancelRequest ? 'CANCEL NOW' : 'SUBMIT REQUEST'}
+          title={isDirectCancelRequest ? 'CANCEL NOW' : 'SUBMIT CANCEL REQUEST'}
           style={styles.buttonStyle}
           disabled={
             selectCancelReason == string.diagnostics.reasonForCancel_TestOrder.otherReasons
@@ -1414,7 +1476,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   function _onPressCancelReason(
-    item: getRescheduleAndCancellationReasons_getRescheduleAndCancellationReasons_cancellationReasonsv2
+    item: getRescheduleAndCancellationReasons_getRescheduleAndCancellationReasons_cancellationReasonsv2,
+    isMultiCTA: any
   ) {
     const selectedCancelReason = item?.reason!;
     setIsDirectCancelRequest(item?.isDirectCancellation!);
@@ -1422,6 +1485,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       setSelectRescheduleReason(selectedCancelReason);
     }
     setSelectCancelReason(selectedCancelReason);
+    if ((!!!isMultiCTA || !isMultiCTA || isMultiCTA?.length == 0) && selectedCTAOption != '') {
+      setSelectedCTAOption('');
+    }
   }
 
   function _proceedWithReschedule() {
@@ -1467,6 +1533,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setCancelReasonComment('');
     setSelectedTestArray([]);
     setRescheduleSource('');
+    setSelectedCTAOption('');
   }
 
   function _onPressProceedToReschedule(count: number) {
@@ -1734,6 +1801,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setSelectedOrder(order);
     setSwitchPatientResponse('');
     setShowPatientListOverlay(true);
+    onPressCloseOverlay();
   }
 
   function _navigateToRatingScreen(star: any, order: any) {
@@ -1777,7 +1845,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   }
 
-  function _onPressAddTest(order: orderList) {
+  function _onPressAddTest(order: orderList, source?: string) {
+    !!source && onPressCloseOverlay();
     DiagnosticAddTestClicked(
       order?.id,
       currentPatient,
@@ -2093,8 +2162,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       setShowPatientListOverlay(true);
     }
   };
-
-  const [switchPatientResponse, setSwitchPatientResponse] = useState<any>('');
 
   async function _changeSelectedPatient(patientSelected: any) {
     setPatientListSelectedPatient([]);
@@ -2503,4 +2570,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   helpTextStyle: { ...theme.viewStyles.text('B', 13, colors.APP_YELLOW, 1, 24) },
+  ctaTouch: {
+    padding: 5,
+    marginLeft: 16,
+    borderRadius: 8,
+    marginBottom: 6,
+  },
 });

@@ -2198,6 +2198,7 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
     ) {
       ordersList {
         id
+        preBookingId
         parentOrderId
         primaryOrderID
         isRescheduled
