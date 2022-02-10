@@ -1159,59 +1159,65 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     selectedOrderTime = moment(selectedOrderTime);
     const cancelReasonArray = cancelReasonList;
     return (
-      <View style={{ height: screenHeight - 200 }}>
+      <View style={{ height: screenHeight / 1.8 }}>
         <Text style={styles.overlayHeadingText}>
           {string.diagnostics.reasonForCancellationText}
         </Text>
-        <ScrollView style={styles.reasonsContainer}>
-          {cancelReasonArray?.map(
-            (
-              item: getRescheduleAndCancellationReasons_getRescheduleAndCancellationReasons_cancellationReasonsv2,
-              index: number
-            ) => {
-              const reasonString = item?.reason;
-              const showAddtionalCTA = item?.ctaOptions;
-              const showAddtionalView = !!showAddtionalCTA && !isEmptyObject(showAddtionalCTA);
-              const showMulitpleCTA = showAddtionalCTA?.multiCtas;
-              const isMultiCTA = showAddtionalView && showMulitpleCTA;
 
-              return (
-                <View style={{ flex: 1 }}>
-                  <TouchableOpacity
-                    onPress={() => _onPressCancelReason(item, isMultiCTA)}
-                    style={[
-                      styles.reasonsTouch,
-                      {
-                        height:
-                          selectCancelReason === reasonString &&
-                          selectedOrderRescheduleCount! < 3 &&
-                          showAddtionalView
-                            ? !!isMultiCTA
-                              ? showMulitpleCTA?.length > ctaColumn
-                                ? 120
-                                : 110
-                              : 100
-                            : 40,
-                        paddingTop: 10,
-                        justifyContent: 'space-between',
-                      },
-                      styles.marginStyle,
-                    ]}
-                  >
-                    {renderTickOption(reasonString!)}
-                    {showAddtionalView && selectCancelReason === reasonString
-                      ? renderCancelAddtionalView(showAddtionalCTA)
-                      : null}
-                    {index === cancelReasonArray?.length - 1 ? null : (
-                      <Spearator style={{ marginTop: 6 }} />
-                    )}
-                    {renderOthersOption(reasonString!)}
-                  </TouchableOpacity>
-                </View>
-              );
-            }
-          )}
-        </ScrollView>
+        <View style={styles.reasonsContainer}>
+          <ScrollView style={{ flex: 1 }}>
+            {cancelReasonArray?.map(
+              (
+                item: getRescheduleAndCancellationReasons_getRescheduleAndCancellationReasons_cancellationReasonsv2,
+                index: number
+              ) => {
+                const reasonString = item?.reason;
+                const showAddtionalCTA = item?.ctaOptions;
+                const showAddtionalView = !!showAddtionalCTA && !isEmptyObject(showAddtionalCTA);
+                const showMulitpleCTA = showAddtionalCTA?.multiCtas;
+                const isMultiCTA = showAddtionalView && showMulitpleCTA;
+                const ctaOption = showAddtionalCTA?.cta;
+
+                return (
+                  <View style={{ flex: 1 }}>
+                    <TouchableOpacity
+                      onPress={() => _onPressCancelReason(item, isMultiCTA)}
+                      style={[
+                        styles.reasonsTouch,
+                        {
+                          height:
+                            selectCancelReason === reasonString &&
+                            selectedOrderRescheduleCount! < 3 &&
+                            showAddtionalView
+                              ? !!isMultiCTA
+                                ? showMulitpleCTA?.length > ctaColumn
+                                  ? 120
+                                  : 110
+                                : !!ctaOption && ctaOption == CANCELLATION_REASONS_CTA.RESCHEDULE
+                                ? 140
+                                : 100
+                              : 40,
+                          paddingTop: 10,
+                          justifyContent: 'space-between',
+                        },
+                        styles.marginStyle,
+                      ]}
+                    >
+                      {renderTickOption(reasonString!)}
+                      {showAddtionalView && selectCancelReason === reasonString
+                        ? renderCancelAddtionalView(showAddtionalCTA)
+                        : null}
+                      {index === cancelReasonArray?.length - 1 ? null : (
+                        <Spearator style={{ marginTop: 6 }} />
+                      )}
+                      {renderOthersOption(reasonString!)}
+                    </TouchableOpacity>
+                  </View>
+                );
+              }
+            )}
+          </ScrollView>
+        </View>
         {renderCancelButton()}
       </View>
     );
@@ -1280,7 +1286,22 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     return !!displayText || !!ctaText ? (
       <View style={{ marginTop: 10 }}>
         {!!displayText && <Text style={styles.wantToReschedule}>{displayText}</Text>}
-        {!!ctaText && (
+        {!!ctaText && renderCancellationOptions(ctaText!)}
+        {!!showMulitpleCTA && showMulitpleCTA?.length > 0 && renderCTA(showMulitpleCTA)}
+      </View>
+    ) : null;
+  };
+
+  const renderCancellationOptions = (ctaText: CANCELLATION_REASONS_CTA) => {
+    return (
+      <>
+        {ctaText == CANCELLATION_REASONS_CTA.RESCHEDULE ? (
+          <Button
+            title={ctaText}
+            disabled={false}
+            onPress={() => _handleCancellationReasonNavigation(ctaText!)}
+          />
+        ) : (
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => _handleCancellationReasonNavigation(ctaText!)}
@@ -1288,9 +1309,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             <Text style={styles.yellowText}>{ctaText?.replace(/[_]/g, ' ')}</Text>
           </TouchableOpacity>
         )}
-        {!!showMulitpleCTA && showMulitpleCTA?.length > 0 && renderCTA(showMulitpleCTA)}
-      </View>
-    ) : null;
+      </>
+    );
   };
 
   const renderCTA = (ctaArray: any) => {
@@ -1353,16 +1373,19 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const renderCancelButton = () => {
     return (
       <View style={styles.buttonView}>
-        <Button
-          title={isDirectCancelRequest ? 'CANCEL NOW' : 'SUBMIT CANCEL REQUEST'}
-          style={styles.buttonStyle}
+        <TouchableOpacity
+          style={styles.cancelCTATouch}
           disabled={
             selectCancelReason == string.diagnostics.reasonForCancel_TestOrder.otherReasons
               ? cancelReasonComment?.trim() == '' || cancelReasonComment.length < 10
               : selectCancelReason == ''
           }
           onPress={() => _onPressCancelNow()}
-        />
+        >
+          <Text style={styles.yellowText}>
+            {isDirectCancelRequest ? 'CANCEL NOW' : 'SUBMIT CANCEL REQUEST'}
+          </Text>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -2575,5 +2598,10 @@ const styles = StyleSheet.create({
     marginLeft: 16,
     borderRadius: 8,
     marginBottom: 6,
+  },
+  cancelCTATouch: {
+    width: '60%',
+    height: 40,
+    justifyContent: 'center',
   },
 });
