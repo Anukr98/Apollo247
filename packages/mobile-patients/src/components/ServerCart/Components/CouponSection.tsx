@@ -9,12 +9,14 @@ export interface CouponSectionProps {
   onPressApplyCoupon: () => void;
   onPressRemove: () => void;
   movedFrom?: 'subscription' | 'pharmacy';
+  showOnPressApplyCouponMessage?: boolean;
 }
 
 export const CouponSection: React.FC<CouponSectionProps> = (props) => {
   const { cartCoupon, serverCartAmount } = useShoppingCart();
-  const { onPressApplyCoupon, onPressRemove, movedFrom } = props;
+  const { onPressApplyCoupon, onPressRemove, movedFrom, showOnPressApplyCouponMessage } = props;
   const isFromSubscription = movedFrom == 'subscription';
+  const selectAddressText = 'Please select delivery address to view coupons';
 
   const renderApplyCoupon = () => {
     return (
@@ -25,6 +27,9 @@ export const CouponSection: React.FC<CouponSectionProps> = (props) => {
             <View>
               <Text style={styles.applyCouponText}>Apply Coupon</Text>
               <CouponOfferMessage movedFrom={movedFrom} />
+              {showOnPressApplyCouponMessage ? (
+                <Text style={styles.selectAddressText}>{selectAddressText}</Text>
+              ) : null}
             </View>
           </View>
           <ArrowRight style={{ alignSelf: 'flex-start' }} />
@@ -132,4 +137,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   couponMessageContainer: { marginLeft: 10, marginVertical: 4, flex: 1 },
+  selectAddressText: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    color: theme.colors.APP_RED,
+    paddingVertical: 5,
+    paddingLeft: 10,
+  },
 });

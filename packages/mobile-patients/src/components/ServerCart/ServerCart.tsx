@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavigationScreenProps } from 'react-navigation';
 import { View, SafeAreaView, Text, StyleSheet, ScrollView } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -85,6 +85,9 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
     fetchProductSuggestions,
   } = useServerCart();
   const { currentPatient } = useAllCurrentPatients();
+  const [showOnPressApplyCouponMessage, setShowOnPressApplyCouponMessage] = useState<boolean>(
+    false
+  );
 
   const circlePlanAddedToCart =
     !!cartSubscriptionDetails?.currentSellingPrice &&
@@ -155,6 +158,12 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
       }
     }
   }, [serverCartItems]);
+
+  useEffect(() => {
+    if (cartAddressId) {
+      setShowOnPressApplyCouponMessage(false);
+    }
+  }, [cartAddressId]);
 
   const fireAddressSelectedEvent = async (selectedAddress: any) => {
     if (selectedAddress) {
@@ -287,7 +296,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
   };
 
   const onPressApplyCoupon = () => {
-    if (cartAddressId) {
+    if (cartAddressId && selectedAddress) {
       setUserActionPayload?.({
         coupon: '',
         subscription: {
@@ -296,6 +305,8 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
       });
       applyCouponClickedEvent(currentPatient?.id, JSON.stringify(serverCartItems));
       props.navigation.navigate(AppRoutes.ViewCoupons);
+    } else {
+      setShowOnPressApplyCouponMessage(true);
     }
   };
 
@@ -326,6 +337,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
         onPressApplyCoupon={onPressApplyCoupon}
         onPressRemove={onPressRemoveCoupon}
         movedFrom={'pharmacy'}
+        showOnPressApplyCouponMessage={showOnPressApplyCouponMessage}
       />
       {!!serverCartAmount ? <CartTotalSection /> : null}
       <CartSavings />
