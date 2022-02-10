@@ -1197,6 +1197,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 skusInformation={multiVariantSkuInformation}
                 sku={medicineDetails?.sku}
                 onSelectVariant={onSelectVariant}
+                typeId={medicineDetails?.type_id}
               />
               <View
                 ref={buttonRef}
