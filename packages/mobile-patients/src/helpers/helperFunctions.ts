@@ -2920,7 +2920,6 @@ export const addPharmaItemToCart = (
       };
       postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE, eventAttributes);
       onComplete && onComplete();
-      return;
     }
     if (comingFromSearch === true) {
       cleverTapSearchSuccessEventAttributes?.['Product availability'] = 'Is in stock';

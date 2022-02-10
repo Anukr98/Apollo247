@@ -5866,7 +5866,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           Keyword: searchText,
           Vertical: 'Pharmacy',
         });
-        props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
+        props.navigation.navigate(AppRoutes.MedicineListing, {
+          searchText,
+          comingFromSearch: true,
+          navSrcForSearchSuccess: 'Searchbar',
+        });
         break;
       case MedicalRecordType.TEST_REPORT:
         postHomeCleverTapEvent(CleverTapEventName.OPTION_FROM_SEARCH_BAR_CLICKED, 'Search bar', {
