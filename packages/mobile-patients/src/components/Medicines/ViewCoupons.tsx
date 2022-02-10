@@ -566,9 +566,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
   );
 
   const renderCardTitle = (title: string, circleBenefitsApplicable: boolean) => {
-    const showCircleBenefitsInfo =
-      movedFrom === 'pharma' &&
-      ((circleSubscriptionId && circleStatus === 'active') || circlePlanSelected?.subPlanId);
+    const showCircleBenefitsInfo = movedFrom === 'pharma' && isCircleCart;
     return (
       <ListItem
         bottomDivider
