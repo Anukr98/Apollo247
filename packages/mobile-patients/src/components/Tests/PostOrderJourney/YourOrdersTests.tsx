@@ -1193,7 +1193,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                                 ? showMulitpleCTA?.length > ctaColumn
                                   ? 120
                                   : 110
-                                : !!ctaOption && ctaOption == CANCELLATION_REASONS_CTA.RESCHEDULE
+                                : !!ctaOption
                                 ? 140
                                 : 100
                               : 40,
