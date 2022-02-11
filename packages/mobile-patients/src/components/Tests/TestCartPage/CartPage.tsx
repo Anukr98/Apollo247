@@ -1381,8 +1381,26 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
        return cartPrice;
        };
 
+       const grpItem: DiagnosticsCartItem ={
+        id: groupItem?.itemId,
+        name:groupItem?.itemName,
+        mou: 1,
+        price: pricesForItem?.price!,
+        thumbnail: groupItem?.itemImageUrl,
+        specialPrice: pricesForItem?.specialPrice!, 
+        circlePrice: pricesForItem?.circlePrice!, //mrp
+        circleSpecialPrice: pricesForItem?.circleSpecialPrice!, //price
+        discountPrice: pricesForItem?.discountPrice!, //mrp
+        discountSpecialPrice: pricesForItem?.discountSpecialPrice!, //price
+        collectionMethod: groupItem?.collectionType,
+        groupPlan: pricesForItem?.planToConsider?.groupPlan!,
+        packageMrp: packageMrpForItem,
+        inclusions: groupItem?.inclusions,
+        isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG
+      }
+
     
-    const priceDiff = Number(pricesForItem?.mrpToDisplay) - getCartTotalPrice()
+    const priceDiff = diagnosticsDisplayPrice(grpItem, isDiagnosticCircleSubscription)?.priceToShow - getCartTotalPrice()
     return (
       <>
         {/* Group Recommendations start here */}
