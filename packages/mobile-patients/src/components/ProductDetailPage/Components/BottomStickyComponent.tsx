@@ -3,22 +3,27 @@ import { StyleSheet, View, Text, TouchableOpacity, Dimensions, Platform } from '
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  calculateCashbackForItem,
+  getDiscountPercentage,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
+import { getRoundedOffPrice } from '@aph/mobile-patients/src/components/ProductDetailPage/helperFunctionsPDP';
+
 const { width } = Dimensions.get('window');
 export interface BottomStickyComponentProps {
-  price: number;
-  specialPrice: number | null;
+  price: number | string;
+  specialPrice: string | number | null;
   sku: string;
   isInStock: boolean;
   onAddCartItem: () => void;
   productQuantity: number;
   setShowAddedToCart: (show: boolean) => void;
   isBanned: boolean;
-  cashback: number | string;
   onNotifyMeClick: () => void;
+  typeId?: string;
+  subcategory?: string | null | undefined;
 }
 export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (props) => {
   const {
@@ -30,12 +35,16 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
     productQuantity,
     setShowAddedToCart,
     isBanned,
-    cashback,
     onNotifyMeClick,
+    typeId,
+    subcategory,
   } = props;
-  const { cartItems, circleSubscriptionId } = useShoppingCart();
-  const isCircleMember = !!circleSubscriptionId && !!cashback;
+  const { cartItems, circleSubscriptionId, isCircleCart } = useShoppingCart();
+  const finalPrice = Number(specialPrice) ? Number(specialPrice) : Number(price);
+  const cashback = calculateCashbackForItem(finalPrice, typeId, subcategory, sku);
+  const isCircleMember = (!!circleSubscriptionId || isCircleCart) && !!cashback;
   const isIos = Platform.OS === 'ios';
+
   const renderCartCTA = () => {
     const ctaText = isInStock ? 'ADD TO CART' : 'NOTIFY ME';
     return (
@@ -65,19 +74,21 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
     }
   };
   const renderProductPrice = () => {
-    const discountPercent = getDiscountPercentage(price, specialPrice);
+    const discountPercent = specialPrice
+      ? getDiscountPercentage(price, specialPrice)
+      : getDiscountPercentage(price);
     return (
       <View>
         {!!specialPrice ? (
           <View style={styles.flexRow}>
             <Text style={styles.value}>
               {string.common.Rs}
-              {convertNumberToDecimal(specialPrice)}{' '}
+              {getRoundedOffPrice(specialPrice, typeId)}
             </Text>
             <Text style={styles.smallLabel}>{`MRP `}</Text>
             <Text style={styles.smallValue}>
               {string.common.Rs}
-              {convertNumberToDecimal(price)}
+              {getRoundedOffPrice(price, typeId)}
             </Text>
             <Text style={styles.discountPercent}>{` ${discountPercent}%off`}</Text>
           </View>
@@ -86,7 +97,7 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
             <Text style={styles.label}>{`MRP: `}</Text>
             <Text style={styles.value}>
               {string.common.Rs}
-              {convertNumberToDecimal(price)}
+              {getRoundedOffPrice(price, typeId)}
             </Text>
           </View>
         )}
@@ -94,7 +105,6 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
     );
   };
   const renderCareCashback = () => {
-    const finalPrice = price - specialPrice ? specialPrice : price;
     return (
       <>
         <CareCashbackBanner
@@ -103,7 +113,7 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
           logoStyle={styles.circleLogo}
         />
         <Text style={theme.viewStyles.text('R', 11, '#02475B', 1, 17)}>
-          Effective price for you
+          {`Effective price for you`}
           <Text style={{ fontWeight: 'bold' }}>
             {' '}
             {string.common.Rs}

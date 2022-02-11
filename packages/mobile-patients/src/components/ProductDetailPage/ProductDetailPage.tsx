@@ -1188,8 +1188,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 deliveryTime={deliveryTime}
                 deliveryError={deliveryError}
                 isPharma={isPharma}
-                cashback={cashback}
-                finalPrice={finalPrice}
                 showDeliverySpinner={showDeliverySpinner}
                 isBanned={medicineDetails?.banned === 'Yes'}
                 multiVariantAttributes={multiVariantAttributes}
@@ -1198,6 +1196,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 sku={medicineDetails?.sku}
                 onSelectVariant={onSelectVariant}
                 typeId={medicineDetails?.type_id}
+                subcategory={medicineDetails?.subcategory}
               />
               <View
                 ref={buttonRef}
@@ -1296,16 +1295,23 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             showBottomBar &&
             medicineDetails?.sell_online === 1 && (
               <BottomStickyComponent
+                {...getPriceAndSpecialPrice(
+                  //this a replacement of(price={medicineDetails?.price} specialPrice={medicineDetails?.special_price})
+                  medicineDetails?.price,
+                  medicineDetails?.special_price,
+                  tatData?.mrp,
+                  parseInt(medicineDetails?.mou, 10),
+                  tatDecidedPercentage
+                )}
                 isInStock={isInStock}
                 sku={medicineDetails?.sku}
                 onAddCartItem={onAddCartItem}
-                price={medicineDetails?.price}
-                specialPrice={medicineDetails?.special_price}
                 productQuantity={productQuantity}
                 setShowAddedToCart={setShowAddedToCart}
                 isBanned={medicineDetails?.banned === 'Yes'}
-                cashback={cashback}
                 onNotifyMeClick={onNotifyMeClick}
+                typeId={medicineDetails?.type_id}
+                subcategory={medicineDetails?.subcategory}
               />
             )}
         </View>
