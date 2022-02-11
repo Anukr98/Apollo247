@@ -949,27 +949,26 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         overlayStyle={styles.overlayStyle}
       >
         <View style={{ flex: 1 }}>
-          <TouchableOpacity style={{ flex: 1 }} onPress={() => onPressCloseOverlay()}>
-            <SafeAreaView style={[styles.overlaySafeArea, styles.overlayTouch]}>
-              <View
-                style={[
-                  styles.overlayContainer,
-                  showMultiUhidOption ? { maxHeight: screenHeight / 1.5 } : { flex: 1 },
-                ]}
-              >
-                <View>
-                  {showRescheduleOptions && renderRescheduleCancelOptions()}
-                  {showMultiUhidOption &&
-                    !!multipleOrdersList &&
-                    multipleOrdersList?.length > 0 &&
-                    renderMultiUhidMessage()}
-                  {showRescheduleReasons && renderRescheduleReasons()}
-                  {showCancelReasons && renderCancelReasons()}
-                  {showPromoteCashback && renderPromoteCashback()}
-                </View>
+          <TouchableOpacity style={{ flex: 1 }} onPress={() => onPressCloseOverlay()} />
+          <SafeAreaView style={[styles.overlaySafeArea, styles.overlayTouch]}>
+            <View
+              style={[
+                styles.overlayContainer,
+                showMultiUhidOption ? { maxHeight: screenHeight / 1.5 } : { flex: 1 },
+              ]}
+            >
+              <View>
+                {showRescheduleOptions && renderRescheduleCancelOptions()}
+                {showMultiUhidOption &&
+                  !!multipleOrdersList &&
+                  multipleOrdersList?.length > 0 &&
+                  renderMultiUhidMessage()}
+                {showRescheduleReasons && renderRescheduleReasons()}
+                {showCancelReasons && renderCancelReasons()}
+                {showPromoteCashback && renderPromoteCashback()}
               </View>
-            </SafeAreaView>
-          </TouchableOpacity>
+            </View>
+          </SafeAreaView>
         </View>
       </Overlay>
     );
@@ -1159,7 +1158,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     selectedOrderTime = moment(selectedOrderTime);
     const cancelReasonArray = cancelReasonList;
     return (
-      <View style={{ height: screenHeight / 1.8 }}>
+      <View style={{ height: screenHeight / 1.6 }}>
         <Text style={styles.overlayHeadingText}>
           {string.diagnostics.reasonForCancellationText}
         </Text>
@@ -1177,7 +1176,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                 const showMulitpleCTA = showAddtionalCTA?.multiCtas;
                 const isMultiCTA = showAddtionalView && showMulitpleCTA;
                 const ctaOption = showAddtionalCTA?.cta;
-
+                const hideRescheduleView =
+                  selectCancelReason === reasonString &&
+                  selectedOrderRescheduleCount! >= 3 &&
+                  ctaOption == CANCELLATION_REASONS_CTA.RESCHEDULE;
                 return (
                   <View style={{ flex: 1 }}>
                     <TouchableOpacity
@@ -1187,14 +1189,14 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                         {
                           height:
                             selectCancelReason === reasonString &&
-                            selectedOrderRescheduleCount! < 3 &&
+                            !hideRescheduleView &&
                             showAddtionalView
                               ? !!isMultiCTA
                                 ? showMulitpleCTA?.length > ctaColumn
                                   ? 120
                                   : 110
                                 : !!ctaOption
-                                ? 140
+                                ? 150
                                 : 100
                               : 40,
                           paddingTop: 10,
@@ -1204,7 +1206,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                       ]}
                     >
                       {renderTickOption(reasonString!)}
-                      {showAddtionalView && selectCancelReason === reasonString
+                      {hideRescheduleView
+                        ? null
+                        : showAddtionalView && selectCancelReason === reasonString
                         ? renderCancelAddtionalView(showAddtionalCTA)
                         : null}
                       {index === cancelReasonArray?.length - 1 ? null : (
