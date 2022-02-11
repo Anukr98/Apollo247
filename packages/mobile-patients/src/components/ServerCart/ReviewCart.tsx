@@ -320,8 +320,8 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
       onPressOk: () => {
         if (redirectToUploadPrescription) {
           props.navigation.navigate(AppRoutes.MedicineCartPrescription);
-          hideAphAlert?.();
         }
+        hideAphAlert?.();
       },
     });
   };
