@@ -215,7 +215,8 @@ export const AuthProvider: React.FC = (props) => {
           (gqlError) => gqlError.extensions && gqlError.extensions.code === 'UNAUTHENTICATED'
         );
         if (unauthenticatedError) {
-          validateAuthToken();
+          setApollo247APIKey(undefined); // Do not pass new token
+          validateAuthToken(); // re validates the firebase auth token
         }
       }
       //This stops multiple trigger of graphql for known errors
@@ -226,15 +227,17 @@ export const AuthProvider: React.FC = (props) => {
       }
     });
 
+    const activateNewToken = AppConfig.Configuration.ACTIVATE_NEW_JWT_TOKEN;
     const authLink = setContext(async (_, { headers }) => ({
       headers: {
         ...headers,
         Authorization: !authToken.length ? 'Bearer 3d1833da7020e0602165529446587434' : authToken,
         'x-app-OS': Platform.OS,
         'x-app-version': DeviceInfo.getVersion(),
-        'x-apollo247-api-key': apollo247APIKey,
+        'x-apollo247-api-key': activateNewToken && !!apollo247APIKey ? apollo247APIKey : '',
       },
     }));
+
     const httpLink = createHttpLink({
       uri: apiRoutes.graphql(),
     });
@@ -312,12 +315,6 @@ export const AuthProvider: React.FC = (props) => {
     // onAuthStateChanged : an event listener that fires a callback whenever there is a change in authstate of a user
     try {
       return new Promise(async (resolve, reject) => {
-        // returns the auth token of the current logged in user
-        const user = await auth.currentUser;
-        const token = await user?.getIdToken(true).catch((error) => {
-          reject(error);
-        });
-        resolve(token);
         // event listener: starts listening to event onAuthStateChanged
         auth.onAuthStateChanged(async (user) => {
           if (user) {
@@ -326,9 +323,11 @@ export const AuthProvider: React.FC = (props) => {
               setIsSigningIn(false);
               setSignInError(true);
               setAuthToken('');
+              reject(error);
               throw error;
             });
             setAuthToken(jwt);
+            resolve(jwt);
             postWebEngageEvent(WebEngageEventName.AUTHTOKEN_UPDATED, getEventParams());
             AsyncStorage.setItem('jwt', JSON.stringify(jwt));
           } else {

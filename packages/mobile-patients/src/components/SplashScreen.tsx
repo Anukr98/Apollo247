@@ -1363,6 +1363,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_HOME_CTA_CONFIG',
       PROD: 'PROD_HOME_CTA_CONFIG',
     },
+    ACTIVATE_NEW_JWT_TOKEN: {
+      QA: 'ACTIVATE_NEW_JWT_TOKEN_QA',
+      PROD: 'ACTIVATE_NEW_JWT_TOKEN_PROD',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1817,6 +1821,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
 
       setAppConfig('APOLLO247_API_KEY', 'APOLLO247_API_KEY', (key) => config.getString(key));
+      setAppConfig('ACTIVATE_NEW_JWT_TOKEN', 'ACTIVATE_NEW_JWT_TOKEN', (key) =>
+        config.getBoolean(key)
+      );
 
       setAppConfig(
         'HOME_CTA_CONFIG',
