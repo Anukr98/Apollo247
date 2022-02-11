@@ -60,7 +60,7 @@ export const RecommedationGroupCard: React.FC<RecommedationGroupCardProps> = (pr
           <Text style={styles.textInclusionsRecom}>
             Includes{' '}
             {showTestWorth ? (
-              <Text style={styles.boldTextRecom}>{`Includes Tests worth ${string.common.Rs}${data?.packageCalculatedMrp!}`}</Text>
+              <Text style={styles.boldTextRecom}>{`Tests worth ${string.common.Rs}${data?.packageCalculatedMrp!}`}</Text>
             ) : null}
           </Text>
           <View>
