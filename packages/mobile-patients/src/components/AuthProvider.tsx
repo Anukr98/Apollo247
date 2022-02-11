@@ -185,21 +185,23 @@ export const AuthProvider: React.FC = (props) => {
   }, [SECRET_KEY]);
 
   const generateJWTToken = async () => {
-    var secretKey = Buffer.from(SECRET_KEY!).toString('base64');
-    var options = { alg: 'HS256', typ: 'JWT' };
-    const phoneNumber = await AsyncStorage.getItem('phoneNumber');
-    var data = {
-      issuer: 'Apollo247',
-      origin: `Apollo247App~${Platform.OS}~${DeviceInfo.getVersion()}`,
-      mobileNumber: '+91' + phoneNumber,
-    };
-    var token = generateToken.jws.JWS.sign(
-      'HS256',
-      JSON.stringify(options),
-      JSON.stringify(data),
-      secretKey
-    );
-    setApollo247APIKey(token);
+    try {
+      var secretKey = Buffer.from(SECRET_KEY!).toString('base64');
+      var options = { alg: 'HS256', typ: 'JWT' };
+      const phoneNumber = await AsyncStorage.getItem('phoneNumber');
+      var data = {
+        issuer: 'Apollo247',
+        origin: `Apollo247App~${Platform.OS}~${DeviceInfo.getVersion()}`,
+        mobileNumber: '+91' + phoneNumber,
+      };
+      var token = generateToken.jws.JWS.sign(
+        'HS256',
+        JSON.stringify(options),
+        JSON.stringify(data),
+        secretKey
+      );
+      setApollo247APIKey(token);
+    } catch (error) {}
   };
 
   useEffect(() => {
