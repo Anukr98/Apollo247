@@ -1,22 +1,24 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  calculateCashbackForItem,
+  getDiscountPercentage,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { Location, ExpressDeliveryLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import moment from 'moment';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
-import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { MultiVariant } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/MultiVariant';
 import { renderPDPComponentsShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import { getRoundedOffPrice } from '@aph/mobile-patients/src/components/ProductDetailPage/helperFunctionsPDP';
 
 export interface ProductPriceDeliveryProps {
-  price: number;
-  specialPrice: number | null;
+  price: number | string;
+  specialPrice: string | number | null;
   isExpress: boolean;
   isInStock: boolean;
   isSellOnline: boolean;
@@ -24,8 +26,6 @@ export interface ProductPriceDeliveryProps {
   deliveryTime?: string;
   deliveryError?: string;
   isPharma: boolean;
-  cashback: number | string;
-  finalPrice: number;
   showDeliverySpinner: boolean;
   isBanned: boolean;
   sku: string;
@@ -33,8 +33,9 @@ export interface ProductPriceDeliveryProps {
   multiVariantProducts?: any[];
   skusInformation?: any[];
   onSelectVariant?: (sku: string) => void;
-  priceLoaded: boolean;
+  priceLoaded?: boolean | undefined;
   typeId?: string;
+  subcategory?: string | null | undefined;
 }
 
 export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props) => {
@@ -45,9 +46,6 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
     showPincodePopup,
     deliveryError,
     deliveryTime,
-    isPharma,
-    cashback,
-    finalPrice,
     isSellOnline,
     showDeliverySpinner,
     isBanned,
@@ -58,6 +56,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
     onSelectVariant,
     priceLoaded,
     typeId,
+    subcategory,
   } = props;
   const { currentPatient } = useAllCurrentPatients();
   const {
@@ -65,6 +64,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
     cartAddressId,
     cartLocationDetails,
     cartCircleSubscriptionId,
+    isCircleCart,
   } = useShoppingCart();
   const momentDiff = moment(deliveryTime).diff(moment());
   const hoursMoment = moment.duration(momentDiff);
@@ -72,11 +72,15 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
   const showExpress = Number(hours) <= AppConfig.Configuration.EXPRESS_MAXIMUM_HOURS;
   const showMultiVariantOption = !!multiVariantAttributes?.length && !!skusInformation?.length;
 
-  let deliveryAddress = addresses.find((item) => item.id == cartAddressId);
+  const deliveryAddress = addresses.find((item) => item.id == cartAddressId);
   const pincode = cartLocationDetails?.pincode || deliveryAddress?.zipcode;
+  const finalPrice = Number(specialPrice) ? Number(specialPrice) : Number(price);
+  const cashback = calculateCashbackForItem(finalPrice, typeId, subcategory, sku);
 
   const renderProductPrice = () => {
-    const discountPercent = getDiscountPercentage(price, specialPrice);
+    const discountPercent = specialPrice
+      ? getDiscountPercentage(price, specialPrice)
+      : getDiscountPercentage(price);
     if (price && priceLoaded) {
       return !!specialPrice ? (
         <View style={styles.cardStyle}>
@@ -292,11 +296,11 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
     <View style={styles.container}>
       {renderProductPrice()}
       {/* handling 0 discount cashback case */}
-      {!!cartCircleSubscriptionId
-        ? !!cashback
+      {!!cashback
+        ? !!cartCircleSubscriptionId || isCircleCart
           ? renderCareCashback()
-          : null
-        : rendergetCircleMembership()}
+          : rendergetCircleMembership()
+        : null}
       {showMultiVariantOption && renderMultiVariantOptions()}
       {renderDeliverTo()}
       {!isBanned &&
