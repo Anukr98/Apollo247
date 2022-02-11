@@ -39,7 +39,7 @@ export const CircleBottomContainer: React.FC<CircleBottomContainerProps> = (prop
     return (
       <>
         {cartDiscountPercent ? (
-          <View style={{ flexDirection: 'row', marginLeft: 10 }}>
+          <View style={{ flexDirection: 'row', marginLeft: 4 }}>
             <Text style={circleStyles.priceStrikeOff}>
               ({string.common.Rs}
               {convertNumberToDecimal(cartTotal)})
@@ -69,7 +69,7 @@ export const CircleBottomContainer: React.FC<CircleBottomContainerProps> = (prop
   );
 
   const renderCircleCashback = () => (
-    <View style={{ width: '60%' }}>
+    <View style={{ flex: 1.8 }}>
       <View style={{ flexDirection: 'row' }}>
         <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0)}>
           MRP{'  '}
@@ -122,7 +122,13 @@ export const CircleBottomContainer: React.FC<CircleBottomContainerProps> = (prop
   const renderGoToCartCta = () =>
     !props.serverCartLoading ? (
       <View style={circleStyles.cartButtonContainer}>
-        <TouchableOpacity style={circleStyles.cartButton} onPress={onPressGoToCart}>
+        <TouchableOpacity
+          style={[
+            circleStyles.cartButton,
+            !!cartSubscriptionDetails?.subscriptionApplied ? circleStyles.cartButtonCircle : {},
+          ]}
+          onPress={onPressGoToCart}
+        >
           <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 25, 0)}>GO TO CART</Text>
           {!isCircleCart && totalCashback > 1 && (
             <Text style={circleStyles.buyForText}>
@@ -245,7 +251,11 @@ const circleStyles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'center',
     alignContent: 'center',
-    height: '100%',
+  },
+  cartButtonCircle: {
+    height: 'auto',
+    marginTop: 23,
+    marginLeft: 10,
   },
   circleLogoTwo: {
     resizeMode: 'contain',
