@@ -7084,11 +7084,21 @@ export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS_V2 = gql`
   query getDiagnosticPackageRecommendationsv2($recommendationInputItems: [recommendationInputItem]!, $cityId: Int!) {
     getDiagnosticPackageRecommendationsv2(recommendationInputItems: $recommendationInputItems, cityId: $cityId) {
       packageRecommendations {
+        id
         itemId
         itemName
         gender
+        rate
+        itemRemarks
+        itemType
+        testPreparationData
+        collectionType
+        testDescription
         inclusions
         packageCalculatedMrp
+        totalSavings
+        extraInclusionsCount
+        price
         diagnosticInclusions{
           itemId
           name

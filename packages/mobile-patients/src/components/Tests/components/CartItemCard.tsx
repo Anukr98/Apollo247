@@ -36,6 +36,9 @@ interface CartItemCardProps {
   onPressCard: (test: any) => void;
   showUndo?: boolean;
   onPressUndo: (test: any) => void;
+  allItemsInCart?: any
+  groupRecommendationItem?: any
+  cartItemIds?: any
 }
 
 export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
@@ -49,6 +52,9 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     showCartInclusions,
     index,
     showUndo,
+    allItemsInCart,
+    groupRecommendationItem,
+    cartItemIds
   } = props;
 
   const inclusionItem =
@@ -158,6 +164,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
         inclusionsArray?.length > 0
           ? renderConflictingItemView()
           : null}
+        {showUndo && renderInclusionsInDetail()}
       </TouchableOpacity>
     );
   };
@@ -261,6 +268,33 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
         <TouchableOpacity activeOpacity={1} onPress={() => props.onPressUndo(cartItem)}>
           <Text style={styles.undoText}>UNDO</Text>
         </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderInclusionsInDetail = () => {
+    let otherInclusions: any[] = [];
+    let includedInclusions: any[] = [];
+
+    groupRecommendationItem?.inclusionData?.map((item: any) => {
+      if (cartItemIds?.includes(item?.itemId)) {
+        includedInclusions?.push(item);
+      } else {
+        otherInclusions?.push(item);
+      }
+    });
+    return (
+      <View>
+        {includedInclusions?.map((item) => (
+          <Text style={styles.textInclusion}> {`• ${item?.name}`}</Text>
+        ))}
+        <Text style={styles.textInclusion}> {`• Other Tests`}</Text>
+        {otherInclusions?.map((item) => (
+          <Text style={styles.textOtherInclusion}>
+            {'     '}
+            {`• ${item?.name}`}
+          </Text>
+        ))}
       </View>
     );
   };
@@ -438,4 +472,8 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     marginLeft: 8,
   },
+  textInclusion: {
+    ...theme.viewStyles.text('SB',12,colors.SHERPA_BLUE,1),padding:5
+  },
+  textOtherInclusion:{...theme.viewStyles.text('R',12,colors.SHERPA_BLUE,1),padding:5}
 });
