@@ -395,7 +395,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   useEffect(() => {
     getGroupRecommendations();
   }, [cartItems?.length]);
-
   /**consider only selected one + for package need to pass one argument + isPackage + if is package and recommendations are not there, then fallback should not come + 2 limit needs to be removed */
   useEffect(() => {
     if (
@@ -1328,7 +1327,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     );
   };
   async function getGroupRecommendations() {
-    let recommendationInputItems: { itemId: number; itemType: DiagnosticItemType }[] = [];
+    let recommendationInputItems: { itemId?: number; itemType?: DiagnosticItemType }[] = [];
     cartItemsWithId?.map((item) => {
       const inclusionCount = cartItems?.find(
                (cartItem) => Number(cartItem?.id) === item
@@ -1343,7 +1342,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       const getPackageRecommendationsResponse = await getDiagnosticsPackageRecommendationsv2(
         client,
         recommendationInputItems,
-        Number(addressCityId)
+        Number(addressCityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
       );
       if (getPackageRecommendationsResponse?.data?.getDiagnosticPackageRecommendationsv2) {
         const getResult =
@@ -1374,6 +1373,16 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     const packageMrpForItem = groupItem?.packageCalculatedMrp!;
     const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
     const patientItems = patientCartItems?.[0]?.cartItems?.filter((cItem) => cItem?.isSelected);
+    const getCartTotalPrice = () => {
+       const cartPrice = patientCartItems?.[0]?.cartItems?.reduce(
+         (totalPrice, item) => (totalPrice += item?.price),
+         0
+       );
+       return cartPrice;
+       };
+
+    
+    const priceDiff = Number(pricesForItem?.mrpToDisplay) - getCartTotalPrice()
     return (
       <>
         {/* Group Recommendations start here */}
@@ -1390,7 +1399,15 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           }}
         >
           <Text style={styles.textStyleHeading}>
-            {`Recommended for you • ${groupRecommendations?.[0]?.inclusions?.length} Tests @${string.common.Rs} ${pricesForItem.price} Only`}
+            {`Recommended for you • ${
+              priceDiff > 0
+                ? `${
+                    groupRecommendations?.[0]?.extraInclusionsCount > 1
+                      ? `${groupRecommendations?.[0]?.extraInclusionsCount} Tests`
+                      : `${groupRecommendations?.[0]?.extraInclusionsCount} Test`
+                  } @ ₹ ${priceDiff?.toFixed()} Only`
+                : `Save ₹ ${Math.abs(priceDiff)?.toFixed()}`
+            }`}
           </Text>
           {openRecommedations ? (
             <ArrowUpWhite style={styles.iconStyleArrow} />
@@ -1406,6 +1423,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           onPressAdd={() => {
             setShowrecommendationPopUp(true);
           }}
+          showPrice={Number(priceDiff?.toFixed())}
           showAddButton={true}
           showTestWorth={true}
         />
@@ -1537,6 +1555,25 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     const patientItems = patientCartItems?.[0]?.cartItems?.filter((cItem) => cItem?.isSelected);
     const patientId = patientCartItems?.[0]?.patientId;
     const getPatientName = getPatientNameById(allCurrentPatients, patientId);
+   const grpItem: DiagnosticsCartItem ={
+     id: groupItem?.itemId,
+     name:groupItem?.itemName,
+     mou: 1,
+     price: pricesForItem?.price!,
+     thumbnail: groupItem?.itemImageUrl,
+     specialPrice: pricesForItem?.specialPrice!, 
+     circlePrice: pricesForItem?.circlePrice!, //mrp
+     circleSpecialPrice: pricesForItem?.circleSpecialPrice!, //price
+     discountPrice: pricesForItem?.discountPrice!, //mrp
+     discountSpecialPrice: pricesForItem?.discountSpecialPrice!, //price
+     collectionMethod: groupItem?.collectionType,
+     groupPlan: pricesForItem?.planToConsider?.groupPlan!,
+     packageMrp: packageMrpForItem,
+     inclusions: groupItem?.inclusions,
+     isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG
+   }
+
+   const priceToShow = diagnosticsDisplayPrice(grpItem, isDiagnosticCircleSubscription)?.priceToShow;
     return (
       <Overlay
         isVisible
@@ -1562,6 +1599,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
             showAddButton={false}
             showTestWorth={false}
             scrollEnabled={true}
+            priceToDisplayOnPopUp={priceToShow}
           />
           <View style={styles.promoButtonContainer}>
             <TouchableOpacity
@@ -1580,7 +1618,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                 const itemObj = {
                   circlePrice: pricesForItem?.circlePrice!,
                   circleSpecialPrice: pricesForItem?.circleSpecialPrice!,
-                  collectionMethod: TEST_COLLECTION_TYPE.HC,
+                  collectionMethod: itemData?.collectionType,
                   discountPrice: pricesForItem?.discountPrice!,
                   discountSpecialPrice: pricesForItem?.discountSpecialPrice!,
                   groupPlan: pricesForItem?.planToConsider?.groupPlan!,
@@ -1769,6 +1807,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         index={index}
         comingFrom={AppRoutes.CartPage}
         cartItem={test}
+        allItemsInCart = {cartItems}
+        groupRecommendationItem = {groupRecommendations?.[0]}
+        cartItemIds = {cartItemsWithId}
         selectedPatient={selectedPatient}
         isCircleSubscribed={isDiagnosticCircleSubscription}
         reportGenItem={reportGenItem}
@@ -2013,9 +2054,20 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         addPatientCartItem?.(patients?.patientId, addedItems!);
       });
   }
+  function updateCartInGroupRecommandation(){
+    const patientId = patientCartItems?.[0]?.patientId; // for group recommandation only
+    const groupItemPresentArr = patientCartItems?.[0]?.cartItems?.filter((item) => {
+      //checking the presence if group recommendation Item in the cart
+      return groupRecommendations?.[0]?.itemId == Number(item?.id);
+    });
+    if (groupItemPresentArr?.length == 1) {
+      setCartItems?.(patientCartItems?.[0]?.cartItems)
+    }
+  }
 
   function _validatePricesWithAddress() {
     // getAddressServiceability(true);
+    updateCartInGroupRecommandation()
     _navigateToNextScreen();
   }
 

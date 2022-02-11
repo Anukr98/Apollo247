@@ -130,6 +130,7 @@ import {
   ProcessDiagnosticHCOrderInputCOD,
   DiagnosticsBookingSource,
   REPORT_TAT_SOURCE,
+  recommendationInputItem,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { insertMessageVariables } from '@aph/mobile-patients/src/graphql/types/insertMessage';
 import {
@@ -1649,7 +1650,7 @@ export const getDiagnosticsPackageRecommendations = (
 
 export const getDiagnosticsPackageRecommendationsv2 = (
   client: ApolloClient<object>,
-  recommendationInputItems: any,
+  recommendationInputItems: recommendationInputItem[],
   cityId: number,
 ) => {
   return client.query<getDiagnosticPackageRecommendationsv2, getDiagnosticPackageRecommendationsv2Variables>({

@@ -16,6 +16,8 @@ interface RecommedationGroupCardProps {
   showTestWorth?: boolean;
   containerStyle?: any;
   scrollEnabled?: boolean;
+  showPrice?: number;
+  priceToDisplayOnPopUp?: number
 }
 
 export const RecommedationGroupCard: React.FC<RecommedationGroupCardProps> = (props) => {
@@ -29,6 +31,8 @@ export const RecommedationGroupCard: React.FC<RecommedationGroupCardProps> = (pr
     data,
     cartItems,
     patientItems,
+    showPrice,
+    priceToDisplayOnPopUp
   } = props;
   const [isOnPopUp, setIsOnPopUp] = useState<any>(!showAddButton);
 
@@ -50,15 +54,13 @@ export const RecommedationGroupCard: React.FC<RecommedationGroupCardProps> = (pr
             <Text style={styles.cartItemText}>{data?.itemName}</Text>
             <Text style={styles.mainPriceText}>
               {string.common.Rs}
-              {pricesForItem?.price}
+              {showAddButton ? showPrice : priceToDisplayOnPopUp}
             </Text>
           </View>
           <Text style={styles.textInclusionsRecom}>
             Includes{' '}
             {showTestWorth ? (
-              <Text style={styles.boldTextRecom}>{`Includes ${
-                existingItems?.length
-              } existing + ${inclusionNameArray?.length - existingItems?.length} new tests`}</Text>
+              <Text style={styles.boldTextRecom}>{`Includes Tests worth ${string.common.Rs}${data?.packageCalculatedMrp!}`}</Text>
             ) : null}
           </Text>
           <View>
