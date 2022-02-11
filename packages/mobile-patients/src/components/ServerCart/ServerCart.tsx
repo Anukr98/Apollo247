@@ -304,7 +304,7 @@ export const ServerCart: React.FC<ServerCartProps> = (props) => {
         },
       });
       applyCouponClickedEvent(currentPatient?.id, JSON.stringify(serverCartItems));
-      props.navigation.navigate(AppRoutes.ViewCoupons);
+      props.navigation.navigate(AppRoutes.ViewCoupons, { movedFrom: 'pharma' });
     } else {
       setShowOnPressApplyCouponMessage(true);
     }
