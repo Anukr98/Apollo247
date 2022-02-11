@@ -4321,14 +4321,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const openWebViewFromBanner = async (url: string) => {
-    const deviceToken = (await AsyncStorage.getItem('jwt')) || '';
-    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+    const deviceToken = (await returnAuthToken?.()) || '';
     let updatedUrl: string = '';
     if (url?.includes('apollo-pro-health')) {
       updatedUrl = url?.concat(
         '?utm_source=mobile_app',
         '&utm_token=',
-        currentDeviceToken,
+        deviceToken,
         '&utm_mobile_number=',
         currentPatient?.mobileNumber || ''
       );
@@ -4977,11 +4976,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const onPressHealthPro = async () => {
-    const deviceToken = (await AsyncStorage.getItem('jwt')) || '';
-    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+    const deviceToken = (await returnAuthToken?.()) || '';
     const healthProWithParams = AppConfig.Configuration.APOLLO_PRO_HEALTH_URL.concat(
       '&utm_token=',
-      currentDeviceToken,
+      deviceToken,
       '&utm_mobile_number=',
       currentPatient && g(currentPatient, 'mobileNumber') ? currentPatient.mobileNumber : ''
     );

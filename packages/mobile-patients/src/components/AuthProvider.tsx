@@ -79,7 +79,6 @@ export interface AuthContextProps {
   getFirebaseToken: () => Promise<string>;
   returnAuthToken: (() => Promise<string>) | null;
   authToken: string;
-  validateAuthToken: (() => void) | null;
   buildApolloClient: (authToken: string) => ApolloClient<NormalizedCacheObject>;
   checkIsAppDepricated: ((mobileNumber: string) => Promise<unknown>) | null;
 }
@@ -109,7 +108,6 @@ export const AuthContext = React.createContext<AuthContextProps>({
   getFirebaseToken: null,
   returnAuthToken: null,
   authToken: '',
-  validateAuthToken: null,
   buildApolloClient: null,
 
   checkIsAppDepricated: null,
@@ -122,7 +120,7 @@ const knownErrors = ['NO_HUB_SLOTS', 'INVALID_ZIPCODE'];
 const webengage = new WebEngage();
 
 export const AuthProvider: React.FC = (props) => {
-  const [authToken, setAuthToken] = useState<string>('');
+  const [authToken, setAuthToken] = useState<any>('');
   const hasAuthToken = !_isEmpty(authToken);
   const auth = firebaseAuth();
   const [currentPatientId, setCurrentPatientId] = useState<AuthContextProps['currentPatientId']>(
@@ -141,6 +139,7 @@ export const AuthProvider: React.FC = (props) => {
   };
 
   useEffect(() => {
+    Platform.OS == 'ios' && validateAuthToken(); // App state call back is not fired when app is freshly opened on IOS
     AppState.addEventListener('change', handleAppStateChange);
     return () => {
       AppState.removeEventListener('change', handleAppStateChange);
@@ -157,22 +156,18 @@ export const AuthProvider: React.FC = (props) => {
     apolloClient = buildApolloClient(authToken);
   }, [authToken]);
 
-  const validateAuthToken = () => {
+  const validateAuthToken = async () => {
     // Called as soon as the app is opened
-    // onIdTokenChanged: an event listener that fires callback when ever there is a change in authToken
-    auth?.onIdTokenChanged(async (user) => {
-      if (user) {
-        const jwt = await user.getIdToken(true).catch((error) => {
-          setAuthToken('');
-          throw error;
-        });
-        setAuthToken(jwt);
-        AsyncStorage.setItem('jwt', JSON.stringify(jwt));
-        postWebEngageEvent(WebEngageEventName.AUTHTOKEN_UPDATED, getEventParams());
-      } else {
-        postWebEngageEvent(WebEngageEventName.NO_FIREBASE_USER, getEventParams());
-      }
-    });
+    const user = await auth.currentUser;
+    if (user) {
+      const token = await user?.getIdToken(true).catch((error) => {
+        setAuthToken('');
+      });
+      setAuthToken(token);
+      postWebEngageEvent(WebEngageEventName.AUTHTOKEN_UPDATED, getEventParams());
+    } else {
+      postWebEngageEvent(WebEngageEventName.NO_FIREBASE_USER, getEventParams());
+    }
   };
 
   const [apollo247APIKey, setApollo247APIKey] = useState<any>(undefined);
@@ -331,7 +326,6 @@ export const AuthProvider: React.FC = (props) => {
             setAuthToken(jwt);
             resolve(jwt);
             postWebEngageEvent(WebEngageEventName.AUTHTOKEN_UPDATED, getEventParams());
-            AsyncStorage.setItem('jwt', JSON.stringify(jwt));
           } else {
             postWebEngageEvent(WebEngageEventName.NO_FIREBASE_USER, getEventParams());
           }
@@ -481,7 +475,6 @@ export const AuthProvider: React.FC = (props) => {
             getFirebaseToken,
             returnAuthToken,
             authToken,
-            validateAuthToken,
             buildApolloClient,
             checkIsAppDepricated,
           }}
