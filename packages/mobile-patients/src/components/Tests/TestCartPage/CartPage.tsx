@@ -1342,10 +1342,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       const getPackageRecommendationsResponse = await getDiagnosticsPackageRecommendationsv2(
         client,
         recommendationInputItems,
-        Number(
-          diagnosticServiceabilityData?.cityId! ||
-            AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
-        )
+        Number(addressCityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
       );
       if (getPackageRecommendationsResponse?.data?.getDiagnosticPackageRecommendationsv2) {
         const getResult =
