@@ -844,6 +844,18 @@ export const Emoticon4: React.FC<IconProps> = (props) => (
 export const Emoticon5: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/emoticons_13.webp')} />
 );
+export const BagBlue: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/bagBlue3x.webp')} />
+);
+export const VirusGreen: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/virusGreen3x.webp')} />
+);
+export const ClockBlue: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/clockBlue3x.webp')} />
+);
+export const HomeBlue: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/homeBlue3x.webp')} />
+);
 export const PremiumIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/premium_icon_2x.webp')} />
 );

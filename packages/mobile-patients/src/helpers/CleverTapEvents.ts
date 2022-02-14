@@ -1,4 +1,5 @@
 import {
+  DiagnosticCTJourneyType,
   DoctorType,
   MEDICINE_ORDER_STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -210,7 +211,6 @@ export enum CleverTapEventName {
 
   // Diagnostics Events
   DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic landing page viewed',
-  DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR = 'Diagnostic pincode entered',
   DIAGNOSTIC_SEARCH_CLICKED = 'Diagnostic search clicked',
   DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED = 'Diagnostic home page widgets clicked',
   DIAGNOSTIC_TEST_DESCRIPTION = 'Diagnostic test page viewed',
@@ -1710,7 +1710,6 @@ export interface CleverTapEvents {
     'Order status'?: string;
     'Circle user'?: string;
   };
-  [CleverTapEventName.DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR]: DiagnosticPinCode;
   [CleverTapEventName.DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED]: {
     'Item Name'?: string;
     'Item ID'?: string;
@@ -1748,6 +1747,7 @@ export interface CleverTapEvents {
     'Item names': any;
     'Recommendation Shown': string;
     'Recommendation Item ids': any;
+    'Cart Value': any;
   };
   [CleverTapEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED]: {
     'Slot time': string;
@@ -1824,11 +1824,15 @@ export interface CleverTapEvents {
     'Circle user': string;
   };
   [CleverTapEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE]: {
-    'Selection type': 'New' | 'Existing';
+    'Selection type': 'Manual' | 'Automation';
     Serviceability: 'Yes' | 'No';
     Pincode: string | number;
     Source: 'Home page' | 'Cart page';
     'Circle user': string;
+    'latitude': number;
+    'longitude': number;
+    'state': string;
+    'city': string;
   };
   [CleverTapEventName.DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE]: {
     'Item ID': string | number;
@@ -1900,6 +1904,7 @@ export interface CleverTapEvents {
     'Item Name': string;
     'Circle user': string;
     'User Type': any;
+    'Journey Type'?: DiagnosticCTJourneyType;
   };
   [CleverTapEventName.DIAGNOSTIC_PATIENT_SELECTED]: {
     'No. of patients': number;

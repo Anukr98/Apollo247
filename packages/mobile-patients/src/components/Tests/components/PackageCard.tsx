@@ -151,6 +151,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
         !!inclusions && inclusions?.length > 0
           ? inclusions?.filter((inclusion: any) => inclusion?.incObservationData?.length == 0)
           : [];
+
       return (
         <TouchableOpacity
           activeOpacity={1}

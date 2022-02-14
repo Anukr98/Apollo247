@@ -12,7 +12,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { isSmallDevice, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { DIAGNOSTIC_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
-  DIAGNOSITC_PHELBO_TRACKING_STATUS,
+  DIAGNOSTIC_PHELBO_TRACKING_STATUS,
   DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY,
   DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
 } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -42,7 +42,7 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
     const isSampleCollected = status === DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED;
     var heading, image, content, options;
 
-    if (DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(status)) {
+    if (DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY?.includes(status)) {
       heading = string.diagnostics.sampleSubmitted;
       image = <SampleTestTubesIcon style={styles.iconStyle} />;
       content = string.diagnostics.sampleSubmittedContent?.replace(
@@ -50,7 +50,7 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
         reportTat! || '12-24 hr'
       );
       options = string.diagnostics.sampleCollectedText;
-    } else if (DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.includes(status)) {
+    } else if (DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY?.includes(status)) {
       heading =
         status === DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED
           ? string.diagnostics.partialReportsReady
@@ -75,7 +75,7 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
             '{{collectionTime}}',
             appointmentTime!
           );
-      options = DIAGNOSITC_PHELBO_TRACKING_STATUS.includes(status)
+      options = DIAGNOSTIC_PHELBO_TRACKING_STATUS?.includes(status)
         ? status === DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED
           ? string.diagnostics.sampleCollectedText
           : string.diagnostics.trackPhleboText
@@ -93,7 +93,7 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
   const prepData =
     !!testPreparationData &&
     testPreparationData?.length > 0 &&
-    !AFTER_COLLECTION_STATUS.includes(status);
+    !AFTER_COLLECTION_STATUS?.includes(status);
   const prepDataLength = !!testPreparationData && testPreparationData?.length - 1;
 
   function onPressCloseOverlay() {
@@ -155,7 +155,7 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
       <View
         style={[
           styles.contentContainer,
-          { minHeight: AFTER_COLLECTION_STATUS.includes(status) ? 60 : 30 },
+          { minHeight: AFTER_COLLECTION_STATUS?.includes(status) ? 60 : 30 },
         ]}
       >
         <Text numberOfLines={2} style={[styles.content1]}>
@@ -173,7 +173,7 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
             )}
           </View>
         </View>
-      ) : !AFTER_COLLECTION_STATUS.includes(status) ? (
+      ) : !AFTER_COLLECTION_STATUS?.includes(status) ? (
         <View style={styles.prepDataContainer}>
           <Text style={styles.content1}>{string.diagnostics.noPrepRequiredText}</Text>
         </View>

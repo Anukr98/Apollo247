@@ -131,9 +131,24 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
 
       const getInclusionCount = !!inclusions && inclusions?.length > 0 ? inclusions?.length : 1;
 
+      const getRecommendationTestOberservations =
+        (!!!inclusions || inclusions?.length == 0) && getItem?.observations;
+
+      const getMandatoryObervations =
+        !!getRecommendationTestOberservations && getRecommendationTestOberservations?.length > 0
+          ? getMandatoryParamterResults(getItem?.observations)
+          : [];
+
+      const getObervationCount =
+        !!getMandatoryObervations &&
+        getMandatoryObervations?.length > 0 &&
+        getMandatoryObervations?.length;
+
       const getMandatoryParameterCount =
         !!getMandatoryParamter && getMandatoryParamter?.length > 0
           ? getCount(getMandatoryParamter)
+          : !!getObervationCount
+          ? getObervationCount
           : undefined;
 
       const isAddedToCart = !!cartItems?.find(

@@ -23,6 +23,7 @@ import {
   DIAGNOSTIC_SUB_STATUS_TO_SHOW,
   DIAGNOSTIC_FAILURE_STATUS_ARRAY,
   DIAGNOSTIC_ORDER_CANCELLED_STATUS,
+  DIAGNOSTIC_PHELBO_TRACKING_STATUS,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
   GetPatientFeedback,
@@ -45,6 +46,7 @@ import {
   getPatientNameById,
   getTestOrderStatusText,
   handleGraphQlError,
+  isEmptyObject,
   nameFormater,
   navigateToScreenWithEmptyStack,
   removeWhiteSpaces,
@@ -78,6 +80,8 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 import {
+  diagnosticExotelCall,
+  getDiagnosticPhelboDetails,
   getDiagnosticRefundOrders,
   getPatientPrismMedicalRecordsApi,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
@@ -86,6 +90,7 @@ import { RefundCard } from '@aph/mobile-patients/src/components/Tests/components
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import {
   DiagnosticFeedbackSubmitted,
+  DiagnosticPhleboCallingClicked,
   DiagnosticTrackOrderViewed,
   DiagnosticViewReportClicked,
 } from '@aph/mobile-patients/src/components/Tests/Events';
@@ -113,6 +118,9 @@ import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/Diagnost
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 import { Helpers as NeedHelpHelpers } from '@aph/mobile-patients/src/components/NeedHelp';
+import { AgentDetailsCard } from '@aph/mobile-patients/src/components/Tests/components/AgentDetailsCard';
+import { renderItemPriceShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
+import { PhleboCallPopup } from '@aph/mobile-patients/src/components/Tests/components/PhleboCallPopup';
 const DROP_DOWN_ARRAY_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
@@ -171,6 +179,11 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [orderDetails, setOrderDetails] = useState([] as any);
   const [orderSubscriptionDetails, setOrderSubscriptionDetails] = useState(null);
   const [queries, setQueries] = useState<NeedHelpHelpers.HelpSectionQuery[]>([]);
+  const [phleboDetailsShimmer, setPhleboDetailsShimmer] = useState<boolean>(false);
+  const [phleboDetails, setPhleboDetails] = useState({} as any);
+  const [showPhleboCallPopUp, setShowPhleboCallPopUp] = useState<boolean>(false);
+  const [callPhleboObj, setCallPhleboObj] = useState<any>('');
+  const [showPhleboDetails, setShowPhleboDetails] = useState<boolean>(false);
 
   const scrollToSlots = (yValue?: number) => {
     const setY = yValue == undefined ? scrollYValue : yValue;
@@ -183,6 +196,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY,
     diagnosticServiceabilityData?.cityId!
   );
+  var orderStatusList: any[] = [];
+  var refundArr: any[] = [];
+  var newList: any[] = [];
 
   //for showing the order level status.
   const fetchOrderLevelStatus = (orderId: string) =>
@@ -219,6 +235,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     } else {
       callOrderLevelStatusApi(orderId);
       callOrderDetailsApi(orderId);
+      callOrderPhleboDetails(orderId);
       !!selectedOrder?.paymentOrderId &&
         isPrepaid &&
         callGetOrderInternal(selectedOrder?.paymentOrderId); //for getting the circle membership in case of prepaid
@@ -235,6 +252,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       if (!!getOrderId) {
         callOrderLevelStatusApi(getOrderId);
         callOrderDetailsApi(getOrderId);
+        callOrderPhleboDetails(getOrderId);
       } else {
         setLoading?.(false);
         setError(true);
@@ -304,6 +322,26 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     }
   }
 
+  async function callOrderPhleboDetails(orderId: string) {
+    setPhleboDetailsShimmer(true);
+    try {
+      const response: any = await getDiagnosticPhelboDetails(client, orderId);
+      const orderPhleboDetailsBulk =
+        response?.data?.data?.getOrderPhleboDetailsBulk?.orderPhleboDetailsBulk;
+      if (!!orderPhleboDetailsBulk && orderPhleboDetailsBulk?.length > 0) {
+        //would always be 1.
+        setPhleboDetails(createPhleboDetailsObject(orderPhleboDetailsBulk?.[0]));
+      } else {
+        setPhleboDetails({});
+      }
+    } catch (error) {
+      setPhleboDetails({});
+      CommonBugFender('callOrderPhleboDetails_TestOrderDetails', error);
+    } finally {
+      setPhleboDetailsShimmer(false);
+    }
+  }
+
   useEffect(() => {
     if (!currentPatient) {
       getPatientApiCall();
@@ -332,9 +370,26 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     }
   }, [selectedTab]);
 
-  var orderStatusList: any[] = [];
-  var refundArr: any[] = [];
-  var newList: any[] = [];
+  function createPhleboDetailsObject(detailsObject: any) {
+    const phleboObject = {
+      phleboRating: detailsObject?.orderPhleboDetails?.phleboEta,
+      phleboOTP: detailsObject?.orderPhleboDetails?.phleboOTP,
+      checkinDateTime: detailsObject?.phleboEta,
+      phleboTrackLink: detailsObject?.orderPhleboDetails?.phleboTrackLink,
+      allowCalling: detailsObject?.allowCalling,
+      showPhleboDetails: detailsObject?.showPhleboDetails,
+      phleboDetailsETAText: detailsObject?.phleboDetailsETAText,
+      allowCallingETAText: detailsObject?.allowCallingETAText,
+      isPhleboChanged: detailsObject?.orderPhleboDetails?.isPhleboChanged,
+      diagnosticPhlebotomists: {
+        name: detailsObject?.orderPhleboDetails?.diagnosticPhlebotomists?.name,
+        mobile: detailsObject?.orderPhleboDetails?.diagnosticPhlebotomists?.mobile,
+        vaccinationStatus:
+          detailsObject?.orderPhleboDetails?.diagnosticPhlebotomists?.vaccinationStatus,
+      },
+    };
+    return phleboObject;
+  }
 
   const createRefundObject = () => {
     refundArr = [];
@@ -370,12 +425,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       'Diagnostics'
     )
       .then((data: any) => {
-        const labResultsData = g(
-          data,
-          'getPatientPrismMedicalRecords_V3',
-          'labResults',
-          'response'
-        );
+        const labResultsData = data?.getPatientPrismMedicalRecords_V3?.labResults?.response;
         let resultForVisitNo = labResultsData?.find((item: any) => item?.identifier == getVisitId);
         !!resultForVisitNo
           ? props.navigation.navigate(AppRoutes.HealthRecordDetails, {
@@ -448,7 +498,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           },
           fetchPolicy: 'no-cache',
         });
-        const feedback = g(response, 'data', 'getPatientFeedback', 'feedback', 'length');
+        const feedback = response?.data?.getPatientFeedback?.feedback?.length;
         if (!feedback) {
           setShowRateDiagnosticBtn(true);
         }
@@ -660,19 +710,26 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
   function showContentBasedOnStatus(order: any, isStatusDone: boolean, index: number) {
     const orderStatus = order?.orderStatus;
-    const slotDate = moment(selectedOrder?.slotDateTimeInUTC).format('Do MMM');
-    const slotTime1 = moment(selectedOrder?.slotDateTimeInUTC).format('hh:mm A');
+    const slotDate = moment(selectedOrder?.slotDateTimeInUTC)?.format('Do MMM');
+    const slotTime1 = moment(selectedOrder?.slotDateTimeInUTC)?.format('hh:mm A');
     const slotTime2 = moment(selectedOrder?.slotDateTimeInUTC)
-      .add(slotDuration, 'minutes')
-      .format('hh:mm A');
+      ?.add(slotDuration, 'minutes')
+      ?.format('hh:mm A');
 
     if (orderStatus === DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN) {
       if (!isStatusDone) {
         return (
-          <Text style={styles.statusSubTextStyle}>
-            {`Apollo agent will arrive on ${slotDate}, ${slotTime1} - ${slotTime2}`}
-          </Text>
+          <>
+            <Text style={styles.statusSubTextStyle}>
+              {`Apollo agent will arrive on ${slotDate}, ${slotTime1} - ${slotTime2}`}
+            </Text>
+            {renderPhleboDetailsSection(isStatusDone)}
+          </>
         );
+      } else {
+        if (DIAGNOSTIC_PHELBO_TRACKING_STATUS.includes(orderDetails?.orderStatus)) {
+          return renderPhleboDetailsSection(isStatusDone);
+        }
       }
     }
     if (DIAGNOSTIC_SAMPLE_COLLECTED_STATUS?.includes(orderStatus)) {
@@ -712,6 +769,90 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       return renderOrderCancelledView(order, index);
     }
   }
+
+  const renderPhleboDetailsSection = (isStatusDone: boolean) => {
+    return phleboDetailsShimmer
+      ? renderItemPriceShimmer()
+      : !!phleboDetails && !isEmptyObject(phleboDetails)
+      ? renderPhleboDetails(isStatusDone)
+      : null;
+  };
+
+  function _onPressPhleboCall(phleboName: string, orderId: string) {
+    //if allowCalling is true.
+    const id = orderId?.toString();
+    DiagnosticPhleboCallingClicked(currentPatient, id, phleboName, isDiagnosticCircleSubscription);
+    setShowPhleboCallPopUp(false);
+    _callDiagnosticExotelApi(orderId);
+  }
+
+  async function _callDiagnosticExotelApi(orderId: string) {
+    try {
+      setLoading?.(true);
+      const exotelResponse = await diagnosticExotelCall(client, orderId);
+      if (exotelResponse?.data?.diagnosticExotelCalling) {
+        const callingResponse = exotelResponse?.data?.diagnosticExotelCalling;
+        if (callingResponse?.success) {
+        } else {
+          renderReportError(
+            !!callingResponse?.errorMessage && callingResponse?.errorMessage != ''
+              ? callingResponse?.errorMessage
+              : string.diagnostics.phleboCallingError
+          );
+        }
+      } else {
+        renderReportError(string.diagnostics.phleboCallingError);
+      }
+      setLoading?.(false);
+    } catch (error) {
+      setLoading?.(false);
+      renderReportError(string.diagnostics.phleboCallingError);
+      CommonBugFender('_callDiagnosticExotelApi_TestOrderDetails', error);
+    }
+  }
+
+  const renderPhleboCallPopup = () => {
+    return (
+      <PhleboCallPopup
+        onPressBack={() => {
+          setShowPhleboCallPopUp(false);
+        }}
+        onPressProceed={() => {
+          _onPressPhleboCall(callPhleboObj?.name, callPhleboObj?.orderId);
+        }}
+      />
+    );
+  };
+
+  const renderPhleboDetails = (isStatusDone: boolean) => {
+    const showDetails =
+      !!phleboDetails && !isEmptyObject(phleboDetails) && phleboDetails?.showPhleboDetails;
+    return (
+      showDetails && (
+        <View style={{ marginTop: 8 }}>
+          {isStatusDone && <Spearator />}
+          <AgentDetailsCard
+            orderId={orderDetails?.displayId}
+            phleboDetailsObject={phleboDetails}
+            orderLevelStatus={orderDetails?.orderStatus}
+            currentPatient={currentPatient}
+            isDiagnosticCircleSubscription={isDiagnosticCircleSubscription}
+            onPressCallOption={(name, number) => {
+              setShowPhleboCallPopUp(true);
+              const callObj = {
+                name: name,
+                number: number,
+                orderId: orderDetails?.id,
+              };
+              setCallPhleboObj(callObj);
+            }}
+            source={AppRoutes.TestOrderDetails}
+            showCardView={!isStatusDone}
+          />
+        </View>
+      )
+    );
+  };
 
   const renderOrderCancelledView = (order: orderStatusTracking, index: number) => {
     const refundDetails = order?.attributes?.refund;
@@ -1600,6 +1741,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
       {renderFeedbackPopup()}
       {showViewReportModal ? renderViewReportModal() : null}
+      {showPhleboCallPopUp ? renderPhleboCallPopup() : null}
       {loading1 && <Spinner style={{ zIndex: 200 }} />}
     </View>
   );

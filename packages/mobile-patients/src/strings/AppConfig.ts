@@ -5,6 +5,7 @@ import {
   CALL_TO_ORDER_CTA_PAGE_ID,
   DIAGNOSTIC_ORDER_STATUS,
   REFUND_STATUSES,
+  TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { Platform } from 'react-native';
 
@@ -23,7 +24,7 @@ export enum AppEnv {
   QA8 = 'QA8',
 }
 
-const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA5 as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -317,6 +318,11 @@ const appStaticVariables = {
       ctaText: 'Call to Order',
     },
   },
+  DIAGNOSTICS_SHOW_UPLOAD_PRESCRIPTION_SECTION: true,
+  DIAGNOSTICS_HOME_SINGLE_ITEM: {
+    id: "2446",
+  },
+  DIAGNOSTICS_HOME_PAGE_BANNER_HEIGHT: 160,
   DIAGNOSTICS_PHLEBO_CALL_NUMBER: '08046807674',
   DIAGNOSTICS_COVID_ITEM_IDS: [2446],
   FREE_CONSULT_MESSAGE: {
@@ -1662,7 +1668,7 @@ export const DIAGNOSTIC_STATUS_BEFORE_SUBMITTED = [
   DIAGNOSTIC_ORDER_STATUS.CANCELLATION_REQUESTED,
 ];
 
-export const DIAGNOSITC_PHELBO_TRACKING_STATUS = [
+export const DIAGNOSTIC_PHELBO_TRACKING_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
   DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED,
 ];
@@ -1685,6 +1691,16 @@ export const DIAGNOSTIC_SUB_STATUS_TO_SHOW = [
 ];
 
 export const ELIGIBLE_HC_VERTICALS = ['pharma', 'diagnostics'];
+
+enum DiagnosticBannerVisible {
+  APP = 'app',
+  WEB = 'web',
+  Both = 'both',
+}
+
+export const DIANOSTIC_BANNER_VISIBLE_ARRAY = [
+  DiagnosticBannerVisible.APP, DiagnosticBannerVisible.Both
+]
 
 export const TestsNewFeedbackData = {
   options: [

@@ -262,16 +262,27 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   function triggerAddressSelected(servicable: 'Yes' | 'No') {
     const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
     const pinCodeFromAddress = addressToUse?.zipcode!;
+    triggerCartPageViewed(false, cartItems); //required to triggered it when address is being selected
     DiagnosticAddresssSelected(
-      newAddressAddedCartPage != '' ? 'New' : 'Existing',
+      newAddressAddedCartPage != '' ? 'Manual' : 'Automation',
       servicable,
       pinCodeFromAddress,
       'Cart page',
       currentPatient,
-      isDiagnosticCircleSubscription
+      isDiagnosticCircleSubscription,
+      addressToUse?.latitude,
+      addressToUse?.longitude,
+      addressToUse?.state,
+      addressToUse?.city
     );
     newAddressAddedCartPage != '' && setNewAddressAddedCartPage?.('');
   }
+  const paitentTotalCart: any[] = [];
+    patientCartItemsCopy?.map((item: any) => {
+      item?.cartItems?.map((_item: any) => {
+        paitentTotalCart?.push(_item);
+      });
+    });
 
   function triggerCartPageViewed(isRecommendationShown: boolean, recomData: any) {
     const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
@@ -294,7 +305,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       cityFromAddress,
       '',
       isRecommendationShown,
-      recomData
+      recomData,
+      paitentTotalCart
     );
   }
 
@@ -403,7 +415,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         cityFromAddress,
         '',
         isRecommendationShown,
-        recomData
+        recomData,
+        paitentTotalCart
       );
     }
   }, [cartItems?.length, recomData?.length, loading]);

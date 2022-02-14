@@ -43,6 +43,7 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import { addPatientPrescriptionRecord } from '@aph/mobile-patients/src/graphql/types/addPatientPrescriptionRecord';
 import {
   AddPrescriptionRecordInput,
+  DiagnosticCTJourneyType,
   MedicalRecordType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -62,6 +63,7 @@ import {
   convertPrismUrlToBlob,
   getPatientPrismMedicalRecordsApi,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 const GreenTickAnimation = '@aph/mobile-patients/src/components/Tests/greenTickAnimation.json';
 
 export interface SubmittedPrescriptionProps extends NavigationScreenProps {
@@ -86,6 +88,8 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
   const [additionalNotes, setadditionalNotes] = useState<string>('');
   const [onSumbitSuccess, setOnSumbitSuccess] = useState<boolean>(false);
   const [isErrorOccured, setIsErrorOccured] = useState<boolean>(false);
+  const uploadViaWhatsapp =
+  AppConfig.Configuration.DIAGNOSTICS_ENABLE_UPLOAD_PRESCRIPTION_VIA_WHATSAPP;
   useEffect(() => {
     setLoading?.(false);
     fetchPatientPrescriptions();
@@ -304,7 +308,8 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
         prescriptionUrl ? prescriptionUrl : '',
         inputData?.prescriptionName ? inputData?.prescriptionName : '',
         userType,
-        isDiagnosticCircleSubscription
+        isDiagnosticCircleSubscription,
+        DiagnosticCTJourneyType?.UPLOAD_PRESCRIPTION
       );
     } else {
       let uploadUrl;
@@ -320,7 +325,8 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
         !!uploadUrl ? uploadUrl : '',
         inputData?.prescriptionName ? inputData?.prescriptionName : '',
         userType,
-        isDiagnosticCircleSubscription
+        isDiagnosticCircleSubscription,
+        DiagnosticCTJourneyType?.UPLOAD_PRESCRIPTION
       );
     }
     setOnSumbitSuccess(true);
@@ -361,12 +367,19 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
       ? finalConcatenatedUrl?.map((item: any) => item)?.join(' ')
       : finalConcatenatedUrl;
 
+    let itemNames = [];
+    if (responseResult?.prescriptionFiles?.length == 1) {
+      itemNames = responseResult?.prescriptionFiles?.[0]?.fileName;
+    } else {
+      itemNames = responseResult?.prescriptionFiles?.map((attributes: any) => `${attributes?.fileName}`);
+    }
     DiagnosticPrescriptionSubmitted(
       currentPatient,
       !!newUrl ? newUrl : '',
-      inputData?.prescriptionName ? inputData?.prescriptionName : '',
+      !!itemNames ? itemNames : '',
       userType,
-      isDiagnosticCircleSubscription
+      isDiagnosticCircleSubscription,
+      DiagnosticCTJourneyType?.UPLOAD_PRESCRIPTION
     );
     setOnSumbitSuccess(true);
   }
