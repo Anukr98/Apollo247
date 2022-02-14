@@ -4547,3 +4547,40 @@ export const getShipmentAndTatInfo = (shipments) => {
     })
     : [];
 };
+
+export const postOfferCardClickEvent = (
+  item: any,
+  sequence: string,
+  offerExpired: boolean,
+  allCurrentPatients: any,
+  currentPatient: any,
+  notchText: string,
+  circleMember: boolean,
+  offerCount: number,
+  triggerType: string
+) => {
+  const eventAttributes = {
+    User_Type: getUserType(allCurrentPatients),
+    'Patient Name': currentPatient?.firstName || 'NA',
+    'Patient UHID': currentPatient?.uhid || 'NA',
+    'Patient age': currentPatient ? getAge(currentPatient?.dateOfBirth) : 'NA',
+    'Circle Member': circleMember ? 'True' : 'False',
+    'Customer ID': currentPatient?.id || 'NA',
+    'Patient gender': currentPatient?.gender || 'NA',
+    'Mobile number': currentPatient?.mobileNumber || 'NA',
+    'Page name': 'HomePage',
+    'Offer Content': item?.title?.text || '',
+    Timer: offerExpired ? 'No' : 'Yes',
+    'Coupon Code': item?.coupon_code,
+    'Offer tile sequence': sequence,
+    LOB: item?.cta?.path?.vertical || '',
+    'Offer Notch Test': notchText,
+    'Offer CTA Text': item?.cta?.text,
+    'Offer Expiry': item?.expired_at,
+    'Offer ID': item?.offer_id,
+    'Offer Subtitle': item?.subtitle?.text,
+    'Number of offers': offerCount,
+    trigger_type: triggerType,
+  };
+  postCleverTapEvent(CleverTapEventName.HOMEPAGE_OFFERS_ACTIVITY, eventAttributes);
+};
