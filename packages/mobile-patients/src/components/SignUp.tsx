@@ -253,6 +253,18 @@ const SignUp: React.FC<SignUpProps> = (props) => {
     }
   };
 
+  const handleBack = async () => {
+    await AsyncStorage.getItem('phoneNumber').then(async phoneNumber => {
+      await AsyncStorage.clear().then(async () => {
+        await AsyncStorage.setItem('phoneNumber', `${phoneNumber}`).then(() => {
+          props.navigation.navigate(AppRoutes.Login)
+          return true
+        })
+      })
+    })
+    return true
+  };
+
   useEffect(() => {
     const isValidReferralCode = /^[a-zA-Z]{4}[0-9]{4}$/.test(referral);
     setValidReferral(isValidReferralCode);
@@ -264,6 +276,8 @@ const SignUp: React.FC<SignUpProps> = (props) => {
     getPrefillReferralCode();
     checkUserType();
     getAllOffersForRegisterations();
+    const backButtonListener = BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => backButtonListener.remove();
   }, []);
 
   useEffect(() => {
@@ -358,25 +372,6 @@ const SignUp: React.FC<SignUpProps> = (props) => {
 
   useEffect(() => {
     AsyncStorage.setItem('signUp', 'true');
-    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-      try {
-        if (patient) {
-          props.navigation.goBack();
-        } else {
-          if (backPressCount === 1) {
-            BackHandler.exitApp();
-          } else {
-            backPressCount++;
-          }
-        }
-        return true;
-      } catch (e) {
-        CommonBugFender('Sign_up_backpressed', e);
-      }
-    });
-    return function cleanup() {
-      backHandler.remove();
-    };
   }, []);
 
   const checkUserType = async () => {
@@ -709,7 +704,14 @@ const SignUp: React.FC<SignUpProps> = (props) => {
   const renderStickyHeader = () => {
     return (
       <View style={styles.stickyHeaderMainContainer}>
-        <ApolloLogo style={styles.appLogo} />
+        <View style={styles.topViewContainer}>
+          <TouchableOpacity style={{ flex: 0.37 }} onPress={handleBack}>
+            <BackArrow />
+          </TouchableOpacity>
+          <View style={{ flex: 0.63 }}>
+            <ApolloLogo style={styles.appLogo} resizeMode="contain" />
+          </View>
+        </View>
         <View style={styles.stickyHeaderTextContainer}>
           <Text style={styles.stickyHeaderMainHeading}>
             {string.registerationScreenData.headerOneHeading}
@@ -1071,6 +1073,11 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.container,
     backgroundColor: theme.colors.WHITE,
     paddingTop: 2,
+  },
+  topViewContainer: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    paddingLeft: 20,
   },
   placeholderViewStyle: {
     flexDirection: 'row',
