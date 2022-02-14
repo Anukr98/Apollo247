@@ -1410,8 +1410,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
   const getEventParams = async () => {
     const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
+    const phoneNumber = await AsyncStorage.getItem('phoneNumber');
     const eventParams = {
-      PatientId: currentPatient.id,
+      mobileNumber: phoneNumber,
       OS: Platform?.OS,
       AppVersion: DeviceInfo.getVersion(),
       loggedIn: userLoggedIn,
@@ -1424,7 +1425,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     const token = await returnAuthToken?.().catch((error) => {});
     if (!token) {
       // Firing a webEngage event to track number of anticipated logouts (if Logout is implemented incase of missing auth token)
-      postWebEngageEvent(WebEngageEventName.LOGOUT_REQUIRED, getEventParams());
+      const params = await getEventParams();
+      postWebEngageEvent(WebEngageEventName.LOGOUT_REQUIRED, params);
     }
   };
 

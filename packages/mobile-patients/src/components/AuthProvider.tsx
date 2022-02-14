@@ -129,8 +129,9 @@ export const AuthProvider: React.FC = (props) => {
 
   const getEventParams = async () => {
     const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
+    const phoneNumber = await AsyncStorage.getItem('phoneNumber');
     const eventParams = {
-      PatientId: currentPatientId,
+      mobileNumber: phoneNumber,
       OS: Platform?.OS,
       AppVersion: DeviceInfo.getVersion(),
       loggedIn: userLoggedIn,
@@ -164,9 +165,11 @@ export const AuthProvider: React.FC = (props) => {
         setAuthToken('');
       });
       setAuthToken(token);
-      postWebEngageEvent(WebEngageEventName.AUTHTOKEN_UPDATED, getEventParams());
+      const params = await getEventParams();
+      postWebEngageEvent(WebEngageEventName.AUTHTOKEN_UPDATED, params);
     } else {
-      postWebEngageEvent(WebEngageEventName.NO_FIREBASE_USER, getEventParams());
+      const params = await getEventParams();
+      postWebEngageEvent(WebEngageEventName.NO_FIREBASE_USER, params);
     }
   };
 
@@ -325,9 +328,11 @@ export const AuthProvider: React.FC = (props) => {
             });
             setAuthToken(jwt);
             resolve(jwt);
-            postWebEngageEvent(WebEngageEventName.AUTHTOKEN_UPDATED, getEventParams());
+            const params = await getEventParams();
+            postWebEngageEvent(WebEngageEventName.AUTHTOKEN_UPDATED, params);
           } else {
-            postWebEngageEvent(WebEngageEventName.NO_FIREBASE_USER, getEventParams());
+            const params = await getEventParams();
+            postWebEngageEvent(WebEngageEventName.NO_FIREBASE_USER, params);
           }
           setIsSigningIn(false);
         });
