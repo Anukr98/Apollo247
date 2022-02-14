@@ -170,12 +170,7 @@ export interface SplashScreenProps extends NavigationScreenProps {}
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { APP_ENV } = AppConfig;
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
-  const {
-    setAllPatients,
-    setMobileAPICalled,
-    validateAndReturnAuthToken,
-    buildApolloClient,
-  } = useAuth();
+  const { setAllPatients, setMobileAPICalled, returnAuthToken, buildApolloClient } = useAuth();
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [appState, setAppState] = useState(AppState.currentState);
   const [takeToConsultRoom, settakeToConsultRoom] = useState<boolean>(false);
@@ -417,6 +412,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     };
     postWebEngageEvent(WebEngageEventName.PATIENT_DECLINED_CALL, eventAttributes);
   };
+  console.warn = (error: any) => {};
 
   const handleDeepLink = () => {
     try {
@@ -552,7 +548,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   const fetchOrderInfo = async (paymentId: string) => {
     try {
-      const authToken: string = await validateAndReturnAuthToken();
+      const authToken: any = await returnAuthToken?.();
       const apolloClient = buildApolloClient(authToken);
       const response = await apolloClient.query({
         query: GET_ORDER_INFO,
@@ -1359,9 +1355,17 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Diagnostic_Review_Disclaimer_New',
       PROD: 'Diagnostic_Review_Disclaimer_New',
     },
+    APOLLO247_API_KEY: {
+      QA: 'APOLLO247_API_KEY',
+      PROD: 'APOLLO247_API_KEY',
+    },
     HOME_CTA_CONFIG: {
       QA: 'QA_HOME_CTA_CONFIG',
       PROD: 'PROD_HOME_CTA_CONFIG',
+    },
+    ACTIVATE_NEW_JWT_TOKEN: {
+      QA: 'ACTIVATE_NEW_JWT_TOKEN_QA',
+      PROD: 'ACTIVATE_NEW_JWT_TOKEN_PROD',
     },
   };
 
@@ -1404,7 +1408,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   const getOffers = async () => {
     setOffersListLoading && setOffersListLoading(true);
-    const authToken: string = await validateAndReturnAuthToken();
+    const authToken: any = await returnAuthToken?.();
     const apolloClient = buildApolloClient(authToken);
     try {
       const res = await apolloClient.query({
@@ -1814,6 +1818,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER',
         'DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER_TEXT',
         (key) => config.getString(key)
+      );
+
+      setAppConfig('APOLLO247_API_KEY', 'APOLLO247_API_KEY', (key) => config.getString(key));
+      setAppConfig('ACTIVATE_NEW_JWT_TOKEN', 'ACTIVATE_NEW_JWT_TOKEN', (key) =>
+        config.getBoolean(key)
       );
 
       setAppConfig(
