@@ -194,7 +194,7 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
     return (
       <TouchableOpacity
         activeOpacity={1}
-        onPress={!isOutOfStock ? props.onPressNotify : props.onPressAddToCart}
+        onPress={isOutOfStock ? props.onPressNotify : props.onPressAddToCart}
       >
         <Text style={theme.viewStyles.text('SB', 12, '#fc9916', 1, 24, 0)}>
           {isOutOfStock ? 'NOTIFY ME' : 'ADD TO CART'}
