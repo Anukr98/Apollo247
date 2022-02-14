@@ -948,7 +948,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     justifyContent: 'center',
     alignItems: 'center',
-    width: Dimensions.get('window').width * 0.75,
+    maxWidth: Dimensions.get('window').width * 0.75,
   },
   medCouponContainer: {
     borderRadius: 4,
