@@ -65,6 +65,7 @@ import codePush from 'react-native-code-push';
 import WebEngage from 'react-native-webengage';
 import {
   NavigationActions,
+  NavigationEvents,
   NavigationScreenProps,
   ScrollView,
   StackActions,
@@ -166,6 +167,8 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     setCircleSubscription,
     setPhrSession,
     setCorporateSubscriptions,
+    tabRouteJourney,
+    setTabRouteJourney,
   } = useAppCommonData();
   const {
     setIsDiagnosticCircleSubscription,
@@ -620,8 +623,29 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     );
   };
 
+  const setRouteJourneyFromTabbar = () => {
+    if (!tabRouteJourney) {
+      setTabRouteJourney &&
+        setTabRouteJourney({
+          previousRoute: 'MY ACCOUNT',
+          currentRoute: 'MY ACCOUNT',
+        });
+    } else {
+      setTabRouteJourney &&
+        setTabRouteJourney({
+          previousRoute: tabRouteJourney?.currentRoute,
+          currentRoute: 'MY ACCOUNT',
+        });
+    }
+  };
+
   return (
     <View style={{ flex: 1 }}>
+      <NavigationEvents
+        onDidFocus={() => {
+          setRouteJourneyFromTabbar();
+        }}
+      />
       <SafeAreaView
         style={{
           ...theme.viewStyles.container,

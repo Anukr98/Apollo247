@@ -1158,6 +1158,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     setDisplayQuickBookAskApollo,
     displayAskApolloNumber,
     setDisplayAskApolloNumber,
+    tabRouteJourney,
+    setTabRouteJourney,
   } = useAppCommonData();
   const { fetchServerCart } = useServerCart();
 
@@ -6070,11 +6072,28 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     }
   };
 
+  const setRouteJourneyFromTabbar = () => {
+    if (!tabRouteJourney) {
+      setTabRouteJourney &&
+        setTabRouteJourney({
+          previousRoute: 'Home',
+          currentRoute: 'Home',
+        });
+    } else {
+      setTabRouteJourney &&
+        setTabRouteJourney({
+          previousRoute: tabRouteJourney?.currentRoute,
+          currentRoute: 'Home',
+        });
+    }
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.WHITE }}>
       <NavigationEvents
         onDidFocus={() => {
           scrollCount.current = 0;
+          setRouteJourneyFromTabbar();
         }}
         onDidBlur={postScrollScreenEvent}
       />

@@ -2403,19 +2403,20 @@ export const InitiateAppsFlyer = (
   let isDeepLinked = false;
   onDeepLinkCanceller = appsFlyer.onDeepLink((res) => {
     isDeepLinked = true;
-    if (res.is_deferred) {
+    if (res.isDeferred) {
       getInstallResources();
       const url = handleOpenURL(res?.data?.deep_link_value);
       AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
     }
     try {
-      if (!res.is_deferred) {
+      if (!res.isDeferred) {
         if (redirectUrl && checkUniversalURL(redirectUrl).universal) {
           if (Object.keys(res.data).length < 2) {
             clevertapEventForAppsflyerDeeplink(
               removeNullFromObj({
                 source_url: checkUniversalURL(redirectUrl).source_url,
                 channel: 'Organic',
+                'Nav Src': 'universal URL'
               })
             );
           } else {
@@ -2423,18 +2424,20 @@ export const InitiateAppsFlyer = (
               filterAppLaunchSoruceAttributesByKey({
                 ...res.data,
                 source_url: checkUniversalURL(redirectUrl).source_url,
+                'Nav Src': 'universal URL'
               })
             );
           }
         } else {
-          clevertapEventForAppsflyerDeeplink(filterAppLaunchSoruceAttributesByKey(res.data));
+          const eventAttributes = {
+            ...res.data,
+            "Nav Src": 'deeplink'
+          }
+          clevertapEventForAppsflyerDeeplink(filterAppLaunchSoruceAttributesByKey(eventAttributes));
           const url = handleOpenURL(res.data.deep_link_value);
           AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
           redirectWithOutDeferred(url);
         }
-      }
-      if (res.status == 'success') {
-        clevertapEventForAppsflyerDeeplink(removeNullFromObj(res.data));
       }
     } catch (e) { }
   });
@@ -2481,7 +2484,11 @@ const setAppReferralData = (data: {
 
 const getInstallResources = () => {
   let installConversation = appsFlyer.onInstallConversionData((res) => {
-    clevertapEventForAppsflyerDeeplink(removeNullFromObj(res.data));
+    clevertapEventForAppsflyerDeeplink({
+      ...removeNullFromObj(filterAppLaunchSoruceAttributesByKey(res.data)),
+      "Nav Src": "deffered deeplink",
+      is_first_launch: true
+    });
     installConversation();
   });
 };
@@ -2911,6 +2918,13 @@ export const addPharmaItemToCart = (
         pharmacyCircleAttributes!
       );
     };
+    if (comingFromSearch === true) {
+      cleverTapSearchSuccessEventAttributes?.['Product availability'] = 'Is in stock';
+      postCleverTapEvent(
+        CleverTapEventName.PHARMACY_SEARCH_SUCCESS,
+        cleverTapSearchSuccessEventAttributes
+      );
+    }
     if (!isLocationServeiceable) {
       const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE] = {
         'product name': cartItem.name,
@@ -2920,14 +2934,9 @@ export const addPharmaItemToCart = (
       };
       postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE, eventAttributes);
       onComplete && onComplete();
+      return;
     }
-    if (comingFromSearch === true) {
-      cleverTapSearchSuccessEventAttributes?.['Product availability'] = 'Is in stock';
-      postCleverTapEvent(
-        CleverTapEventName.PHARMACY_SEARCH_SUCCESS,
-        cleverTapSearchSuccessEventAttributes
-      );
-    }
+
     addToCart();
     onAddedSuccessfully?.();
   } catch (error) { }
@@ -4140,6 +4149,7 @@ export const filterAppLaunchSoruceAttributesByKey = (raw: any) => {
     'is_paid',
     'adgroup',
     'campaign_id',
+    'Nav Src'
   ];
   let filteredObj = removeNullFromObj(raw);
   return Object.keys(filteredObj)

@@ -286,6 +286,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     bannerData,
     pharmacyUserType,
     setIsRenew,
+    tabRouteJourney,
+    setTabRouteJourney,
   } = useAppCommonData();
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const {
@@ -971,8 +973,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       ),
     });
   };
-
-  useEffect(() => {}, [loading, banners]);
 
   const findMinimumBannerHeight = (showLoader: boolean) => {
     if (banners?.length) {
@@ -2654,10 +2654,32 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const setRouteJourneyFromTabbar = () => {
+    console.log(tabRouteJourney, 'tabRouteJourney');
+    if (!tabRouteJourney) {
+      setTabRouteJourney &&
+        setTabRouteJourney({
+          previousRoute: 'Medicine',
+          currentRoute: 'Medicine',
+        });
+    } else {
+      setTabRouteJourney &&
+        setTabRouteJourney({
+          previousRoute: tabRouteJourney?.currentRoute,
+          currentRoute: 'Medicine',
+        });
+      const eventArributes = {
+        'Nav Src': tabRouteJourney?.currentRoute,
+      };
+      postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED, eventArributes);
+    }
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <NavigationEvents
-        onDidFocus={() => {
+        onDidFocus={(payload) => {
+          setRouteJourneyFromTabbar();
           scrollCount.current = 0;
         }}
         onDidBlur={postScrollScreenEvent}
@@ -2722,7 +2744,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       {AppConfig.Configuration.WHATSAPP_TO_ORDER.iconVisibility &&
         showWhatsappRedirectionIcon &&
         medicineList?.length === 0 && <WhatsappRedirectionStickyNote />}
-        <UpdateAppPopup depricatedAppData={depricatedAppData} />
+      <UpdateAppPopup depricatedAppData={depricatedAppData} />
     </View>
   );
 };
