@@ -254,11 +254,15 @@ const SignUp: React.FC<SignUpProps> = (props) => {
   };
 
   const handleBack = async () => {
-    await AsyncStorage.clear().then(() => {
-      props.navigation.navigate(AppRoutes.Login);
-      return true;
-    });
-    return true;
+    await AsyncStorage.getItem('phoneNumber').then(async phoneNumber => {
+      await AsyncStorage.clear().then(async () => {
+        await AsyncStorage.setItem('phoneNumber', `${phoneNumber}`).then(() => {
+          props.navigation.navigate(AppRoutes.Login)
+          return true
+        })
+      })
+    })
+    return true
   };
 
   useEffect(() => {
