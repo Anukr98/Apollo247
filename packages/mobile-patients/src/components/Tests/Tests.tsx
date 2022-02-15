@@ -128,7 +128,6 @@ import {
   diagnosticServiceability,
   fetchPatientAddressList,
   getDiagnosticClosedOrders,
-  getDiagnosticExpressSlots,
   getDiagnosticOpenOrders,
   getDiagnosticPatientPrescription,
   getDiagnosticPhelboDetails,
@@ -136,6 +135,7 @@ import {
   getDiagnosticsOrder,
   getDiagnosticsPastOrderRecommendations,
   getUserBannersList,
+  getUserSubscriptionStatus,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
@@ -162,6 +162,7 @@ import PackageCard from '@aph/mobile-patients/src/components/Tests/components/Pa
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   AppConfig,
+  AppEnv,
   DIAGNOSTIC_PHELBO_TRACKING_STATUS,
   DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY,
   DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
@@ -209,6 +210,7 @@ import { Cache } from 'react-native-cache';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 import { TestPdfRender } from '@aph/mobile-patients/src/components/Tests/components/TestPdfRender';
 import { CartPageSummary } from '@aph/mobile-patients/src/components/Tests/components/CartSummaryView';
+import { ExpressSlotMessageRibbon } from '@aph/mobile-patients/src/components/Tests/components/ExpressSlotMessageRibbon';
 
 const rankArr = ['1', '2', '3', '4', '5', '6'];
 const { width: winWidth, height: winHeight } = Dimensions.get('window');
@@ -363,7 +365,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [serviceableObject, setServiceableObject] = useState({} as any);
   const [showNoLocationPopUp, setShowNoLocationPopUp] = useState<boolean>(false);
   const [clickedItem, setClickedItem] = useState<any>([]);
-  const [expressSlotMsg, setExpressSlotMsg] = useState<string>('');
   const [isPriceAvailable, setIsPriceAvailable] = useState<boolean>(false);
   const [priceAvailable, setPriceAvailable] = useState<boolean>(false);
   const [fetchAddressLoading, setFetchAddressLoading] = useState<boolean>(false);
@@ -405,6 +406,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   useEffect(() => {
     fetchNumberSpecificOrderDetails();
+    if (!!currentPatient && !isDiagnosticCircleSubscription) {
+      getUserSubscriptionsByStatus();
+    }
     if (movedFrom === 'deeplink') {
       BackHandler.addEventListener('hardwareBackPress', handleBack);
       return () => {
@@ -635,7 +639,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
     try {
       const diagnosticUserType = await AsyncStorage.getItem('diagnosticUserType');
       setDiagnosticStateUserType(diagnosticUserType || '');
-      if (diagnosticUserType == null) {
+      if (
+        diagnosticUserType == null ||
+        diagnosticUserType == string.user_type.NEW ||
+        diagnosticUserType == `"${string.user_type.NEW}"`
+      ) {
         fetchOrders();
       }
     } catch (error) {
@@ -748,7 +756,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         const getBannerToShow = bannerData?.filter((banner: any) =>
           DIANOSTIC_BANNER_VISIBLE_ARRAY.includes(banner?.VisibleOn)
         );
-        setBanners(getBannerToShow);
+        getBannerToShow?.length > 0 ? setBanners(getBannerToShow) : setBannerLoading(false);
       } else {
         setBanners([]);
         setBannerLoading(false);
@@ -814,46 +822,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setBannerData && setBannerData([]);
     }
   };
-
-  async function getExpressSlots(
-    serviceabilityObject: DiagnosticData,
-    selectedAddress: LocationData
-  ) {
-    const getLat = selectedAddress?.latitude!;
-    const getLng = selectedAddress?.longitude!;
-    const getZipcode = selectedAddress?.pincode;
-    const getServiceablityObject = {
-      cityID: Number(serviceabilityObject?.cityId),
-      stateID: Number(serviceabilityObject?.stateId),
-    };
-    //response when unserviceable
-    if (Number(serviceabilityObject?.stateId) == 0 && serviceabilityObject?.city == '') {
-      setExpressSlotMsg('');
-      return;
-    }
-    try {
-      const res: any = await getDiagnosticExpressSlots(
-        client,
-        getLat,
-        getLng,
-        String(getZipcode),
-        getServiceablityObject
-      );
-      if (res?.data?.getUpcomingSlotInfo) {
-        const getResponse = res?.data?.getUpcomingSlotInfo;
-        if (getResponse?.status) {
-          setExpressSlotMsg(getResponse?.slotInfo);
-        } else {
-          setExpressSlotMsg('');
-        }
-      } else {
-        setExpressSlotMsg('');
-      }
-    } catch (error) {
-      CommonBugFender('getExpressSlots_Tests', error);
-      setExpressSlotMsg('');
-    }
-  }
 
   function getFilteredWidgets(widgetsData: any, source?: string) {
     var filterWidgets, itemIds;
@@ -1134,7 +1102,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
           setNonServiceableValues(obj, pincode);
           triggerAddressSelected('No');
         }
-        getExpressSlots(obj, selectedAddress);
         getDiagnosticBanner(Number(obj?.cityId));
         getHomePageWidgets(obj?.cityId);
       } catch (error) {
@@ -1195,16 +1162,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
     try {
       const query: GetSubscriptionsOfUserByStatusVariables = {
         mobile_number: currentPatient?.mobileNumber,
-        status: ['active', 'deferred_inactive'],
+        status: ['active', 'deferred_active', 'deferred_inactive', 'disabled'],
       };
-      const res = await client.query<GetSubscriptionsOfUserByStatus>({
-        query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
-        fetchPolicy: 'no-cache',
-        variables: query,
-      });
+      const res = await getUserSubscriptionStatus(client, query);
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
+      const filterActiveResults = data?.APOLLO?.filter((val: any) => val?.status == 'active');
       if (data) {
-        const circleData = data?.APOLLO?.[0];
+        const circleData = !!filterActiveResults ? filterActiveResults?.[0] : data?.APOLLO?.[0];
         if (circleData._id && circleData?.status !== 'disabled') {
           AsyncStorage.setItem('circleSubscriptionId', circleData._id);
           setCircleSubscriptionId && setCircleSubscriptionId(circleData._id);
@@ -1619,12 +1583,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     if (loading || bannerLoading) {
       //To do add another section shimmer
       return renderBannerShimmer();
-
-      return (
-        <View
-          style={[styles.sliderPlaceHolderStyle, { height: imgHeight, backgroundColor: '#e3e1e1' }]}
-        ></View>
-      );
     } else if (banners?.length > 0) {
       return (
         <View style={{ marginBottom: 28 }}>
@@ -1651,7 +1609,19 @@ export const Tests: React.FC<TestsProps> = (props) => {
       return null;
     }
   };
-
+  const renderStaticBanner = () => {
+    const imageUrl = "https://newassets.apollo247.com/uatcms/2021-06/senior citizen-01_0.jpg"
+    return (
+      <View>
+        <ImageNative
+        resizeMode="contain"
+        style={{ width: '100%' , height: imgHeight}}
+        source={{ uri: imageUrl }}
+        />
+      </View>
+    )
+  }
+ 
   function _handleNavigationFromBanner(item: any, url: string) {
     //for rtpcr - drive through - open webview
     //for radiology
@@ -2133,7 +2103,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const openGallery = () => {
     Platform.OS == 'android' && setIsPrescriptionUpload(false);
-
+    setLoading(true)
     ImagePicker.openPicker({
       cropping: false,
       hideBottomControls: true,
@@ -2147,6 +2117,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     })
       .then((response) => {
         const images = response as ImageCropPickerResponse[];
+        setLoading(true)
         const isGreaterThanSpecifiedSize = images.find(({ size }) => size > MAX_FILE_SIZE);
         if (isGreaterThanSpecifiedSize) {
           Alert.alert(string.common.uhOh, string.diagnostics.invalidFileSize);
@@ -2154,6 +2125,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }
         const uploadedImages = formatResponse(images);
         Platform.OS == 'ios' && setIsPrescriptionUpload(false);
+        setLoading(false)
         props.navigation.navigate(AppRoutes.SubmittedPrescription, {
           type: 'Gallery',
           phyPrescriptionsProp: [...phyPrescriptionUploaded, ...uploadedImages],
@@ -2162,6 +2134,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         });
       })
       .catch((e: Error) => {
+        setLoading(false)
         Platform.OS == 'ios' && setIsPrescriptionUpload(false);
         CommonBugFender('Tests_onClickGallery', e);
       });
@@ -2338,7 +2311,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         navigation={props.navigation}
         onSubmit={(selectedEPres) => {
           setSelectPrescriptionVisible(false);
-          if (selectedEPres.length == 0) {
+          if (selectedEPres?.length == 0) {
             return;
           }
           props.navigation.navigate(AppRoutes.SubmittedPrescription, {
@@ -2625,14 +2598,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }
 
   const renderExpressSlots = () => {
-    return (
-      <View style={styles.outerExpressView}>
-        <View style={styles.innerExpressView}>
-          <ExpressSlotClock style={styles.expressSlotIcon} />
-          <Text style={styles.expressSlotText}>{expressSlotMsg}</Text>
-        </View>
-      </View>
-    );
+    return diagnosticServiceabilityData && diagnosticLocation ? (
+      <ExpressSlotMessageRibbon
+        serviceabilityObject={diagnosticServiceabilityData}
+        selectedAddress={diagnosticLocation}
+      />
+    ) : null;
   };
 
   function getRanking(rank: string) {
@@ -2814,10 +2785,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderWidgetType = (widget: any) => {
     if (!!widget) {
+      const { APP_ENV } = AppConfig;
       const widgetName = widget?.diagnosticWidgetType?.toLowerCase();
       switch (widgetName) {
         case string.diagnosticCategoryTitle.banner:
-          return renderBanner();
+          return APP_ENV != AppEnv.PERFORM ? renderStaticBanner() : renderBanner();
           break;
         case string.diagnosticCategoryTitle.package:
           return renderPackageWidget(widget);
@@ -3401,7 +3373,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             {renderDiagnosticHeader()}
             {renderSeperator()}
             {renderSearchBar()}
-            {expressSlotMsg != '' ? renderExpressSlots() : null}
+            {renderExpressSlots()}
             <Modal
               animationType="fade"
               transparent={true}
@@ -3531,6 +3503,8 @@ const styles = StyleSheet.create({
     width: '50%',
     justifyContent: 'center',
     padding: 5,
+    marginBottom: 16,
+    marginTop: 16,
   },
   precriptionContainerMiniUpload: {
     flexDirection: 'row',

@@ -63,6 +63,9 @@ import {
   FIND_DIAGNOSTIC_SETTINGS,
   GET_PATIENT_ADDRESS_LIST,
   GET_RESCHEDULE_AND_CANCELLATION_REASONS,
+  GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
+  GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS_V2,
+  GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -127,6 +130,7 @@ import {
   ProcessDiagnosticHCOrderInputCOD,
   DiagnosticsBookingSource,
   REPORT_TAT_SOURCE,
+  recommendationInputItem,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { insertMessageVariables } from '@aph/mobile-patients/src/graphql/types/insertMessage';
 import {
@@ -306,10 +310,13 @@ import {
   getPatientAddressList,
   getPatientAddressListVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
+import { getDiagnosticPackageRecommendationsv2, getDiagnosticPackageRecommendationsv2Variables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticPackageRecommendationsv2';
 import {
   getRescheduleAndCancellationReasons,
   getRescheduleAndCancellationReasonsVariables,
 } from '@aph/mobile-patients/src/graphql/types/getRescheduleAndCancellationReasons';
+import { findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
+import { GetSubscriptionsOfUserByStatus, GetSubscriptionsOfUserByStatusVariables } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -1641,11 +1648,30 @@ export const getDiagnosticsPackageRecommendations = (
   });
 };
 
+export const getDiagnosticsPackageRecommendationsv2 = (
+  client: ApolloClient<object>,
+  recommendationInputItems: recommendationInputItem[],
+  cityId: number,
+) => {
+  return client.query<getDiagnosticPackageRecommendationsv2, getDiagnosticPackageRecommendationsv2Variables>({
+    query: GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS_V2,
+    context: {
+      sourceHeaders,
+    },
+    variables: {
+      recommendationInputItems: recommendationInputItems,
+      cityId: cityId,
+    },
+    fetchPolicy: 'no-cache',
+  });
+};
+
 export const getDiagnosticsOrder = (
   client: ApolloClient<object>,
   mobileNumber: string,
   limit: number,
-  offset: number
+  offset: number,
+  patientId?: string,
 ) => {
   return client.query<getDiagnosticOrdersListByMobile, getDiagnosticOrdersListByMobileVariables>({
     query: GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
@@ -1657,6 +1683,7 @@ export const getDiagnosticsOrder = (
       paginated: true,
       limit: limit,
       offset: offset,
+      patientId: !!patientId ? patientId: '',
     },
     fetchPolicy: 'no-cache',
   });
@@ -1754,3 +1781,25 @@ export const getDiagnosticReasons = (client: ApolloClient<object>, orderTime: st
     fetchPolicy: 'no-cache',
   });
 };
+
+export const getDiagnosticWidgetPricing = (client: ApolloClient<object>, cityId: string | number, listOfId: []) => {
+  return client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
+    query: GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
+    context: {
+      sourceHeaders,
+    },
+    variables: {
+      cityID: Number(cityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
+      itemIDs: listOfId,
+    },
+    fetchPolicy: 'no-cache',
+  });
+};
+
+export const getUserSubscriptionStatus = (client: ApolloClient<object>, queryVariable: GetSubscriptionsOfUserByStatusVariables) =>{
+  return client.query<GetSubscriptionsOfUserByStatus>({
+    query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+    fetchPolicy: 'no-cache',
+    variables: queryVariable,
+  });
+}

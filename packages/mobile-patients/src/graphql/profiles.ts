@@ -1783,6 +1783,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         id
         patientId
         patientAddressId
+        parentOrderId
         patientObj {
           firstName
           lastName
@@ -1973,6 +1974,7 @@ export const GET_WIDGETS_PRICING_BY_ITEMID_CITYID = gql`
     findDiagnosticsWidgetsPricing(cityID: $cityID, itemIDs: $itemIDs) {
       diagnostics {
         itemId
+        gender
         packageCalculatedMrp
         diagnosticPricing {
           mrp
@@ -2184,16 +2186,19 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
     $mobileNumber: String
     $paginated: Boolean
     $limit: Int
-    $offset: Int
+    $offset: Int,
+    $patientId: String
   ) {
     getDiagnosticOrdersListByMobile(
       mobileNumber: $mobileNumber
       offset: $offset
       limit: $limit
       paginated: $paginated
+      patientId: $patientId
     ) {
       ordersList {
         id
+        preBookingId
         parentOrderId
         primaryOrderID
         isRescheduled
@@ -2270,6 +2275,7 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
           editOrderID
           isRemoved
           itemObj {
+            gender
             itemType
             testPreparationData
             packageCalculatedMrp
@@ -4406,31 +4412,6 @@ export const SEARCH_DIAGNOSTICS_BY_CITY_ID = gql`
   }
 `;
 
-export const SEARCH_DIAGNOSTICS_BY_ID = gql`
-  query searchDiagnosticsById($itemIds: String) {
-    searchDiagnosticsById(itemIds: $itemIds) {
-      diagnostics {
-        id
-        itemId
-        itemName
-        itemType
-        rate
-        itemType
-        gender
-        itemRemarks
-        city
-        state
-        collectionType
-        fromAgeInDays
-        toAgeInDays
-        testDescription
-        testPreparationData
-        inclusions
-      }
-    }
-  }
-`;
-
 export const CREATE_INTERNAL_ORDER = gql`
   mutation createOrderInternal($order: OrderCreate) {
     createOrderInternal(order: $order) {
@@ -5644,6 +5625,7 @@ export const GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID = gql`
       ordersList {
         patientId
         patientAddressId
+        parentOrderId
         orderStatus
         totalPrice
         createdDate
@@ -6452,6 +6434,12 @@ export const GET_RESCHEDULE_AND_CANCELLATION_REASONS = gql`
       cancellationReasonsv2 {
         reason
         isDirectCancellation
+        ctaOptions{
+          cta
+          multiCtas
+          displayText
+          userCommentsEnabled
+        }
       }
     }
   }
@@ -6689,6 +6677,7 @@ export const GET_DIAGNOSTICS_RECOMMENDATIONS = gql`
       itemsData {
         itemId
         itemName
+        gender
         observations{
           observationName
           mandatoryValue
@@ -7068,12 +7057,53 @@ export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS = gql`
       packageRecommendations {
         itemId
         itemName
+        gender
         inclusions
         packageCalculatedMrp
         diagnosticInclusions {
           itemId
           name
           observations {
+            observationName
+            mandatoryValue
+          }
+        }
+        diagnosticPricing {
+          mrp
+          price
+          groupPlan
+          status
+          startDate
+          endDate
+        }
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS_V2 = gql`
+  query getDiagnosticPackageRecommendationsv2($recommendationInputItems: [recommendationInputItem]!, $cityId: Int!) {
+    getDiagnosticPackageRecommendationsv2(recommendationInputItems: $recommendationInputItems, cityId: $cityId) {
+      packageRecommendations {
+        id
+        itemId
+        itemName
+        gender
+        rate
+        itemRemarks
+        itemType
+        testPreparationData
+        collectionType
+        testDescription
+        inclusions
+        packageCalculatedMrp
+        totalSavings
+        extraInclusionsCount
+        price
+        diagnosticInclusions{
+          itemId
+          name
+          observations{
             observationName
             mandatoryValue
           }
@@ -7507,6 +7537,7 @@ export const DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS = gql`
       itemsData {
         itemId
         itemName
+        gender
         observations{
           observationName
           mandatoryValue

@@ -1374,6 +1374,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Diagnostics_Home_Page_Banner_Height',
       PROD: 'Diagnostics_Home_Page_Banner_Height',
     },
+    Diagnostics_Show_Health_Credits: {
+      QA: 'QA_Diagnostic_Show_HC',
+      PROD: 'Diagnostic_Show_HC',
+    },
     HOME_CTA_CONFIG: {
       QA: 'QA_HOME_CTA_CONFIG',
       PROD: 'PROD_HOME_CTA_CONFIG',
@@ -1885,6 +1889,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         (key) =>
           JSON.parse(config.getString(key) || 'null') ||
           AppConfig.Configuration.DIAGNOSTICS_HOME_SINGLE_ITEM
+      );
+
+      setAppConfig('Diagnostics_Show_Health_Credits', 'DIAGNOSTICS_SHOW_HEALTH_CREDITS', (key) =>
+        config.getBoolean(key)
       );
 
       setAppConfig(

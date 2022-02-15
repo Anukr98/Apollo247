@@ -59,6 +59,7 @@ export interface ItemCardProps {
   onPressRemoveItemFromCart?: (item: any) => void;
   recommedationDataSource?: string;
   widgetHeading?: string;
+  isPackage?: boolean;
 }
 
 const ItemCard: React.FC<ItemCardProps> = (props) => {
@@ -84,6 +85,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     onPressRemoveItemFromCart,
     recommedationDataSource,
     widgetHeading,
+    isPackage,
   } = props;
   const { currentPatient } = useAllCurrentPatients();
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
@@ -102,6 +104,52 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     return arr?.filter((item: any) => item?.mandatoryValue === '1');
   }
 
+  function inclusionParameterLogic(getItem: any) {
+    const inclusions = getItem?.inclusionData || getItem?.diagnosticInclusions;
+
+    const getMandatoryParamter =
+      !!inclusions && inclusions?.length > 0
+        ? inclusions?.map((inclusion: any) =>
+            getMandatoryParamterResults(inclusion?.incObservationData)
+          )
+        : [];
+
+    const getInclusionCount = !!inclusions && inclusions?.length > 0 ? inclusions?.length : 1;
+
+    const getRecommendationTestOberservations =
+      (!!!inclusions || inclusions?.length == 0) && getItem?.observations;
+
+    const getMandatoryObervations =
+      !!getRecommendationTestOberservations && getRecommendationTestOberservations?.length > 0
+        ? getMandatoryParamterResults(getItem?.observations)
+        : [];
+
+    const getObervationCount =
+      !!getMandatoryObervations &&
+      getMandatoryObervations?.length > 0 &&
+      getMandatoryObervations?.length;
+
+    const getMandatoryParameterCount =
+      !!getMandatoryParamter && getMandatoryParamter?.length > 0
+        ? getCount(getMandatoryParamter)
+        : !!getObervationCount
+        ? getObervationCount
+        : undefined;
+
+    const nonInclusionTests =
+      !!inclusions && inclusions?.length > 0
+        ? inclusions?.filter((inclusion: any) => inclusion?.incObservationData?.length == 0)
+        : [];
+
+    const countToShow = getMandatoryParameterCount + nonInclusionTests?.length || getInclusionCount;
+
+    return {
+      getMandatoryParameterCount,
+      getInclusionCount,
+      countToShow,
+    };
+  }
+
   const renderItemCard = useCallback(
     (item: any) => {
       const getItem = item?.item;
@@ -109,56 +157,17 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
       // if (getDiagnosticPricingForItem == undefined || getDiagnosticPricingForItem == null) {
       //   return null;
       // }
-
       const packageMrpForItem = getItem?.packageCalculatedMrp!;
       const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
-
       if (props.isPriceAvailable && !pricesForItem?.itemActive) {
         return null;
       }
 
       const imageUrl = getItem?.itemImageUrl;
-
       const name = getItem?.itemTitle || getItem?.itemName;
-      const inclusions = getItem?.inclusionData || getItem?.diagnosticInclusions;
-
-      const getMandatoryParamter =
-        !!inclusions && inclusions?.length > 0
-          ? inclusions?.map((inclusion: any) =>
-              getMandatoryParamterResults(inclusion?.incObservationData)
-            )
-          : [];
-
-      const getInclusionCount = !!inclusions && inclusions?.length > 0 ? inclusions?.length : 1;
-
-      const getRecommendationTestOberservations =
-        (!!!inclusions || inclusions?.length == 0) && getItem?.observations;
-
-      const getMandatoryObervations =
-        !!getRecommendationTestOberservations && getRecommendationTestOberservations?.length > 0
-          ? getMandatoryParamterResults(getItem?.observations)
-          : [];
-
-      const getObervationCount =
-        !!getMandatoryObervations &&
-        getMandatoryObervations?.length > 0 &&
-        getMandatoryObervations?.length;
-
-      const getMandatoryParameterCount =
-        !!getMandatoryParamter && getMandatoryParamter?.length > 0
-          ? getCount(getMandatoryParamter)
-          : !!getObervationCount
-          ? getObervationCount
-          : undefined;
-
       const isAddedToCart = !!cartItems?.find(
         (items) => Number(items?.id) == Number(getItem?.itemId)
       );
-
-      const nonInclusionTests =
-        !!inclusions && inclusions?.length > 0
-          ? inclusions?.filter((inclusion: any) => inclusion?.incObservationData?.length == 0)
-          : [];
 
       return (
         <TouchableOpacity
@@ -169,41 +178,21 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
           <View
             style={[
               styles.itemCardView,
-              { minHeight: isCircleSubscribed ? CARD_HEIGHT - 15 : CARD_HEIGHT },
+              {
+                minHeight: isCircleSubscribed
+                  ? isPackage
+                    ? CARD_HEIGHT - 40
+                    : CARD_HEIGHT - 15
+                  : isPackage
+                  ? CARD_HEIGHT - 25
+                  : CARD_HEIGHT,
+              },
               props?.isVertical ? {} : { marginLeft: item?.index == 0 ? 20 : 6 },
             ]}
           >
-            <View style={{ flexDirection: 'row' }}>
-              <View style={{ width: screenWidth < 340 ? '60%' : '69%' }}>
-                {imageUrl == '' ? (
-                  <WidgetLiverIcon style={styles.imageStyle} resizeMode={'contain'} />
-                ) : (
-                  <Image
-                    resizeMode={'contain'}
-                    placeholderStyle={styles.imagePlaceholderStyle}
-                    source={{ uri: imageUrl }}
-                    style={styles.imageStyle}
-                  />
-                )}
-              </View>
-            </View>
-            <View style={{ minHeight: 40 }}>
-              <Text style={styles.itemNameText} numberOfLines={2}>
-                {name}
-              </Text>
-            </View>
-            <View style={{ minHeight: isSmallDevice ? 20 : 25 }}>
-              {getMandatoryParameterCount > 0 || !!getInclusionCount ? (
-                <Text style={styles.parameterText}>
-                  {getMandatoryParameterCount + nonInclusionTests?.length || getInclusionCount}{' '}
-                  {(getMandatoryParameterCount + nonInclusionTests?.length || getInclusionCount) ==
-                  1
-                    ? 'test'
-                    : 'tests'}{' '}
-                  included
-                </Text>
-              ) : null}
-            </View>
+            {renderIconView(imageUrl)}
+            {renderSkuName(name)}
+            {renderParameterInclusionCount(getItem)}
             <Spearator
               style={[styles.horizontalSeparator, { marginTop: isCircleSubscribed ? '4%' : '4%' }]}
             />
@@ -216,6 +205,56 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     },
     [cartItems, patientCartItems]
   );
+
+  const renderIconView = (imageUrl: string | any) => {
+    return (
+      <>
+        {isPackage ? null : (
+          <View style={styles.flexRow}>
+            <View style={styles.imageView}>
+              {imageUrl == '' ? (
+                <WidgetLiverIcon style={styles.imageStyle} resizeMode={'contain'} />
+              ) : (
+                <Image
+                  resizeMode={'contain'}
+                  placeholderStyle={styles.imagePlaceholderStyle}
+                  source={{ uri: imageUrl }}
+                  style={styles.imageStyle}
+                />
+              )}
+            </View>
+          </View>
+        )}
+      </>
+    );
+  };
+
+  const renderSkuName = (name: string) => {
+    return (
+      <View style={{ minHeight: 40 }}>
+        <Text style={styles.itemNameText} numberOfLines={2}>
+          {name}
+        </Text>
+      </View>
+    );
+  };
+
+  const renderParameterInclusionCount = (getItem: any) => {
+    const { getMandatoryParameterCount, getInclusionCount, countToShow } = inclusionParameterLogic(
+      getItem
+    );
+    return (
+      <View style={styles.parameterCountView}>
+        {getMandatoryParameterCount > 0 || !!getInclusionCount ? (
+          <Text style={isPackage ? styles.packageParameterTestCount : styles.parameterText}>
+            {isPackage
+              ? `TOTAL ${countToShow == 1 ? 'TEST' : 'TESTS'} : ${countToShow}`
+              : `${countToShow} ${countToShow == 1 ? 'test' : 'tests'} included`}
+          </Text>
+        ) : null}
+      </View>
+    );
+  };
 
   const renderCircleSubscribeTotalPercentageOff = (
     discount: string | number,
@@ -691,7 +730,11 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
           );
         }}
       >
-        {isAlreadyPartOfOrder ? 'ALREADY ADDED' : isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
+        {isAlreadyPartOfOrder
+          ? string.diagnostics.alreadyAdded
+          : isAddedToCart
+          ? string.diagnostics.removeFromCart
+          : string.circleDoctors.addToCart}
       </Text>
     );
   };
@@ -808,6 +851,12 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     marginTop: '5%',
   },
+  packageParameterTestCount: {
+    ...theme.viewStyles.text('SB', 10, theme.colors.SHERPA_BLUE, 1, 13),
+    textAlign: 'left',
+    marginTop: '6%',
+    letterSpacing: 0.25,
+  },
   horizontalSeparator: { marginBottom: 7.5, marginTop: '4%' },
   flexRow: {
     flexDirection: 'row',
@@ -881,4 +930,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   centerRow: { flexDirection: 'row', alignItems: 'center' },
+  imageView: { width: screenWidth < 340 ? '60%' : '69%' },
+  parameterCountView: { minHeight: isSmallDevice ? 20 : 25 },
 });

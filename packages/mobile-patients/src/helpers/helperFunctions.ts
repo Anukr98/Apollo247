@@ -4477,20 +4477,49 @@ export const showDiagnosticCTA = (pageName: CALL_TO_ORDER_CTA_PAGE_ID, cityId: s
   const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
     pageName
   );
-  return ctaDetailArray?.filter((item: any) => {
-    if (Number(item?.ctaCityId) == Number(cityId)) {
-      if (item?.ctaProductPageArray?.includes(pageName)) {
-        return item;
-      } else {
-        return null;
+  const checkForCtaCityAvailabilty = () => {
+    for (let index = 0; index < ctaDetailArray.length; index++) {
+      const element = ctaDetailArray[index];
+      if (
+        Number(element?.ctaCityId) == cityId &&
+        element?.ctaProductPageArray?.includes(pageName)
+      ) {
+        return element;
       }
-    } else if (isCtaDetailDefault) {
-      return callToOrderDetails?.ctaDetailsDefault;
+    }
+  };
+  const checkForCtaTime = () => {
+    const element = checkForCtaCityAvailabilty();
+    if (!!element?.ctaDisplayHrsArray?.length) {
+      const object1 = element?.ctaDisplayHrsArray?.filter((item) => {
+        const timeStart = moment(item, 'HH');
+        const timeEnd = moment(timeStart, 'HH:mm').add(59, 'minutes');
+        const currentTime = moment();
+        const showCta = currentTime.isBetween(timeStart, timeEnd, 'hour', '[]');
+        if (showCta) {
+          return element;
+        } else {
+          return null;
+        }
+      });
+      return object1;
     } else {
       return null;
     }
-  });
-}
+  };
+
+  if (checkForCtaCityAvailabilty()?.ctaCityId == cityId) {
+    if (!!checkForCtaTime()?.length) {
+      return [checkForCtaCityAvailabilty()];
+    } else {
+      return null;
+    }
+  } else if (isCtaDetailDefault) {
+    return [callToOrderDetails?.ctaDetailsDefault];
+  } else {
+    return null;
+  }
+};
 
 export const calculateDiagnosticCartItems = (
   cartItem: DiagnosticsCartItem[],

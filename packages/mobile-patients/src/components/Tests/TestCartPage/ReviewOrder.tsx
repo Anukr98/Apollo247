@@ -263,6 +263,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const { setauthToken } = useAppCommonData();
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
+  const showHCOption = AppConfig.Configuration.DIAGNOSTICS_SHOW_HEALTH_CREDITS;
 
   type PatientsObjWithOrderIDs = saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patientsObjWithOrderIDs;
   type PatientObjWithModifyOrderIDs = saveModifyDiagnosticOrder_saveModifyDiagnosticOrder_attributes_conflictedItems;
@@ -497,8 +498,13 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   }
 
   useEffect(() => {
+    !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
+  }, [isfetchingId]);
+
+  useEffect(() => {
     //modify case
     if (isModifyFlow && cartItems?.length > 0 && modifiedPatientCart?.length > 0) {
+      //commented for future ref
       //if multi-uhid modify -> don't call phleboCharges api
       // !!modifiedOrder?.attributesObj?.isMultiUhid && modifiedOrder?.attributesObj?.isMultiUhid
       //   ? clearCollectionCharges()
@@ -508,10 +514,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       fetchHC_ChargesForTest();
     }
   }, [isCircleAddedToCart]);
-
-  useEffect(() => {
-    !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
-  }, [isfetchingId]);
 
   async function populateCartMapping() {
     const listOfIds = cartItems?.map((item) => Number(item?.id));
@@ -1116,6 +1118,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const slashedPrice = diagnosticsDisplayPrice(item, showCirclePrice)?.slashedPrice;
 
     const calTotal = priceToShow * item?.mou;
+    //removed packageMrp for showing circle savings  Number((!!item?.packageMrp && item?.packageMrp!) || mrpToDisplay)
     const savingAmount =
       Number(item?.circlePrice! || item?.price) - Number(item?.circleSpecialPrice!);
 
@@ -1223,7 +1226,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const isSavingZero = circleSaving == 0;
     return (
       <View style={styles.circleItemCartView}>
-        <View style={{ flexDirection: 'row' }}>
+        <View style={{ flexDirection: 'row', width: '75%' }}>
           <View style={[styles.circleIconView, isSavingZero && { justifyContent: 'center' }]}>
             <CircleLogo style={styles.circleIcon} />
           </View>
@@ -1622,8 +1625,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const showCircleRelatedSavings =
       showCirclePurchaseAmount && circleSaving > 0 && (!!coupon ? couponCircleBenefits : true);
     const showOneApollo = isModifyFlow
-      ? modifiedOrder?.paymentType === DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT
-      : true;
+      ? modifiedOrder?.paymentType === DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT && showHCOption
+      : showHCOption;
     return (
       <>
         <View
@@ -2298,12 +2301,13 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       itemIds?.length &&
       itemIds?.map((id: number) => {
         const isFromApi = !!cartItemsMapping && cartItemsMapping?.length > 0;
-        const arrayToSelect = isFromApi ? cartItemsMapping : cartItems;
+        const apiArray = isFromApi && cartItemsMapping?.length > cartItems?.length;
+        const arrayToSelect = apiArray ? cartItemsMapping : cartItems;
         const findItem = arrayToSelect?.find(
-          (cItems: any) => Number(isFromApi ? cItems?.itemId : cItems?.id) === Number(id)
+          (cItems: any) => Number(apiArray ? cItems?.itemId : cItems?.id) === Number(id)
         );
         if (!!findItem) {
-          itemNames?.push(isFromApi ? findItem?.itemName : findItem?.name);
+          itemNames?.push(apiArray ? findItem?.itemName : findItem?.name);
         }
         //in case of modify. => only for single uhid
         if (isModifyFlow) {
@@ -3400,10 +3404,11 @@ const styles = StyleSheet.create({
   circleItemCartView: {
     backgroundColor: 'white',
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    paddingTop: 12,
+    paddingBottom: 12,
   },
   circleIconView: { paddingHorizontal: 10 },
   circleText: { flexDirection: 'column' },
-  circleTextPrice: { padding: 10, marginRight: 20 },
+  circleTextPrice: { padding: 10, paddingTop: 2 },
   circleTextStyle: { ...theme.viewStyles.text('M', 14, colors.SHERPA_BLUE, 1) },
 });

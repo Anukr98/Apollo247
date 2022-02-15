@@ -3212,16 +3212,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       ''}`;
 
     const patientUHID = patientDetails ? (patientDetails.uhid ? patientDetails.uhid : '') : '';
-
     if (patientUHID) {
       setLoading?.(true);
-
       GenerateTokenforCM(
-        patientDetails ? patientDetails.uhid : '',
+        patientDetails ? patientDetails?.uhid : '',
         fullName,
-        patientDetails ? (patientDetails.gender ? patientDetails.gender : '') : '',
-        patientDetails ? (patientDetails.emailAddress ? patientDetails.emailAddress : '') : '',
-        patientDetails ? (patientDetails.mobileNumber ? patientDetails.mobileNumber : '') : ''
+        patientDetails ? (patientDetails?.gender ? patientDetails?.gender : '') : '',
+        patientDetails ? (patientDetails?.emailAddress ? patientDetails?.emailAddress : '') : '',
+        patientDetails ? (patientDetails?.mobileNumber ? patientDetails?.mobileNumber : '') : ''
       )
         .then((token: any) => {
           async function fetchTokenData() {

@@ -60,6 +60,7 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
 
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems_itemObj {
   __typename: "ItemObj";
+  gender: string | null;
   itemType: string | null;
   testPreparationData: string | null;
   packageCalculatedMrp: number | null;
@@ -168,6 +169,7 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList {
   __typename: "DiagnosticOrders";
   id: string;
+  preBookingId: string | null;
   parentOrderId: string | null;
   primaryOrderID: string | null;
   isRescheduled: boolean | null;
@@ -226,4 +228,5 @@ export interface getDiagnosticOrdersListByMobileVariables {
   paginated?: boolean | null;
   limit?: number | null;
   offset?: number | null;
+  patientId?: string | null;
 }

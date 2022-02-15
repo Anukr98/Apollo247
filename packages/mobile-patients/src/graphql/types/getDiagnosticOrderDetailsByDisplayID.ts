@@ -28,6 +28,7 @@ export interface getDiagnosticOrderDetailsByDisplayID_getDiagnosticOrderDetailsB
   __typename: "DiagnosticOrders";
   patientId: string;
   patientAddressId: string;
+  parentOrderId: string | null;
   orderStatus: DIAGNOSTIC_ORDER_STATUS;
   totalPrice: number;
   createdDate: any;

@@ -9,6 +9,7 @@ export interface SectionHeaderProps {
   leftTextStyle?: StyleProp<TextStyle>;
   rightTextStyle?: StyleProp<TextStyle>;
   onPressRightText?: () => void;
+  leftImage?: any;
 }
 
 export const SectionHeader: React.FC<SectionHeaderProps> = (props) => {
@@ -28,10 +29,19 @@ export const SectionHeader: React.FC<SectionHeaderProps> = (props) => {
     },
   });
 
-  const { leftText, rightText, style, leftTextStyle, rightTextStyle, onPressRightText } = props;
+  const {
+    leftText,
+    rightText,
+    style,
+    leftTextStyle,
+    rightTextStyle,
+    onPressRightText,
+    leftImage,
+  } = props;
 
   return (
     <View style={[styles.labelView, style]}>
+      {!!leftImage && leftImage}
       <Text style={[styles.labelTextStyle, leftTextStyle]}>{leftText}</Text>
       {!!rightText && (
         <Text

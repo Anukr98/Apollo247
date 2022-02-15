@@ -5,7 +5,6 @@ import {
   CALL_TO_ORDER_CTA_PAGE_ID,
   DIAGNOSTIC_ORDER_STATUS,
   REFUND_STATUSES,
-  TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { Platform } from 'react-native';
 
@@ -309,6 +308,7 @@ const appStaticVariables = {
         ctaPhoneNumber: '040-4821-3009',
         ctaText: 'Call to Order',
         ctaItemIds: [2446],
+        ctaDisplayHrsArray: [8,9,10,11]
       },
     ],
     ctaDetailsDefault: {
@@ -316,6 +316,8 @@ const appStaticVariables = {
       ctaDelaySeconds: 3,
       ctaPhoneNumber: '040-4821-3322',
       ctaText: 'Call to Order',
+      ctaItemIds: [2446],
+      ctaDisplayHrsArray: [8,9,10,11]
     },
   },
   DIAGNOSTICS_SHOW_UPLOAD_PRESCRIPTION_SECTION: true,
@@ -341,7 +343,8 @@ const appStaticVariables = {
     frequentlyBrought: string.diagnostics.frequentlyBrought,
     topBookedTests: string.diagnostics.topBookedTests,
     similarPackages: string.diagnostics.similarPackages,
-    topPackages: 'Top Packages with ',
+    topPackages: "Top Packages with ",
+    relatedPackages : string.diagnosticsDetails.relatedPackages
   },
   DeliveryIn_TAT_Text: 'Express Delivery',
   WHATSAPP_TO_ORDER: {
@@ -380,6 +383,7 @@ const appStaticVariables = {
     },
   ],
   DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER_TEXT: string.diagnosticsCartPage.reviewPagePolicyText,
+  DIAGNOSTICS_SHOW_HEALTH_CREDITS: true 
 };
 
 const DEV_top_specialties = [

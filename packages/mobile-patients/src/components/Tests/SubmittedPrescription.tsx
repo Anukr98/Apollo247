@@ -63,7 +63,6 @@ import {
   convertPrismUrlToBlob,
   getPatientPrismMedicalRecordsApi,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 const GreenTickAnimation = '@aph/mobile-patients/src/components/Tests/greenTickAnimation.json';
 
 export interface SubmittedPrescriptionProps extends NavigationScreenProps {
@@ -88,8 +87,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
   const [additionalNotes, setadditionalNotes] = useState<string>('');
   const [onSumbitSuccess, setOnSumbitSuccess] = useState<boolean>(false);
   const [isErrorOccured, setIsErrorOccured] = useState<boolean>(false);
-  const uploadViaWhatsapp =
-  AppConfig.Configuration.DIAGNOSTICS_ENABLE_UPLOAD_PRESCRIPTION_VIA_WHATSAPP;
+
   useEffect(() => {
     setLoading?.(false);
     fetchPatientPrescriptions();
@@ -149,6 +147,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
       </View>
     );
   };
+
   const setUploadedImages = (selectedImages: any) => {
     let imagesArray = [] as any;
     selectedImages?.forEach((item: any) => {
@@ -162,11 +161,14 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
     });
     return imagesArray;
   };
+
   useEffect(() => {
     if (EPrescriptionsProps && EPrescriptionsProps?.length) {
       const ePrescriptionArray = EPrescriptionsProps?.filter(
         (item: any, index: any) =>
-          EPrescriptionsProps?.findIndex((obj) => obj?.id == item?.id) === index
+          EPrescriptionsProps?.findIndex(
+            (obj) => obj?.id == item?.id && obj?.fileName == item?.fileName
+          ) === index
       );
       setEPrescriptionsProps(ePrescriptionArray);
     }
@@ -371,7 +373,9 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
     if (responseResult?.prescriptionFiles?.length == 1) {
       itemNames = responseResult?.prescriptionFiles?.[0]?.fileName;
     } else {
-      itemNames = responseResult?.prescriptionFiles?.map((attributes: any) => `${attributes?.fileName}`);
+      itemNames = responseResult?.prescriptionFiles?.map(
+        (attributes: any) => `${attributes?.fileName}`
+      );
     }
     DiagnosticPrescriptionSubmitted(
       currentPatient,

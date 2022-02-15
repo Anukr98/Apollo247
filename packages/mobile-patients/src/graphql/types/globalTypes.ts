@@ -89,6 +89,14 @@ export enum BookingStatus {
   INPROGRESS = "INPROGRESS",
 }
 
+export enum CANCELLATION_REASONS_CTA {
+  ADD_TESTS = "ADD_TESTS",
+  EDIT_PATIENT_DETAILS = "EDIT_PATIENT_DETAILS",
+  RESCHEDULE = "RESCHEDULE",
+  SAME_DAY = "SAME_DAY",
+  WITHIN_24_HOURS = "WITHIN_24_HOURS",
+}
+
 export enum CODCity {
   CHENNAI = 'CHENNAI',
 }
@@ -2304,6 +2312,16 @@ export enum PrescriptionType {
 export enum DiagnosticCTJourneyType {
   UPLOAD_PRESCRIPTION = "Upload Prescription",
   WHATSAPP = 'WhatsApp'
+}
+
+export enum DiagnosticItemType {
+  LABTEST = "LABTEST",
+  PACKAGE = 'PACKAGE'
+}
+
+export interface recommendationInputItem {
+  itemId?: number | null;
+  itemType?: DiagnosticItemType | null;
 }
 
 export interface CartInputData {
