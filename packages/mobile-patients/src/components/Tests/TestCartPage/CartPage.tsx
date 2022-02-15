@@ -1640,6 +1640,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
             showTestWorth={false}
             scrollEnabled={true}
             priceToDisplayOnPopUp={priceToShow}
+            showPrice={0}
           />
           <View style={styles.promoButtonContainer}>
             <TouchableOpacity
