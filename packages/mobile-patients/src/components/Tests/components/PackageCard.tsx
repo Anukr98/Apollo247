@@ -93,8 +93,16 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     return array?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
   }
 
-  function getMandatoryParamterResults(arr: any) {
-    return arr?.filter((item: any) => item?.mandatoryValue === '1');
+  function getMandatoryParamterResults(obsData: any, inclusionArr: any) {
+    const getObservations = obsData?.filter((item: any) => item?.mandatoryValue === '1');
+    if (getObservations?.length == 0) {
+      let inclusionobject = {
+        observationName: inclusionArr?.incTitle,
+      };
+      return [inclusionobject];
+    } else {
+      return getObservations;
+    }
   }
 
   const renderItemCard = useCallback(
@@ -133,14 +141,16 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
                 ? !!inclusion?.observations
                   ? inclusion?.observations
                   : inclusion?.incObservationData
-                : inclusion?.observations
+                : inclusion?.observations,
+              inclusion
             )
           );
       } else {
-        !!inclusions &&
+        getMandatoryParamter =
+          !!inclusions &&
           inclusions?.length > 0 &&
           inclusions?.map((inclusion: any) =>
-            getMandatoryParamterResults(inclusion?.incObservationData)
+            getMandatoryParamterResults(inclusion?.incObservationData, inclusion)
           );
       }
 
@@ -189,7 +199,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
                 >
                   <Text style={styles.inclusionsText}>
                     {getMandatoryParameterCount > 0
-                      ? `Total Tests : ${getMandatoryParameterCount + nonInclusionTests?.length}`
+                      ? `Total Tests : ${getMandatoryParameterCount}`
                       : `Total Tests : ${inclusions?.length}`}{' '}
                   </Text>
 

@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { recommendationInputItem } from "./globalTypes";
+import { DiagnosticItemType, recommendationInputItem, TEST_COLLECTION_TYPE } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getDiagnosticPackageRecommendationsv2
@@ -34,11 +34,21 @@ export interface getDiagnosticPackageRecommendationsv2_getDiagnosticPackageRecom
 
 export interface getDiagnosticPackageRecommendationsv2_getDiagnosticPackageRecommendationsv2_packageRecommendations {
   __typename: "Diagnostics";
+  id: string;
   itemId: number;
   itemName: string;
   gender: string;
+  rate: number;
+  itemRemarks: string;
+  itemType: DiagnosticItemType | null;
+  testPreparationData: string;
+  collectionType:TEST_COLLECTION_TYPE | null;
+  testDescription: string | null;
   inclusions: (number | null)[] | null;
   packageCalculatedMrp: number | null;
+  totalSavings: number | null;
+  extraInclusionsCount: number | null;
+  price: number | null;
   diagnosticInclusions: (getDiagnosticPackageRecommendationsv2_getDiagnosticPackageRecommendationsv2_packageRecommendations_diagnosticInclusions | null)[] | null;
   diagnosticPricing: (getDiagnosticPackageRecommendationsv2_getDiagnosticPackageRecommendationsv2_packageRecommendations_diagnosticPricing | null)[] | null;
 }

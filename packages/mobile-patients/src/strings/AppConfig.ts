@@ -383,6 +383,7 @@ const appStaticVariables = {
     },
   ],
   DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER_TEXT: string.diagnosticsCartPage.reviewPagePolicyText,
+  DIAGNOSTICS_SHOW_HEALTH_CREDITS: true 
 };
 
 const DEV_top_specialties = [
@@ -472,6 +473,56 @@ const QA_top_specialties = [
     speciality_order: '3',
     speciality_name: 'Urology',
     gender: 'MALE',
+  },
+];
+
+const HOME_CTA_CONFIG_DEFAULT = [
+  {
+    id: 1,
+    title: 'Buy Medicines and Essentials',
+    sub_title: "Health Credits Available'",
+    subtitle_image_tint_color: '',
+    subtitle_card_color: '#EAF6FF',
+    subtitle_color: '#2D6E85',
+    action_deeplink: '',
+  },
+  {
+    id: 2,
+    title: 'Book Lab Tests',
+    sub_title: 'Upto 60% Off',
+    subtitle_image_tint_color: '',
+    subtitle_card_color: '',
+    subtitle_color: '#A05D1F',
+    action_deeplink: '',
+  },
+  {
+    id: 3,
+    title: 'Consult a Doctor',
+    sub_title: 'Consult in 15 mins',
+    subtitle_image_tint_color: '',
+    subtitle_card_color: '#E6FFFD',
+    subtitle_color: '#1FA098',
+    action_deeplink: '',
+  },
+  {
+    id: 4,
+    title: 'Book Doctor by Symptoms',
+    action_deeplink: '',
+  },
+  {
+    id: 5,
+    title: 'Book Covid Vaccination',
+    action_deeplink: '',
+  },
+  {
+    id: 6,
+    title: 'Manage Diabetes',
+    action_deeplink: '',
+  },
+  {
+    id: 7,
+    title: 'View Health Records',
+    action_deeplink: '',
   },
 ];
 
@@ -709,6 +760,7 @@ const ConfigurationDev = {
   DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: DEV_top_specialties,
+  HOME_CTA_CONFIG: HOME_CTA_CONFIG_DEFAULT,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
@@ -771,6 +823,7 @@ const ConfigurationQA = {
   DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top_specialties,
+  HOME_CTA_CONFIG: HOME_CTA_CONFIG_DEFAULT,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
@@ -835,6 +888,7 @@ const ConfigurationQA2 = {
   DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top_specialties,
+  HOME_CTA_CONFIG: HOME_CTA_CONFIG_DEFAULT,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
@@ -897,6 +951,7 @@ const ConfigurationQA3 = {
   DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top_specialties,
+  HOME_CTA_CONFIG: HOME_CTA_CONFIG_DEFAULT,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
@@ -959,6 +1014,7 @@ const ConfigurationQA5 = {
   DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top_specialties,
+  HOME_CTA_CONFIG: HOME_CTA_CONFIG_DEFAULT,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
@@ -1023,6 +1079,7 @@ const ConfigurationQA6 = {
   DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top_specialties,
+  HOME_CTA_CONFIG: HOME_CTA_CONFIG_DEFAULT,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
@@ -1087,6 +1144,7 @@ const ConfigurationVAPT = {
   DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top_specialties,
+  HOME_CTA_CONFIG: HOME_CTA_CONFIG_DEFAULT,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
@@ -1149,6 +1207,7 @@ const ConfigurationProd = {
   DOCUMENT_BASE_URL: 'https://prodaphstorage.blob.core.windows.net/prodaphstorage/prodaphstorage/', //Production
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: top_specialties,
+  HOME_CTA_CONFIG: HOME_CTA_CONFIG_DEFAULT,
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
   ...Apollo247Config.prod,
@@ -1211,6 +1270,7 @@ const ConfigurationPERFORM = {
   DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: DEV_top_specialties,
+  HOME_CTA_CONFIG: HOME_CTA_CONFIG_DEFAULT,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
@@ -1275,6 +1335,7 @@ const ConfigurationDevReplica = {
   DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top_specialties,
+  HOME_CTA_CONFIG: HOME_CTA_CONFIG_DEFAULT,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,

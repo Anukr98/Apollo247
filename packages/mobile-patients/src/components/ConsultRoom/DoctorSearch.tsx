@@ -2138,7 +2138,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                     doctorId: item?.id,
                     callSaveSearch: 'true',
                     showBookAppointment: true,
-                    consultModeSelected: isOnlineConsultMode
+                    consultModeSelected: !!item?.doctorNextAvailSlots?.onlineSlot
                       ? string.consultModeTab.VIDEO_CONSULT
                       : string.consultModeTab.HOSPITAL_VISIT,
                   });

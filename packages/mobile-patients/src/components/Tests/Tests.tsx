@@ -128,7 +128,6 @@ import {
   diagnosticServiceability,
   fetchPatientAddressList,
   getDiagnosticClosedOrders,
-  getDiagnosticExpressSlots,
   getDiagnosticOpenOrders,
   getDiagnosticPatientPrescription,
   getDiagnosticPhelboDetails,
@@ -136,6 +135,7 @@ import {
   getDiagnosticsOrder,
   getDiagnosticsPastOrderRecommendations,
   getUserBannersList,
+  getUserSubscriptionStatus,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   createDiagnosticAddToCartObject,
@@ -165,6 +165,7 @@ import PackageCard from '@aph/mobile-patients/src/components/Tests/components/Pa
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   AppConfig,
+  AppEnv,
   DIAGNOSTIC_PHELBO_TRACKING_STATUS,
   DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY,
   DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
@@ -408,6 +409,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   useEffect(() => {
     fetchNumberSpecificOrderDetails();
+    if (!!currentPatient && !isDiagnosticCircleSubscription) {
+      getUserSubscriptionsByStatus();
+    }
     if (movedFrom === 'deeplink') {
       BackHandler.addEventListener('hardwareBackPress', handleBack);
       return () => {
@@ -638,7 +642,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
     try {
       const diagnosticUserType = await AsyncStorage.getItem('diagnosticUserType');
       setDiagnosticStateUserType(diagnosticUserType || '');
-      if (diagnosticUserType == null) {
+      if (
+        diagnosticUserType == null ||
+        diagnosticUserType == string.user_type.NEW ||
+        diagnosticUserType == `"${string.user_type.NEW}"`
+      ) {
         fetchOrders();
       }
     } catch (error) {
@@ -817,7 +825,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setBannerData && setBannerData([]);
     }
   };
-
 
   function getFilteredWidgets(widgetsData: any, source?: string) {
     var filterWidgets, itemIds;
@@ -1159,16 +1166,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
     try {
       const query: GetSubscriptionsOfUserByStatusVariables = {
         mobile_number: currentPatient?.mobileNumber,
-        status: ['active', 'deferred_inactive'],
+        status: ['active', 'deferred_active', 'deferred_inactive', 'disabled'],
       };
-      const res = await client.query<GetSubscriptionsOfUserByStatus>({
-        query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
-        fetchPolicy: 'no-cache',
-        variables: query,
-      });
+      const res = await getUserSubscriptionStatus(client, query);
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
+      const filterActiveResults = data?.APOLLO?.filter((val: any) => val?.status == 'active');
       if (data) {
-        const circleData = data?.APOLLO?.[0];
+        const circleData = !!filterActiveResults ? filterActiveResults?.[0] : data?.APOLLO?.[0];
         if (circleData._id && circleData?.status !== 'disabled') {
           AsyncStorage.setItem('circleSubscriptionId', circleData._id);
           setCircleSubscriptionId && setCircleSubscriptionId(circleData._id);
@@ -1609,7 +1613,19 @@ export const Tests: React.FC<TestsProps> = (props) => {
       return null;
     }
   };
-
+  const renderStaticBanner = () => {
+    const imageUrl = "https://newassets.apollo247.com/uatcms/2021-06/senior citizen-01_0.jpg"
+    return (
+      <View>
+        <ImageNative
+        resizeMode="contain"
+        style={{ width: '100%' , height: imgHeight}}
+        source={{ uri: imageUrl }}
+        />
+      </View>
+    )
+  }
+ 
   function _handleNavigationFromBanner(item: any, url: string) {
     //for rtpcr - drive through - open webview
     //for radiology
@@ -2091,7 +2107,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const openGallery = () => {
     Platform.OS == 'android' && setIsPrescriptionUpload(false);
-
+    setLoading(true)
     ImagePicker.openPicker({
       cropping: false,
       hideBottomControls: true,
@@ -2105,6 +2121,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     })
       .then((response) => {
         const images = response as ImageCropPickerResponse[];
+        setLoading(true)
         const isGreaterThanSpecifiedSize = images.find(({ size }) => size > MAX_FILE_SIZE);
         if (isGreaterThanSpecifiedSize) {
           Alert.alert(string.common.uhOh, string.diagnostics.invalidFileSize);
@@ -2112,6 +2129,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }
         const uploadedImages = formatResponse(images);
         Platform.OS == 'ios' && setIsPrescriptionUpload(false);
+        setLoading(false)
         props.navigation.navigate(AppRoutes.SubmittedPrescription, {
           type: 'Gallery',
           phyPrescriptionsProp: [...phyPrescriptionUploaded, ...uploadedImages],
@@ -2120,6 +2138,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         });
       })
       .catch((e: Error) => {
+        setLoading(false)
         Platform.OS == 'ios' && setIsPrescriptionUpload(false);
         CommonBugFender('Tests_onClickGallery', e);
       });
@@ -2780,10 +2799,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderWidgetType = (widget: any) => {
     if (!!widget) {
+      const { APP_ENV } = AppConfig;
       const widgetName = widget?.diagnosticWidgetType?.toLowerCase();
       switch (widgetName) {
         case string.diagnosticCategoryTitle.banner:
-          return renderBanner();
+          return APP_ENV != AppEnv.PERFORM ? renderStaticBanner() : renderBanner();
           break;
         case string.diagnosticCategoryTitle.package:
           return renderPackageWidget(widget);

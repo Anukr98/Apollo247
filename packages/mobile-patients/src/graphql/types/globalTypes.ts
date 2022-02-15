@@ -2319,6 +2319,11 @@ export enum DiagnosticItemType {
   PACKAGE = 'PACKAGE'
 }
 
+export interface recommendationInputItem {
+  itemId?: number | null;
+  itemType?: DiagnosticItemType | null;
+}
+
 export interface CartInputData {
   patientId: string;
   medicineOrderCartLineItems?: (InputCartLineItems | null)[] | null;
