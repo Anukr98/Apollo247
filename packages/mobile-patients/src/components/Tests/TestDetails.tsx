@@ -66,13 +66,12 @@ import {
   convertNumberToDecimal,
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   createDiagnosticAddToCartObject,
-  DiagnosticItemGenderMapping,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
 import {
   DiagnosticAddToCartEvent,
   DiagnosticDetailsViewed,
-} from '@aph/mobile-patients/src/components/Tests/Events';
+} from '@aph/mobile-patients/src/components/Tests/utils/Events';
 import { TestListingHeader } from '@aph/mobile-patients/src/components/Tests/components/TestListingHeader';
 import { Breadcrumb } from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
 import { SectionHeader, Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';

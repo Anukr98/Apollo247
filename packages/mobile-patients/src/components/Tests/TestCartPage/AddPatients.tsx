@@ -79,7 +79,7 @@ import {
   TimelineWizard,
 } from '@aph/mobile-patients/src/components/Tests/components/TimelineWizard';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { DiagnosticPatientSelected } from '@aph/mobile-patients/src/components/Tests/Events';
+import { DiagnosticPatientSelected } from '@aph/mobile-patients/src/components/Tests/utils/Events';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import {

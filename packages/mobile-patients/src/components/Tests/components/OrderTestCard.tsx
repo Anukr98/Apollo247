@@ -154,7 +154,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
         onPress={props.onPressAddTest}
         style={styles.addTestTouch}
       >
-        <Text style={styles.yellowText}>ADD MORE TEST</Text>
+        <Text style={styles.yellowText}>ADD TEST</Text>
       </TouchableOpacity>
     );
   };

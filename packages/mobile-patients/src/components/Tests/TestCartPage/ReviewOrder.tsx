@@ -105,7 +105,7 @@ import {
   DiagnosticModifyOrder,
   DiagnosticProceedToPay,
   DiagnosticRemoveFromCartClicked,
-} from '@aph/mobile-patients/src/components/Tests/Events';
+} from '@aph/mobile-patients/src/components/Tests/utils/Events';
 
 import moment from 'moment';
 import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';

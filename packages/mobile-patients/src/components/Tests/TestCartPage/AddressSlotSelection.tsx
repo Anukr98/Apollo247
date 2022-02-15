@@ -8,7 +8,10 @@ import {
   isEmptyObject,
   TestSlot,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { DiagnosticsCartItem, useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import {
+  DiagnosticsCartItem,
+  useDiagnosticsCart,
+} from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { NavigationScreenProps, SafeAreaView } from 'react-navigation';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -21,7 +24,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { patientObjWithLineItems } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { DiagnosticAppointmentTimeSlot } from '@aph/mobile-patients/src/components/Tests/Events';
+import { DiagnosticAppointmentTimeSlot } from '@aph/mobile-patients/src/components/Tests/utils/Events';
 import { TestSlotSelectionOverlayNew } from '@aph/mobile-patients/src/components/Tests/components/TestSlotSelectionOverlayNew';
 import moment from 'moment';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -51,13 +54,10 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
     setPinCode,
     patientCartItems,
     diagnosticSlot,
-    grandTotal
+    grandTotal,
   } = useDiagnosticsCart();
 
-  const {
-    diagnosticServiceabilityData,
-    diagnosticLocation,
-  } = useAppCommonData();
+  const { diagnosticServiceabilityData, diagnosticLocation } = useAppCommonData();
 
   const { setLoading, showAphAlert, hideAphAlert, loading } = useUIElements();
   const client = useApolloClient();
@@ -115,9 +115,9 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
   const numberOfSlots = selectedTimeSlot?.slotInfo?.internalSlots?.length;
   useEffect(() => {
     if (numberOfSlots == 0) {
-      triggerWebengageEvent()
+      triggerWebengageEvent();
     }
-  }, [numberOfSlots])
+  }, [numberOfSlots]);
 
   //call the slot api.
   useEffect(() => {
@@ -341,12 +341,12 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
     const slotTime = selectedTimeSlot?.slotInfo?.startTime;
     const slotDate = moment(diagnosticSlot?.selectedDate)?.format('DD-MM-YYYY');
     const numberOfSlots = selectedTimeSlot?.slotInfo?.internalSlots?.length;
-    let totalCart: DiagnosticsCartItem[] = []
+    let totalCart: DiagnosticsCartItem[] = [];
     for (let index = 0; index < patientCartItems.length; index++) {
       const element = patientCartItems[index];
-      element?.cartItems?.map((item)=>{
-        totalCart?.push(item)
-      })
+      element?.cartItems?.map((item) => {
+        totalCart?.push(item);
+      });
     }
     DiagnosticAppointmentTimeSlot(
       slotType,
@@ -408,7 +408,6 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
       />
     );
   };
-
 
   return (
     <View style={{ flex: 1 }}>

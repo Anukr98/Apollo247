@@ -88,7 +88,7 @@ import {
   DiagnosticAddToCartClicked,
   DiagnosticCartViewed,
   DiagnosticRemoveFromCartClicked,
-} from '@aph/mobile-patients/src/components/Tests/Events';
+} from '@aph/mobile-patients/src/components/Tests/utils/Events';
 import { CartItemCard } from '@aph/mobile-patients/src/components/Tests/components/CartItemCard';
 import {
   diagnosticServiceability,

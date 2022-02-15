@@ -22,7 +22,7 @@ import { useAllCurrentPatients } from '../hooks/authHooks';
 import {
   RadiologyBookingCompleted,
   RadiologyLandingPage,
-} from '@aph/mobile-patients/src/components/Tests/Events';
+} from '@aph/mobile-patients/src/components/Tests/utils/Events';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';

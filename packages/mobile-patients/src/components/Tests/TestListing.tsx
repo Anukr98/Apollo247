@@ -44,7 +44,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { DiagnosticProductListingPageViewed } from './Events';
+import { DiagnosticProductListingPageViewed } from './utils/Events';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 import { CALL_TO_ORDER_CTA_PAGE_ID } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { DownO } from '@aph/mobile-patients/src/components/ui/Icons';

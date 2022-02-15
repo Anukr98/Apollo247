@@ -50,7 +50,6 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import _ from 'lodash';
 import {
   createDiagnosticAddToCartObject,
-  DiagnosticItemGenderMapping,
   diagnosticsDisplayPrice,
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   DIAGNOSTIC_ITEM_GENDER,
@@ -60,7 +59,7 @@ import { DiagnosticsNewSearch } from '@aph/mobile-patients/src/components/Tests/
 import {
   DiagnosticAddToCartEvent,
   DiagnosticItemSearched,
-} from '@aph/mobile-patients/src/components/Tests/Events';
+} from '@aph/mobile-patients/src/components/Tests/utils/Events';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import {

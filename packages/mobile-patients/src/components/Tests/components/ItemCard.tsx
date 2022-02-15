@@ -32,7 +32,7 @@ import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests
 import {
   DiagnosticHomePageWidgetClicked,
   DiagnosticAddToCartEvent,
-} from '@aph/mobile-patients/src/components/Tests/Events';
+} from '@aph/mobile-patients/src/components/Tests/utils/Events';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
