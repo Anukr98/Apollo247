@@ -55,6 +55,7 @@ const paymentSuccess =
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 import moment from 'moment';
+import { Snackbar } from 'react-native-paper';
 
 export interface PaymentStatusPharmaProps extends NavigationScreenProps {}
 
@@ -97,6 +98,8 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
   const cartTat = props.navigation.getParam('cartTat');
   const isCOD = props.navigation.getParam('isCOD');
   const noAnimation = isCOD && Platform.OS == 'ios';
+  const [showSubstituteNotice, setShowSubstituteNotice] = useState<boolean>(false);
+  const [showSubstituteConfirmation, setShowSubstituteConfirmation] = useState<boolean>(false);
 
   useEffect(() => {
     setTimeout(() => setAnimationfinished(true), 2700);
@@ -125,6 +128,7 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
       const res = await fetchOrderInfo();
       const { data } = res;
       setOrderInfo(data?.pharmaPaymentStatusV2);
+      setShowSubstituteNotice(data?.pharmaPaymentStatusV2?.isSubstitution);
       setFetching(false);
     } catch (error) {}
   };
@@ -182,7 +186,7 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
       //   },
       //   fetchPolicy: 'no-cache',
       // });
-      if (diff<=5 && InAppReview.isAvailable()) {
+      if (diff <= 5 && InAppReview.isAvailable()) {
         await InAppReview.RequestInAppReview().then((hasFlowFinishedSuccessfully) => {
           if (hasFlowFinishedSuccessfully)
             InAppReviewEventPharma(
@@ -239,14 +243,41 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
   };
 
   const renderSubstituteNotice = () => {
-    return (
+    return showSubstituteNotice ? (
       <SubstituteNotice
         orderInfo={orderInfo}
-        onPressAccept={() => updateReceiveSubstitueStatus('OK')}
-        onPressReject={() => updateReceiveSubstitueStatus('not-OK')}
+        onPressAccept={() => {
+          setShowSubstituteConfirmation(true);
+          setShowSubstituteNotice(false);
+          updateReceiveSubstitueStatus('OK');
+        }}
+        onPressReject={() => {
+          setShowSubstituteConfirmation(true);
+          setShowSubstituteNotice(false);
+          updateReceiveSubstitueStatus('not-OK');
+        }}
       />
+    ) : null;
+  };
+  const renderSubstituteSnackBar = () => {
+    return (
+      <Snackbar
+        style={{
+          position: 'absolute',
+          zIndex: 1001,
+          backgroundColor: theme.colors.GRAY,
+        }}
+        visible={showSubstituteConfirmation}
+        onDismiss={() => {
+          setShowSubstituteConfirmation(false);
+        }}
+        duration={3000}
+      >
+        Response Received.
+      </Snackbar>
     );
   };
+
   const renderPaymentStatus = () => {
     return (
       <PaymentStatus
@@ -307,6 +338,7 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
             {renderPaymentInfo()}
             {renderFreeConsultCard()}
             {renderOrderInfo()}
+            {renderSubstituteSnackBar()}
           </ScrollView>
           {renderTabBar()}
         </SafeAreaView>
