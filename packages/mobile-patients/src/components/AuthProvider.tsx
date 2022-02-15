@@ -308,10 +308,11 @@ export const AuthProvider: React.FC = (props) => {
   const returnAuthToken = () => {
     return new Promise(async (resolve, reject) => {
       const user = await auth.currentUser;
-      const token = await user?.getIdToken(true).catch((error) => {
+      const token: any = await user?.getIdToken(true).catch((error) => {
         reject(null);
       });
-      apolloClient = await buildApolloClient(authToken);
+      setAuthToken(token);
+      apolloClient = await buildApolloClient(token);
       resolve(token);
     });
   };
