@@ -212,6 +212,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   const [showNonServiceableText, setShowNonServiceableText] = useState<boolean>(false);
   const [showPriceMismatch, setShowPriceMismatch] = useState<boolean>(false);
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
+  const cartItemsForSinglePatient = patientCartItems?.[0]?.cartItems?.filter((item) => item?.isSelected);
   const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
   const [overallArray, setOverallArray] = useState([] as any);
@@ -1328,12 +1329,12 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   };
   async function getGroupRecommendations() {
     let recommendationInputItems: { itemId?: number; itemType?: DiagnosticItemType }[] = [];
-    cartItemsWithId?.map((item) => {
+    cartItemsForSinglePatient?.map((item) => {
       const inclusionCount = cartItems?.find(
-               (cartItem) => Number(cartItem?.id) === item
+               (cartItem) => cartItem?.id === item?.id
           )?.inclusions?.length;
       const newObj = {
-        itemId: item,
+        itemId: Number(item?.id),
         itemType: !!inclusionCount && inclusionCount > 1 ? DiagnosticItemType.PACKAGE : DiagnosticItemType.LABTEST,
       };
       recommendationInputItems?.push(newObj);
@@ -1855,6 +1856,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 
   function _onPressCartItem(item: any, test: DiagnosticsCartItem) {
     CommonLogEvent(AppRoutes.CartPage, 'Navigate to test details scene');
+    updateCartInGroupRecommandation()
     fetchPackageDetails(
       item?.id,
       (product) => {
