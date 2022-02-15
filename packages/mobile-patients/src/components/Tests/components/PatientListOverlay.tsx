@@ -387,7 +387,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  disabledStyle: { backgroundColor: '#ECECEC', borderColor: '#CECECE', borderWidth: 1 },
+  disabledStyle: {
+    backgroundColor: theme.colors.LIGHT_GRAY_3,
+    borderColor: '#CECECE',
+    borderWidth: 1,
+  },
   disabledText: { color: SHERPA_BLUE, opacity: 0.4 },
   successText: {
     ...theme.viewStyles.text('B', 16, '#1084A9', 1),

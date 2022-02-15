@@ -397,7 +397,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
   );
   const isCartAvailable = !!cartItems && cartItems?.length > 0;
   const cartItemsCount =
-    calculateDiagnosticCartItems(cartItems, patientCartItems)?.length + shopCartItems?.length;
+    calculateDiagnosticCartItems(cartItems, patientCartItems)?.length +
+    (shopCartItems?.length || 0);
 
   const cache = new Cache({
     namespace: 'tests',
@@ -1614,18 +1615,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   };
   const renderStaticBanner = () => {
-    const imageUrl = "https://newassets.apollo247.com/uatcms/2021-06/senior citizen-01_0.jpg"
+    const imageUrl = 'https://newassets.apollo247.com/uatcms/2021-06/senior citizen-01_0.jpg';
     return (
       <View>
         <ImageNative
-        resizeMode="contain"
-        style={{ width: '100%' , height: imgHeight}}
-        source={{ uri: imageUrl }}
+          resizeMode="contain"
+          style={{ width: '100%', height: imgHeight }}
+          source={{ uri: imageUrl }}
         />
       </View>
-    )
-  }
- 
+    );
+  };
+
   function _handleNavigationFromBanner(item: any, url: string) {
     //for rtpcr - drive through - open webview
     //for radiology
@@ -2107,7 +2108,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const openGallery = () => {
     Platform.OS == 'android' && setIsPrescriptionUpload(false);
-    setLoading(true)
+    setLoading(true);
     ImagePicker.openPicker({
       cropping: false,
       hideBottomControls: true,
@@ -2121,7 +2122,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     })
       .then((response) => {
         const images = response as ImageCropPickerResponse[];
-        setLoading(true)
+        setLoading(true);
         const isGreaterThanSpecifiedSize = images.find(({ size }) => size > MAX_FILE_SIZE);
         if (isGreaterThanSpecifiedSize) {
           Alert.alert(string.common.uhOh, string.diagnostics.invalidFileSize);
@@ -2129,7 +2130,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }
         const uploadedImages = formatResponse(images);
         Platform.OS == 'ios' && setIsPrescriptionUpload(false);
-        setLoading(false)
+        setLoading(false);
         props.navigation.navigate(AppRoutes.SubmittedPrescription, {
           type: 'Gallery',
           phyPrescriptionsProp: [...phyPrescriptionUploaded, ...uploadedImages],
@@ -2138,7 +2139,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         });
       })
       .catch((e: Error) => {
-        setLoading(false)
+        setLoading(false);
         Platform.OS == 'ios' && setIsPrescriptionUpload(false);
         CommonBugFender('Tests_onClickGallery', e);
       });

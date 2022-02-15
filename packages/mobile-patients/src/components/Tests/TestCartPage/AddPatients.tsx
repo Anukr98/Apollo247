@@ -1,6 +1,7 @@
 import {
   AddPatientCircleIcon,
   Check,
+  InfoIconRed,
   MinusPatientCircleIcon,
   PlusIconWhite,
   UnCheck,
@@ -81,7 +82,11 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { DiagnosticPatientSelected } from '@aph/mobile-patients/src/components/Tests/Events';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import { Gender, TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  GENDER,
+  Gender,
+  TEST_COLLECTION_TYPE,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { PatientDetailsOverlay } from '@aph/mobile-patients/src/components/Tests/components/PatientDetailsOverlay';
 import {
   editProfile,
@@ -147,6 +152,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   const [tempPatientSelected, setTempPatientSelected] = useState({} as any);
   const [tempIndex, setTempIndex] = useState<number>(0);
   const [patientArray, setPatientArray] = useState([]) as any;
+  const [genderSkuMsg, setGenderSkuMsg] = useState<string>('');
 
   const keyExtractor = useCallback((_, index: number) => `${index}`, []);
   const keyExtractor1 = useCallback((_, index: number) => `${index}`, []);
@@ -216,6 +222,33 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   }, [patientCartItems]);
 
   /**
+   * for filtering out the patients if cartItems has only items (that are specific to only one gender) + patientCartItem is empty
+   *
+   */
+  useEffect(() => {
+    if (cartItems?.length > 0) {
+      //check if all the items in the cart are specific to only one gender.
+      const { hasAllSku, filterFemaleSku, filterMaleSku } = getSkuItemsGender();
+
+      console.log({ hasAllSku });
+      console.log({ filterFemaleSku });
+      console.log({ filterMaleSku });
+
+      if (!!hasAllSku) {
+        setGenderSkuMsg('');
+        //do not filter. return;
+        return;
+      } else if (filterFemaleSku?.length > 0 && filterMaleSku?.length == 0) {
+        setGenderSkuMsg(string.diagnostics.skuGenderMessage.replace('{{gender}}', 'female'));
+        //filter the female patients only
+      } else if (filterFemaleSku?.length == 0 && filterMaleSku?.length > 0) {
+        //filter the male patients only
+        setGenderSkuMsg(string.diagnostics.skuGenderMessage.replace('{{gender}}', 'male'));
+      }
+    }
+  }, [cartItems, patientCartItems]);
+
+  /**
    * for fetching the prices based on the address selected on homepage
    */
   useEffect(() => {
@@ -228,6 +261,29 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
       getAddressServiceability();
     }
   }, []);
+
+  function getSkuItemsGender() {
+    const hasAllSku = cartItems?.find(
+      (cItem) => cItem?.gender == GENDER.ALL || cItem?.gender == GENDER.OTHER
+    );
+    const filterMaleSku = filterGenderSKU(cartItems, GENDER.MALE);
+    const filterFemaleSku = filterGenderSKU(cartItems, GENDER.FEMALE);
+
+    const hasAllFemaleSku =
+      !!!hasAllSku && filterFemaleSku?.length > 0 && filterMaleSku?.length == 0;
+    const hasAllMaleSku = !!!hasAllSku && filterMaleSku?.length > 0 && filterFemaleSku?.length == 0;
+    return {
+      filterFemaleSku,
+      filterMaleSku,
+      hasAllSku,
+      hasAllFemaleSku,
+      hasAllMaleSku,
+    };
+  }
+
+  function filterGenderSKU(arr: DiagnosticsCartItem[], gender: GENDER) {
+    return arr?.filter((item) => item?.gender === gender);
+  }
 
   function handleBack() {
     props.navigation.goBack();
@@ -877,6 +933,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
 
   const renderPatientListItem = (item: any, index: number) => {
     const { patientName, genderAgeText, patientSalutation } = extractPatientDetails(item);
+    const { hasAllFemaleSku, hasAllMaleSku } = getSkuItemsGender();
     const isPresent =
       !!patientCartItems && patientCartItems?.find((cart) => cart?.patientId == item?.id);
     const patientSelectedItems =
@@ -884,15 +941,20 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
 
     const showGreenBg = !!patientSelectedItems && patientSelectedItems?.length > 0;
     const isMinorAge = checkPatientAge(item);
+    const disablePatientForSkuGender =
+      ((item?.gender === GENDER.MALE || item?.gender === GENDER.ALL) && hasAllFemaleSku) ||
+      ((item?.gender === GENDER.FEMALE || item?.gender === GENDER.ALL) && hasAllMaleSku);
 
     const itemViewStyle = [
       styles.patientItemViewStyle,
       index === 0 && { marginTop: 12 },
       isMinorAge && { backgroundColor: 'rgb(252,252,251)' },
+      disablePatientForSkuGender && { backgroundColor: colors.LIGHT_GRAY_3 },
       showGreenBg && { backgroundColor: APP_GREEN },
     ];
 
     const minorAgeTextOpacity = isMinorAge && { opacity: 0.6 };
+    const disabledPatientTextOpacity = disablePatientForSkuGender && { opacity: 0.4 };
     return (
       <View
         style={[
@@ -905,7 +967,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
         <TouchableOpacity
           activeOpacity={1}
           style={itemViewStyle}
-          onPress={() => _onPressPatient(item, index)}
+          onPress={() => (disablePatientForSkuGender ? {} : _onPressPatient(item, index))}
         >
           <View
             style={[
@@ -919,6 +981,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
               style={[
                 styles.patientNameTextStyle,
                 minorAgeTextOpacity,
+                disabledPatientTextOpacity,
                 showGreenBg && { color: WHITE },
               ]}
             >
@@ -928,6 +991,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
               style={[
                 styles.genderAgeTextStyle,
                 minorAgeTextOpacity,
+                disabledPatientTextOpacity,
                 showGreenBg && { color: WHITE },
               ]}
             >
@@ -1093,11 +1157,21 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     );
   };
 
+  const renderGenderSkuMsg = () => {
+    return (
+      <View style={styles.genderSkuMsgView}>
+        <InfoIconRed style={styles.infoIconStyle} />
+        <Text style={styles.subHeadingText}>{genderSkuMsg}</Text>
+      </View>
+    );
+  };
+
   const renderMainView = () => {
     return (
       <View style={styles.mainContainerView}>
         {renderHeading()}
         {renderSubHeading()}
+        {genderSkuMsg != '' ? renderGenderSkuMsg() : null}
         {renderPatientsList()}
       </View>
     );
@@ -1159,10 +1233,8 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     marginBottom: 20, //16
   },
-
   mainViewStyle: {
     flexGrow: 1,
-    marginVertical: 16,
     flex: 1,
     padding: 5,
   },
@@ -1255,4 +1327,10 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 1, 16),
   },
   minorAgeTextView: { marginTop: 4, marginBottom: 4 },
+  genderSkuMsgView: {
+    marginVertical: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  infoIconStyle: { height: 18, width: 18, resizeMode: 'contain', marginRight: 5 },
 });

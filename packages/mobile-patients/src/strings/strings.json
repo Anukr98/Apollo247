@@ -595,6 +595,7 @@
     "missingItemsAlertMessage": "Sorry, the following items are unavailable at your location and will be removed from the cart:"
   },
   "diagnostics": {
+    "skuGenderMessage": "This package is applicable only for {{gender}} patients.",
     "locationPermissionText": "Allow us to serve you better by entering your area pincode below.",
     "serviceabilityFailureText": "Something went wrong. We're unable to check diagnostics serviceability for your location.",
     "nonServiceableMsg": "Diagnostic services are not available in {{city_name}} for now.",
@@ -818,7 +819,9 @@
     "HcDisclaimer": "Use Health Credits at Payments Checkout",
     "healthCredits": "Health Credits",
     "redemmedTxt": "(Redeemed)",
-    "minorAgeTestText": "We allow only RTPCR bookings for children less than 10 years old"
+    "minorAgeTestText": "We allow only RTPCR bookings for children less than 10 years old",
+    "emptyCart": "Your Cart is empty",
+    "recommendedText":"Your cart would include the following items for"
   },
   "diagnosticsDetails":{
     "about": "About",
