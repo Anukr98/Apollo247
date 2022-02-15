@@ -262,11 +262,7 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
   const renderSubstituteSnackBar = () => {
     return (
       <Snackbar
-        style={{
-          position: 'absolute',
-          zIndex: 1001,
-          backgroundColor: theme.colors.GRAY,
-        }}
+        style={styles.snackbarStyle}
         visible={showSubstituteConfirmation}
         onDismiss={() => {
           setShowSubstituteConfirmation(false);
@@ -353,5 +349,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  snackbarStyle: {
+    position: 'absolute',
+    zIndex: 1001,
+    backgroundColor: theme.colors.GRAY,
   },
 });
