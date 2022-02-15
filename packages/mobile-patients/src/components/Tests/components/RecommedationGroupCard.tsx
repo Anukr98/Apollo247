@@ -16,7 +16,7 @@ interface RecommedationGroupCardProps {
   showTestWorth?: boolean;
   containerStyle?: any;
   scrollEnabled?: boolean;
-  showPrice?: number;
+  showPrice: number;
   priceToDisplayOnPopUp?: number
 }
 
@@ -54,7 +54,7 @@ export const RecommedationGroupCard: React.FC<RecommedationGroupCardProps> = (pr
             <Text style={styles.cartItemText}>{data?.itemName}</Text>
             <Text style={styles.mainPriceText}>
               {string.common.Rs}
-              {showAddButton ? showPrice : priceToDisplayOnPopUp}
+              {showAddButton ? Math.abs(showPrice)?.toFixed() : priceToDisplayOnPopUp}
             </Text>
           </View>
           <Text style={styles.textInclusionsRecom}>
