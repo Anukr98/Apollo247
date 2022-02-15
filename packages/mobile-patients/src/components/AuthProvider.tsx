@@ -165,6 +165,7 @@ export const AuthProvider: React.FC = (props) => {
         setAuthToken('');
       });
       setAuthToken(token);
+
       const params = await getEventParams();
       postWebEngageEvent(WebEngageEventName.AUTHTOKEN_UPDATED, params);
     } else {
@@ -204,8 +205,14 @@ export const AuthProvider: React.FC = (props) => {
 
   useEffect(() => {
     // building apolloclient when ever there is a update in Apollo 247 JWT token
-    apolloClient = buildApolloClient(authToken);
+    apollo247APIKey && reBuildApolloClient();
   }, [apollo247APIKey]);
+
+  const reBuildApolloClient = async () => {
+    const user = await auth.currentUser;
+    const token: any = await user?.getIdToken(true).catch((error) => {});
+    apolloClient = buildApolloClient(token);
+  };
 
   const buildApolloClient = (authToken: string) => {
     const errorLink = onError((error) => {
@@ -298,16 +305,16 @@ export const AuthProvider: React.FC = (props) => {
     }
   }, [auth]);
 
-  const returnAuthToken = async () => {
-    try {
-      return new Promise(async (resolve, reject) => {
-        const user = await auth.currentUser;
-        const token = await user?.getIdToken(true).catch((error) => {
-          reject(null);
-        });
-        resolve(token);
+  const returnAuthToken = () => {
+    return new Promise(async (resolve, reject) => {
+      const user = await auth.currentUser;
+      const token: any = await user?.getIdToken(true).catch((error) => {
+        reject(null);
       });
-    } catch (error) {}
+      setAuthToken(token);
+      apolloClient = await buildApolloClient(token);
+      resolve(token);
+    });
   };
 
   const getFirebaseToken = () => {
