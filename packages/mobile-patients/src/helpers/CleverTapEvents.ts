@@ -2916,6 +2916,7 @@ export interface CleverTapEvents {
   };
   [CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED]: {
     'Nav src': 'deeplink' | 'app home';
+    'Page Name': string
   };
   [CleverTapEventName.PHARMACY_PRODUCT_PAGE_VIEWED]: {
     'Nav src': ProductPageViewedSource;

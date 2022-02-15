@@ -310,6 +310,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
     pharmacyLocation,
     notificationCount,
     setIsRenew,
+    tabRouteJourney,
+    setTabRouteJourney,
   } = useAppCommonData();
 
   type Address = savePatientAddress_savePatientAddress_patientAddress;
@@ -3368,11 +3370,28 @@ export const Tests: React.FC<TestsProps> = (props) => {
     postCleverTapEvent(CleverTapEventName.SCREEN_SCROLLED, eventAttributes);
   };
 
+  const setRouteJourneyFromTabbar = () => {
+    if (!tabRouteJourney) {
+      setTabRouteJourney &&
+        setTabRouteJourney({
+          previousRoute: 'TESTS',
+          currentRoute: 'TESTS',
+        });
+    } else {
+      setTabRouteJourney &&
+        setTabRouteJourney({
+          previousRoute: tabRouteJourney?.currentRoute,
+          currentRoute: 'TESTS',
+        });
+    }
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <NavigationEvents
         onDidFocus={() => {
           scrollCount.current = 0;
+          setRouteJourneyFromTabbar();
         }}
         onDidBlur={postScrollScreenEvent}
       />

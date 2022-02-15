@@ -1161,6 +1161,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     setDisplayQuickBookAskApollo,
     displayAskApolloNumber,
     setDisplayAskApolloNumber,
+    tabRouteJourney,
+    setTabRouteJourney,
   } = useAppCommonData();
   const { fetchServerCart } = useServerCart();
 
@@ -3490,6 +3492,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                       | WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED]
                       | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED] = {
                       source: 'app home',
+                      'Page Name': 'Homepage',
                     };
                     setTimeout(
                       () =>
@@ -4274,6 +4277,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         props.navigation.navigate(AppRoutes.DoctorSearch);
       } else if (action.cta_action == 'PHARMACY_LANDING') {
         props.navigation.navigate('MEDICINES');
+        const eventAttributes = {
+          'Nav src': 'offer widger HP',
+        };
+        setTimeout(
+          () => postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED, eventAttributes),
+          500
+        );
       } else if (action.cta_action == 'PRO-HEALTH') {
         setShowWebView({ action: true, url: 'https://www.apollo247.com/apollo-pro-health' });
       } else if (action.cta_action == 'PHR') {
@@ -5535,7 +5545,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       Status: status,
       Vertical: request,
     };
-    postCleverTapEvent(CleverTapEventName.HOMEPAGE_SEARCH_BAR_QUERY_INPUT, eventAttributes);
   };
 
   const postScrollScreenEvent = () => {
@@ -5858,7 +5867,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           Keyword: searchText,
           Vertical: 'Pharmacy',
         });
-        props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
+        props.navigation.navigate(AppRoutes.MedicineListing, {
+          searchText,
+          comingFromSearch: true,
+          navSrcForSearchSuccess: 'Searchbar',
+        });
         break;
       case MedicalRecordType.TEST_REPORT:
         postHomeCleverTapEvent(CleverTapEventName.OPTION_FROM_SEARCH_BAR_CLICKED, 'Search bar', {
@@ -6051,11 +6064,28 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     }
   };
 
+  const setRouteJourneyFromTabbar = () => {
+    if (!tabRouteJourney) {
+      setTabRouteJourney &&
+        setTabRouteJourney({
+          previousRoute: 'Home',
+          currentRoute: 'Home',
+        });
+    } else {
+      setTabRouteJourney &&
+        setTabRouteJourney({
+          previousRoute: tabRouteJourney?.currentRoute,
+          currentRoute: 'Home',
+        });
+    }
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.WHITE }}>
       <NavigationEvents
         onDidFocus={() => {
           scrollCount.current = 0;
+          setRouteJourneyFromTabbar();
         }}
         onDidBlur={postScrollScreenEvent}
       />
