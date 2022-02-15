@@ -305,17 +305,15 @@ export const AuthProvider: React.FC = (props) => {
     }
   }, [auth]);
 
-  const returnAuthToken = async () => {
-    try {
-      return new Promise(async (resolve, reject) => {
-        const user = await auth.currentUser;
-        const token = await user?.getIdToken(true).catch((error) => {
-          reject(null);
-        });
-        apolloClient = await buildApolloClient(authToken);
-        resolve(token);
+  const returnAuthToken = () => {
+    return new Promise(async (resolve, reject) => {
+      const user = await auth.currentUser;
+      const token = await user?.getIdToken(true).catch((error) => {
+        reject(null);
       });
-    } catch (error) {}
+      apolloClient = await buildApolloClient(authToken);
+      resolve(token);
+    });
   };
 
   const getFirebaseToken = () => {

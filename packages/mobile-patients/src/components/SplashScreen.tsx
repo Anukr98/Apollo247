@@ -223,7 +223,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   }, []);
 
   const initiate = async () => {
-    const authToken = await returnAuthToken?.();
+    const authToken = (await returnAuthToken?.()?.catch((error) => {})) || '';
     if (!authToken) {
       const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
       // if authToken is missing and user is in logged in state then we should ask the the user to relogin
