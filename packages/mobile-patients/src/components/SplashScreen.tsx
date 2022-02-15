@@ -218,8 +218,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   }, [selectedAnimationIndex]);
 
   useEffect(() => {
+    // triggered as soon as the application is opened
     initiate();
-    // clearing it so that save firebase token to DB gets call every first time
   }, []);
 
   const initiate = async () => {
