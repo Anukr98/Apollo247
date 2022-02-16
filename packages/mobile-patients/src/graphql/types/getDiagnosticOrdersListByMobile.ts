@@ -60,7 +60,6 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
 
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems_itemObj {
   __typename: "ItemObj";
-  gender: string | null;
   itemType: string | null;
   testPreparationData: string | null;
   packageCalculatedMrp: number | null;

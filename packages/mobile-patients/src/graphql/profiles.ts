@@ -1974,7 +1974,6 @@ export const GET_WIDGETS_PRICING_BY_ITEMID_CITYID = gql`
     findDiagnosticsWidgetsPricing(cityID: $cityID, itemIDs: $itemIDs) {
       diagnostics {
         itemId
-        gender
         packageCalculatedMrp
         diagnosticPricing {
           mrp
@@ -2275,7 +2274,6 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
           editOrderID
           isRemoved
           itemObj {
-            gender
             itemType
             testPreparationData
             packageCalculatedMrp
@@ -6677,7 +6675,6 @@ export const GET_DIAGNOSTICS_RECOMMENDATIONS = gql`
       itemsData {
         itemId
         itemName
-        gender
         observations{
           observationName
           mandatoryValue
@@ -7057,7 +7054,6 @@ export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS = gql`
       packageRecommendations {
         itemId
         itemName
-        gender
         inclusions
         packageCalculatedMrp
         diagnosticInclusions {
@@ -7088,7 +7084,6 @@ export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS_V2 = gql`
         id
         itemId
         itemName
-        gender
         rate
         itemRemarks
         itemType
@@ -7537,7 +7532,6 @@ export const DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS = gql`
       itemsData {
         itemId
         itemName
-        gender
         observations{
           observationName
           mandatoryValue
