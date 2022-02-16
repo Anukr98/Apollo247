@@ -1701,6 +1701,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   };
 
   function onPressAddToCart() {
+    const comingFrom = props.navigation.getParam('comingFrom')
     const specialPrice = testInfo?.specialPrice!;
     const price = testInfo?.Rate!;
     const circlePrice = testInfo?.circlePrice! || testInfo?.circleRate!;
@@ -1721,7 +1722,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       itemId!,
       mrpToDisplay, //mrp
       priceToShow, //actual price
-      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS,
+      comingFrom === 'HomeScreen' ? 'Searchbar' : DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS,
       testInclusions?.length < 2 ? DIAGNOSTICS_ITEM_TYPE.TEST : DIAGNOSTICS_ITEM_TYPE.PACKAGE,
       '',
       currentPatient,

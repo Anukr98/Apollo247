@@ -33,6 +33,7 @@ import {
   isSmallDevice,
   isValidSearch,
   nameFormater,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -82,7 +83,7 @@ import { searchDiagnosticItem_searchDiagnosticItem_data } from '@aph/mobile-pati
 import { DiagnosticsSearchResultItem } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticSearchResultItem';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { DIAGNOSTICS_ITEM_TYPE } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { CleverTapEventName, DIAGNOSTICS_ITEM_TYPE } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 type searchResults = searchDiagnosticItem_searchDiagnosticItem_data;
 
@@ -92,6 +93,7 @@ export interface SearchTestSceneProps
   extends NavigationScreenProps<{
     searchText: string;
     duplicateOrderId?: any;
+    movedFrom?: string;
   }> {}
 
 export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
@@ -138,6 +140,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   const duplicateOrderId = props.navigation.getParam('duplicateOrderId');
+  const movedFrom = props.navigation.getParam('movedFrom');
   const showGoToCart = !!cartItems && cartItems?.length > 0;
 
   //add the cityId in case of modifyFlow
@@ -326,7 +329,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     id: string,
     price: number,
     discountedPrice: number,
-    source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
+    source: string | DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
     inclusions?: any
   ) => {
     const itemType =
@@ -371,7 +374,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       `${itemId}`,
       !!rate ? rate : 0,
       priceToShow,
-      source,
+      movedFrom === 'searchbar' ? 'Searchbar' : source,
       inclusions
     );
     const addedItem = {
@@ -678,11 +681,21 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     );
   }
 
+  const postProductListingPageViewedEvent = (product: any) => {
+    const eventAttributes = {
+      'Nav src': 'Searchbar',
+      'Test name': product?.diagnostic_item_name,
+      'Test id': product?.diagnostic_item_id
+    }
+    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED, eventAttributes)
+  }
+
   const renderTestCard = (product: any, index: number, array: searchResults[]) => {
     return (
       <DiagnosticsSearchResultItem
         onPress={() => {
           CommonLogEvent(AppRoutes.SearchTestScene, 'Search suggestion Item');
+          postProductListingPageViewedEvent(product)
           props.navigation.navigate(AppRoutes.TestDetails, {
             itemId: product?.diagnostic_item_id,
             source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PARTIAL_SEARCH,
@@ -690,6 +703,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           });
         }}
         onPressAddToCart={() => {
+          // DiagnosticAddToCartEvent
           fetchPrices(product);
         }}
         data={product}
