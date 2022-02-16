@@ -561,7 +561,7 @@ export const pushTheView = (
       });
       break;
     case 'DoctorSearch':
-      navigateToView(navigation, AppRoutes.DoctorSearch);
+      navigateToView(navigation, AppRoutes.DoctorSearch, { isFromDeeplink: true });
       break;
 
     case 'MedicineSearchText':

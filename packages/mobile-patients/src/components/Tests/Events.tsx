@@ -124,7 +124,7 @@ export async function DiagnosticAddToCartEvent(
   id: string,
   price: number,
   discountedPrice: number,
-  source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
+  source: string | DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   itemType: DIAGNOSTICS_ITEM_TYPE,
   section?: string,
   currentPatient?: any,

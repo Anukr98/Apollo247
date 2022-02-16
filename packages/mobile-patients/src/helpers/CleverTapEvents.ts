@@ -97,6 +97,7 @@ export enum CleverTapEventName {
   VITAL_QUESTION_ASSESSMENT_STARTED = 'Vital Question Assessment Started',
   CONSULT_GO_TO_CONSULT_ROOM_CLICKED = 'Consult go to consult room clicked',
   CONSULT_DOC_PARTNER_TAB_CLICKED = 'Consult doc partner tab clicked',
+  CONSULT_HOMEPAGE_VIEWED = 'Consult Homepage Viewed',
 
   //DOH events
   CONSULT_DOH_Viewed = 'Consult DOH viewed',
@@ -248,6 +249,7 @@ export enum CleverTapEventName {
   DIAGNOSTIC_PRESCRIPTION_SUBMITTED = 'Diagnostic prescription submitted',
   DIAGNOSTIC_RADIOLOGY_HOME_PAGE = 'Diagnostic Radiology lead gen page viewed',
   DIAGNOSTIC_RADIOLOGY_BOOKING_COMPLETE = 'Diagnostic Radiology Booking completed',
+  DIAGNOSTIC_HOMEPAGE_VIEWED = 'Diagnostic Home page viewed',
   DIAGNOSTIC_RETAIN_CANCELLATION = 'Diagnostic retain cancellation CTA clicked',
 
   //Conult Package Purchase Attribite
@@ -1049,6 +1051,15 @@ export interface CleverTapEvents {
   [CleverTapEventName.CONSULT_DOH_Clicked]: DOHInfo;
 
   // ********** Home Screen Events ********** \\
+
+  [CleverTapEventName.CONSULT_HOMEPAGE_VIEWED]: {
+    'Nav src': string;
+    'User': string;
+    'UHID': string;
+    'Gender': string;
+    'Mobile Number': string;
+    'Customer Id': string;
+  }
 
   [CleverTapEventName.BUY_MEDICINES]: {
     Source: 'Home Screen' | 'Menu';
@@ -3014,6 +3025,7 @@ export interface CleverTapEvents {
     'Doctor tab': 'Apollo Tab' | 'Partner' | 'NA';
     'Search screen': 'Speciality listing' | 'Doctor listing' | 'NA';
     'Appointment CTA': 'Cancelled' | 'Past' | 'Active' | 'Inside consult room' | 'NA';
+    'Nav Src'?: string;
   };
   [CleverTapEventName.CONSULT_SEARCH_SUGGESTIONS]: {
     'Patient Name': string;
