@@ -303,10 +303,10 @@ export enum CleverTapEventName {
   // Circle Events
   CIRCLE_LANDING_PAGE_VIEWED = 'Circle Landing page viewed',
   CIRCLE_MEMBERSHIP_PAGE_VIEWED = 'Circle membership page viewed',
-  CIRCLE_POP_UP_VIEWED_PLANS_ONLY = 'Circle Pop up viewed (Plans only)',
+  CIRCLE_POP_UP_VIEWED_PLANS_ONLY = 'Circle Pop up viewed',
   CIRCLE_PLAN_TO_CART = 'Circle Plan to Cart',
   CIRCLE_PLAN_REMOVE_FROM_CART = 'Circle Plan Removed from cart',
-  CIRCLE_PAYMENT_PAGE_VIEWED_STANDALONE_CIRCLE_PURCHASE_PAGE = 'Circle payment page viewed (Standalone circle purchase page)',
+  CIRCLE_PAYMENT_PAGE_VIEWED_STANDALONE_CIRCLE_PURCHASE_PAGE = 'Circle payment page viewed',
   CIRCLE_BENIFIT_CLICKED = 'Circle Benefit Clicked',
 
   //HomePage Events
