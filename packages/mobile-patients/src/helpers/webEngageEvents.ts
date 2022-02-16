@@ -7,8 +7,14 @@ import {
   PharmaUserStatus,
   UploadPrescSource,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE, DIAGNOSTIC_PINCODE_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
-import { DiagnosticHomePageSource, DIAGNOSTICS_ITEM_TYPE } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import {
+  DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
+  DIAGNOSTIC_PINCODE_SOURCE_TYPE,
+} from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  DiagnosticHomePageSource,
+  DIAGNOSTICS_ITEM_TYPE,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { DiagnosticsDetailsPageViewedSource } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 
 type YesOrNo = 'Yes' | 'No';
@@ -493,6 +499,7 @@ export enum WebEngageEventName {
   ERROR_WHILE_FETCHING_JWT_TOKEN = 'Error while Fetching JWT token',
   AUTHTOKEN_UPDATED = 'Authtoken Updated',
   NO_FIREBASE_USER = 'No user on Firebase',
+  LOGOUT_REQUIRED = 'Logout Required',
 }
 
 export interface PatientInfo {
@@ -545,11 +552,11 @@ export interface DiagnosticUserInfo {
   'Patient Gender': string;
   'Patient Name': string;
   'Patient Age': number;
-  'User Type'?: any
+  'User Type'?: any;
 }
 export interface DiagnosticLandingPage extends DiagnosticUserInfo {
-    Source: DiagnosticHomePageSource;
-    'Circle user'?: string;
+  Source: DiagnosticHomePageSource;
+  'Circle user'?: string;
 }
 export interface DiagnosticServiceble {
   'Patient UHID': string;
@@ -707,8 +714,8 @@ export interface ItemClickedOnLanding extends DiagnosticUserInfo {
 export interface DiagnosticPinCode extends DiagnosticUserInfo {
   Pincode: number | string;
   Serviceability: 'Yes' | 'No';
-  Source : DIAGNOSTIC_PINCODE_SOURCE_TYPE,
-  'Circle user'?: 'Yes' | 'No'
+  Source: DIAGNOSTIC_PINCODE_SOURCE_TYPE;
+  'Circle user'?: 'Yes' | 'No';
 }
 export interface DoctorFilterClick {
   'Patient Name': string;
@@ -775,7 +782,7 @@ interface consultLocation {
 
 export enum DIAGNOSTIC_SLOT_TYPE {
   FREE = 'Free',
-  PAID = 'PAID'
+  PAID = 'PAID',
 }
 export interface WebEngageEvents {
   // ********** AppEvents ********** \\
@@ -1264,7 +1271,7 @@ export interface WebEngageEvents {
     'Circle user'?: string;
     'Original Item ids'?: any;
     'Section name'?: string;
-    };
+  };
 
   [WebEngageEventName.DIAGNOSTIC_CART_VIEWED]: {
     'Page source': string;
@@ -1282,9 +1289,9 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.DIAGNOSTIC_SLOT_TIME_SELECTED]: {
     'Slot time': string;
-    'No. of slots' : number;
-    'Slot date' : string;
-    'Type': DIAGNOSTIC_SLOT_TYPE.FREE;
+    'No. of slots': number;
+    'Slot date': string;
+    Type: DIAGNOSTIC_SLOT_TYPE.FREE;
     'Circle user': string;
   };
   [WebEngageEventName.DIAGNOSTIC_MAKE_PAYMENT_CLICKED]: {
@@ -1295,24 +1302,24 @@ export interface WebEngageEvents {
     'Sub Total': number;
     'Net after discount': number;
     'Pin Code': string | number;
-    'Address': string;
+    Address: string;
     'Home collection charges'?: number;
     'Collection Time Slot': string;
     'Collection Date Slot': string | Date;
     'Circle user': 'Yes' | 'No';
   };
   [WebEngageEventName.DIAGNOSTIC_PATIENT_SELECTED]: {
-      'No. of patients': number;
-      'Patient UHID': string;
-      'Patient name': string;
-  },
+    'No. of patients': number;
+    'Patient UHID': string;
+    'Patient name': string;
+  };
   [WebEngageEventName.DIAGNOSTIC_TRACK_ORDER_VIEWED]: {
     'Patient UHID': string;
     'Patient Name': string;
     'Latest Order Status': string;
     'Order id': string;
     Source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary';
-    'Circle user' ?: string;
+    'Circle user'?: string;
   };
   [WebEngageEventName.DIAGNOSTIC_VIEW_REPORT_CLICKED]: {
     'Order id'?: string;
@@ -1404,7 +1411,7 @@ export interface WebEngageEvents {
     'Phlebo Name': string;
     'Order id': string | number;
     'Phlebo id': string | number;
-    Comment?: string 
+    Comment?: string;
   };
   [WebEngageEventName.DIAGNOSTIC_PHLEBO_CALLING_CLICKED]: {
     UHID: string;

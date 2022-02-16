@@ -25,10 +25,10 @@ export const useAuth = () => {
   const setMobileAPICalled = useAuthContext().setMobileAPICalled;
 
   const getFirebaseToken = useAuthContext().getFirebaseToken;
+  const returnAuthToken = useAuthContext().returnAuthToken;
 
   const authToken = useAuthContext().authToken;
   const validateAuthToken = useAuthContext().validateAuthToken;
-  const validateAndReturnAuthToken = useAuthContext().validateAndReturnAuthToken;
   const buildApolloClient = useAuthContext().buildApolloClient;
   const checkIsAppDepricated = useAuthContext().checkIsAppDepricated!;
 
@@ -50,9 +50,9 @@ export const useAuth = () => {
     mobileAPICalled,
     setMobileAPICalled,
     getFirebaseToken,
+    returnAuthToken,
     authToken,
     validateAuthToken,
-    validateAndReturnAuthToken,
     buildApolloClient,
     checkIsAppDepricated,
   };
