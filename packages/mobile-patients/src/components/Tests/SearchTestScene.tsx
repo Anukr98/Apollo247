@@ -54,7 +54,7 @@ import {
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   DIAGNOSTIC_ITEM_GENDER,
   getPricesForItem,
-} from '@aph/mobile-patients/src/utils/commonUtils';
+} from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import { DiagnosticsNewSearch } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticsNewSearch';
 import {
   DiagnosticAddToCartEvent,
@@ -224,7 +224,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           item?.diagnostic_item_name,
           DIAGNOSTIC_ITEM_GENDER.B,
           DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.POPULAR_SEARCH,
-          item?.diagnostic_inclusions
+          item?.diagnostic_inclusions,
+          item?.diagnostic_inclusions_test_parameter_data?.length ||
+            item?.diagnostic_inclusions?.length
         );
       }
     } catch (error) {
@@ -233,7 +235,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         item?.diagnostic_item_name,
         DIAGNOSTIC_ITEM_GENDER.B,
         DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.POPULAR_SEARCH,
-        item?.diagnostic_inclusions
+        item?.diagnostic_inclusions,
+        item?.diagnostic_inclusions_test_parameter_data?.length ||
+          item?.diagnostic_inclusions?.length
       );
       CommonBugFender('fetchPricesForItems_SearchTestScene', error);
     }
@@ -315,6 +319,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     itemGender: any,
     source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
     inclusions?: any[],
+    parameterCount?: number,
     rate?: number,
     collectionType?: TEST_COLLECTION_TYPE,
     pricesObject?: any,
@@ -354,7 +359,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       selectedPlan?.groupPlan || DIAGNOSTIC_GROUP_PLAN.ALL,
       pricesObject?.packageMrp || 0,
       inclusions == null ? [Number(itemId)] : inclusions,
-      AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG
+      AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
+      '',
+      !!parameterCount ? parameterCount : !!pricesObject ? pricesObject?.parameterCount : null
     );
 
     isModify &&
@@ -534,6 +541,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   };
 
   function fetchPrices(data: any, source: string, apiResult?: any) {
+    console.log({ data });
     const pricesForItem = getPricesForItem(
       source == 'popular' && !!apiResult
         ? apiResult?.diagnosticPricing
@@ -554,7 +562,10 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       TEST_COLLECTION_TYPE.HC,
       pricesForItem?.planToConsider?.groupPlan,
       data?.packageCalculatedMrp!,
-      data?.diagnostic_inclusions
+      data?.diagnostic_inclusions,
+      AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
+      '',
+      data?.diagnostic_inclusions_test_parameter_data?.length || data?.diagnostic_inclusions?.length
     );
     onAddCartItem(
       data?.diagnostic_item_id,
@@ -564,6 +575,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         ? DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PARTIAL_SEARCH
         : DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.POPULAR_SEARCH,
       data?.diagnostic_inclusions,
+      data?.diagnostic_inclusions_test_parameter_data?.length ||
+        data?.diagnostic_inclusions?.length,
       obj?.price,
       TEST_COLLECTION_TYPE.HC,
       obj

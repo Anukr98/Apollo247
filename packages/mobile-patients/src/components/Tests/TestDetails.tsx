@@ -61,12 +61,12 @@ import {
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { CircleHeading } from '@aph/mobile-patients/src/components/ui/CircleHeading';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import {
   getPricesForItem,
-  convertNumberToDecimal,
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   createDiagnosticAddToCartObject,
-} from '@aph/mobile-patients/src/utils/commonUtils';
+} from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
 import {
   DiagnosticAddToCartEvent,
@@ -409,10 +409,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     if (!!testInfo) {
       if (testInfo?.inclusions == null || testInfo?.inclusions?.length == 1) {
         if (frequentlyBroughtRecommendations?.length == 0 || topBookedTests?.length == 0) {
-          getFrequentlyBroughtRecommendations(testInfo?.ItemID);
+          getFrequentlyBroughtRecommendations(testInfo?.ItemID! || itemId);
         }
         if (packageRecommendations?.length == 0) {
-          getPackageRecommendationsForTest(testInfo?.ItemID);
+          getPackageRecommendationsForTest(testInfo?.ItemID! || itemId);
         }
       }
     }
@@ -1702,6 +1702,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   };
 
   function onPressAddToCart() {
+    const { getMandatoryParameterCount, nonInclusionParamters } = skuParameterInclusionLogic();
     const specialPrice = testInfo?.specialPrice!;
     const price = testInfo?.Rate!;
     const circlePrice = testInfo?.circlePrice! || testInfo?.circleRate!;
@@ -1749,7 +1750,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       Number(testInfo?.packageMrp!),
       testInclusions,
       AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
-      cmsTestDetails?.diagnosticItemImageUrl
+      cmsTestDetails?.diagnosticItemImageUrl,
+      getMandatoryParameterCount + nonInclusionParamters
     );
 
     isModify &&

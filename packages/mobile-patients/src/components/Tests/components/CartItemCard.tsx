@@ -16,7 +16,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import {
   calculatePackageDiscounts,
   diagnosticsDisplayPrice,
-} from '@aph/mobile-patients/src/utils/commonUtils';
+} from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
 import DiscountPercentage from '@aph/mobile-patients/src/components/Tests/components/DiscountPercentage';
@@ -36,9 +36,9 @@ interface CartItemCardProps {
   onPressCard: (test: any) => void;
   showUndo?: boolean;
   onPressUndo: (test: any) => void;
-  allItemsInCart?: any
-  groupRecommendationItem?: any
-  cartItemIds?: any
+  allItemsInCart?: any;
+  groupRecommendationItem?: any;
+  cartItemIds?: any;
 }
 
 export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
@@ -54,7 +54,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     showUndo,
     allItemsInCart,
     groupRecommendationItem,
-    cartItemIds
+    cartItemIds,
   } = props;
 
   const inclusionItem =
@@ -473,7 +473,8 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   textInclusion: {
-    ...theme.viewStyles.text('SB',12,colors.SHERPA_BLUE,1),padding:5
+    ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1),
+    padding: 5,
   },
-  textOtherInclusion:{...theme.viewStyles.text('R',12,colors.SHERPA_BLUE,1),padding:5}
+  textOtherInclusion: { ...theme.viewStyles.text('R', 12, colors.SHERPA_BLUE, 1), padding: 5 },
 });

@@ -43,15 +43,16 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { AccessLocation } from '@aph/mobile-patients/src/components/Medicines/Components/AccessLocation';
+import { convertNumberToDecimal, sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import {
-  convertNumberToDecimal,
   createDiagnosticAddToCartObject,
   diagnosticsDisplayPrice,
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
+  getParameterCount,
+  getPatientDetailsById,
   getPricesForItem,
   getUpdatedCartItems,
-  sourceHeaders,
-} from '@aph/mobile-patients/src/utils/commonUtils';
+} from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import {
   CommonBugFender,
   CommonLogEvent,
@@ -479,7 +480,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       setShowPatientOverlay(true);
     }
     const getPatientsOnCartPage = patientCartItems?.map((pItem) =>
-      getPatientGender(pItem?.patientId)
+      getPatientDetailsById(allCurrentPatients, pItem?.patientId)
     );
     const getPatientGenderOnCartPage: any = getPatientsOnCartPage?.map(
       (patient) => patient?.gender
@@ -1335,14 +1336,13 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     );
   };
 
-  function getPatientGender(patientId: string) {
-    return allCurrentPatients?.find((patient: any) => patient?.id == patientId);
-  }
-
   //this needs to called for single uhid case as of now
   async function getGroupRecommendations() {
     if (patientCartItems?.length == 1) {
-      const patientDetails = getPatientGender(patientCartItems?.[0]?.patientId);
+      const patientDetails = getPatientDetailsById(
+        allCurrentPatients,
+        patientCartItems?.[0]?.patientId
+      );
       let recommendationInputItems: { itemId?: number; itemType?: DiagnosticItemType }[] = [];
       cartItemsForSinglePatient?.map((item) => {
         const inclusionCount = cartItems?.find((cartItem) => cartItem?.id === item?.id)?.inclusions
@@ -1399,6 +1399,10 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       );
       return cartPrice;
     };
+    const { getMandatoryParameterCount } = getParameterCount(
+      groupRecommendations?.[0],
+      'observations'
+    );
 
     const grpItem = createDiagnosticAddToCartObject(
       groupItem?.itemId,
@@ -1415,7 +1419,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       packageMrpForItem,
       groupItem?.inclusions,
       AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
-      groupItem?.itemImageUrl
+      groupItem?.itemImageUrl,
+      getMandatoryParameterCount
     );
 
     const priceDiff =

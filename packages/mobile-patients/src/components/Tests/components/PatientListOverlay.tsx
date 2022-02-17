@@ -24,12 +24,14 @@ import {
   MinusPatientCircleIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { Gender } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { GENDER, Gender } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import LottieView from 'lottie-react-native';
+import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
+import { DiagnosticItemGenderMapping } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 const screenHeight = Dimensions.get('window').height;
 
 const { SHERPA_BLUE, APP_YELLOW, CARD_BG, WHITE, APP_GREEN, CLEAR } = theme.colors;
-
+type DiagnosticOrderLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
 interface PatientListOverlayProps {
   onPressAddNewProfile: () => void;
   onPressDone: (selectedPatient: any) => void;
@@ -48,6 +50,7 @@ interface PatientListOverlayProps {
   onCloseError?: () => void;
   refetchResult?: () => void;
   removeAllSwitchRestrictions?: boolean;
+  skuItem?: DiagnosticOrderLineItems[] | any;
 }
 
 export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => {
@@ -62,15 +65,30 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
     responseMessage,
     refetchResult,
     removeAllSwitchRestrictions,
+    skuItem,
   } = props;
   const { allCurrentPatients } = useAllCurrentPatients();
   const [selectedPatient, setSelectedPatient] = useState<any>(patientSelected);
 
   const customStyle = !!source ? source === AppRoutes.YourOrdersTest : false;
 
-  const renderPatientListItem = ({ index, item }) => {
+  //M -> M
+  //F -> F
+  //B/ M+F / M+F/B -> M/F/All
+  //M + B -> M
+  //F + B -> F
+
+  function checkPatientWithSkuGender(item: any) {
+    const getAllSkuGender = skuItem?.map((sku: DiagnosticOrderLineItems | any) =>
+      DiagnosticItemGenderMapping(sku?.itemObj?.gender!)
+    );
+    console.log({ getAllSkuGender });
+  }
+
+  const renderPatientListItem = ({ index, item }: { index: number; item: any }) => {
     const age = getAge(item?.dateOfBirth);
     const isMinorAge = customStyle && age != null && age != undefined && age <= 10;
+    const isPatientDisabled = customStyle && !!skuItem && checkPatientWithSkuGender(item);
     const patientSalutation = !!item?.gender
       ? item?.gender === Gender.FEMALE
         ? 'Ms.'

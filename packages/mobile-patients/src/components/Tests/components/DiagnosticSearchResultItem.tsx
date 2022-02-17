@@ -12,7 +12,7 @@ import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/Diagnost
 import {
   diagnosticsDisplayPrice,
   getPricesForItem,
-} from '@aph/mobile-patients/src/utils/commonUtils';
+} from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';

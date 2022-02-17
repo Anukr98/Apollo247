@@ -227,7 +227,7 @@ import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers
 import { FollowUpChatGuideLines } from '@aph/mobile-patients/src/components/Consult/Components/FollowUpChatGuideLines';
 import { ChatDisablePrompt } from '@aph/mobile-patients/src/components/Consult/Components/ChatDisablePrompt';
 import { DiagnosticAddToCartEvent } from '@aph/mobile-patients/src/components/Tests/utils/Events';
-import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import {
   postDoctorConsultEvent,
   postDoctorConsultEventVariables,

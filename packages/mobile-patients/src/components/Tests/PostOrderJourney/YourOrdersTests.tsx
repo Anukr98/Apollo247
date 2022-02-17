@@ -85,7 +85,7 @@ import {
   DiagnosticAddTestClicked,
   DiagnosticRescheduleOrder,
   DiagnosticCancellationRetention,
-} from '@aph/mobile-patients/src/components/Tests/Events';
+} from '@aph/mobile-patients/src/components/Tests/utils/Events';
 import { OrderTestCard } from '@aph/mobile-patients/src/components/Tests/components/OrderTestCard';
 import {
   diagnosticCancelOrder,
@@ -1311,7 +1311,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       <FlatList
         data={ctaArray}
         numColumns={ctaColumn}
-        renderItem={({ item, index }) => renderView(item, index)}
+        renderItem={({ item, index }: { item: string; index: number }) => renderView(item, index)}
       />
     );
   };
@@ -2239,6 +2239,17 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   }
 
+  function _onPressAddNewProfile() {
+    setShowPatientListOverlay(false);
+    props.navigation.navigate(AppRoutes.EditProfile, {
+      isEdit: false,
+      isPoptype: true,
+      mobileNumber: currentPatient?.mobileNumber,
+      onNewProfileAdded: onNewProfileAdded,
+      onPressBackButton: _onPressBackButton,
+    });
+  }
+
   const renderPatientsListOverlay = () => {
     const orderPatient = allCurrentPatients?.find(
       (item: any) => item?.id === selectedOrder?.patientId
@@ -2252,16 +2263,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         onPressDone={(_selectedPatient: any) => {
           _onPressDoneSwitchUhid(_selectedPatient, updatePatientCheck);
         }}
-        onPressAddNewProfile={() => {
-          setShowPatientListOverlay(false);
-          props.navigation.navigate(AppRoutes.EditProfile, {
-            isEdit: false,
-            isPoptype: true,
-            mobileNumber: currentPatient?.mobileNumber,
-            onNewProfileAdded: onNewProfileAdded,
-            onPressBackButton: _onPressBackButton,
-          });
-        }}
+        onPressAddNewProfile={() => _onPressAddNewProfile()}
         patientSelected={orderPatient}
         onPressAndroidBack={() => {
           setShowPatientListOverlay(false);
@@ -2275,6 +2277,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         onCloseError={() => setSwitchPatientResponse('')}
         refetchResult={() => _afterSuccess()}
         removeAllSwitchRestrictions={updatePatientCheck}
+        skuItem={selectedOrder?.diagnosticOrderLineItems!}
       />
     );
   };

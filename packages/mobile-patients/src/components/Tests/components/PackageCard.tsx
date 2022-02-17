@@ -18,14 +18,13 @@ import {
   nameFormater,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import {
-  convertNumberToDecimal,
-  createDiagnosticAddToCartObject,
-  DiagnosticItemGenderMapping,
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   DIAGNOSTIC_ITEM_GENDER,
   getPricesForItem,
-} from '@aph/mobile-patients/src/utils/commonUtils';
+  createDiagnosticAddToCartObject,
+} from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
@@ -88,6 +87,10 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
   let actualItemsToShow = diagnosticWidgetData?.length > 0 && diagnosticWidgetData;
   const { currentPatient } = useAllCurrentPatients();
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
+  const isFromRecommendendation =
+    sourceScreen == AppRoutes.TestListing &&
+    props.widgetHeading?.toLowerCase() ==
+      string.diagnostics.homepagePastOrderRecommendations?.toLowerCase();
 
   function getCount(array: any) {
     return array?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
@@ -105,14 +108,55 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     }
   }
 
+  function inclusionParameterLogic(getItem: any) {
+    const inclusions = isFromRecommendendation
+      ? getItem?.inclusions! || getItem?.inclusionData
+      : getItem?.inclusionData;
+    var getMandatoryParamter = [] as any;
+
+    if (sourceScreen == AppRoutes.TestDetails || isFromRecommendendation) {
+      getMandatoryParamter =
+        !!inclusions &&
+        inclusions?.length > 0 &&
+        inclusions?.map((inclusion: any) =>
+          getMandatoryParamterResults(
+            isFromRecommendendation
+              ? !!inclusion?.observations
+                ? inclusion?.observations
+                : inclusion?.incObservationData
+              : inclusion?.observations,
+            inclusion
+          )
+        );
+    } else {
+      getMandatoryParamter =
+        !!inclusions &&
+        inclusions?.length > 0 &&
+        inclusions?.map((inclusion: any) =>
+          getMandatoryParamterResults(inclusion?.incObservationData, inclusion)
+        );
+    }
+
+    const getMandatoryParameterCount = !!getMandatoryParamter && getCount(getMandatoryParamter);
+    const getParamterData =
+      !!getMandatoryParamter && getMandatoryParamter?.length > 0 && getMandatoryParamter?.flat(1);
+    const dataToShow = getMandatoryParameterCount > 0 ? getParamterData : inclusions;
+    const nonInclusionTests =
+      !!inclusions && inclusions?.length > 0
+        ? inclusions?.filter((inclusion: any) => inclusion?.incObservationData?.length == 0)
+        : [];
+
+    return {
+      inclusions,
+      dataToShow,
+      getMandatoryParameterCount,
+    };
+  }
+
   const renderItemCard = useCallback(
     (item: any) => {
       const getItem = item?.item;
       const getDiagnosticPricingForItem = getItem?.diagnosticPricing;
-
-      // if (getDiagnosticPricingForItem == undefined || getDiagnosticPricingForItem == null) {
-      //   return null;
-      // }
       const packageMrpForItem = getItem?.packageCalculatedMrp!;
       const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
       if (props.isPriceAvailable && !pricesForItem?.itemActive) {
@@ -121,49 +165,11 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
 
       const imageUrl = getItem?.itemImageUrl;
       const name = getItem?.itemTitle;
-      const isFromRecommendendation =
-        sourceScreen == AppRoutes.TestListing &&
-        props.widgetHeading?.toLowerCase() ==
-          string.diagnostics.homepagePastOrderRecommendations?.toLowerCase();
-      const inclusions = isFromRecommendendation
-        ? getItem?.inclusions! || getItem?.inclusionData
-        : getItem?.inclusionData;
+
       const numberOfParametersToShow = isDiagnosticCircleSubscription ? 3 : 2;
-      var getMandatoryParamter = [] as any;
-
-      if (sourceScreen == AppRoutes.TestDetails || isFromRecommendendation) {
-        getMandatoryParamter =
-          !!inclusions &&
-          inclusions?.length > 0 &&
-          inclusions?.map((inclusion: any) =>
-            getMandatoryParamterResults(
-              isFromRecommendendation
-                ? !!inclusion?.observations
-                  ? inclusion?.observations
-                  : inclusion?.incObservationData
-                : inclusion?.observations,
-              inclusion
-            )
-          );
-      } else {
-        getMandatoryParamter =
-          !!inclusions &&
-          inclusions?.length > 0 &&
-          inclusions?.map((inclusion: any) =>
-            getMandatoryParamterResults(inclusion?.incObservationData, inclusion)
-          );
-      }
-
-      const getMandatoryParameterCount = !!getMandatoryParamter && getCount(getMandatoryParamter);
-
-      const getParamterData =
-        !!getMandatoryParamter && getMandatoryParamter?.length > 0 && getMandatoryParamter?.flat(1);
-
-      const dataToShow = getMandatoryParameterCount > 0 ? getParamterData : inclusions;
-      const nonInclusionTests =
-        !!inclusions && inclusions?.length > 0
-          ? inclusions?.filter((inclusion: any) => inclusion?.incObservationData?.length == 0)
-          : [];
+      const { dataToShow, getMandatoryParameterCount, inclusions } = inclusionParameterLogic(
+        getItem
+      );
 
       return (
         <TouchableOpacity
@@ -472,6 +478,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
   };
 
   function onPressAddToCart(item: any, pricesForItem: any, packageCalculatedMrp: number) {
+    const { getMandatoryParameterCount } = inclusionParameterLogic(item);
     const specialPrice = pricesForItem?.specialPrice!;
     const price = pricesForItem?.price!;
     const circlePrice = pricesForItem?.circlePrice!;
@@ -522,7 +529,8 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
       item?.inclusionData == null ? [Number(item?.itemId)] : inclusions,
       packageCalculatedMrp,
       AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
-      item?.itemImageUrl
+      item?.itemImageUrl,
+      getMandatoryParameterCount
     );
 
     addCartItem?.(addedItems);

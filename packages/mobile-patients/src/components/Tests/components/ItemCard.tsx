@@ -17,14 +17,13 @@ import {
 import { Image } from 'react-native-elements';
 import { isEmptyObject, isSmallDevice } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import {
-  convertNumberToDecimal,
-  createDiagnosticAddToCartObject,
-  DiagnosticItemGenderMapping,
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   DIAGNOSTIC_ITEM_GENDER,
   getPricesForItem,
-} from '@aph/mobile-patients/src/utils/commonUtils';
+  createDiagnosticAddToCartObject,
+} from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -215,7 +214,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
         {isPackage ? null : (
           <View style={styles.flexRow}>
             <View style={styles.imageView}>
-              {imageUrl == '' ? (
+              {!!!imageUrl || imageUrl == '' ? (
                 <WidgetLiverIcon style={styles.imageStyle} resizeMode={'contain'} />
               ) : (
                 <Image
@@ -529,6 +528,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
   };
 
   function onPressAddToCart(item: any, pricesForItem: any, packageCalculatedMrp: number) {
+    const { countToShow } = inclusionParameterLogic(item);
     const specialPrice = pricesForItem?.specialPrice!;
     const price = pricesForItem?.price!;
     const circlePrice = pricesForItem?.circlePrice!;
@@ -586,7 +586,8 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
       packageCalculatedMrp,
       item?.inclusionData == null ? [Number(item?.itemId)] : inclusions,
       AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
-      item?.itemImageUrl
+      item?.itemImageUrl,
+      countToShow
     );
 
     if (sourceScreen === AppRoutes.CartPage) {

@@ -23,7 +23,7 @@ import {
   diagnosticsDisplayPrice,
   DIAGNOSTIC_ITEM_GENDER,
   getPricesForItem,
-} from '@aph/mobile-patients/src/utils/commonUtils';
+} from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import {
   DIAGNOSTIC_GROUP_PLAN,
   getDiagnosticCartItemReportGenDetails,
@@ -53,6 +53,7 @@ export interface CartPageSummaryProps {
   client: any;
   cityId: number;
   recommendationCount: (count: number) => void;
+  _navigateToTDP: (item: any) => void;
 }
 
 export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
@@ -429,7 +430,7 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
           <Text style={styles.itemCountText}>
             {itemCountText} {itemCount > 1 ? 'Items' : 'Item'} added to your cart
           </Text>
-          <Text style={styles.perPersonText}>Prices are for Per Person</Text>
+          <Text style={styles.perPersonText}>{string.diagnosticsCartPage.pricePerPerson}</Text>
         </View>
         <TouchableOpacity onPress={() => _onPressShowLess()} style={styles.rowStyle}>
           <Text style={styles.showLessText}>Show Less</Text>
@@ -490,7 +491,7 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
     );
   };
 
-  const renderInclusionPercentageView = (inclusionCount: number) => {
+  const renderInclusionView = (inclusionCount: number) => {
     return (
       <View style={styles.inclusionPercentageView}>
         <Text style={styles.perPersonText}>
@@ -546,13 +547,22 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
     );
   };
 
+  function _onPressItem(item: any) {
+    props._navigateToTDP(item);
+  }
+
   const renderCartItem = (
     item: DiagnosticsCartItem,
     index: number,
     array: DiagnosticsCartItem[],
     source: string
   ) => {
-    const inclusionCount = !!item?.inclusions ? item?.inclusions?.length : 1;
+    const parameterCount = !!item?.parameterCount ? item?.parameterCount : null;
+    const inclusionCount = !!parameterCount
+      ? parameterCount
+      : !!item?.inclusions
+      ? item?.inclusions?.length
+      : 1;
     const arrayToUseForTAT = source == 'recommendations' ? recommendationsTat : reportTat;
     const itemReportTAT = arrayToUseForTAT?.find(
       (res: itemReportTat) => Number(res?.itemId) == Number(item?.id)
@@ -574,7 +584,7 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
     const promoteDiscount = promoteCircle ? false : discount < specialDiscount;
 
     return (
-      <View
+      <TouchableOpacity
         style={[
           { marginLeft: 16 },
           source == 'recommendations' && styles.recommendationsOuterView,
@@ -582,6 +592,7 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
             marginTop: index == 0 ? 12 : 0,
           },
         ]}
+        onPress={() => _onPressItem(item)}
       >
         <View
           style={[styles.cartItemsInnerView, { paddingTop: source == 'recommendations' ? 0 : 12 }]}
@@ -603,12 +614,12 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
             discount
           )}
         </View>
-        {renderInclusionPercentageView(inclusionCount)}
+        {renderInclusionView(inclusionCount)}
         {renderTATButtonView(itemReportTAT, item)}
         {index == array?.length - 1
           ? null
           : source == 'cartItems' && <Spearator style={{ marginTop: 12 }} />}
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -625,7 +636,9 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
   const renderCartRecommendations = () => {
     return (
       <View style={styles.recommendationsView}>
-        <Text style={styles.recommendedForText}>Recommended for you</Text>
+        <Text style={styles.recommendedForText}>
+          {string.diagnosticsCartPage.recommendedForYou}
+        </Text>
         {dataToShow?.map((item: any, index: number) => {
           return renderCartItem(item, index, dataToShow, 'recommendations');
         })}

@@ -16,14 +16,14 @@ import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersL
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { checkPatientAge } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { DIAGNOSTIC_ITEM_GENDER } from '@aph/mobile-patients/src/utils/commonUtils';
+import { DIAGNOSTIC_ITEM_GENDER } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 
 export interface orderList
   extends getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList {}
 export interface DiagnosticsCartItem {
   id: string;
   name: string;
-  mou: number; // package of how many tests (eg. 10)
+  mou: number;
   price: number; //mrp
   thumbnail: string | null;
   gender?: DIAGNOSTIC_ITEM_GENDER | string;
@@ -37,6 +37,7 @@ export interface DiagnosticsCartItem {
   packageMrp?: number;
   inclusions?: any[];
   isSelected?: boolean;
+  parameterCount?: number;
 }
 export interface DiagnosticPatientCartItem {
   patientId: string;

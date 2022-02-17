@@ -43,7 +43,6 @@ import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-imag
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
-  GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
   GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
   SET_DEFAULT_ADDRESS,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -95,7 +94,6 @@ import {
   FlatList,
   Modal,
   Platform,
-  Animated,
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { NavigationScreenProps, NavigationEvents } from 'react-navigation';
@@ -119,10 +117,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import _ from 'lodash';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import {
-  GetSubscriptionsOfUserByStatus,
-  GetSubscriptionsOfUserByStatusVariables,
-} from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
+import { GetSubscriptionsOfUserByStatusVariables } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
 import {
   diagnosticServiceability,
@@ -139,13 +134,13 @@ import {
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   createDiagnosticAddToCartObject,
-  DiagnosticItemGenderMapping,
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   DIAGNOSTIC_ITEM_GENDER,
   DIAGNOSTIC_PINCODE_SOURCE_TYPE,
   getPricesForItem,
-  sourceHeaders,
-} from '@aph/mobile-patients/src/utils/commonUtils';
+  getParameterCount,
+} from '@aph/mobile-patients/src/components/Tests/utils/helpers';
+import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import Carousel from 'react-native-snap-carousel';
 import CertifiedCard from '@aph/mobile-patients/src/components/Tests/components/CertifiedCard';
 import {
@@ -863,6 +858,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
         } else {
           setWidgetPrices(filterWidgets, widgetPricingArr, newWidgetsData);
         }
+      } else {
+        setIsPriceAvailable(true);
+        setPastOrderRecommendationShimmer(false);
+        setSectionLoading(false);
       }
       setLoading?.(false);
     } catch (error) {
@@ -1700,6 +1699,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }
 
   const renderSliderItem = ({ item, index }: { item: any; index: number }) => {
+    let resizedImageUrl = item?.bannerImage + '?imwidth=' + Math.floor(winWidth);
     const handleOnPress = () => {
       if (item?.newredirectUrl && item?.newredirectUrl != '') {
         _handleNavigationFromBanner(item, item?.newredirectUrl);
@@ -1713,7 +1713,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
         <ImageNative
           resizeMode="cover"
           style={{ width: '100%', minHeight: imgHeight }}
-          source={{ uri: item?.bannerImage }}
+          source={{ uri: resizedImageUrl }}
+          progressiveRenderingEnabled={true}
         />
       </TouchableOpacity>
     );
@@ -2627,9 +2628,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
     _navigateToPatientsPage();
   }
 
-  function _navigateToDetailsPage(singleItemData: any) {
+  function _navigateToDetailsPage(singleItemData: any, source: string) {
     props.navigation.navigate(AppRoutes.TestDetails, {
-      itemId: singleItemData?.itemId,
+      itemId: source == 'cartSummary' ? singleItemData?.id : singleItemData?.itemId,
       comingFrom: AppRoutes.Tests,
     });
   }
@@ -2648,12 +2649,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const packageMrpForItem = singleItemData?.packageCalculatedMrp!;
     const getDiagnosticPricingForItem = singleItemData?.diagnosticPricing;
     const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
+    const { getMandatoryParameterCount } = getParameterCount(singleItemData, 'incObservationData');
+
     return (
       <>
         {!!singleItemData?.itemTitle && !!pricesForItem?.price ? (
           <TouchableOpacity
             style={styles.singleItemContainer}
-            onPress={() => _navigateToDetailsPage(singleItemData)}
+            onPress={() => _navigateToDetailsPage(singleItemData, 'singleItemCard')}
           >
             <View style={styles.itemFirst}>
               <View style={{ flexDirection: 'row' }}>
@@ -2698,7 +2701,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     packageMrpForItem,
                     inclusions,
                     AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
-                    singleItemData?.itemImageUrl
+                    singleItemData?.itemImageUrl,
+                    getMandatoryParameterCount
                   );
                   onPressSingleBookNow(singleItemObj);
                 }}
@@ -2804,7 +2808,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       const widgetName = widget?.diagnosticWidgetType?.toLowerCase();
       switch (widgetName) {
         case string.diagnosticCategoryTitle.banner:
-          return APP_ENV != AppEnv.PERFORM ? renderStaticBanner() : renderBanner();
+          return APP_ENV == AppEnv.PERFORM ? renderStaticBanner() : renderBanner();
           break;
         case string.diagnosticCategoryTitle.package:
           return renderPackageWidget(widget);
@@ -2931,6 +2935,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           client={client}
           cityId={serviceableObject?.cityId || diagnosticServiceabilityData?.cityId}
           recommendationCount={(count) => _setRecommendationsCount(count)}
+          _navigateToTDP={(item) => _navigateToDetailsPage(item, 'cartSummary')}
         />
       </View>
     );

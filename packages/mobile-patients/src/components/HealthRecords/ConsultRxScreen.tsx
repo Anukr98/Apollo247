@@ -107,7 +107,7 @@ import _ from 'lodash';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/SearchHealthRecordCard';
 import { DiagnosticAddToCartEvent } from '@aph/mobile-patients/src/components/Tests/utils/Events';
-import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 import ListEmptyComponent from '@aph/mobile-patients/src/components/HealthRecords/Components/ListEmptyComponent';
 

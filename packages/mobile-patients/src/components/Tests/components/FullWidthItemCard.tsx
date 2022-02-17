@@ -18,14 +18,13 @@ import {
 import { Image } from 'react-native-elements';
 import { isEmptyObject, isSmallDevice } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import {
-  convertNumberToDecimal,
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
-  DiagnosticItemGenderMapping,
   DIAGNOSTIC_ITEM_GENDER,
   getPricesForItem,
   createDiagnosticAddToCartObject,
-} from '@aph/mobile-patients/src/utils/commonUtils';
+} from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -504,6 +503,7 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
   };
 
   function onPressAddToCart(item: any, pricesForItem: any, packageCalculatedMrp: number) {
+    const { countToShow } = inclusionParameterLogic(item);
     const specialPrice = pricesForItem?.specialPrice!;
     const price = pricesForItem?.price!;
     const circlePrice = pricesForItem?.circlePrice!;
@@ -561,7 +561,8 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
       packageCalculatedMrp,
       item?.inclusionData == null ? [Number(item?.itemId)] : inclusions,
       AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
-      item?.itemImageUrl
+      item?.itemImageUrl,
+      countToShow
     );
 
     if (sourceScreen === AppRoutes.CartPage) {

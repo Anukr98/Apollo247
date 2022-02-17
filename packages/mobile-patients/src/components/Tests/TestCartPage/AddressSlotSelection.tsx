@@ -32,7 +32,7 @@ import { diagnosticGetCustomizedSlotsV2 } from '@aph/mobile-patients/src/helpers
 import {
   createPatientAddressObject,
   createPatientObjLineItems,
-} from '@aph/mobile-patients/src/utils/commonUtils';
+} from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import {
   SCREEN_NAMES,
   TimelineWizard,
