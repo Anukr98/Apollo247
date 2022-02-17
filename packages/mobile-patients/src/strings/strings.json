@@ -786,8 +786,9 @@
     "freeHomeCollection": "Free Home Collection",
     "bookNow": "BOOK NOW",
     "forFamily":"Book for Family Members in Same Order",
-    "skuGenderMessage": "This {{skuType}} is can be added for {{gender}} patients only.",
-    "switchUhidMsg": "Tests in your order are applicable for {{gender}} patients only."
+    "skuGenderMessage": "This {{skuType}} can be added for {{gender}} patients only.",
+    "switchUhidMsg": "Tests in your order are applicable for {{gender}} patients only.",
+    "skuGenderGeneralMsg": "Tests in your cart are applicable for {{gender}} patients only."
   },
   "diagnosticCategoryTitle": {
     "category": "category",

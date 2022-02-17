@@ -1,8 +1,20 @@
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { PackageIcon, TestsCartIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  PackageIcon,
+  PolygonIcon,
+  TestsCartIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
+import React, { useState } from 'react';
+import {
+  Dimensions,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+} from 'react-native';
 import {
   isEmptyObject,
   isSmallDevice,
@@ -10,13 +22,19 @@ import {
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
+  checkSku,
+  DiagnosticItemGenderMapping,
+  DiagnosticPopularSearchGenderMapping,
   diagnosticsDisplayPrice,
+  DIAGNOSTIC_ITEM_GENDER,
   getPricesForItem,
 } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-
+import { GENDER, TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { BOTH_GENDER_ARRAY } from '@aph/mobile-patients/src/strings/AppConfig';
+const winHeight = Dimensions.get('window').height;
+const winWidth = Dimensions.get('window').width;
 export interface DiagnosticsSearchResultItemProps {
   onPress: () => void;
   onPressAddToCart: () => void;
@@ -32,6 +50,8 @@ export interface DiagnosticsSearchResultItemProps {
 export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemProps> = (props) => {
   const { cartItems, modifiedOrderItemIds, modifiedOrder } = useDiagnosticsCart();
   const { data, isCircleSubscribed, searchedString } = props;
+  const [toolTipId, setToolTipId] = useState<number>(0);
+  const [toolTipMsg, setToolTipMsg] = useState<string>('');
   const name = data?.diagnostic_item_name || '';
   const itemType = data?.diagnostic_item_itemType;
   const isAddedToCart = !!cartItems?.find(
@@ -42,6 +62,7 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
       return item?.mandatoryValue == true;
     }
   );
+  const showTt = toolTipId == data?.diagnostic_item_id;
   const testPramaterDataCount = parameterData?.length;
   const inclusionData = data?.diagnostic_inclusions;
   const dataLength = !!data?.testParametersCount
@@ -196,6 +217,19 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
   };
 
   const renderAddToCartView = (pricesForItem: any) => {
+    const patientGender = isModifyOrder && modifiedOrder?.patientObj?.gender;
+    const isItemActive =
+      isModifyOrder &&
+      !!patientGender &&
+      checkSku(patientGender, DiagnosticItemGenderMapping(data?.diagnostic_item_gender), false);
+    const skuType = data?.diagnostic_inclusions?.length > 1 ? 'package' : 'test';
+    const msgText =
+      isModifyOrder && !isItemActive
+        ? string.diagnostics.skuGenderMessage
+            .replace('{{skuType}}', skuType)
+            .replace('{{gender}}', patientGender?.toLowerCase())
+        : '';
+    console.log({ isItemActive });
     return (
       <TouchableOpacity
         style={{ marginTop: 4 }}
@@ -205,7 +239,9 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
             ? () => {}
             : isAddedToCart
             ? props.onPressRemoveFromCart
-            : props.onPressAddToCart
+            : isItemActive
+            ? props.onPressAddToCart
+            : () => onPressInvalidItem(data?.diagnostic_item_id, msgText)
         }
       >
         {isAlreadyPartOfOrder ? (
@@ -217,25 +253,56 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
             <Text style={styles.removeCta}>{string.diagnostics.removeFromCart}</Text>
           </View>
         ) : (
-          <View style={styles.addCtaView}>
-            <Text style={styles.addCta}>{string.diagnostics.addToCart}</Text>
+          <View style={[styles.addCtaView, !isItemActive && { opacity: 0.6 }]}>
+            <Text style={[styles.addCta, !isItemActive && { opacity: 0.6 }]}>
+              {string.diagnostics.addToCart}
+            </Text>
           </View>
         )}
       </TouchableOpacity>
     );
   };
 
+  function onPressInvalidItem(itemId: number, msg: string) {
+    toolTipId != 0 && setToolTipId(0);
+    toolTipMsg != '' && setToolTipMsg('');
+    setToolTipId(itemId);
+    setToolTipMsg(msg);
+  }
+
+  const renderToolTip = () => {
+    return (
+      <TouchableOpacity
+        onPress={() => {
+          setToolTipId(0);
+          setToolTipMsg('');
+        }}
+        style={styles.toolTipTouch}
+      >
+        <View style={[styles.nonServiceableToolTip]}>
+          <PolygonIcon style={[styles.toolTipIcon, { tintColor: theme.colors.SHERPA_BLUE }]} />
+          <View style={{ padding: 12 }}>
+            <Text style={styles.unserviceableMsg}>{toolTipMsg}</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
   return (
-    <TouchableOpacity
-      activeOpacity={1}
-      style={[styles.containerStyle, props.style]}
-      onPress={props.onPress}
-    >
-      <View style={styles.containerStyle} key={data?.diagnostic_item_id}>
-        <View style={styles.iconAndDetailsContainerStyle}>{renderItemNamePrice()}</View>
-        {props.showSeparator ? <Spearator /> : null}
-      </View>
-    </TouchableOpacity>
+    <>
+      <TouchableOpacity
+        activeOpacity={1}
+        style={[styles.containerStyle, props.style]}
+        onPress={props.onPress}
+      >
+        <View style={styles.containerStyle} key={data?.diagnostic_item_id}>
+          <View style={styles.iconAndDetailsContainerStyle}>{renderItemNamePrice()}</View>
+          {props.showSeparator ? <Spearator /> : null}
+        </View>
+      </TouchableOpacity>
+      {showTt && toolTipMsg != '' ? renderToolTip() : null}
+    </>
   );
 };
 
@@ -306,4 +373,27 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 6,
   },
+  nonServiceableToolTip: {
+    backgroundColor: theme.colors.SHERPA_BLUE,
+    flex: 1,
+    position: 'absolute',
+    top: Platform.OS == 'ios' ? winHeight / 30 : winHeight / (winHeight > 700 ? 10 : 8),
+    left: winWidth / 5,
+    width: winWidth / 1.7,
+  },
+  toolTipIcon: {
+    height: 20,
+    width: 20,
+    marginTop: -10,
+    resizeMode: 'contain',
+    marginBottom: -10,
+    marginLeft: winWidth / 5,
+    tintColor: '#CE3737',
+  },
+  toolTipTouch: {
+    position: 'absolute',
+    height: winHeight,
+    width: winWidth,
+  },
+  unserviceableMsg: { ...theme.viewStyles.text('M', 11, theme.colors.WHITE, 1, 16), marginTop: 8 },
 });

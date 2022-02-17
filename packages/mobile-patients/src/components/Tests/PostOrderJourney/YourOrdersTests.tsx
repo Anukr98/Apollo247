@@ -559,7 +559,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         ({
           itemId: Number(item?.itemId),
           price: item?.price,
-          mrp: populateMrp(item), //check this
+          mrp: populateMrp(item),
           groupPlan: item?.groupPlan,
         } as DiagnosticLineItem)
     );

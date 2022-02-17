@@ -7,7 +7,6 @@ import React, { useState } from 'react';
 import {
   Dimensions,
   FlatList,
-  Image,
   SafeAreaView,
   StyleProp,
   StyleSheet,
@@ -20,14 +19,13 @@ import { Overlay } from 'react-native-elements';
 import {
   AddPatientCircleIcon,
   CrossPopup,
-  GreenCircleTick,
   MinusPatientCircleIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { GENDER, Gender } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { Gender } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import LottieView from 'lottie-react-native';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
-import { DiagnosticItemGenderMapping } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
+import { checkPatientWithSkuGender } from '../utils/helpers';
 const screenHeight = Dimensions.get('window').height;
 
 const { SHERPA_BLUE, APP_YELLOW, CARD_BG, WHITE, APP_GREEN, CLEAR } = theme.colors;
@@ -72,23 +70,11 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
 
   const customStyle = !!source ? source === AppRoutes.YourOrdersTest : false;
 
-  //M -> M
-  //F -> F
-  //B/ M+F / M+F/B -> M/F/All
-  //M + B -> M
-  //F + B -> F
-
-  function checkPatientWithSkuGender(item: any) {
-    const getAllSkuGender = skuItem?.map((sku: DiagnosticOrderLineItems | any) =>
-      DiagnosticItemGenderMapping(sku?.itemObj?.gender!)
-    );
-    console.log({ getAllSkuGender });
-  }
-
   const renderPatientListItem = ({ index, item }: { index: number; item: any }) => {
     const age = getAge(item?.dateOfBirth);
     const isMinorAge = customStyle && age != null && age != undefined && age <= 10;
-    const isPatientDisabled = customStyle && !!skuItem && checkPatientWithSkuGender(item);
+    const isPatientGenderDisabled =
+      customStyle && !!skuItem && checkPatientWithSkuGender(skuItem, item);
     const patientSalutation = !!item?.gender
       ? item?.gender === Gender.FEMALE
         ? 'Ms.'
@@ -115,7 +101,7 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
 
       removeAllSwitchRestrictions
         ? showGreenBg && { backgroundColor: APP_GREEN, borderColor: 'transparent' }
-        : isMinorAge
+        : isMinorAge || isPatientGenderDisabled
         ? styles.disabledStyle
         : showGreenBg && { backgroundColor: APP_GREEN, borderColor: 'transparent' },
     ];
@@ -126,7 +112,7 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
         onPress={() => {
           removeAllSwitchRestrictions
             ? setSelectedPatient(item)
-            : isMinorAge
+            : isMinorAge || isPatientGenderDisabled
             ? {}
             : setSelectedPatient(item);
         }}
@@ -137,7 +123,7 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
             customStyle && { width: '69%', color: SHERPA_BLUE },
             removeAllSwitchRestrictions
               ? showGreenBg && { color: WHITE }
-              : isMinorAge
+              : isMinorAge || isPatientGenderDisabled
               ? styles.disabledText
               : showGreenBg && { color: WHITE },
           ]}
@@ -146,7 +132,13 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
         </Text>
         {customStyle ? (
           <View style={styles.rowStyle}>
-            {renderGenderAge(isMinorAge, showGreenBg, genderAgeText, removeAllSwitchRestrictions!)}
+            {renderGenderAge(
+              isMinorAge,
+              showGreenBg,
+              genderAgeText,
+              removeAllSwitchRestrictions!,
+              isPatientGenderDisabled
+            )}
             {showGreenBg ? (
               <AddPatientCircleIcon style={styles.checkedIconStyle} />
             ) : (
@@ -154,7 +146,13 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
             )}
           </View>
         ) : (
-          renderGenderAge(isMinorAge, showGreenBg, genderAgeText, removeAllSwitchRestrictions!)
+          renderGenderAge(
+            isMinorAge,
+            showGreenBg,
+            genderAgeText,
+            removeAllSwitchRestrictions!,
+            isPatientGenderDisabled
+          )
         )}
       </TouchableOpacity>
     );
@@ -164,7 +162,8 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
     isPatientDisabled: boolean,
     showGreenBg: boolean,
     genderAgeText: string,
-    revertDisabled: boolean
+    revertDisabled: boolean,
+    isGenderDisabled: boolean
   ) => {
     return (
       <Text
@@ -173,7 +172,7 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
           customStyle && { color: SHERPA_BLUE },
           revertDisabled
             ? showGreenBg && { color: WHITE }
-            : isPatientDisabled
+            : isPatientDisabled || isGenderDisabled
             ? styles.disabledText
             : showGreenBg && { color: WHITE },
         ]}

@@ -8,7 +8,6 @@ import {
   AgeGroupIcon,
   ClockIcon,
   Down,
-  ExpressSlotClock,
   GenderIcon,
   InfoIconRed,
   OrangeCartIcon,
@@ -42,6 +41,7 @@ import {
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
+  BackHandler,
   Dimensions,
   Platform,
   SafeAreaView,
@@ -418,6 +418,29 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     }
   }, [testInfo]);
 
+  useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+    const didBlur = props.navigation.addListener('didBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      didBlur && didBlur.remove();
+    };
+  }, []);
+
+  function handleBack() {
+    if (movedFrom === 'registration') {
+      props.navigation.replace(AppRoutes.HomeScreen);
+    } else if (movedFrom == 'deeplink') {
+      props.navigation.replace(AppRoutes.HomeScreen);
+    } else {
+      props.navigation.goBack();
+    }
+  }
+
   const getUserSubscriptionsByStatus = async () => {
     try {
       const query: GetSubscriptionsOfUserByStatusVariables = {
@@ -718,34 +741,39 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   };
 
   async function getPackageRecommendationsForTest(itemId: string | number) {
-    setPackageRecommendationsShimmer(true);
-    try {
-      const getPackageRecommendationsResponse = await getDiagnosticsPackageRecommendations(
-        client,
-        Number(itemId!),
-        Number(cityIdToUse)
-      );
-      if (getPackageRecommendationsResponse?.data?.getDiagnosticPackageRecommendations) {
-        const getResult =
-          getPackageRecommendationsResponse?.data?.getDiagnosticPackageRecommendations
-            ?.packageRecommendations;
-        let packageArray: any = [];
-        getResult?.map((item) => {
-          packageArray.push({
-            ...item,
-            itemTitle: item?.itemName,
-            inclusionData: item?.diagnosticInclusions,
+    if (!!itemId) {
+      setPackageRecommendationsShimmer(true);
+      try {
+        const getPackageRecommendationsResponse = await getDiagnosticsPackageRecommendations(
+          client,
+          Number(itemId!),
+          Number(cityIdToUse)
+        );
+        if (getPackageRecommendationsResponse?.data?.getDiagnosticPackageRecommendations) {
+          const getResult =
+            getPackageRecommendationsResponse?.data?.getDiagnosticPackageRecommendations
+              ?.packageRecommendations;
+          let packageArray: any = [];
+          getResult?.map((item) => {
+            packageArray.push({
+              ...item,
+              itemTitle: item?.itemName,
+              inclusionData: item?.diagnosticInclusions,
+            });
           });
-        });
-        setPackageRecommendations(packageArray);
-      } else {
+          setPackageRecommendations(packageArray);
+        } else {
+          setPackageRecommendations([]);
+        }
+        setPackageRecommendationsShimmer(false);
+      } catch (error) {
         setPackageRecommendations([]);
+        setPackageRecommendationsShimmer(false);
+        CommonBugFender('TestDetails_getPackageRecommendationsForTest', error);
       }
-      setPackageRecommendationsShimmer(false);
-    } catch (error) {
+    } else {
       setPackageRecommendations([]);
-      setPackageRecommendationsShimmer(false);
-      CommonBugFender('TestDetails_getPackageRecommendationsForTest', error);
+      CommonBugFender('TestDetails_getPackageRecommendationsForTest', 'error in setting itemId');
     }
   }
 
@@ -839,47 +867,53 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   }
 
   async function getFrequentlyBroughtRecommendations(itemId: number | string) {
-    setFrequentlyBroughtShimmer(true);
-    try {
-      const recommedationResponse: any = await getDiagnosticCartRecommendations(
-        client,
-        [Number(itemId)],
-        10
-      );
-      if (recommedationResponse?.data?.getDiagnosticItemRecommendations) {
-        const getItems = recommedationResponse?.data?.getDiagnosticItemRecommendations?.itemsData;
-        if (getItems?.length > 0) {
-          const _itemIds = getItems?.map((item: any) => Number(item?.itemId));
-          const alreadyAddedItems = isModify
-            ? cartItemsWithId.concat(modifiedOrderItemIds)
-            : cartItemsWithId;
-          //already added items needs to be hidden
-          const _filterItemIds = _itemIds?.filter((val: any) =>
-            !!alreadyAddedItems && alreadyAddedItems?.length
-              ? !alreadyAddedItems?.includes(val)
-              : val
-          );
-          fetchWidgetPrices(
-            _filterItemIds,
-            cityIdToUse,
-            getWidgetTitle?.frequentlyBrought,
-            getItems
-          );
+    if (!!itemId) {
+      setFrequentlyBroughtShimmer(true);
+      try {
+        const recommedationResponse: any = await getDiagnosticCartRecommendations(
+          client,
+          [Number(itemId)],
+          10
+        );
+        if (recommedationResponse?.data?.getDiagnosticItemRecommendations) {
+          const getItems = recommedationResponse?.data?.getDiagnosticItemRecommendations?.itemsData;
+          if (getItems?.length > 0) {
+            const _itemIds = getItems?.map((item: any) => Number(item?.itemId));
+            const alreadyAddedItems = isModify
+              ? cartItemsWithId.concat(modifiedOrderItemIds)
+              : cartItemsWithId;
+            //already added items needs to be hidden
+            const _filterItemIds = _itemIds?.filter((val: any) =>
+              !!alreadyAddedItems && alreadyAddedItems?.length
+                ? !alreadyAddedItems?.includes(val)
+                : val
+            );
+            fetchWidgetPrices(
+              _filterItemIds,
+              cityIdToUse,
+              getWidgetTitle?.frequentlyBrought,
+              getItems
+            );
+          } else {
+            fetchTopBookedTests(itemId);
+            setFrequentlyBroughtShimmer(false);
+            setFrequentlyBroughtRecommendations([]);
+          }
         } else {
           fetchTopBookedTests(itemId);
           setFrequentlyBroughtShimmer(false);
           setFrequentlyBroughtRecommendations([]);
         }
-      } else {
+      } catch (error) {
         fetchTopBookedTests(itemId);
         setFrequentlyBroughtShimmer(false);
         setFrequentlyBroughtRecommendations([]);
+        CommonBugFender('TestDetails_fetchRecommendations', error);
       }
-    } catch (error) {
+    } else {
       fetchTopBookedTests(itemId);
-      setFrequentlyBroughtShimmer(false);
       setFrequentlyBroughtRecommendations([]);
-      CommonBugFender('TestDetails_fetchRecommendations', error);
+      CommonBugFender('TestDetails_fetchRecommendations', 'error in setting itemId');
     }
   }
 

@@ -93,7 +93,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/editProfile';
 import moment from 'moment';
 import { ExpressSlotMessageRibbon } from '@aph/mobile-patients/src/components/Tests/components/ExpressSlotMessageRibbon';
-import { InfoMessage } from '../components/InfoMessage';
+import { InfoMessage } from '@aph/mobile-patients/src/components/Tests/components/InfoMessage';
 
 const screenHeight = Dimensions.get('window').height;
 const { SHERPA_BLUE, WHITE, APP_GREEN, NEWGRAY } = theme.colors;
@@ -184,12 +184,21 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
       let existingId = getExisitngItems?.map((items: DiagnosticsCartItem) => items?.id);
       let getNewItems = cartItems?.filter((cItems) => !existingId?.includes(cItems?.id));
       //added since, zero price + updated price item was getting added
-      const isPriceNotZero = getNewItems?.filter((item) => item?.price != 0);
-      //...?
+      const isPriceNotZeroArray = getNewItems?.filter((item) => item?.price != 0);
+
       const newCartItems = patientCartItems?.map((item) => {
+        const patientDetails = getPatientDetailsById(allCurrentPatients, item?.patientId);
+
+        const newCartItemsWithSkuSelections = isPriceNotZeroArray?.map((obj) =>
+          !BOTH_GENDER_ARRAY.includes(obj?.gender!?.toLowerCase()) &&
+          obj?.gender?.toLowerCase() != patientDetails?.gender?.toLowerCase()
+            ? { ...obj, isSelected: false }
+            : { ...obj, isSelected: true }
+        );
+
         let obj = {
           patientId: item?.patientId,
-          cartItems: item?.cartItems?.concat(isPriceNotZero),
+          cartItems: item?.cartItems?.concat(newCartItemsWithSkuSelections)?.flat(),
         };
         return obj;
       });
@@ -228,24 +237,14 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
    */
   useEffect(() => {
     if (cartItems?.length > 0) {
-      const { hasAllSku, filterFemaleSku, filterMaleSku } = getSkuItemsGender();
+      const { hasAllSku, filterFemaleSku, filterMaleSku } = getSkuItemsGender(cartItems);
       if (!!hasAllSku) {
         setGenderSkuMsg('');
         return;
       } else if (filterFemaleSku?.length > 0 && filterMaleSku?.length == 0) {
-        const getItemType = identifySkuType(filterFemaleSku);
-        setGenderSkuMsg(
-          string.diagnostics.skuGenderMessage
-            .replace('{{skuType}}', !!getItemType ? getItemType : 'test')
-            .replace('{{gender}}', 'female')
-        );
+        setGenderSkuMsg(string.diagnostics.skuGenderGeneralMsg.replace('{{gender}}', 'female'));
       } else if (filterFemaleSku?.length == 0 && filterMaleSku?.length > 0) {
-        const getItemType = identifySkuType(filterMaleSku);
-        setGenderSkuMsg(
-          string.diagnostics.skuGenderMessage
-            .replace('{{skuType}}', !!getItemType ? getItemType : 'test')
-            .replace('{{gender}}', 'male')
-        );
+        setGenderSkuMsg(string.diagnostics.skuGenderGeneralMsg.replace('{{gender}}', 'male'));
       }
     }
   }, [cartItems, patientCartItems]);
@@ -264,18 +263,13 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     }
   }, []);
 
-  function identifySkuType(arr: DiagnosticsCartItem[]) {
-    const hasPackage = arr?.find((item) => !!item?.inclusions && item?.inclusions?.length > 1);
-    const itemType = !!hasPackage ? 'package' : 'test';
-    return itemType;
-  }
-
-  function getSkuItemsGender() {
-    const hasAllSku = cartItems?.find(
+  function getSkuItemsGender(arrayToSearch: DiagnosticsCartItem[]) {
+    const filterHasAllSku = arrayToSearch?.filter(
       (cItem) => cItem?.gender == GENDER.ALL || cItem?.gender == GENDER.OTHER
     );
-    const filterMaleSku = filterGenderSKU(cartItems, GENDER.MALE);
-    const filterFemaleSku = filterGenderSKU(cartItems, GENDER.FEMALE);
+    const filterMaleSku = filterGenderSKU(arrayToSearch, GENDER.MALE);
+    const filterFemaleSku = filterGenderSKU(arrayToSearch, GENDER.FEMALE);
+    const hasAllSku = arrayToSearch?.length == 0;
 
     const hasAllFemaleSku =
       !!!hasAllSku && filterFemaleSku?.length > 0 && filterMaleSku?.length == 0;
@@ -283,6 +277,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     return {
       filterFemaleSku,
       filterMaleSku,
+      filterHasAllSku,
       hasAllSku,
       hasAllFemaleSku,
       hasAllMaleSku,
@@ -911,7 +906,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     const skuType = test?.inclusions?.length > 1 ? 'package' : 'test';
     const skuMsg = string.diagnostics.skuGenderMessage
       .replace('{{skuType}}', !!skuType ? skuType : 'test')
-      .replace('{{gender}}', patientDetails?.gender?.toLowerCase());
+      .replace('{{gender}}', test?.gender?.toLowerCase());
     return (
       <TouchableOpacity
         onPress={() =>
@@ -980,7 +975,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
 
   const renderPatientListItem = (item: any, index: number) => {
     const { patientName, genderAgeText, patientSalutation } = extractPatientDetails(item);
-    const { hasAllFemaleSku, hasAllMaleSku } = getSkuItemsGender();
+    const { hasAllFemaleSku, hasAllMaleSku } = getSkuItemsGender(cartItems);
     const isPresent =
       !!patientCartItems && patientCartItems?.find((cart) => cart?.patientId == item?.id);
     const patientSelectedItems =

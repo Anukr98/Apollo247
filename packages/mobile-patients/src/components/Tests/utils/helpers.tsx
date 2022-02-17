@@ -15,7 +15,14 @@ import {
   DiagnosticPatientCartItem,
   DiagnosticsCartItem,
 } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import {
+  AppConfig,
+  BOTH_GENDER_ARRAY,
+  GENDER_ARRAY,
+} from '@aph/mobile-patients/src/strings/AppConfig';
+import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
+
+type DiagnosticOrderLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
 
 //check if test is active for the given Date
 const isItemPriceActive = (fromDate: string, toDate: string, currentDate: string) => {
@@ -496,6 +503,12 @@ export enum DIAGNOSTIC_ITEM_GENDER {
   B = 'B',
 }
 
+export enum DIANGNOSTIC_POPULAR_ITEM_GENDER {
+  MALE = 'Male',
+  FEMALE = 'Female',
+  BOTH = 'Both',
+}
+
 export function DiagnosticItemGenderMapping(gender: DIAGNOSTIC_ITEM_GENDER) {
   switch (gender) {
     case DIAGNOSTIC_ITEM_GENDER.M:
@@ -506,6 +519,20 @@ export function DiagnosticItemGenderMapping(gender: DIAGNOSTIC_ITEM_GENDER) {
       break;
     default:
       return GENDER.ALL;
+      break;
+  }
+}
+
+export function DiagnosticPopularSearchGenderMapping(gender: DIANGNOSTIC_POPULAR_ITEM_GENDER) {
+  switch (gender) {
+    case DIANGNOSTIC_POPULAR_ITEM_GENDER.MALE:
+      return DIAGNOSTIC_ITEM_GENDER.M;
+      break;
+    case DIANGNOSTIC_POPULAR_ITEM_GENDER.FEMALE:
+      return DIAGNOSTIC_ITEM_GENDER.F;
+      break;
+    default:
+      return DIAGNOSTIC_ITEM_GENDER.B;
       break;
   }
 }
@@ -575,4 +602,48 @@ export function getParameterCount(item: any, oberservationName: string) {
 
 export function getPatientDetailsById(allPatients: any, patientId: string) {
   return allPatients?.find((patient: any) => patient?.id == patientId);
+}
+
+//used for switch-uhid (where each sku determines the eligible patients)
+export function checkPatientWithSkuGender(
+  skuItem: DiagnosticOrderLineItems[] | any,
+  patientDetails: any
+) {
+  const getAllSkuGender = skuItem?.map((sku: DiagnosticOrderLineItems | any) =>
+    DiagnosticItemGenderMapping(sku?.itemObj?.gender!)?.toLowerCase()
+  );
+  const getPatientGender = patientDetails?.gender;
+  const hasMaleFemale = getAllSkuGender?.find((item: GENDER) =>
+    GENDER_ARRAY?.includes(item?.toLowerCase())
+  );
+  const removeAllOther = getAllSkuGender?.filter(
+    (val: GENDER) => !BOTH_GENDER_ARRAY.includes(val?.toLowerCase() || GENDER.OTHER)
+  );
+
+  /*
+   * if all sku's are of type both , then ignore
+   * if male/female is not present, then ingore
+   * after removing others and current patient gender, disable the patient
+   */
+  const nonValidPatient =
+    removeAllOther?.length > 0
+      ? !!hasMaleFemale
+        ? !removeAllOther?.includes(getPatientGender?.toLowerCase())
+        : false
+      : false;
+  return nonValidPatient;
+}
+
+//used for modify order (where patient gender specifies eligible sku's)
+export function checkSku(
+  gender: GENDER,
+  skuGender: DIAGNOSTIC_ITEM_GENDER | any,
+  convert: boolean
+) {
+  const covertedSkuGender = convert ? DiagnosticItemGenderMapping(skuGender) : skuGender;
+  const isSKUEligible =
+    covertedSkuGender?.toLowerCase() == gender?.toLowerCase() ||
+    BOTH_GENDER_ARRAY.includes(covertedSkuGender?.toLowerCase());
+
+  return isSKUEligible;
 }

@@ -50,6 +50,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import _ from 'lodash';
 import {
   createDiagnosticAddToCartObject,
+  DiagnosticPopularSearchGenderMapping,
   diagnosticsDisplayPrice,
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   DIAGNOSTIC_ITEM_GENDER,
@@ -92,6 +93,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const [popularArray, setPopularArray] = useState([]);
   const [searchQuery, setSearchQuery] = useState({});
   const [isFocus, setIsFocus] = useState<boolean>(false);
+  const [showToolTip, setShowToolTip] = useState<boolean>(false);
 
   const { locationForDiagnostics, diagnosticServiceabilityData } = useAppCommonData();
 
@@ -222,22 +224,20 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         onAddCartItem(
           item?.diagnostic_item_id,
           item?.diagnostic_item_name,
-          DIAGNOSTIC_ITEM_GENDER.B,
+          DiagnosticPopularSearchGenderMapping(item?.diagnostic_item_gender),
           DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.POPULAR_SEARCH,
           item?.diagnostic_inclusions,
-          item?.diagnostic_inclusions_test_parameter_data?.length ||
-            item?.diagnostic_inclusions?.length
+          item?.test_parameters_data?.length || item?.diagnostic_inclusions?.length
         );
       }
     } catch (error) {
       onAddCartItem(
         item?.diagnostic_item_id,
         item?.diagnostic_item_name,
-        DIAGNOSTIC_ITEM_GENDER.B,
+        DiagnosticPopularSearchGenderMapping(item?.diagnostic_item_gender),
         DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.POPULAR_SEARCH,
         item?.diagnostic_inclusions,
-        item?.diagnostic_inclusions_test_parameter_data?.length ||
-          item?.diagnostic_inclusions?.length
+        item?.test_parameters_data?.length || item?.diagnostic_inclusions?.length
       );
       CommonBugFender('fetchPricesForItems_SearchTestScene', error);
     }
@@ -570,13 +570,17 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     onAddCartItem(
       data?.diagnostic_item_id,
       data?.diagnostic_item_name,
-      source == 'popular' ? apiResult?.gender : data?.diagnostic_item_gender,
+      source == 'popular'
+        ? apiResult?.gender
+        : DiagnosticPopularSearchGenderMapping(data?.diagnostic_item_gender),
       source == 'search'
         ? DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PARTIAL_SEARCH
         : DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.POPULAR_SEARCH,
       data?.diagnostic_inclusions,
-      data?.diagnostic_inclusions_test_parameter_data?.length ||
-        data?.diagnostic_inclusions?.length,
+      source == 'search'
+        ? data?.diagnostic_inclusions_test_parameter_data?.length ||
+            data?.diagnostic_inclusions?.length
+        : data?.test_parameters_data || data?.diagnostic_inclusions?.length,
       obj?.price,
       TEST_COLLECTION_TYPE.HC,
       obj
@@ -712,6 +716,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   };
 
   function _onPressPopularResultsAdd(item: any) {
+    setShowToolTip(false);
     fetchPricesForItems(item);
   }
 
@@ -736,9 +741,15 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           paddingBottom: index == diagnosticResults?.length - 1 ? 20 : 0,
         }}
         onPressRemoveFromCart={() => onRemoveCartItem(`${item?.diagnostic_item_id}`)}
+        onPressInvalidItem={(msg) => _onPressInvalidSku(msg)}
       />
     );
   };
+
+  function _onPressInvalidSku(msg: string) {
+    console.log({ msg });
+    msg != '' && setShowToolTip(true);
+  }
 
   function _navigateToCartPage() {
     if (isModify) {

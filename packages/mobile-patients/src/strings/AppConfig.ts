@@ -1974,6 +1974,8 @@ const Specialities: SpecialitiesType = {
 };
 
 export const BOTH_GENDER_ARRAY = [GENDER.ALL?.toLowerCase(), GENDER.OTHER?.toLowerCase()];
+export const GENDER_ARRAY = [GENDER.MALE?.toLowerCase(), GENDER.FEMALE?.toLowerCase()];
+
 
 export const AppConfig = {
   APP_ENV,
