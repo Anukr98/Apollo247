@@ -2655,7 +2655,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const setRouteJourneyFromTabbar = () => {
-    console.log(tabRouteJourney, 'tabRouteJourney');
     if (!tabRouteJourney) {
       setTabRouteJourney &&
         setTabRouteJourney({
