@@ -379,6 +379,10 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
               benefitCTAType: item?.benefitCTAType,
               benefitCTAAction: item?.benefitCTAAction?.meta?.actionMobile,
             };
+            const redirectUrl = item?.benefitCTAAction?.url;
+            if (redirectUrl) {
+              benefit['redirectUrl'] = redirectUrl;
+            }
             corporateBenefits.push(benefit);
           });
         }
@@ -957,7 +961,8 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     id: string | null,
     webengageevent: string | null,
     attribute: string | null,
-    identifierCms?: string
+    identifierCms?: string,
+    redirectUrl?: string
   ) => {
     if (webengageevent) {
       handleWebengageEvents(webengageevent);
@@ -1021,6 +1026,11 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         });
       } else if (action == Hdfc_values.PRO_HEALTH) {
         onPressHealthPro();
+      } else if (!!redirectUrl) {
+        props.navigation.navigate(AppRoutes.CommonWebView, {
+          url: redirectUrl,
+          isGoBack: true,
+        });
       } else if (action == Hdfc_values.APPLY_CIRCLE_COUPON) {
         setShowCircleBenfitCouponDialog(!showCircleBenfitCouponDialog);
       } else {
@@ -1408,7 +1418,8 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
                   null,
                   null,
                   null,
-                  benefit?.benefitIdentifier
+                  benefit?.benefitIdentifier,
+                  benefit?.redirectUrl
                 );
               }}
             >
