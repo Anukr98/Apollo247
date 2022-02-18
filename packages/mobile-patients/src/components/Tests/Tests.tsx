@@ -3597,7 +3597,8 @@ const styles = StyleSheet.create({
   prescriptionText: {
     ...theme.viewStyles.text('SB', 15, theme.colors.SHERPA_BLUE, 1, 20),
     textAlign: 'left',
-    width: '50%',
+    width: '60%',
+    flexWrap:'wrap'
   },
   bottomArea: {
     backgroundColor: colors.APP_GREEN,
