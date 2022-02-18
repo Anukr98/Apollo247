@@ -93,6 +93,7 @@ import { NudgeMessage } from '@aph/mobile-patients/src/components/Medicines/Comp
 import {
   GET_PATIENT_ADDRESS_LIST,
   GET_PRODUCT_SUBSTITUTES,
+  SET_DEFAULT_ADDRESS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   pharmaSubstitution,
@@ -116,6 +117,10 @@ import {
   onNotifyMeClickPDP,
   postProductPageViewedEvent,
 } from '@aph/mobile-patients/src/components/ProductDetailPage/helperFunctionsPDP';
+import {
+  makeAdressAsDefault,
+  makeAdressAsDefaultVariables,
+} from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
 
 export type ProductPageViewedEventProps = Pick<
   WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED],
@@ -136,6 +141,8 @@ export interface ProductDetailPageProps
 type PharmacyTatApiCalled =
   | WebEngageEvents[WebEngageEventName.PHARMACY_TAT_API_CALLED]
   | CleverTapEvents[CleverTapEventName.PHARMACY_TAT_API_CALLED];
+
+type Address = savePatientAddress_savePatientAddress_patientAddress;
 
 export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const [movedFrom, setMovedFrom] = useState(props.navigation.getParam('movedFrom'));
@@ -216,6 +223,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const [boughtTogether, setBoughtTogether] = useState<MedicineProduct[]>([]);
   const [couponData, setCouponData] = useState([]);
   const [couponDataLoading, setCouponDataLoading] = useState<boolean>(false);
+  const [addressChangeLoading, setAddressChangeLoading] = useState<boolean>(false);
 
   const { special_price, price, type_id, subcategory } = medicineDetails;
   const finalPrice = price - special_price ? special_price : price;
@@ -936,6 +944,37 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     );
   };
 
+  async function setDefaultAddress(address: Address) {
+    setAddressChangeLoading(true);
+    try {
+      hideAphAlert!();
+      const response = await client.query<makeAdressAsDefault, makeAdressAsDefaultVariables>({
+        query: SET_DEFAULT_ADDRESS,
+        variables: { patientAddressId: address?.id },
+        fetchPolicy: 'no-cache',
+      });
+      const { data } = response;
+      const patientAddress = data?.makeAdressAsDefault?.patientAddress;
+      const updatedAddresses = addresses.map((item) => ({
+        ...item,
+        defaultAddress: patientAddress?.id == item?.id ? patientAddress?.defaultAddress : false,
+      }));
+      setAddresses!(updatedAddresses);
+      const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
+      setUserActionPayload?.({
+        patientAddressId: deliveryAddress?.id,
+        zipcode: deliveryAddress?.zipcode,
+        latitude: deliveryAddress?.latitude,
+        longitude: deliveryAddress?.longitude,
+      });
+      setAddressChangeLoading(false);
+    } catch (error) {
+      checkLocation(addresses);
+      CommonBugFender('set_default_Address_on_Product_Detail_Page', error);
+      setAddressChangeLoading(false);
+    }
+  }
+
   const showAccessAccessLocationPopup = (pincodeInput?: boolean) => {
     return showAphAlert!({
       unDismissable: false,
@@ -945,6 +984,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           addresses={addresses}
           onPressSelectAddress={(address) => {
             updatePlaceInfoByPincode(address?.zipcode || '');
+            setDefaultAddress(address);
             setUserActionPayload?.({
               patientAddressId: address?.id,
               zipcode: address?.zipcode,
@@ -1195,6 +1235,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 skusInformation={multiVariantSkuInformation}
                 sku={medicineDetails?.sku}
                 onSelectVariant={onSelectVariant}
+                addressChangeLoading={addressChangeLoading}
                 typeId={medicineDetails?.type_id}
                 subcategory={medicineDetails?.subcategory}
               />
