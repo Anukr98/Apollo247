@@ -1112,6 +1112,11 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         else if(index === 4) {
           inputBoxSixth?.current?.focus()
         }
+        else if(index === 5) {
+          let otp = otpArray.join("")
+          otp = `${otp}${value}`
+          onClickOk(otp)
+        }
       }
     }
   }
