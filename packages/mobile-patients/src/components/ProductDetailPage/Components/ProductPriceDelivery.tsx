@@ -34,6 +34,7 @@ export interface ProductPriceDeliveryProps {
   skusInformation?: any[];
   onSelectVariant?: (sku: string) => void;
   priceLoaded?: boolean | undefined;
+  addressChangeLoading?: boolean;
   typeId?: string;
   subcategory?: string | null | undefined;
 }
@@ -55,6 +56,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
     sku,
     onSelectVariant,
     priceLoaded,
+    addressChangeLoading,
     typeId,
     subcategory,
   } = props;
@@ -160,7 +162,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
       : deliveryAddress
       ? `${deliveryAddress?.city || deliveryAddress?.state || ''} ${deliveryAddress?.zipcode}`
       : ``;
-    if (isSellOnline || location) {
+    if (!addressChangeLoading && (isSellOnline || location)) {
       return (
         <TouchableOpacity
           onPress={() => {
