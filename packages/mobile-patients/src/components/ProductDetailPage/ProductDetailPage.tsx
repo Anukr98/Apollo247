@@ -1017,6 +1017,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             hideAphAlert!();
             showAccessAccessLocationPopup(true);
           }}
+          source={'pharmacy'}
+          selectedCartAddress={cartAddressId}
         />
       ) : (
         <PincodeInput
