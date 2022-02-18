@@ -18,7 +18,7 @@ export const useGetDiagOrderInfo = (paymentId: string, modifiedOrder: any) => {
       const getOffersResponse = res?.data?.data?.getOrderInternal?.offers;
       setOrderInfo(info);
       setSubscriptionInfo(res?.data?.data?.getOrderInternal?.SubscriptionOrderDetails);
-      setPaymentMethod(res?.data?.getOrderInternal?.payment_method_type);
+      setPaymentMethod(res?.data?.data?.getOrderInternal?.payment_method_type);
       if (!!getOffersResponse) {
         const getOffersAmount = getOffersResponse?.[0]?.benefits;
         const totalOfferAmount = getOffersAmount?.reduce(

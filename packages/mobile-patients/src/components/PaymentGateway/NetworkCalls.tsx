@@ -98,6 +98,7 @@ export const InitiateCardTxn = (
       cardExpMonth: cardInfo?.ExpMonth,
       cardExpYear: cardInfo?.ExpYear,
       cardSecurityCode: cardInfo?.CVV,
+      cardNickName: cardInfo?.name,
       saveToLocker: saveCard ? true : false,
       clientAuthToken: clientAuthToken,
       offers: !!offerId ? [offerId] : null,

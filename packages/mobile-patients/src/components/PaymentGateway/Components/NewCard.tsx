@@ -50,6 +50,7 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
     ExpMonth: validity.slice(0, 2),
     ExpYear: validity.slice(3),
     CVV: CVV,
+    name: name,
   };
   const [isCardSupported, setIsCardSupported] = useState<boolean>(true);
   const [outageStatus, setOutageStatus] = useState<string>('UP');
