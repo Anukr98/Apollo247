@@ -56,7 +56,7 @@ import {
   WebEngageEventName,
   HdfcBenefitInfo,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { MembershipBanner } from '@aph/mobile-patients/src/components/SubscriptionMembership/Components/MembershipBanner';
 import { InactivePlanBenefits } from '@aph/mobile-patients/src/components/SubscriptionMembership/Components/InactivePlanBenefits';
 import { TermsAndConditions } from '@aph/mobile-patients/src/components/SubscriptionMembership/Components/TermsAndConditions';
@@ -318,6 +318,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const [currentCorporatePlan, setCurrentCorporatePlan] = useState<CorporateSubscriptionData>(null);
   const [corporateIndex, setCorporateIndex] = useState<number>(-1);
   const [agreedToVaccineTnc, setAgreedToVaccineTnc] = useState<string>('');
+  const { returnAuthToken } = useAuth();
 
   useEffect(() => {
     isCirclePlan && postViewCircleWEGEvent();
@@ -378,6 +379,10 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
               benefitCTAType: item?.benefitCTAType,
               benefitCTAAction: item?.benefitCTAAction?.meta?.actionMobile,
             };
+            const redirectUrl = item?.benefitCTAAction?.url;
+            if (redirectUrl) {
+              benefit['redirectUrl'] = redirectUrl;
+            }
             corporateBenefits.push(benefit);
           });
         }
@@ -931,11 +936,10 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   };
 
   const onPressHealthPro = async () => {
-    const deviceToken = (await AsyncStorage.getItem('jwt')) || '';
-    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+    const deviceToken = (await returnAuthToken?.()) || '';
     const healthProWithParams = AppConfig.Configuration.APOLLO_PRO_HEALTH_URL.concat(
       '&utm_token=',
-      currentDeviceToken,
+      deviceToken,
       '&utm_mobile_number=',
       currentPatient && g(currentPatient, 'mobileNumber') ? currentPatient.mobileNumber : ''
     );
@@ -957,7 +961,8 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     id: string | null,
     webengageevent: string | null,
     attribute: string | null,
-    identifierCms?: string
+    identifierCms?: string,
+    redirectUrl?: string
   ) => {
     if (webengageevent) {
       handleWebengageEvents(webengageevent);
@@ -1021,6 +1026,11 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         });
       } else if (action == Hdfc_values.PRO_HEALTH) {
         onPressHealthPro();
+      } else if (!!redirectUrl) {
+        props.navigation.navigate(AppRoutes.CommonWebView, {
+          url: redirectUrl,
+          isGoBack: true,
+        });
       } else if (action == Hdfc_values.APPLY_CIRCLE_COUPON) {
         setShowCircleBenfitCouponDialog(!showCircleBenfitCouponDialog);
       } else {
@@ -1408,7 +1418,8 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
                   null,
                   null,
                   null,
-                  benefit?.benefitIdentifier
+                  benefit?.benefitIdentifier,
+                  benefit?.redirectUrl
                 );
               }}
             >
