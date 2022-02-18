@@ -182,7 +182,7 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
       //   },
       //   fetchPolicy: 'no-cache',
       // });
-      if (diff<=5 && InAppReview.isAvailable()) {
+      if (diff <= 5 && InAppReview.isAvailable()) {
         await InAppReview.RequestInAppReview().then((hasFlowFinishedSuccessfully) => {
           if (hasFlowFinishedSuccessfully)
             InAppReviewEventPharma(
@@ -266,7 +266,7 @@ export const PaymentStatusPharma: React.FC<PaymentStatusPharmaProps> = (props) =
     return (
       <OrderInfo
         orderDateTime={orderInfo?.paymentDateTime}
-        paymentMode={isCOD ? 'COD' : orderInfo?.paymentMode}
+        paymentMode={isCOD ? 'COD' : orderInfo?.paymentMethod}
       />
     );
   };
