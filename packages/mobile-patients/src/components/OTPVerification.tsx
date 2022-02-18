@@ -29,7 +29,7 @@ import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
   BackHandler,
@@ -44,6 +44,7 @@ import {
   View,
   AppState,
   AppStateStatus,
+  TextInput
 } from 'react-native';
 import { timeDifferenceInDays } from '@aph/mobile-patients/src/utils/dateUtil';
 import firebaseAuth from '@react-native-firebase/auth';
@@ -123,6 +124,14 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [editable, setEditable] = useState<boolean>(true)
   const [updatedTimerValue, setUpdatedTimerValue] = useState<number>(0)
   const [newOTPNeeded, setNewOTPNeeded] = useState<boolean>(false)
+
+  const inputBoxFirst = useRef(null)
+  const inputBoxSecond = useRef(null)
+  const inputBoxThird = useRef(null)
+  const inputBoxFourth = useRef(null)
+  const inputBoxFifth = useRef(null)
+  const inputBoxSixth = useRef(null)
+  const [otpArray, setOtpArray] = useState(['','','','','',''])
 
   const styles = StyleSheet.create({
     container: {
@@ -283,6 +292,20 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       flexDirection: 'row',
       justifyContent: 'space-between',
       width: '100%'
+    },
+    input: {
+      height: 40,
+      width: 40,
+      borderWidth: 1,
+      borderRadius: 10,
+      textAlign: 'center'
+    },
+    pinsContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-evenly',
+      marginTop: 15,
+      marginBottom: 10
     }
   });
 
@@ -309,6 +332,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   useEffect(() => {
     const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      inputBoxFirst?.current?.focus()
       BackHandler.addEventListener('hardwareBackPress', handleBack);
     });
 
@@ -763,6 +787,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 setOtpStatus(string.login.auto_verfying_otp)
                 isOtpValid(messageOTP[0]);
                 onClickOk(messageOTP[0]);
+                const bits = messageOTP[0].split("")
+                setOtpArray(bits)
+                inputBoxSixth.current?.focus()
               }
             }
             SmsRetriever.removeSmsListener();
@@ -775,9 +802,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   useEffect(() => {
     getDeviceToken();
     AppState.addEventListener('change', _handleAppStateChange);
-    if (Platform.OS === 'android') {
+    if(Platform.OS === 'android')
       smsListenerAndroid();
-    }
     return () => {
       if (Platform.OS === 'android') {
         SmsRetriever.removeSmsListener();
@@ -1030,6 +1056,66 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     </View>
   );
 
+  const refCallBack = (textInputRef: any) => (node: any) => {
+    textInputRef.current = node
+  }
+
+  const onOtpKeyPres = (index: number) => {
+    return ({ nativeEvent: {key: value}}) => {
+      if(value === 'Backspace' && otpArray[index] === '') {
+        if(index == 1) {
+          inputBoxFirst?.current?.focus()
+        }
+        else if(index === 2) {
+          inputBoxSecond?.current?.focus()
+        }
+        else if(index === 3) {
+          inputBoxThird?.current?.focus()
+        }
+        else if(index === 4) {
+          inputBoxFourth?.current?.focus()
+        }
+        else if(index === 5) {
+          inputBoxFifth.current?.focus()
+        }
+
+        if(Platform.OS === 'android' && index > 0) {
+          const otpArrayCopy = otpArray.concat()
+          otpArrayCopy[index-1] = ''
+          setOtpArray(otpArrayCopy)
+        }
+      }
+    }
+  }
+
+  const onOtpChange = (index: number) => {
+    return (value: string) => {
+      if(isNaN(Number(value)))
+        return
+      const otpArrayCopy = otpArray.concat()
+      otpArrayCopy[index] = value
+      setOtpArray(otpArrayCopy)
+
+      if(value !== '') {
+        if(index === 0) {
+          inputBoxSecond?.current?.focus()
+        }
+        else if(index === 1) {
+          inputBoxThird?.current?.focus()
+        }
+        else if(index === 2) {
+          inputBoxFourth?.current?.focus()
+        }
+        else if(index === 3) {
+          inputBoxFifth?.current?.focus()
+        }
+        else if(index === 4) {
+          inputBoxSixth?.current?.focus()
+        }
+      }
+    }
+  }
+
   const { phoneNumber } = props.navigation.state.params!;
   const descriptionPhoneText = `Now enter the OTP sent to +91 ${phoneNumber} for authentication`;
   return (
@@ -1056,17 +1142,33 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           <View style={{ marginTop: '12%' }}>
             <Text style={styles.otpStatus}>{otpStatus}</Text>
           </View>
-          <View>
-            <OTPInputView
-              style={{ width: '100%', height: 100 }}
-              pinCount={6}
-              autoFocusOnLoad
-              code={otp}
-              onCodeFilled={onClickOk}
-              codeInputFieldStyle={styles.inputContainer}
-              onCodeChanged={code => setOtp(code)}
-              editable={editable && !newOTPNeeded}
-            />
+          <View style={styles.pinsContainer}>
+            {[
+              inputBoxFirst,
+              inputBoxSecond,
+              inputBoxThird,
+              inputBoxFourth,
+              inputBoxFifth,
+              inputBoxSixth
+            ].map((ref, index) => (
+              <TextInput
+                value={otpArray[index]}
+                onKeyPress={onOtpKeyPres(index)}
+                onChangeText={onOtpChange(index)}
+                keyboardType='numeric'
+                maxLength={1}
+                style={styles.input}
+                autoFocus={index === 0}
+                ref={refCallBack(ref)}
+                key={index}
+                onSubmitEditing={() => {
+                  if(index === 5) {
+                    onClickOk(otpArray.join(""))
+                  }
+                  else Keyboard.dismiss()
+                }}
+              />
+            ))}
           </View>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             {
