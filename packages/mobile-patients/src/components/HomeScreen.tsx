@@ -5926,12 +5926,25 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           Speciality: nav_props?.speciality,
           Vertical: 'Consult',
         });
-        pdp
-          ? props.navigation.navigate(AppRoutes.DoctorDetails, nav_props)
-          : props.navigation.navigate(AppRoutes.DoctorSearchListing, nav_props);
+        if(pdp) {
+          postDoctorProfileViewedEvent(nav_props)
+          props.navigation.navigate(AppRoutes.DoctorDetails, nav_props)
+        }
+        else
+          props.navigation.navigate(AppRoutes.DoctorSearchListing, nav_props);
         break;
     }
   };
+
+  const postDoctorProfileViewedEvent = (nav_props: any) => {
+    const eventAttributes = {
+      'Nav src': 'Searchbar',
+      'Doctor id': nav_props?.doctorId,
+      'Doctor Name': nav_props?.doctorName,
+      'Specialty': nav_props?.speciality
+    }
+    postCleverTapEvent(CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED, eventAttributes)
+  }
 
   const renderSearchItem = ({ key, data }: any, index: number) => {
     return (

@@ -141,7 +141,7 @@ export async function DiagnosticAddToCartEvent(
       'Item Id': String(id),
       'Item Type': itemType,
       'Item Price': String(discountedPrice), //should be the selling price
-      Source: source,
+      'Nav Src': source,
       'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
     };
     if (section) {

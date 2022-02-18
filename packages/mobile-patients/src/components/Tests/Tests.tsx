@@ -404,9 +404,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
     backend: AsyncStorage,
   });
 
-  const postDiagnosticHomepageViewedEvent = () => {
+  const postDiagnosticHomepageViewedEvent = (source: 'Direct' | 'Bottom Bar') => {
     const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_HOMEPAGE_VIEWED] = {
-      'Nav src': 'Direct',
+      'Nav src': source,
       'User': `${currentPatient?.firstName} ${currentPatient?.lastName}`,
       'UHID': currentPatient?.uhid,
       'Gender': currentPatient?.gender,
@@ -422,7 +422,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       getUserSubscriptionsByStatus();
     }
     if (movedFrom === 'deeplink') {
-      postDiagnosticHomepageViewedEvent()
+      postDiagnosticHomepageViewedEvent('Direct')
       BackHandler.addEventListener('hardwareBackPress', handleBack);
       return () => {
         BackHandler.removeEventListener('hardwareBackPress', handleBack);
@@ -495,7 +495,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setBannerData && setBannerData([]); // default banners to be empty
       getUserBanners();
       if(movedFrom !== 'deeplink')
-        postDiagnosticHomepageViewedEvent()
+        postDiagnosticHomepageViewedEvent('Bottom Bar')
     });
     const didBlur = props.navigation.addListener('didBlur', (payload) => {});
     return () => {
