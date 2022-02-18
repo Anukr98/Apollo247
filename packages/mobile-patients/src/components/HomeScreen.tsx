@@ -253,6 +253,7 @@ import {
 import { setItem, getItem } from '@aph/mobile-patients/src/helpers/TimedAsyncStorage';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 import { UpdateAppPopup } from '@aph/mobile-patients/src/components/ui/UpdateAppPopup';
+import DeviceInfo from 'react-native-device-info';
 
 const { Vitals } = NativeModules;
 
@@ -1165,12 +1166,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [membershipPlans, setMembershipPlans] = useState<any>([]);
   const [circleDataLoading, setCircleDataLoading] = useState<boolean>(true);
-  const {
-    getPatientApiCall,
-    buildApolloClient,
-    validateAndReturnAuthToken,
-    checkIsAppDepricated,
-  } = useAuth();
+  const { getPatientApiCall, returnAuthToken, checkIsAppDepricated } = useAuth();
   const [selectedProfile, setSelectedProfile] = useState<string>('');
   const [isLocationSearchVisible, setLocationSearchVisible] = useState(false);
   const [showList, setShowList] = useState<boolean>(false);
@@ -1326,6 +1322,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     setVaccineLoacalStorageData();
     cleverTapEventForLoginDone();
     fetchUserAgent();
+    firebaseTokenCheck();
   }, []);
 
   const handleSearchClose = () => {
@@ -1410,6 +1407,28 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     checkCleverTapLoginStatus(currentPatient);
     updateAppVersion(currentPatient);
   }, [currentPatient]);
+
+  const getEventParams = async () => {
+    const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
+    const phoneNumber = await AsyncStorage.getItem('phoneNumber');
+    const eventParams = {
+      mobileNumber: phoneNumber,
+      OS: Platform?.OS,
+      AppVersion: DeviceInfo.getVersion(),
+      loggedIn: userLoggedIn,
+    };
+    return eventParams;
+  };
+
+  // validating whether JWT token is returned by firebase or not
+  const firebaseTokenCheck = async () => {
+    const token = await returnAuthToken?.().catch((error) => {});
+    if (!token) {
+      // Firing a webEngage event to track number of anticipated logouts (if Logout is implemented incase of missing auth token)
+      const params = await getEventParams();
+      postWebEngageEvent(WebEngageEventName.LOGOUT_REQUIRED, params);
+    }
+  };
 
   //to be called only when the user lands via app launch
   const logHomePageViewed = async (attributes: any) => {
@@ -3533,9 +3552,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const saveRecentSearchTerm = async (search: string) => {
-    const authToken: string = await validateAndReturnAuthToken();
-    const apolloClient = buildApolloClient(authToken);
-    apolloClient
+    client
       .mutate<saveRecentVariables>({
         mutation: SAVE_RECENT_SEARCH,
         variables: {
@@ -4306,14 +4323,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const openWebViewFromBanner = async (url: string) => {
-    const deviceToken = (await AsyncStorage.getItem('jwt')) || '';
-    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+    const deviceToken = (await returnAuthToken?.()) || '';
     let updatedUrl: string = '';
     if (url?.includes('apollo-pro-health')) {
       updatedUrl = url?.concat(
         '?utm_source=mobile_app',
         '&utm_token=',
-        currentDeviceToken,
+        deviceToken,
         '&utm_mobile_number=',
         currentPatient?.mobileNumber || ''
       );
@@ -4962,11 +4978,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const onPressHealthPro = async () => {
-    const deviceToken = (await AsyncStorage.getItem('jwt')) || '';
-    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+    const deviceToken = (await returnAuthToken?.()) || '';
     const healthProWithParams = AppConfig.Configuration.APOLLO_PRO_HEALTH_URL.concat(
       '&utm_token=',
-      currentDeviceToken,
+      deviceToken,
       '&utm_mobile_number=',
       currentPatient && g(currentPatient, 'mobileNumber') ? currentPatient.mobileNumber : ''
     );
