@@ -10,7 +10,6 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
-  getAsyncStorageValues,
   getCircleNoSubscriptionText,
   getCirclePlanDetails,
   getUserType,
@@ -22,7 +21,7 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import {
   CleverTapEventName,
   CleverTapEvents,
@@ -46,6 +45,7 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
   const [canGoBack, setCanGoBack] = useState<boolean>(false);
   const [token, setToken] = useState<string | null>('');
   const [userMobileNumber, setUserMobileNumber] = useState<string | null>('');
+  const { returnAuthToken } = useAuth();
 
   let WebViewRef: any;
   const client = useApolloClient();
@@ -79,11 +79,8 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
 
   useEffect(() => {
     const saveSessionValues = async () => {
-      const [loginToken, phoneNumber] = await getAsyncStorageValues();
-      setToken(JSON.parse(loginToken));
-      setUserMobileNumber(
-        JSON.parse(phoneNumber)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber
-      );
+      returnAuthToken?.().then(setToken);
+      setUserMobileNumber(currentPatient?.mobileNumber);
     };
     saveSessionValues();
     setWebViewUrl(formatUrl(props?.navigation?.getParam('url'), token, userMobileNumber));

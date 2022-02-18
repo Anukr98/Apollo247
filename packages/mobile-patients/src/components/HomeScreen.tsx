@@ -157,7 +157,6 @@ import {
   removeObjectNullUndefinedProperties,
   isValidSearch,
   fileToBase64,
-  getAsyncStorageValues,
   formatUrl,
   checkCleverTapLoginStatus,
   isEmptyObject,
@@ -3195,11 +3194,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       setEnableCM(eneabled);
     }
     const saveSessionValues = async () => {
-      const [loginToken, phoneNumber] = await getAsyncStorageValues();
-      setToken(JSON.parse(loginToken));
-      setUserMobileNumber(
-        JSON.parse(phoneNumber)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber
-      );
+      returnAuthToken?.().then(setToken);
+      setUserMobileNumber(currentPatient?.mobileNumber);
     };
     fetchData();
     saveSessionValues();
