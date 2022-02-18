@@ -398,6 +398,11 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           <Text style={styles.itemHeading}> PRICE</Text>
         </View>
         {filterOrderLineItem?.map((item) => {
+          const getGroupPlan = item?.groupPlan;
+          const findPriceWithGroupPlan = item?.pricingObj?.find(
+            (val) => val?.groupPlan == getGroupPlan
+          );
+
           return (
             <View style={styles.commonTax}>
               <View style={{ width: '65%' }}>
@@ -418,7 +423,11 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
               <View style={{ flex: 1, alignItems: 'flex-end' }}>
                 <Text style={styles.commonText}>
                   {string.common.Rs}
-                  {Number(item?.price)?.toFixed(2) || null}
+                  {!!findPriceWithGroupPlan
+                    ? Number(findPriceWithGroupPlan?.price)?.toFixed(2) ||
+                      Number(item?.price)?.toFixed(2) ||
+                      null
+                    : Number(item?.price)?.toFixed(2) || null}
                 </Text>
               </View>
             </View>
