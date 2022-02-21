@@ -17,8 +17,6 @@ import {
   isProductInStock,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
-import { Spinner } from '../ui/Spinner';
-import { renderCircleBottomShimmer } from '../ui/ShimmerFactory';
 
 const styles = StyleSheet.create({
   containerStyle: {},
@@ -77,16 +75,13 @@ export interface MedicineSearchSuggestionItemProps {
   quantity: number;
   style?: ViewStyle;
   showSeparator?: boolean;
-  loading?: boolean;
   data: MedicineProduct | SearchSuggestion;
-  disableAction?: boolean;
 }
 
 export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItemProps> = ({
-  loading,
   ...props
 }) => {
-  const { data, disableAction } = props;
+  const { data } = props;
   const prescriptionRequired = data?.is_prescription_required == '1';
   const imageUri = productsThumbnailUrl(data?.thumbnail);
   const isOutOfStock = !isProductInStock(data);
@@ -111,23 +106,15 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
       <View style={styles.nameAndPriceViewStyle}>
         <Text
           numberOfLines={2}
-          style={[
-            {
-              ...theme.viewStyles.text('M', 16, '#01475b', 1, 24, 0),
-              width: '90%',
-            },
-            loading && { opacity: 0 },
-          ]}
+          style={{
+            ...theme.viewStyles.text('M', 16, '#01475b', 1, 24, 0),
+            width: '90%',
+          }}
         >
           {data.name}
         </Text>
         {!!product_form && !!pack_form && !!pack_size && (
-          <View
-            style={[
-              { flexDirection: 'row', justifyContent: 'space-between' },
-              loading && { opacity: 0 },
-            ]}
-          >
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <Text style={theme.viewStyles.text('R', 13, '#02475B', 0.7, 20)}>
               {`${pack_form} of ${pack_size}${unit_of_measurement || ''} ${product_form}`}
             </Text>
@@ -142,7 +129,7 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
           </View>
         ) : (
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <View style={[{ flexDirection: 'row' }, loading && { opacity: 0 }]}>
+            <View style={{ flexDirection: 'row' }}>
               {!specialPrice && (
                 <Text style={theme.viewStyles.text('M', 13, '#01475B', 1, 25)}>{'MRP '}</Text>
               )}
@@ -207,16 +194,9 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
     return (
       <TouchableOpacity
         activeOpacity={1}
-        onPress={
-          !disableAction
-            ? !loading && isOutOfStock
-              ? props.onPressNotify
-              : props.onPressAddToCart
-            : () => {}
-        }
-        disabled={disableAction}
+        onPress={isOutOfStock ? props.onPressNotify : props.onPressAddToCart}
       >
-        <Text style={theme.viewStyles.text('SB', 12, '#fc9916', disableAction ? 0.5 : 1, 24, 0)}>
+        <Text style={theme.viewStyles.text('SB', 12, '#fc9916', 1, 24, 0)}>
           {isOutOfStock ? 'NOTIFY ME' : 'ADD TO CART'}
         </Text>
       </TouchableOpacity>
@@ -226,11 +206,9 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
   const renderQuantityView = () => {
     return (
       <View style={styles.quantityView}>
-        <QuantityButton text={'-'} onPress={disableAction ? () => {} : props.onPressSubstract} />
-        <Text style={theme.viewStyles.text('B', 14, '#fc9916', disableAction ? 0.5 : 1, 24, 0)}>
-          {props.quantity}
-        </Text>
-        <QuantityButton text={'+'} onPress={disableAction ? () => {} : props.onPressAdd} />
+        <QuantityButton text={'-'} onPress={props.onPressSubstract} />
+        <Text style={theme.viewStyles.text('B', 14, '#fc9916', 1, 24, 0)}>{props.quantity}</Text>
+        <QuantityButton text={'+'} onPress={props.onPressAdd} />
       </View>
     );
   };
@@ -262,11 +240,6 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
         )}
         {props.showSeparator ? <Spearator /> : null}
       </View>
-      {loading ? (
-        <View style={{ position: 'absolute', top: 5, left: 65 }}>
-          {renderCircleBottomShimmer()}
-        </View>
-      ) : null}
     </TouchableOpacity>
   );
 };

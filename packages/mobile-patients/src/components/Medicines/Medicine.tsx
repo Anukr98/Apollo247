@@ -2337,8 +2337,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         }}
         quantity={getItemQuantity(item?.sku) || 0}
         data={item}
-        loading={searchItemLoading[item?.sku]}
-        disableAction={serverCartLoading}
         showSeparator={index !== medicineList?.length - 1}
         style={{
           marginHorizontal: 20,
@@ -2722,7 +2720,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       {AppConfig.Configuration.WHATSAPP_TO_ORDER.iconVisibility &&
         showWhatsappRedirectionIcon &&
         medicineList?.length === 0 && <WhatsappRedirectionStickyNote />}
-        <UpdateAppPopup depricatedAppData={depricatedAppData} />
+      <UpdateAppPopup depricatedAppData={depricatedAppData} />
     </View>
   );
 };

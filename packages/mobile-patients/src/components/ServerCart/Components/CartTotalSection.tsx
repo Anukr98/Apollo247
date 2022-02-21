@@ -51,7 +51,7 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <View>
           <Text style={styles.text}>Delivery charges</Text>
-          {isCircleCart && !!cartSubscriptionDetails?.subscriptionApplied ? (
+          {isCircleCart && !!cartSubscriptionDetails?.subscriptionApplied && !!isDeliveryFree ? (
             <Text style={styles.circleMessage}>(Free for Circle Members)</Text>
           ) : null}
         </View>

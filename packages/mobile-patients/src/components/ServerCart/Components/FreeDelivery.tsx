@@ -7,12 +7,10 @@ import { FreeShippingIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 export interface FreeDeliveryProps {}
 
 export const FreeDelivery: React.FC<FreeDeliveryProps> = (props) => {
-  const { serverCartItems, serverCartAmount, cartCoupon, isCircleCart } = useShoppingCart();
+  const { serverCartAmount, cartCoupon, isCircleCart } = useShoppingCart();
 
   const showCard = () =>
-    serverCartItems?.length > 0 &&
-    !serverCartAmount?.isDeliveryFree &&
-    !!serverCartAmount?.freeDeliveryAmount;
+    !serverCartAmount?.isDeliveryFree && !!serverCartAmount?.freeDeliveryAmount;
 
   function renderFreeDeliveryCard() {
     return !!isCircleCart && !!cartCoupon?.coupon ? null : (

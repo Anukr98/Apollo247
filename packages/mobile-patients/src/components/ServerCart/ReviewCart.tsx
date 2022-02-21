@@ -81,6 +81,7 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
     cartCoupon,
     cartLocationDetails,
     consultProfile,
+    cartPrescriptions,
   } = useShoppingCart();
   const client = useApolloClient();
   const { setauthToken, pharmacyUserTypeAttribute, pharmacyUserType } = useAppCommonData();
@@ -311,10 +312,17 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
     }
   };
 
-  const renderAlert = (message: string) => {
+  const renderAlert = (message: string, redirectToUploadPrescription?: boolean) => {
     showAphAlert!({
       title: string.common.uhOh,
       description: message,
+      unDismissable: true,
+      onPressOk: () => {
+        if (redirectToUploadPrescription) {
+          props.navigation.navigate(AppRoutes.MedicineCartPrescription);
+        }
+        hideAphAlert?.();
+      },
     });
   };
 
@@ -376,6 +384,10 @@ export const ReviewCart: React.FC<ReviewCartProps> = (props) => {
         screen={'summary'}
         navigation={props.navigation}
         onPressProceedtoPay={() => {
+          if (cartPrescriptionType === PrescriptionType.UPLOADED && cartPrescriptions?.length < 1) {
+            renderAlert(string.medicine_cart.itemsWithRx, true);
+            return;
+          }
           onPressProceedtoPay();
         }}
       />

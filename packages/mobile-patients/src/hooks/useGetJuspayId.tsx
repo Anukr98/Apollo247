@@ -8,7 +8,6 @@ export const useGetJuspayId = () => {
   const { currentPatient } = useAllCurrentPatients();
   const [cusId, setcusId] = useState<any>(currentPatient?.id);
   const [isfetchingId, setIsfetchingId] = useState<boolean>(true);
-  const { validateAuthToken } = useAuth();
 
   const fetchJusPayId = () => {
     return client.query({
@@ -30,7 +29,6 @@ export const useGetJuspayId = () => {
   };
 
   useEffect(() => {
-    validateAuthToken?.();
     initiate();
   }, []);
 
