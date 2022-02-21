@@ -45,7 +45,12 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { g, isEmptyObject, navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  isEmptyObject,
+  navigateToHome,
+  clearStackAndNavigate,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
   BookAppointmentInput,
@@ -358,7 +363,7 @@ export const PaymentFailed: React.FC<PaymentFailedProps> = (props) => {
         let orderInfo = orderDetails;
         orderInfo['orderId'] = apptmt?.id;
         orderInfo['displayId'] = apptmt?.displayId;
-        props.navigation.navigate(AppRoutes.PaymentMethods, {
+        clearStackAndNavigate(props.navigation, AppRoutes.PaymentMethods, {
           paymentId: data?.data?.createOrderInternal?.payment_order_id!,
           amount: appointmentInfo?.amountToPay,
           orderDetails: orderInfo,
@@ -423,7 +428,7 @@ export const PaymentFailed: React.FC<PaymentFailedProps> = (props) => {
           let orderInfo = !!Info ? JSON.parse(Info) : {};
           orderInfo['orderId'] = resp?.data?.saveModifyDiagnosticOrder?.orderId;
           orderInfo['displayId'] = resp?.data?.saveModifyDiagnosticOrder?.displayId;
-          props.navigation.navigate(AppRoutes.PaymentMethods, {
+          clearStackAndNavigate(props.navigation, AppRoutes.PaymentMethods, {
             paymentId: response?.data?.createOrderInternal?.payment_order_id!,
             amount: toPayPrice,
             orderId: resp?.data?.saveModifyDiagnosticOrder?.orderId, //pass only one
@@ -479,7 +484,7 @@ export const PaymentFailed: React.FC<PaymentFailedProps> = (props) => {
           let orderInfo = !!Info ? JSON.parse(Info) : {};
           orderInfo['orderId'] = HCResponse?.[0]?.orderID;
           orderInfo['displayId'] = HCResponse?.[0]?.displayID;
-          props.navigation.navigate(AppRoutes.PaymentMethods, {
+          clearStackAndNavigate(props.navigation, AppRoutes.PaymentMethods, {
             paymentId: response?.data?.createOrderInternal?.payment_order_id!,
             amount: toPayPrice,
             orderId: HCResponse?.[0]?.orderID, //pass only one
@@ -517,7 +522,7 @@ export const PaymentFailed: React.FC<PaymentFailedProps> = (props) => {
           .toFixed(2);
         setLoading?.(false);
         setauthToken?.('');
-        props.navigation.navigate(AppRoutes.PaymentMethods, {
+        clearStackAndNavigate(props.navigation, AppRoutes.PaymentMethods, {
           paymentId: paymentOrderId,
           amount: Number(newCartTotal),
           orderDetails: orderInfo,

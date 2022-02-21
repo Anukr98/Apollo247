@@ -180,6 +180,11 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     fetchedPaymentMethods || paymentMethods;
   const linkedWallets = preferred_payment_methods?.linked_wallets;
   const closedPaymentModes = all_payment_modes?.filter((item: any) => item?.state == 'CLOSE');
+  const recently_used_or_defined = preferred_payment_methods?.recently_used_or_defined;
+  const usedWallets = recently_used_or_defined?.find((item: any) => item?.name == 'WALLET')
+    ?.payment_methods;
+  const usedUPIApps = recently_used_or_defined?.find((item: any) => item?.name == 'UPI')
+    ?.payment_methods;
   const preferredSavedCards = preferred_payment_methods?.saved_cards?.cards || [];
   const preferredCardTokens = preferredSavedCards?.map((item: any) => item?.card_token);
   const savedCards =
@@ -1134,9 +1139,18 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const renderWallets = (wallets: any) => {
+    // Do not show linked wallets and wallets shown under preferred payment options
+    const usedWalletCodes = usedWallets?.map((item: any) => item?.payment_method_code);
+    const linkedWalletCodes = linkedWallets?.map((item: any) => item?.wallet);
+    const filteredWallets =
+      wallets?.filter(
+        (item: any) =>
+          !usedWalletCodes?.includes(item?.payment_method_code) &&
+          !linkedWalletCodes?.includes(item?.payment_method_code)
+      ) || [];
     return (
       <Wallets
-        wallets={wallets}
+        wallets={filteredWallets}
         onPressPayNow={onPressWallet}
         onPressLinkWallet={onPressLinkWallet}
         onPressDirectDebit={onPressWalletDirectDebit}
@@ -1156,10 +1170,14 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const renderUPIPayments = (upiApps: any) => {
+    // Do not show the upi apps shown under preferred payment options
+    const usedUPIAppCodes = usedUPIApps?.map((item: any) => item?.payment_method_code);
+    const filteredUPIApps =
+      upiApps?.filter((item: any) => !usedUPIAppCodes?.includes(item?.payment_method_code)) || [];
     return (
       <UPIPayments
         isVPAvalid={isVPAvalid}
-        upiApps={upiApps}
+        upiApps={filteredUPIApps}
         onPressUPIApp={onPressUPIApp}
         onPressUpiCollect={() => setOtherPaymentSelected({ name: 'UPICOLLECT' })}
         setisVPAvalid={setisVPAvalid}
