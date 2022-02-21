@@ -1508,8 +1508,8 @@ export const getDiagnosticCartRecommendations = (
   numOfRecords: number,
   genderFilter?: [Gender]
 ) => {
-  return client.query<getDiagnosticItemRecommendations, getDiagnosticItemRecommendationsVariables>({
-    query: GET_DIAGNOSTICS_RECOMMENDATIONS,
+  return client.mutate<getDiagnosticItemRecommendations, getDiagnosticItemRecommendationsVariables>({
+    mutation: GET_DIAGNOSTICS_RECOMMENDATIONS,
     context: {
       sourceHeaders,
     },

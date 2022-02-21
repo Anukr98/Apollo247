@@ -215,15 +215,62 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
     }
   };
 
+  function skuParameterInclusionLogic(widget: any, source: string) {
+    let getMandatoryParameterCount = 0,
+      nonInclusionParamters;
+    if (source == 'fetchCartPageRecommendations') {
+      const filterParamters = widget?.observations?.length > 0 ? widget?.observations : [];
+      const getMandatoryParamter =
+        !!filterParamters &&
+        filterParamters?.length > 0 &&
+        filterParamters?.filter((obs: any) => obs?.mandatoryValue === '1');
+
+      nonInclusionParamters = [];
+      getMandatoryParameterCount =
+        !!getMandatoryParamter && getMandatoryParamter?.length > 0
+          ? getMandatoryParamter?.length
+          : undefined;
+    } else {
+      const filterParamters = widget?.inclusionData?.filter(
+        (item: any) => !!item?.incObservationData && item?.incObservationData != ''
+      );
+      const getMandatoryParamter =
+        !!filterParamters &&
+        filterParamters?.length > 0 &&
+        filterParamters?.map((inclusion: any) =>
+          !!inclusion?.incObservationData
+            ? inclusion?.incObservationData?.filter((item: any) => item?.mandatoryValue === '1')
+            : []
+        );
+
+      nonInclusionParamters = widget?.inclusionData?.filter(
+        (item: any) =>
+          !!item && (!item?.incObservationData || item?.incObservationData?.length == 0)
+      );
+      getMandatoryParameterCount =
+        !!getMandatoryParamter && getMandatoryParamter?.length > 0
+          ? getMandatoryParamter?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0)
+          : undefined;
+    }
+
+    return {
+      getMandatoryParameterCount,
+      nonInclusionParamters,
+    };
+  }
+
   const removeDisabledCartItems = (disabledCartItemIds: string[]) => {
     setCartItems?.(
       cartItems?.filter((cItem) => !disabledCartItemIds?.find((dItem) => dItem == cItem?.id))
     );
   };
 
-  function createRecommendationsObject(result: any, widgetsData: any) {
+  function createRecommendationsObject(result: any, widgetsData: any, source: string) {
     let resultantObjectArray: DiagnosticsCartItem[] = [];
     result?.map((item: any, index: number) => {
+      const findWidget = widgetsData?.find(
+        (widget: any) => Number(widget?.itemId) == Number(item?.itemId)
+      );
       const pricesForItem = getPricesForItem(item?.diagnosticPricing, item?.packageCalculatedMrp!);
       const specialPrice = pricesForItem?.specialPrice!;
       const price = pricesForItem?.price!; //more than price (black)
@@ -232,6 +279,10 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
       const discountPrice = pricesForItem?.discountPrice!;
       const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
       const planToConsider = pricesForItem?.planToConsider;
+      const { getMandatoryParameterCount, nonInclusionParamters } = skuParameterInclusionLogic(
+        findWidget,
+        source
+      );
 
       //create this same as updatedObject wala
       resultantObjectArray.push({
@@ -251,6 +302,7 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
         groupPlan: planToConsider?.groupPlan,
         packageMrp: item?.packageCalculatedMrp,
         inclusions: item?.inclusions == null ? [Number(item?.itemId)] : item?.inclusions,
+        parameterCount: getMandatoryParameterCount + nonInclusionParamters?.length,
       });
     });
     return resultantObjectArray;
@@ -274,11 +326,19 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
         const diagnosticItems =
           getResponse?.data?.findDiagnosticsByItemIDsAndCityID?.diagnostics || [];
         if (source == 'fetchCartPageRecommendations') {
-          const getRecommendationsArray = createRecommendationsObject(diagnosticItems, widgetsData);
+          const getRecommendationsArray = createRecommendationsObject(
+            diagnosticItems,
+            widgetsData,
+            source
+          );
           setRecommendationsData(getRecommendationsArray);
           setLoading?.(false);
         } else if (source == 'fetchTestReportGenDetails') {
-          const getTopBookedObject = createRecommendationsObject(diagnosticItems, widgetsData);
+          const getTopBookedObject = createRecommendationsObject(
+            diagnosticItems,
+            widgetsData,
+            source
+          );
           setTopBookedTests(getTopBookedObject);
           setLoading?.(false);
         }

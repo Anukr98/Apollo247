@@ -6671,7 +6671,7 @@ export const POST_WEB_ENGAGE = gql`
 
 export const GET_DIAGNOSTICS_RECOMMENDATIONS = gql`
   mutation getDiagnosticItemRecommendations($itemIds: [Int]!, $records: Int, $genderFilters: [Gender]) {
-    getDiagnosticItemRecommendations(itemIds: $itemIds, numberOfRecordsToFetch: $records, genderFilters:$genderFilter) {
+    getDiagnosticItemRecommendations(itemIds: $itemIds, numberOfRecordsToFetch: $records, genderFilters:$genderFilters) {
       itemsData {
         itemId
         itemName
