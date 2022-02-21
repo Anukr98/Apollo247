@@ -2787,7 +2787,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       const widgetName = widget?.diagnosticWidgetType?.toLowerCase();
       switch (widgetName) {
         case string.diagnosticCategoryTitle.banner:
-          return APP_ENV != AppEnv.PERFORM ? renderStaticBanner() : renderBanner();
+          return APP_ENV == AppEnv.PERFORM ? renderStaticBanner() : renderBanner();
           break;
         case string.diagnosticCategoryTitle.package:
           return renderPackageWidget(widget);

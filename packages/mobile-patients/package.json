@@ -94,6 +94,7 @@
     "graphql-tag": "^2.10.1",
     "hyper-sdk-react": "^2.0.19",
     "jsc-android": "^250230.2.1",
+    "jsrsasign": "^10.5.1",
     "jwt-decode": "^2.2.0",
     "lodash": "^4.17.15",
     "lottie-ios": "3.2.3",

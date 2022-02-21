@@ -8,15 +8,11 @@ import {
   EmergencyCall,
   ExpressDeliveryLogo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 import { CircleMembershipActivation } from '@aph/mobile-patients/src/components/ui/CircleMembershipActivation';
 import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
-import {
-  formatUrl,
-  getAsyncStorageValues,
-  timeDiffDaysFromNow,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { formatUrl, timeDiffDaysFromNow } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import moment from 'moment';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
@@ -50,14 +46,12 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const planValidity = useRef<string>('');
   const planPurchased = useRef<boolean | undefined>(false);
+  const { returnAuthToken } = useAuth();
 
   useEffect(() => {
     const saveSessionValues = async () => {
-      const [loginToken, phoneNumber] = await getAsyncStorageValues();
-      setToken(JSON.parse(loginToken));
-      setUserMobileNumber(
-        JSON.parse(phoneNumber)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber
-      );
+      returnAuthToken?.().then(setToken);
+      setUserMobileNumber(currentPatient?.mobileNumber);
     };
     saveSessionValues();
   }, []);

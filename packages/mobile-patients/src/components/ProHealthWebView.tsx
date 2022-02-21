@@ -1,10 +1,6 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import {
-  formatUrl,
-  getAsyncStorageValues,
-  permissionHandler,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { formatUrl, permissionHandler } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
@@ -18,7 +14,7 @@ import {
 import { WebView } from 'react-native-webview';
 import { NavigationRoute, NavigationScreenProp, NavigationScreenProps } from 'react-navigation';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { useAllCurrentPatients } from '../hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '../hooks/authHooks';
 import {
   RadiologyBookingCompleted,
   RadiologyLandingPage,
@@ -47,14 +43,12 @@ export const ProHealthWebView: React.FC<ProHealthWebViewProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const source = props.navigation.getParam('source');
   const getCurrentPatients = props.navigation.getParam('currentPatient');
+  const { returnAuthToken } = useAuth();
 
   useEffect(() => {
     const saveSessionValues = async () => {
-      const [loginToken, phoneNumber] = await getAsyncStorageValues();
-      setToken(JSON.parse(loginToken));
-      setUserMobileNumber(
-        JSON.parse(phoneNumber)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber
-      );
+      returnAuthToken?.().then(setToken);
+      setUserMobileNumber(currentPatient?.mobileNumber);
     };
     saveSessionValues();
     requestMicrophonePermission();

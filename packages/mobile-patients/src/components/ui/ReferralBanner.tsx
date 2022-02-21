@@ -66,16 +66,24 @@ export const ReferralBanner: React.FC<ReferralBannerProps> = (props) => {
       <View style={styles.referEarntextMainContainer}>
         <View style={styles.referEarntextContainer}>
           <Text style={styles.referEarntext}>
-            {replaceVariableInString(referralMainBanner?.bannerTextLineOne, {
-              currency: referralGlobalData?.currency,
-              initialEarnAmount: referralGlobalData?.refereeInitialsEarnAmount,
-            })}
+            {replaceVariableInString(
+              referralMainBanner?.bannerTextLineOne ||
+                string.refAndEarn.referralMainBanner.bannerTextLineOne,
+              {
+                currency: referralGlobalData?.currency || string.refAndEarn.global.currency,
+                initialEarnAmount: referralGlobalData?.refereeInitialsEarnAmount || '0',
+              }
+            )}
           </Text>
           <Text style={styles.referEarntextLine2}>
-            {replaceVariableInString(referralMainBanner?.bannerTextLineTwo, {
-              currency: referralGlobalData?.currency,
-              initialEarnAmount: referralGlobalData?.refereeInitialsEarnAmount,
-            })}
+            {replaceVariableInString(
+              referralMainBanner?.bannerTextLineTwo ||
+                string.refAndEarn.referralMainBanner.bannerTextLineTwo,
+              {
+                currency: referralGlobalData?.currency || string.refAndEarn.global.currency,
+                initialEarnAmount: referralGlobalData?.refereeInitialsEarnAmount || '0',
+              }
+            )}
           </Text>
         </View>
         <View style={styles.referEarnearnBtn}>
