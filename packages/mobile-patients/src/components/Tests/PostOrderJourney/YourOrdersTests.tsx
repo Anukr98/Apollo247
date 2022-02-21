@@ -117,6 +117,7 @@ import { PatientListOverlay } from '@aph/mobile-patients/src/components/Tests/co
 import { getDiagnosticOrdersListByParentOrderID_getDiagnosticOrdersListByParentOrderID_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByParentOrderID';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 import { PhleboCallPopup } from '@aph/mobile-patients/src/components/Tests/components/PhleboCallPopup';
+import { checkPatientWithSkuGender } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 
 type orderList = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList;
 
@@ -2255,6 +2256,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       (item: any) => item?.id === selectedOrder?.patientId
     );
     const updatePatientCheck = updatePatientSwitchChecks(selectedOrder!);
+    const skuItem = selectedOrder?.diagnosticOrderLineItems!;
+    const getPatientDisableValue = allCurrentPatients?.map((patient: any) =>
+      checkPatientWithSkuGender(skuItem, patient)
+    );
+    const checkIsPatientDisableWithSku =
+      !!getPatientDisableValue && getPatientDisableValue?.find((value: boolean) => value == true);
     return (
       <PatientListOverlay
         showCloseIcon={true}
@@ -2277,7 +2284,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         onCloseError={() => setSwitchPatientResponse('')}
         refetchResult={() => _afterSuccess()}
         removeAllSwitchRestrictions={updatePatientCheck}
-        skuItem={selectedOrder?.diagnosticOrderLineItems!}
+        skuItem={skuItem!}
+        showGenderSkuMsg={!!checkIsPatientDisableWithSku}
       />
     );
   };

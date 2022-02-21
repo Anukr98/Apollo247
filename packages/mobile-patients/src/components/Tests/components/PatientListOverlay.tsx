@@ -25,7 +25,8 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Gender } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import LottieView from 'lottie-react-native';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
-import { checkPatientWithSkuGender } from '../utils/helpers';
+import { checkPatientWithSkuGender } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
+import { InfoMessage } from '@aph/mobile-patients/src/components/Tests/components/InfoMessage';
 const screenHeight = Dimensions.get('window').height;
 
 const { SHERPA_BLUE, APP_YELLOW, CARD_BG, WHITE, APP_GREEN, CLEAR } = theme.colors;
@@ -49,6 +50,7 @@ interface PatientListOverlayProps {
   refetchResult?: () => void;
   removeAllSwitchRestrictions?: boolean;
   skuItem?: DiagnosticOrderLineItems[] | any;
+  showGenderSkuMsg?: boolean;
 }
 
 export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => {
@@ -64,6 +66,7 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
     refetchResult,
     removeAllSwitchRestrictions,
     skuItem,
+    showGenderSkuMsg,
   } = props;
   const { allCurrentPatients } = useAllCurrentPatients();
   const [selectedPatient, setSelectedPatient] = useState<any>(patientSelected);
@@ -212,6 +215,22 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
     );
   };
 
+  const renderPatientMsg = () => {
+    const msg = string.diagnostics.switchUhidMsg?.replace(
+      '{{gender}}',
+      selectedPatient?.gender?.toLowerCase()
+    );
+    return (
+      <InfoMessage
+        content={msg}
+        textStyle={styles.subHeadingText}
+        iconStyle={styles.infoIconStyle}
+        containerStyle={styles.genderSkuMsgView}
+        isCard={false}
+      />
+    );
+  };
+
   return (
     <Overlay
       isVisible
@@ -270,6 +289,7 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
                       {props.subTitle || string.diagnostics.patientTestOrderMsg}
                     </Text>
                   ) : null}
+                  {customStyle && !!showGenderSkuMsg && renderPatientMsg()}
                   <View
                     style={
                       customStyle ? styles.patientListCardCustomStyle : styles.patientListCardStyle
@@ -442,6 +462,17 @@ const styles = StyleSheet.create({
     height: 200,
     justifyContent: 'center',
     alignSelf: 'center',
+  },
+  subHeadingText: {
+    ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 1, 18),
+  },
+  infoIconStyle: { height: 18, width: 18, resizeMode: 'contain', marginRight: 5 },
+  genderSkuMsgView: {
+    marginVertical: 6,
+    flexDirection: 'row',
+    marginHorizontal: -10,
+    backgroundColor: 'transparent',
+    marginBottom: -16,
   },
 });
 

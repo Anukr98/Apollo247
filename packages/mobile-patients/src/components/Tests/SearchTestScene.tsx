@@ -49,11 +49,11 @@ import {
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import _ from 'lodash';
 import {
+  checkSku,
   createDiagnosticAddToCartObject,
   DiagnosticPopularSearchGenderMapping,
   diagnosticsDisplayPrice,
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
-  DIAGNOSTIC_ITEM_GENDER,
   getPricesForItem,
 } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import { DiagnosticsNewSearch } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticsNewSearch';
@@ -192,12 +192,28 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     };
   }, []);
 
+  function checkGenderSku(product: any) {
+    const patientGender = modifiedOrder?.patientObj?.gender;
+    if (product?.length > 0) {
+      const filteredResult = product?.filter((sku: any) =>
+        checkSku(
+          patientGender,
+          DiagnosticPopularSearchGenderMapping(sku?.diagnostic_item_gender),
+          true
+        )
+      );
+      setPopularArray(filteredResult);
+    } else {
+      setPopularArray([]);
+    }
+  }
+
   const fetchPopularDetails = async () => {
     try {
       const res: any = await getDiagnosticsPopularResults('diagnostic', Number(cityId));
       if (res?.data?.success) {
         const product = res?.data?.data || [];
-        setPopularArray(product);
+        isModify ? checkGenderSku(product) : setPopularArray(product);
         setIsLoading(false);
       }
       setIsLoading?.(false);
@@ -541,7 +557,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   };
 
   function fetchPrices(data: any, source: string, apiResult?: any) {
-    console.log({ data });
     const pricesForItem = getPricesForItem(
       source == 'popular' && !!apiResult
         ? apiResult?.diagnosticPricing
@@ -598,9 +613,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
             comingFrom: AppRoutes.SearchTestScene,
           });
         }}
-        onPressAddToCart={() => {
-          fetchPrices(product, 'search');
-        }}
+        onPressAddToCart={() => fetchPrices(product, 'search')}
         data={product}
         loading={true}
         showSeparator={index !== diagnosticResults?.length - 1}
@@ -715,11 +728,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     );
   };
 
-  function _onPressPopularResultsAdd(item: any) {
-    setShowToolTip(false);
-    fetchPricesForItems(item);
-  }
-
   const renderPopularDiagnostic = (data: ListRenderItemInfo<any>) => {
     const { index, item } = data;
     return (
@@ -733,7 +741,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
             comingFrom: AppRoutes.SearchTestScene,
           });
         }}
-        onPressAddToCart={() => _onPressPopularResultsAdd(item)}
+        onPressAddToCart={() => fetchPricesForItems(item)}
         data={item}
         loading={true}
         showSeparator={index !== diagnosticResults?.length - 1}
@@ -741,15 +749,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           paddingBottom: index == diagnosticResults?.length - 1 ? 20 : 0,
         }}
         onPressRemoveFromCart={() => onRemoveCartItem(`${item?.diagnostic_item_id}`)}
-        onPressInvalidItem={(msg) => _onPressInvalidSku(msg)}
       />
     );
   };
-
-  function _onPressInvalidSku(msg: string) {
-    console.log({ msg });
-    msg != '' && setShowToolTip(true);
-  }
 
   function _navigateToCartPage() {
     if (isModify) {
@@ -762,7 +764,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       });
     }
   }
-
   const renderStickyBottom = () => {
     const cartCount = cartItems?.length > 9 ? `${cartItems?.length}` : `0${cartItems?.length}`;
     return (
