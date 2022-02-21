@@ -2668,7 +2668,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           currentRoute: 'Medicine',
         });
       const eventArributes = {
-        'Nav Src': tabRouteJourney?.currentRoute,
+        'Page Name': tabRouteJourney?.currentRoute,
       };
       postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED, eventArributes);
     }
