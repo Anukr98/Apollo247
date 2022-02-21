@@ -37,7 +37,6 @@ export interface getDiagnosticPackageRecommendationsv2_getDiagnosticPackageRecom
   id: string;
   itemId: number;
   itemName: string;
-  gender: string;
   rate: number;
   itemRemarks: string;
   itemType: DIAGNOSTICS_TYPE | null;

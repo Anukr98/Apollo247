@@ -30,7 +30,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import moment from 'moment';
 
 export const useServerCart = () => {
-  const { buildApolloClient, validateAndReturnAuthToken } = useAuth();
+  const { buildApolloClient, returnAuthToken } = useAuth();
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const {
@@ -87,7 +87,7 @@ export const useServerCart = () => {
         ...userActionPayload,
         patientId: userActionPayload?.patientId ? userActionPayload?.patientId : currentPatient?.id,
       };
-      serverCartLoading === false ? saveServerCart(cartInputData) : {};
+      saveServerCart(cartInputData);
     }
   }, [userActionPayload]);
 
@@ -130,7 +130,7 @@ export const useServerCart = () => {
   };
 
   const fetchServerCart = async (userAgentInput?: string) => {
-    const authToken: string = await validateAndReturnAuthToken();
+    const authToken: string = (await returnAuthToken?.()?.catch((error) => {})) || '';
     const apolloClient = buildApolloClient(authToken);
     apolloClient
       .query({

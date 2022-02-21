@@ -773,7 +773,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       }
     } else {
       setPackageRecommendations([]);
-      CommonBugFender('TestDetails_getPackageRecommendationsForTest', 'error in setting itemId');
+      CommonBugFender('TestDetails_getPackageRecommendationsForTest', 'unable to fetch itemId');
     }
   }
 
@@ -913,7 +913,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     } else {
       fetchTopBookedTests(itemId);
       setFrequentlyBroughtRecommendations([]);
-      CommonBugFender('TestDetails_fetchRecommendations', 'error in setting itemId');
+      CommonBugFender('TestDetails_fetchRecommendations', 'unable to set itemId');
     }
   }
 

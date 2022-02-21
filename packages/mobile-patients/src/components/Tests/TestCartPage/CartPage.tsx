@@ -1644,6 +1644,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
             showAddButton={false}
             showTestWorth={false}
             scrollEnabled={true}
+            showPrice={0}
             priceToDisplayOnPopUp={priceToShow}
             showPrice={0}
           />

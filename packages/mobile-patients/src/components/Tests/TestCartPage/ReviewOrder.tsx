@@ -1285,8 +1285,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const remainingItems = modifiedOrder?.diagnosticOrderLineItems?.length - 1;
     const firstItem = modifiedOrder?.diagnosticOrderLineItems?.[0]?.itemName;
     const orderLineItems = modifiedOrder?.diagnosticOrderLineItems! || [];
-    const subTotalArray = modifiedOrder?.diagnosticOrderLineItems?.map((item: orderListLineItems) =>
-      Number(item?.price)
+
+    const subTotalArray = modifiedOrder?.diagnosticOrderLineItems?.map(
+      (item: orderListLineItems) => {
+        return Number(item?.price);
+      }
     );
     const previousSubTotal = subTotalArray?.reduce(
       (preVal: number, curVal: number) => preVal + curVal,
@@ -1329,6 +1332,10 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
                 <Text style={styles.itemHeading}> PRICE</Text>
               </View>
               {orderLineItems?.map((item: orderListLineItems) => {
+                const getGroupPlan = item?.groupPlan;
+                const findPriceWithGroupPlan = item?.pricingObj?.find(
+                  (val) => val?.groupPlan == getGroupPlan
+                );
                 return (
                   <View style={styles.commonTax}>
                     <View style={{ width: '65%' }}>
@@ -1347,7 +1354,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
                     <View style={{ flex: 1, alignItems: 'flex-end' }}>
                       <Text style={[styles.commonText, { lineHeight: 20 }]}>
                         {string.common.Rs}
-                        {convertNumberToDecimal(g(item, 'price') || null)}
+                        {!!findPriceWithGroupPlan
+                          ? convertNumberToDecimal(findPriceWithGroupPlan?.price) ||
+                            convertNumberToDecimal(item?.price) ||
+                            null
+                          : convertNumberToDecimal(item?.price) || null}
                       </Text>
                     </View>
                   </View>

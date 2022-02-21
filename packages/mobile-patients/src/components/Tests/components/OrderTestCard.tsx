@@ -687,7 +687,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 1, 16),
   },
   addTestTouch: {
-    marginHorizontal: -2,
+    marginHorizontal: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },

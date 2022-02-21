@@ -39,7 +39,7 @@ export const CircleBottomContainer: React.FC<CircleBottomContainerProps> = (prop
     return (
       <>
         {cartDiscountPercent ? (
-          <View style={{ flexDirection: 'row', marginLeft: 10 }}>
+          <View style={{ flexDirection: 'row', marginLeft: 4 }}>
             <Text style={circleStyles.priceStrikeOff}>
               ({string.common.Rs}
               {convertNumberToDecimal(cartTotal)})
@@ -58,13 +58,8 @@ export const CircleBottomContainer: React.FC<CircleBottomContainerProps> = (prop
   };
 
   const renderItemsCount = () => (
-    <View
-      style={{
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <Text style={theme.viewStyles.text('R', 13, '#02475B', 1, 24, 0)}>
+    <View style={circleStyles.itemsCountContainer}>
+      <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 24, 0)}>
         {!!isCircleCart ? 'Items' : 'Total items'}
       </Text>
       <Text style={theme.viewStyles.text('SB', 16, '#02475B', 1, 20, 0)}>
@@ -74,7 +69,7 @@ export const CircleBottomContainer: React.FC<CircleBottomContainerProps> = (prop
   );
 
   const renderCircleCashback = () => (
-    <View style={{ width: '60%' }}>
+    <View style={{ flex: 1.8 }}>
       <View style={{ flexDirection: 'row' }}>
         <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0)}>
           MRP{'  '}
@@ -103,15 +98,19 @@ export const CircleBottomContainer: React.FC<CircleBottomContainerProps> = (prop
   );
 
   const renderUpgradeToCircle = () => (
-    <TouchableOpacity activeOpacity={1} onPress={onPressUpgradeTo} style={circleStyles.upgrade}>
-      <View style={circleStyles.upgradeTo}>
-        <Text style={theme.viewStyles.text('M', 13, '#FCB716')}>UPGRADE TO</Text>
-        <CircleLogo style={circleStyles.circleLogo} />
-      </View>
-      <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 17, 0)}>
-        {`Get Circle Cashback of ₹${totalCashback.toFixed(2)}`}
-      </Text>
-    </TouchableOpacity>
+    <View style={circleStyles.upgradeContainer}>
+      <TouchableOpacity activeOpacity={1} onPress={onPressUpgradeTo} style={circleStyles.upgrade}>
+        <View style={circleStyles.upgradeTo}>
+          <Text style={theme.viewStyles.text('M', 13, '#FCB716')}>UPGRADE TO</Text>
+          <CircleLogo style={circleStyles.circleLogo} />
+        </View>
+        <Text
+          style={{ ...theme.viewStyles.text('R', 12, '#02475B', 1, 17, 0), textAlign: 'center' }}
+        >
+          {`Circle Cashback ₹${totalCashback.toFixed(3)}`}
+        </Text>
+      </TouchableOpacity>
+    </View>
   );
 
   const renderEstimatedAmount = () => (
@@ -122,14 +121,22 @@ export const CircleBottomContainer: React.FC<CircleBottomContainerProps> = (prop
 
   const renderGoToCartCta = () =>
     !props.serverCartLoading ? (
-      <TouchableOpacity style={circleStyles.cartButton} onPress={onPressGoToCart}>
-        <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 20, 0)}>GO TO CART</Text>
-        {!isCircleCart && totalCashback > 1 && (
-          <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0)}>
-            {`Buy for ${string.common.Rs}${serverCartAmount?.estimatedAmount}`}
-          </Text>
-        )}
-      </TouchableOpacity>
+      <View style={circleStyles.cartButtonContainer}>
+        <TouchableOpacity
+          style={[
+            circleStyles.cartButton,
+            !!cartSubscriptionDetails?.subscriptionApplied ? circleStyles.cartButtonCircle : {},
+          ]}
+          onPress={onPressGoToCart}
+        >
+          <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 25, 0)}>GO TO CART</Text>
+          {!isCircleCart && totalCashback > 1 && (
+            <Text style={circleStyles.buyForText}>
+              {`Buy for ${string.common.Rs}${serverCartAmount?.estimatedAmount}`}
+            </Text>
+          )}
+        </TouchableOpacity>
+      </View>
     ) : (
       <View />
     );
@@ -202,16 +209,24 @@ const circleStyles = StyleSheet.create({
     width: '100%',
   },
   content: {
+    flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: 10,
+    padding: 7,
+  },
+  upgradeContainer: {
+    flex: 1.8,
   },
   upgrade: {
     borderWidth: 2,
     borderColor: '#FCB716',
     borderRadius: 8,
     padding: 5,
+    paddingHorizontal: 10,
     backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    alignSelf: 'center',
+    alignContent: 'center',
   },
   upgradeTo: {
     flexDirection: 'row',
@@ -224,13 +239,23 @@ const circleStyles = StyleSheet.create({
     height: 23,
     marginLeft: 5,
   },
+  cartButtonContainer: {
+    flex: 1.2,
+    marginHorizontal: 5,
+  },
   cartButton: {
     backgroundColor: '#FCB716',
     borderRadius: 8,
     padding: 5,
-    paddingHorizontal: 10,
+    paddingHorizontal: 7,
     alignItems: 'center',
     alignSelf: 'center',
+    alignContent: 'center',
+  },
+  cartButtonCircle: {
+    height: 'auto',
+    marginTop: 23,
+    marginLeft: 10,
   },
   circleLogoTwo: {
     resizeMode: 'contain',
@@ -253,5 +278,14 @@ const circleStyles = StyleSheet.create({
     borderLeftColor: colors.DEFAULT_BACKGROUND_COLOR,
     marginTop: 6,
     marginBottom: 6,
+  },
+  itemsCountContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 0.7,
+  },
+  buyForText: {
+    ...theme.viewStyles.text('M', 12, '#02475B', 1, 15, 0),
+    textAlign: 'center',
   },
 });

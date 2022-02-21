@@ -73,7 +73,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState<any>([]);
   const [skuList, setSkuList] = useState<string[]>([]);
-  const { validateAndReturnAuthToken, buildApolloClient } = useAuth();
+  const { returnAuthToken, buildApolloClient } = useAuth();
 
   useEffect(() => {
     fetchOrders();
@@ -90,7 +90,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
       let ordersClient: ApolloClient<Object> = client;
       setLoading(true);
       if (props.navigation.getParam('source')) {
-        const authToken: string = await validateAndReturnAuthToken();
+        const authToken: any = await returnAuthToken?.();
         ordersClient = buildApolloClient(authToken);
       }
       const ordersResponse = await ordersClient.query<

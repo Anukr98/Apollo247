@@ -1079,7 +1079,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         })
         .catch((error) => {});
     }
-  }, [cartLocationDetails]);
+  }, [cartLocationDetails?.pincode]);
 
   function updateShipments() {
     let shipmentsArray: (MedicineOrderShipmentInput | null)[] = [];

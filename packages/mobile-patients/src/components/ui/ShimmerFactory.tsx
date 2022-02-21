@@ -529,19 +529,55 @@ export const renderCircleShimmer = () => {
           <ShimmerPlaceHolder
             shimmerColors={shimmerColors}
             LinearGradient={LinearGradient}
-            shimmerStyle={styles.subPlanTwoShimmer1}
+            shimmerStyle={{
+              borderRadius: 5,
+              height: 10,
+              width: 150,
+              margin: 3,
+            }}
           />
           <ShimmerPlaceHolder
             shimmerColors={shimmerColors}
             LinearGradient={LinearGradient}
-            shimmerStyle={styles.subPlanTwoShimmer2}
+            shimmerStyle={{
+              borderRadius: 5,
+              height: 10,
+              width: 100,
+              margin: 3,
+            }}
           />
         </View>
 
-        <View style={styles.subPlanThree}>
+        {/* <View style={styles.subPlanThree}>
           <ShimmerPlaceHolder
             shimmerColors={['#CCC', theme.colors.BUTTON_BG]}
             shimmerStyle={styles.subPlanThreeShimmer}
+          />
+        </View> */}
+      </View>
+    </LinearGradientComponent>
+  );
+};
+
+export const renderCircleBox = () => {
+  return (
+    <LinearGradientComponent
+      colors={['#FFEEDB', '#FFFCFA']}
+      style={{
+        marginVertical: 0,
+        marginHorizontal: 0,
+        padding: 6,
+        borderWidth: 1,
+        borderColor: '#F9D5B4',
+        borderRadius: 6,
+        width: '90%',
+      }}
+    >
+      <View style={styles.planContainer}>
+        <View style={styles.subPlanOne}>
+          <Image
+            style={styles.circleLogo}
+            source={require('@aph/mobile-patients/src/components/ui/icons/circleLogo.webp')}
           />
         </View>
       </View>

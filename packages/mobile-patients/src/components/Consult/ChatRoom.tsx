@@ -184,7 +184,6 @@ import {
   getNetStatus,
   postAppointmentCleverTapEvents,
   fileToBase64,
-  getAsyncStorageValues,
   formatUrl,
   updateCallKitNotificationReceivedStatus,
 } from '../../helpers/helperFunctions';
@@ -1507,7 +1506,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const typingClearTime = 1000; //1 seconds
   const clearTimerId = useRef<NodeJS.Timeout>();
   const { unstable } = useOpenTokSpeedTest();
-
+  const { returnAuthToken } = useAuth();
   let cancelAppointmentTitle = `${string.common.cancelAppointmentBody} ${
     appointmentData?.appointmentType === APPOINTMENT_TYPE.PHYSICAL ? 'Physical' : 'Online'
   } Appointment ${appointmentData?.displayId}. A full refund will be issued.`;
@@ -1962,11 +1961,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   useEffect(() => {
     const saveSessionValues = async () => {
-      const [loginToken, phoneNumber] = await getAsyncStorageValues();
-      setLoginToken(JSON.parse(loginToken));
-      setUserMobileNumber(
-        JSON.parse(phoneNumber)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber
-      );
+      returnAuthToken?.().then(setLoginToken);
+      setUserMobileNumber(currentPatient?.mobileNumber);
     };
     saveSessionValues();
     if (Platform.OS === 'android') {

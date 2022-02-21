@@ -471,7 +471,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     return (
       <TestListingHeader
         navigation={props.navigation}
-        headerText={nameFormater(heading, 'upper')}
+        headerText={nameFormater(heading || widgetName, 'upper')}
       />
     );
   };
