@@ -3109,7 +3109,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderGridComponent = (data: any, item: any, index: number) => {
     const imageIcon = !!item?.itemIcon
-      ? item?.itemIcon
+      ? item?.itemIcon + '?imwidth=' + 40
       : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_ICON;
     return (
       <TouchableOpacity
@@ -3136,7 +3136,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
       >
         <View style={styles.circleView}>
           {imageIcon != '' ? (
-            <ImageNative resizeMode="contain" style={styles.image} source={{ uri: imageIcon }} />
+            <ImageNative
+              resizeMode="contain"
+              style={styles.image}
+              source={{ uri: imageIcon }}
+              progressiveRenderingEnabled
+            />
           ) : (
             <WidgetLiverIcon style={styles.image} resizeMode={'contain'} />
           )}

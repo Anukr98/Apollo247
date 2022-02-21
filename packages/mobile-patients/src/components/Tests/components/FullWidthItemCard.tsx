@@ -247,6 +247,7 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
   };
 
   const renderIconView = (imageUrl: string | any) => {
+    const resizedImageUrl = !!imageUrl && imageUrl != '' && imageUrl + '?imwidth=' + 40;
     return (
       <View style={styles.imageView}>
         {imageUrl == '' ? (
@@ -254,7 +255,7 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
         ) : (
           <Image
             placeholderStyle={styles.imagePlaceholderStyle}
-            source={{ uri: imageUrl }}
+            source={{ uri: resizedImageUrl || imageUrl }}
             style={styles.imageStyle}
           />
         )}

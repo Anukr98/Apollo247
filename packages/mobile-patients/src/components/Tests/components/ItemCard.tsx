@@ -209,6 +209,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
   );
 
   const renderIconView = (imageUrl: string | any) => {
+    const resizedImageUrl = !!imageUrl && imageUrl != '' && imageUrl + '?imwidth=' + 30;
     return (
       <>
         {isPackage ? null : (
@@ -220,7 +221,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
                 <Image
                   resizeMode={'contain'}
                   placeholderStyle={styles.imagePlaceholderStyle}
-                  source={{ uri: imageUrl }}
+                  source={{ uri: resizedImageUrl || imageUrl }}
                   style={styles.imageStyle}
                 />
               )}
