@@ -385,6 +385,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     populateCachedData();
     fetchServerCart();
     fetchMedicinePageProducts(false);
+    setBannerData && setBannerData([]);
     getAllResponses();
     fetchBuyAgainProducts();
     setWebEngageScreenNames('Medicine Home Page');
