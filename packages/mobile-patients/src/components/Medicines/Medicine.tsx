@@ -319,6 +319,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setUserActionPayload,
     fetchServerCart,
     uploadEPrescriptionsToServerCart,
+    isFetchingServerCart,
   } = useServerCart();
   const {
     cartItems: diagnosticCartItems,
@@ -385,10 +386,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     populateCachedData();
     fetchServerCart();
     fetchMedicinePageProducts(false);
-    setBannerData && setBannerData([]);
+    setBannerData?.([]);
     getAllResponses();
     fetchBuyAgainProducts();
     setWebEngageScreenNames('Medicine Home Page');
+    if (!addresses?.length) fetchAddress();
     checkIsAppDepricated(currentPatient?.mobileNumber)
       .then(setDepricatedAppData)
       .catch((error) => {
@@ -401,6 +403,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       };
     }
   }, []);
+
+  useEffect(() => {
+    // check if user has saved location, if not show popup to enter pincode or add address
+    if (!isFetchingServerCart) checkLocation(addresses);
+  }, [isFetchingServerCart]);
 
   const getAllResponses = async () => {
     try {
@@ -757,8 +764,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           latitude: formattedLocation?.latitude,
           longitude: formattedLocation?.longitude,
         });
-      } else {
-        checkLocation(addressList);
       }
       setFetchAddressLoading!(false);
     } catch (error) {
@@ -801,10 +806,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   }
 
   const checkLocation = (addresses: addressListType) => {
-    !defaultAddress &&
-      !locationDetails &&
-      !pharmacyLocation &&
-      showAccessAccessLocationPopup(addresses, false);
+    !hasLocation && showAccessAccessLocationPopup(addresses, false);
   };
 
   function isunDismissable() {
@@ -812,7 +814,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   }
   const showAccessAccessLocationPopup = (addressList: addressListType, pincodeInput?: boolean) => {
     return showAphAlert!({
-      unDismissable: false,
+      unDismissable: !addressList?.length || !cartLocationDetails?.pincode,
       removeTopIcon: true,
       children: !pincodeInput ? (
         <AccessLocation
@@ -1121,6 +1123,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
     const renderDeliverToLocationCTA = () => {
       const deliveryAddress = addresses.find((item) => item?.id == cartAddressId);
+      const defaultAddress = addresses.find((item) => !!item.defaultAddress);
       const location = deliveryAddress?.zipcode
         ? `${formatText(deliveryAddress?.city || deliveryAddress?.state || '', 18)} ${
             deliveryAddress?.zipcode
@@ -1128,6 +1131,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         : cartLocationDetails?.pincode
         ? `${formatText(cartLocationDetails?.city || cartLocationDetails?.state || '', 18)} ${
             cartLocationDetails?.pincode
+          }`
+        : defaultAddress?.defaultAddress
+        ? `${formatText(defaultAddress?.city || defaultAddress?.state || '', 18)} ${
+            defaultAddress?.defaultAddress
           }`
         : '';
       return (
