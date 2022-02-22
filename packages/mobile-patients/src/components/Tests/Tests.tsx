@@ -212,7 +212,6 @@ import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/compo
 import { TestPdfRender } from '@aph/mobile-patients/src/components/Tests/components/TestPdfRender';
 import { CartPageSummary } from '@aph/mobile-patients/src/components/Tests/components/CartSummaryView';
 import { ExpressSlotMessageRibbon } from '@aph/mobile-patients/src/components/Tests/components/ExpressSlotMessageRibbon';
-import { TestPackageForDetails } from './TestDetails';
 
 const rankArr = ['1', '2', '3', '4', '5', '6'];
 const { width: winWidth, height: winHeight } = Dimensions.get('window');
