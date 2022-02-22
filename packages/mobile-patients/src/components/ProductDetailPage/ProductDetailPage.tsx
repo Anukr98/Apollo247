@@ -231,6 +231,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const [showSimilarProducts, setShowSimilarProducts] = useState<boolean>(false);
   const [showSubstituteProducts, setShowSubstituteProducts] = useState<boolean>(false);
   const [showAlsoBoughtProducts, setShowAlsoBoughtProducts] = useState<boolean>(false);
+  const onPressHardwareBack = () => props.navigation.goBack();
 
   const getItemQuantity = (id: string) => {
     const foundItem = serverCartItems?.find((item) => item.sku == id);
@@ -266,11 +267,24 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     };
     getUserType();
     setProductSubstitutes?.([]);
+    const propsData = props.navigation.getParam('data');
+    getMedicineDetails(pharmacyPincode, axdcCode, propsData?.sku);
+    if (propsData) {
+      const newData = {
+        ...propsData,
+        image: [propsData.image],
+        thumbnail: [propsData.thumbnail],
+      };
+      if (sku !== propsData?.sku) setSku(propsData?.sku);
+      setMedicineData(newData);
+      getBoughtTogetherData(propsData?.sku, newData);
+      getCouponsData(propsData?.sku);
+    }
+
     BackHandler.addEventListener('hardwareBackPress', onPressHardwareBack);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', onPressHardwareBack);
     };
-    setShowSuggestedQuantityNudge(false);
   }, []);
 
   useEffect(() => {
@@ -299,22 +313,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       fetchDeliveryTime(pharmacyPincode, false);
     }
   }, [medicineDetails?.price]);
-
-  const onPressHardwareBack = () => props.navigation.goBack();
-
-  // useEffect(() => {
-  //   const didFocus = props.navigation.addListener('didFocus', (payload) => {
-  //     setLoading(true);
-  //     getMedicineDetails();
-  //   });
-  //   const didBlur = props.navigation.addListener('didBlur', (payload) => {
-  //     setLoading(true);
-  //   });
-  //   return () => {
-  //     didFocus && didFocus.remove();
-  //     didBlur && didBlur.remove();
-  //   };
-  // }, [props.navigation]);
 
   useEffect(() => {
     if (medicineDetails?.sku && (!!deliveryTime || !!deliveryError)) {
@@ -415,22 +413,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       }
     }
   }, [serverCartItems, currentProductQuantityInCart, currentProductIdInCart]);
-
-  useEffect(() => {
-    const propsData = props.navigation.getParam('data');
-    getMedicineDetails(pharmacyPincode, axdcCode, propsData?.sku);
-    if (propsData) {
-      const newData = {
-        ...propsData,
-        image: [propsData.image],
-        thumbnail: [propsData.thumbnail],
-      };
-      if (sku !== propsData?.sku) setSku(propsData?.sku);
-      setMedicineData(newData);
-      getBoughtTogetherData(propsData?.sku, newData);
-      getCouponsData(propsData?.sku);
-    }
-  }, []);
 
   const getMedicineDetails = (zipcode?: string, pinAcdxCode?: string, selectedSku?: string) => {
     if (urlKey || selectedSku) {
