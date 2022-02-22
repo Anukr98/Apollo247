@@ -1330,6 +1330,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     cleverTapEventForLoginDone();
     fetchUserAgent();
     firebaseTokenCheck();
+    fetchServerCart();
   }, []);
 
   const handleSearchClose = () => {
@@ -1413,9 +1414,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const fetchUserAgent = () => {
     try {
       let userAgent = UserAgent?.getUserAgent();
-      if (userAgent) {
-        fetchServerCart(userAgent);
-      }
       AsyncStorage.setItem(USER_AGENT, userAgent);
     } catch {}
   };
