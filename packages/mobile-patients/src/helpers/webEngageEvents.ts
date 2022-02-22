@@ -7,14 +7,8 @@ import {
   PharmaUserStatus,
   UploadPrescSource,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import {
-  DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
-  DIAGNOSTIC_PINCODE_SOURCE_TYPE,
-} from '@aph/mobile-patients/src/utils/commonUtils';
-import {
-  DiagnosticHomePageSource,
-  DIAGNOSTICS_ITEM_TYPE,
-} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE, DIAGNOSTIC_PINCODE_SOURCE_TYPE } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
+import { DiagnosticHomePageSource, DIAGNOSTICS_ITEM_TYPE } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { DiagnosticsDetailsPageViewedSource } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 
 type YesOrNo = 'Yes' | 'No';

@@ -19,16 +19,13 @@ import {
   StyleSheet,
   Text,
   View,
-  Image as ImageNative,
   ActivityIndicator,
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import {
-  DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
-  sourceHeaders,
-} from '@aph/mobile-patients/src/utils/commonUtils';
+import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import ItemCard from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
 import PackageCard from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
 
@@ -45,7 +42,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { DiagnosticProductListingPageViewed } from './Events';
+import { DiagnosticProductListingPageViewed } from './utils/Events';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 import { CALL_TO_ORDER_CTA_PAGE_ID } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { DownO } from '@aph/mobile-patients/src/components/ui/Icons';

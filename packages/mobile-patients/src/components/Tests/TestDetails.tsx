@@ -8,7 +8,6 @@ import {
   AgeGroupIcon,
   ClockIcon,
   Down,
-  ExpressSlotClock,
   GenderIcon,
   InfoIconRed,
   OrangeCartIcon,
@@ -42,6 +41,7 @@ import {
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
+  BackHandler,
   Dimensions,
   Platform,
   SafeAreaView,
@@ -61,16 +61,17 @@ import {
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { CircleHeading } from '@aph/mobile-patients/src/components/ui/CircleHeading';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import {
   getPricesForItem,
-  convertNumberToDecimal,
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
-} from '@aph/mobile-patients/src/utils/commonUtils';
+  createDiagnosticAddToCartObject,
+} from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
 import {
   DiagnosticAddToCartEvent,
   DiagnosticDetailsViewed,
-} from '@aph/mobile-patients/src/components/Tests/Events';
+} from '@aph/mobile-patients/src/components/Tests/utils/Events';
 import { TestListingHeader } from '@aph/mobile-patients/src/components/Tests/components/TestListingHeader';
 import { Breadcrumb } from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
 import { SectionHeader, Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
@@ -396,7 +397,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       fetchTestDetails_CMS(itemId, null);
       loadTestDetails(itemId);
       fetchReportTat(itemId);
-      loadWidgets(itemId);
+      // loadWidgets(itemId);
     } else if (testName) {
       fetchTestDetails_CMS(99999, testName);
     } else {
@@ -408,14 +409,40 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     if (!!testInfo) {
       if (testInfo?.inclusions == null || testInfo?.inclusions?.length == 1) {
         if (frequentlyBroughtRecommendations?.length == 0 || topBookedTests?.length == 0) {
-          getFrequentlyBroughtRecommendations(testInfo?.ItemID || itemId);
+          getFrequentlyBroughtRecommendations(testInfo?.ItemID! || itemId);
         }
-        if (packageRecommendations?.length == 0) {
-          getPackageRecommendationsForTest(testInfo?.ItemID || itemId);
+        if (
+          packageRecommendations?.length == 0 &&
+          (testInfo?.inclusions == null || testInfo?.inclusions?.length == 1)
+        ) {
+          getPackageRecommendationsForTest(testInfo?.ItemID! || itemId);
         }
       }
     }
   }, [testInfo]);
+
+  useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+    const didBlur = props.navigation.addListener('didBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      didBlur && didBlur.remove();
+    };
+  }, []);
+
+  function handleBack() {
+    if (movedFrom === 'registration') {
+      props.navigation.replace(AppRoutes.HomeScreen);
+    } else if (movedFrom == 'deeplink') {
+      props.navigation.replace(AppRoutes.HomeScreen);
+    } else {
+      props.navigation.goBack();
+    }
+  }
 
   const getUserSubscriptionsByStatus = async () => {
     try {
@@ -1712,6 +1739,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   };
 
   function onPressAddToCart() {
+    const { getMandatoryParameterCount, nonInclusionParamters } = skuParameterInclusionLogic();
     const specialPrice = testInfo?.specialPrice!;
     const price = testInfo?.Rate!;
     const circlePrice = testInfo?.circlePrice! || testInfo?.circleRate!;
@@ -1740,27 +1768,28 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       originalItemIds
     );
 
-    const addedItems = {
-      id: `${itemId}`,
-      mou: 1,
-      name: cmsTestDetails?.diagnosticItemName || testInfo?.ItemName,
-      price: price,
-      specialPrice: specialPrice! | price,
-      circlePrice: circlePrice,
-      circleSpecialPrice: circleSpecialPrice,
-      discountPrice: discountPrice,
-      discountSpecialPrice: discountSpecialPrice,
-      thumbnail: cmsTestDetails?.diagnosticItemImageUrl,
-      collectionMethod: TEST_COLLECTION_TYPE.HC,
-      groupPlan: testInfo?.promoteCircle
+    const addedItems = createDiagnosticAddToCartObject(
+      Number(itemId),
+      cmsTestDetails?.diagnosticItemName || testInfo?.ItemName,
+      testInfo?.Gender,
+      price,
+      specialPrice! | price,
+      circlePrice,
+      circleSpecialPrice,
+      discountPrice,
+      discountSpecialPrice,
+      TEST_COLLECTION_TYPE.HC,
+      testInfo?.promoteCircle
         ? DIAGNOSTIC_GROUP_PLAN.CIRCLE
         : testInfo?.promoteDiscount
         ? DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
         : DIAGNOSTIC_GROUP_PLAN.ALL,
-      packageMrp: Number(testInfo?.packageMrp!),
-      inclusions: testInclusions,
-      isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
-    };
+      Number(testInfo?.packageMrp!),
+      testInclusions,
+      AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
+      cmsTestDetails?.diagnosticItemImageUrl,
+      getMandatoryParameterCount + nonInclusionParamters
+    );
 
     isModify &&
       setModifiedPatientCart?.([

@@ -19,9 +19,11 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { isSmallDevice, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   calculatePackageDiscounts,
+  DiagnosticItemGenderMapping,
   diagnosticsDisplayPrice,
+  DIAGNOSTIC_ITEM_GENDER,
   getPricesForItem,
-} from '@aph/mobile-patients/src/utils/commonUtils';
+} from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import {
   DIAGNOSTIC_GROUP_PLAN,
   getDiagnosticCartItemReportGenDetails,
@@ -51,6 +53,7 @@ export interface CartPageSummaryProps {
   client: any;
   cityId: number;
   recommendationCount: (count: number) => void;
+  _navigateToTDP: (item: any) => void;
 }
 
 export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
@@ -212,15 +215,62 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
     }
   };
 
+  function skuParameterInclusionLogic(widget: any, source: string) {
+    let getMandatoryParameterCount = 0,
+      nonInclusionParamters;
+    if (source == 'fetchCartPageRecommendations') {
+      const filterParamters = widget?.observations?.length > 0 ? widget?.observations : [];
+      const getMandatoryParamter =
+        !!filterParamters &&
+        filterParamters?.length > 0 &&
+        filterParamters?.filter((obs: any) => obs?.mandatoryValue === '1');
+
+      nonInclusionParamters = [];
+      getMandatoryParameterCount =
+        !!getMandatoryParamter && getMandatoryParamter?.length > 0
+          ? getMandatoryParamter?.length
+          : undefined;
+    } else {
+      const filterParamters = widget?.inclusionData?.filter(
+        (item: any) => !!item?.incObservationData && item?.incObservationData != ''
+      );
+      const getMandatoryParamter =
+        !!filterParamters &&
+        filterParamters?.length > 0 &&
+        filterParamters?.map((inclusion: any) =>
+          !!inclusion?.incObservationData
+            ? inclusion?.incObservationData?.filter((item: any) => item?.mandatoryValue === '1')
+            : []
+        );
+
+      nonInclusionParamters = widget?.inclusionData?.filter(
+        (item: any) =>
+          !!item && (!item?.incObservationData || item?.incObservationData?.length == 0)
+      );
+      getMandatoryParameterCount =
+        !!getMandatoryParamter && getMandatoryParamter?.length > 0
+          ? getMandatoryParamter?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0)
+          : undefined;
+    }
+
+    return {
+      getMandatoryParameterCount,
+      nonInclusionParamters,
+    };
+  }
+
   const removeDisabledCartItems = (disabledCartItemIds: string[]) => {
     setCartItems?.(
       cartItems?.filter((cItem) => !disabledCartItemIds?.find((dItem) => dItem == cItem?.id))
     );
   };
 
-  function createRecommendationsObject(result: any, widgetsData: any) {
+  function createRecommendationsObject(result: any, widgetsData: any, source: string) {
     let resultantObjectArray: DiagnosticsCartItem[] = [];
     result?.map((item: any, index: number) => {
+      const findWidget = widgetsData?.find(
+        (widget: any) => Number(widget?.itemId) == Number(item?.itemId)
+      );
       const pricesForItem = getPricesForItem(item?.diagnosticPricing, item?.packageCalculatedMrp!);
       const specialPrice = pricesForItem?.specialPrice!;
       const price = pricesForItem?.price!; //more than price (black)
@@ -229,6 +279,10 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
       const discountPrice = pricesForItem?.discountPrice!;
       const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
       const planToConsider = pricesForItem?.planToConsider;
+      const { getMandatoryParameterCount, nonInclusionParamters } = skuParameterInclusionLogic(
+        findWidget,
+        source
+      );
 
       //create this same as updatedObject wala
       resultantObjectArray.push({
@@ -236,6 +290,7 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
         name: item?.itemName,
         mou: 1,
         thumbnail: null,
+        gender: DiagnosticItemGenderMapping(item?.gender! || DIAGNOSTIC_ITEM_GENDER.B),
         collectionMethod: TEST_COLLECTION_TYPE.HC,
         isSelected: true,
         price: price,
@@ -247,6 +302,7 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
         groupPlan: planToConsider?.groupPlan,
         packageMrp: item?.packageCalculatedMrp,
         inclusions: item?.inclusions == null ? [Number(item?.itemId)] : item?.inclusions,
+        parameterCount: getMandatoryParameterCount + nonInclusionParamters?.length,
       });
     });
     return resultantObjectArray;
@@ -270,11 +326,19 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
         const diagnosticItems =
           getResponse?.data?.findDiagnosticsByItemIDsAndCityID?.diagnostics || [];
         if (source == 'fetchCartPageRecommendations') {
-          const getRecommendationsArray = createRecommendationsObject(diagnosticItems, widgetsData);
+          const getRecommendationsArray = createRecommendationsObject(
+            diagnosticItems,
+            widgetsData,
+            source
+          );
           setRecommendationsData(getRecommendationsArray);
           setLoading?.(false);
         } else if (source == 'fetchTestReportGenDetails') {
-          const getTopBookedObject = createRecommendationsObject(diagnosticItems, widgetsData);
+          const getTopBookedObject = createRecommendationsObject(
+            diagnosticItems,
+            widgetsData,
+            source
+          );
           setTopBookedTests(getTopBookedObject);
           setLoading?.(false);
         }
@@ -426,7 +490,7 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
           <Text style={styles.itemCountText}>
             {itemCountText} {itemCount > 1 ? 'Items' : 'Item'} added to your cart
           </Text>
-          <Text style={styles.perPersonText}>Prices are for Per Person</Text>
+          <Text style={styles.perPersonText}>{string.diagnosticsCartPage.pricePerPerson}</Text>
         </View>
         <TouchableOpacity onPress={() => _onPressShowLess()} style={styles.rowStyle}>
           <Text style={styles.showLessText}>Show Less</Text>
@@ -487,7 +551,7 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
     );
   };
 
-  const renderInclusionPercentageView = (inclusionCount: number) => {
+  const renderInclusionView = (inclusionCount: number) => {
     return (
       <View style={styles.inclusionPercentageView}>
         <Text style={styles.perPersonText}>
@@ -543,13 +607,22 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
     );
   };
 
+  function _onPressItem(item: any) {
+    props._navigateToTDP(item);
+  }
+
   const renderCartItem = (
     item: DiagnosticsCartItem,
     index: number,
     array: DiagnosticsCartItem[],
     source: string
   ) => {
-    const inclusionCount = !!item?.inclusions ? item?.inclusions?.length : 1;
+    const parameterCount = !!item?.parameterCount ? item?.parameterCount : null;
+    const inclusionCount = !!parameterCount
+      ? parameterCount
+      : !!item?.inclusions
+      ? item?.inclusions?.length
+      : 1;
     const arrayToUseForTAT = source == 'recommendations' ? recommendationsTat : reportTat;
     const itemReportTAT = arrayToUseForTAT?.find(
       (res: itemReportTat) => Number(res?.itemId) == Number(item?.id)
@@ -571,7 +644,7 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
     const promoteDiscount = promoteCircle ? false : discount < specialDiscount;
 
     return (
-      <View
+      <TouchableOpacity
         style={[
           { marginLeft: 16 },
           source == 'recommendations' && styles.recommendationsOuterView,
@@ -579,6 +652,7 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
             marginTop: index == 0 ? 12 : 0,
           },
         ]}
+        onPress={() => _onPressItem(item)}
       >
         <View
           style={[styles.cartItemsInnerView, { paddingTop: source == 'recommendations' ? 0 : 12 }]}
@@ -600,12 +674,12 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
             discount
           )}
         </View>
-        {renderInclusionPercentageView(inclusionCount)}
+        {renderInclusionView(inclusionCount)}
         {renderTATButtonView(itemReportTAT, item)}
         {index == array?.length - 1
           ? null
           : source == 'cartItems' && <Spearator style={{ marginTop: 12 }} />}
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -622,7 +696,9 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
   const renderCartRecommendations = () => {
     return (
       <View style={styles.recommendationsView}>
-        <Text style={styles.recommendedForText}>Recommended for you</Text>
+        <Text style={styles.recommendedForText}>
+          {string.diagnosticsCartPage.recommendedForYou}
+        </Text>
         {dataToShow?.map((item: any, index: number) => {
           return renderCartItem(item, index, dataToShow, 'recommendations');
         })}

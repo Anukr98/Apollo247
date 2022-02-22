@@ -786,7 +786,10 @@
     "sameDayReports": "Same Day Reports",
     "freeHomeCollection": "Free Home Collection",
     "bookNow": "BOOK NOW",
-    "forFamily":"Book for Family Members in Same Order"
+    "forFamily":"Book for Family Members in Same Order",
+    "skuGenderMessage": "This {{skuType}} can be added for {{gender}} patients only.",
+    "switchUhidMsg": "Tests in your order are applicable for {{gender}} patients only.",
+    "skuGenderGeneralMsg": "Tests in your cart are applicable for {{gender}} patients only."
   },
   "diagnosticCategoryTitle": {
     "category": "category",
@@ -819,7 +822,11 @@
     "HcDisclaimer": "Use Health Credits at Payments Checkout",
     "healthCredits": "Health Credits",
     "redemmedTxt": "(Redeemed)",
-    "minorAgeTestText": "We allow only RTPCR bookings for children less than 10 years old"
+    "minorAgeTestText": "We allow only RTPCR bookings for children less than 10 years old",
+    "emptyCart": "Your Cart is empty",
+    "recommendedText":"Your cart would include the following items for",
+    "recommendedForYou": "Recommended for you",
+    "pricePerPerson": "Prices are for Per Person"
   },
   "diagnosticsDetails":{
     "about": "About",

@@ -4,7 +4,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { isSmallDevice, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { getPricesForItem } from '@aph/mobile-patients/src/utils/commonUtils';
+import { getPricesForItem } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 
 interface RecommedationGroupCardProps {
   showRecommedation?: boolean;
@@ -17,7 +17,7 @@ interface RecommedationGroupCardProps {
   containerStyle?: any;
   scrollEnabled?: boolean;
   showPrice: number;
-  priceToDisplayOnPopUp?: number
+  priceToDisplayOnPopUp?: number;
 }
 
 export const RecommedationGroupCard: React.FC<RecommedationGroupCardProps> = (props) => {
@@ -32,7 +32,7 @@ export const RecommedationGroupCard: React.FC<RecommedationGroupCardProps> = (pr
     cartItems,
     patientItems,
     showPrice,
-    priceToDisplayOnPopUp
+    priceToDisplayOnPopUp,
   } = props;
   const [isOnPopUp, setIsOnPopUp] = useState<any>(!showAddButton);
 
@@ -60,7 +60,9 @@ export const RecommedationGroupCard: React.FC<RecommedationGroupCardProps> = (pr
           <Text style={styles.textInclusionsRecom}>
             Includes{' '}
             {showTestWorth ? (
-              <Text style={styles.boldTextRecom}>{`Tests worth ${string.common.Rs}${data?.packageCalculatedMrp!}`}</Text>
+              <Text style={styles.boldTextRecom}>{`Tests worth ${
+                string.common.Rs
+              }${data?.packageCalculatedMrp!}`}</Text>
             ) : null}
           </Text>
           <View>
