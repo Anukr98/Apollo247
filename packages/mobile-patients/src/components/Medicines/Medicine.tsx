@@ -2227,6 +2227,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               urlKey: item?.url_key,
               sku: item?.sku,
               movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
+              data: item,
             });
             const availability = getAvailabilityForSearchSuccess(pharmacyPincode || '', item?.sku);
             const discount = getDiscountPercentage(item?.price, item?.special_price);
