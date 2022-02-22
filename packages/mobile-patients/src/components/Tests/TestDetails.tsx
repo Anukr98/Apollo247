@@ -397,7 +397,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       fetchTestDetails_CMS(itemId, null);
       loadTestDetails(itemId);
       fetchReportTat(itemId);
-      loadWidgets(itemId);
+      // loadWidgets(itemId);
     } else if (testName) {
       fetchTestDetails_CMS(99999, testName);
     } else {
@@ -411,7 +411,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         if (frequentlyBroughtRecommendations?.length == 0 || topBookedTests?.length == 0) {
           getFrequentlyBroughtRecommendations(testInfo?.ItemID! || itemId);
         }
-        if (packageRecommendations?.length == 0) {
+        if (
+          packageRecommendations?.length == 0 &&
+          (testInfo?.inclusions == null || testInfo?.inclusions?.length == 1)
+        ) {
           getPackageRecommendationsForTest(testInfo?.ItemID! || itemId);
         }
       }
