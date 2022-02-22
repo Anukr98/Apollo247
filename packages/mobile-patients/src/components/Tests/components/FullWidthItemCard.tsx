@@ -112,7 +112,11 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
     const getMandatoryParamter =
       !!inclusions && inclusions?.length > 0
         ? inclusions?.map((inclusion: any) =>
-            getMandatoryParamterResults(inclusion?.incObservationData)
+            getMandatoryParamterResults(
+              sourceScreen == AppRoutes.TestDetails
+                ? inclusion?.observations
+                : inclusion?.incObservationData
+            )
           )
         : [];
 
