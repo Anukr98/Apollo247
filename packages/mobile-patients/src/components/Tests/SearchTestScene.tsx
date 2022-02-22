@@ -580,7 +580,10 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       data?.diagnostic_inclusions,
       AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
       '',
-      data?.diagnostic_inclusions_test_parameter_data?.length || data?.diagnostic_inclusions?.length
+      source == 'search'
+        ? data?.diagnostic_inclusions_test_parameter_data?.length ||
+            data?.diagnostic_inclusions?.length
+        : data?.test_parameters_data?.length || data?.diagnostic_inclusions?.length
     );
     onAddCartItem(
       data?.diagnostic_item_id,
@@ -595,7 +598,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       source == 'search'
         ? data?.diagnostic_inclusions_test_parameter_data?.length ||
             data?.diagnostic_inclusions?.length
-        : data?.test_parameters_data || data?.diagnostic_inclusions?.length,
+        : data?.test_parameters_data?.length || data?.diagnostic_inclusions?.length,
       obj?.price,
       TEST_COLLECTION_TYPE.HC,
       obj

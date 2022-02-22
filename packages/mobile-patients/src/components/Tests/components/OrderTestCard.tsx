@@ -135,15 +135,13 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
 
   const renderEditView = () => {
     return (
-      <View style={styles.editIconView}>
-        <TouchableOpacity
-          activeOpacity={1}
-          onPress={props.onPressEditPatient}
-          style={styles.editIconTouch}
-        >
-          <EditProfile style={styles.editIcon} />
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={props.onPressEditPatient}
+        style={styles.editIconTouch}
+      >
+        <EditProfile style={styles.editIcon} />
+      </TouchableOpacity>
     );
   };
 
@@ -692,7 +690,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   patientNameView: {
-    width: '65%', //58%
+    maxWidth: screenWidth * 0.45, //160
     justifyContent: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
@@ -714,16 +712,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 4,
   },
-  editIconView: {
-    justifyContent: 'center',
-    marginHorizontal: 3,
-    marginRight: 6,
-  },
   editIconTouch: {
-    width: 20,
-    height: 20,
+    width: 40,
+    height: 40,
+    marginRight: 6,
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 3000,
   },
   editIcon: { height: 16, width: 16, resizeMode: 'contain' },
 });
