@@ -1384,6 +1384,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Diagnostics_Home_Single_Item',
       PROD: 'Diagnostics_Home_Single_Item',
     },
+    Diagnostics_Home_Top_Item_Details: {
+      QA: 'QA_Diagnostics_Home_Top_Item_Details',
+      PROD: 'Diagnostics_Home_Top_Item_Details',
+    },
     Diagnostics_Home_Page_Banner_Height: {
       QA: 'QA_Diagnostics_Home_Page_Banner_Height',
       PROD: 'Diagnostics_Home_Page_Banner_Height',
@@ -1911,6 +1915,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         (key) =>
           JSON.parse(config.getString(key) || 'null') ||
           AppConfig.Configuration.DIAGNOSTICS_HOME_SINGLE_ITEM
+      );
+      setAppConfig(
+        'Diagnostics_Home_Top_Item_Details',
+        'DIAGNOSTICS_HOME_TOP_ITEM_DETAILS',
+        (key) =>
+          JSON.parse(config.getString(key) || 'null') ||
+          AppConfig.Configuration.DIAGNOSTICS_HOME_TOP_ITEM_DETAILS
       );
 
       setAppConfig('Diagnostics_Show_Health_Credits', 'DIAGNOSTICS_SHOW_HEALTH_CREDITS', (key) =>
