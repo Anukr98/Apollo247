@@ -36,6 +36,7 @@ export interface getDiagnosticPackageRecommendations_getDiagnosticPackageRecomme
   __typename: "Diagnostics";
   itemId: number;
   itemName: string;
+  gender: string;
   inclusions: (number | null)[] | null;
   packageCalculatedMrp: number | null;
   diagnosticInclusions: (getDiagnosticPackageRecommendations_getDiagnosticPackageRecommendations_packageRecommendations_diagnosticInclusions | null)[] | null;

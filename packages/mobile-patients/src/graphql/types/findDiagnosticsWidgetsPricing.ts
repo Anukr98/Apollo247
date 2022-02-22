@@ -20,6 +20,7 @@ export interface findDiagnosticsWidgetsPricing_findDiagnosticsWidgetsPricing_dia
 export interface findDiagnosticsWidgetsPricing_findDiagnosticsWidgetsPricing_diagnostics {
   __typename: "findDiagnosticWidgetsPricingResult";
   itemId: number | null;
+  gender: string | null;
   packageCalculatedMrp: number | null;
   diagnosticPricing: (findDiagnosticsWidgetsPricing_findDiagnosticsWidgetsPricing_diagnostics_diagnosticPricing | null)[] | null;
 }

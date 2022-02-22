@@ -32,6 +32,7 @@ export interface getDiagnosticItemRecommendations_getDiagnosticItemRecommendatio
   __typename: "AffinityData";
   itemId: number;
   itemName: string;
+  gender: string | null;
   observations: (getDiagnosticItemRecommendations_getDiagnosticItemRecommendations_itemsData_observations | null)[] | null;
   diagnosticInclusions: (getDiagnosticItemRecommendations_getDiagnosticItemRecommendations_itemsData_diagnosticInclusions | null)[] | null;
 }
