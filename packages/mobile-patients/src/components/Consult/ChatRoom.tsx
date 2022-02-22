@@ -225,10 +225,8 @@ import { CheckReschedulePopup } from '@aph/mobile-patients/src/components/Consul
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { FollowUpChatGuideLines } from '@aph/mobile-patients/src/components/Consult/Components/FollowUpChatGuideLines';
 import { ChatDisablePrompt } from '@aph/mobile-patients/src/components/Consult/Components/ChatDisablePrompt';
-import { getMedicineDetailsApi, MedicineProductDetailsResponse } from '../../helpers/apiCalls';
-import { AxiosResponse } from 'axios';
-import { DiagnosticAddToCartEvent } from '@aph/mobile-patients/src/components/Tests/Events';
-import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
+import { DiagnosticAddToCartEvent } from '@aph/mobile-patients/src/components/Tests/utils/Events';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import {
   postDoctorConsultEvent,
   postDoctorConsultEventVariables,

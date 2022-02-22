@@ -7,7 +7,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { DiagnosticTrackPhleboClicked } from '@aph/mobile-patients/src/components/Tests/Events';
+import { DiagnosticTrackPhleboClicked } from '@aph/mobile-patients/src/components/Tests/utils/Events';
 import { DIAGNOSTIC_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { isSmallDevice, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import moment from 'moment';

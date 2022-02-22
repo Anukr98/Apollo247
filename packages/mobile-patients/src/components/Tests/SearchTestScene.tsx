@@ -12,19 +12,7 @@ import {
   CommonLogEvent,
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import {
-  GET_PATIENT_PAST_MEDICINE_SEARCHES,
-  SAVE_SEARCH,
-} from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  getPatientPastMedicineSearches,
-  getPatientPastMedicineSearchesVariables,
-  getPatientPastMedicineSearches_getPatientPastMedicineSearches,
-} from '@aph/mobile-patients/src/graphql/types/getPatientPastMedicineSearches';
-import {
-  SEARCH_TYPE,
-  TEST_COLLECTION_TYPE,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   aphConsole,
   calculateDiagnosticCartItems,
@@ -41,7 +29,6 @@ import { useApolloClient } from 'react-apollo-hooks';
 import {
   ActivityIndicator,
   Keyboard,
-  Platform,
   SafeAreaView,
   StyleProp,
   StyleSheet,
@@ -55,8 +42,6 @@ import {
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import {
   DIAGNOSTIC_GROUP_PLAN,
   getDiagnosticsPopularResults,
@@ -64,20 +49,24 @@ import {
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import _ from 'lodash';
 import {
+  checkSku,
+  createDiagnosticAddToCartObject,
+  DiagnosticPopularSearchGenderMapping,
   diagnosticsDisplayPrice,
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   getPricesForItem,
-  sourceHeaders,
-} from '@aph/mobile-patients/src/utils/commonUtils';
+} from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import { DiagnosticsNewSearch } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticsNewSearch';
 import {
   DiagnosticAddToCartEvent,
   DiagnosticItemSearched,
-} from '@aph/mobile-patients/src/components/Tests/Events';
+} from '@aph/mobile-patients/src/components/Tests/utils/Events';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import DeviceInfo from 'react-native-device-info';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import { getDiagnosticSearchResults } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  getDiagnosticSearchResults,
+  getDiagnosticWidgetPricing,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import { searchDiagnosticItem_searchDiagnosticItem_data } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticItem';
 import { DiagnosticsSearchResultItem } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticSearchResultItem';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -87,7 +76,6 @@ import { DIAGNOSTICS_ITEM_TYPE } from '@aph/mobile-patients/src/helpers/CleverTa
 type searchResults = searchDiagnosticItem_searchDiagnosticItem_data;
 
 const GO_TO_CART_HEIGHT = 50;
-const isIphoneX = DeviceInfo.hasNotch();
 export interface SearchTestSceneProps
   extends NavigationScreenProps<{
     searchText: string;
@@ -96,19 +84,16 @@ export interface SearchTestSceneProps
 
 export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const searchTextFromProp = props.navigation.getParam('searchText');
-  const [showMatchingMedicines, setShowMatchingMedicines] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>(searchTextFromProp);
   const [diagnosticResults, setDiagnosticResults] = useState<
     searchDiagnosticItem_searchDiagnosticItem_data[]
   >([]);
   const [searchResult, setSearchResult] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [pastSearches, setPastSearches] = useState<
-    (getPatientPastMedicineSearches_getPatientPastMedicineSearches | null)[]
-  >([]);
   const [popularArray, setPopularArray] = useState([]);
   const [searchQuery, setSearchQuery] = useState({});
   const [isFocus, setIsFocus] = useState<boolean>(false);
+  const [showToolTip, setShowToolTip] = useState<boolean>(false);
 
   const { locationForDiagnostics, diagnosticServiceabilityData } = useAppCommonData();
 
@@ -132,7 +117,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     setDeliveryAddressId,
     setCartItems,
   } = useDiagnosticsCart();
-  const { serverCartItems: shopCartItems } = useShoppingCart();
   const { showAphAlert, setLoading: setGlobalLoading, hideAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
@@ -208,52 +192,28 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     };
   }, []);
 
-  useEffect(() => {
-    client
-      .query<getPatientPastMedicineSearches, getPatientPastMedicineSearchesVariables>({
-        query: GET_PATIENT_PAST_MEDICINE_SEARCHES,
-        context: {
-          sourceHeaders,
-        },
-        variables: {
-          patientId: currentPatient?.id,
-          type: SEARCH_TYPE.TEST,
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then(({ data: { getPatientPastMedicineSearches } }) => {
-        setPastSearches(getPatientPastMedicineSearches || []);
-      })
-      .catch((error) => {
-        CommonBugFender('SearchTestScene_GET_PATIENT_PAST_MEDICINE_SEARCHES', error);
-        aphConsole.log('Error occured', { error });
-      });
-  }, [currentPatient]);
-
-  //for past item search
-  const fetchPackageDetails = async (name: string, func: (product: any) => void) => {
-    try {
-      const res: any = await getDiagnosticSearchResults(client, name, Number(cityId), 50);
-      if (!!res?.data?.searchDiagnosticItem && res?.data?.searchDiagnosticItem?.data?.length > 0) {
-        const product = res?.data?.searchDiagnosticItem?.data || [];
-        func && func(product);
-      }
-      setIsLoading?.(false);
-      setGlobalLoading?.(false);
-    } catch (error) {
-      CommonBugFender('SearchTestScene_fetchPackageDetails', error);
-      aphConsole.log({ error });
-      setIsLoading?.(false);
-      setGlobalLoading!(false);
+  function checkGenderSku(product: any) {
+    const patientGender = modifiedOrder?.patientObj?.gender;
+    if (product?.length > 0) {
+      const filteredResult = product?.filter((sku: any) =>
+        checkSku(
+          patientGender,
+          DiagnosticPopularSearchGenderMapping(sku?.diagnostic_item_gender),
+          true
+        )
+      );
+      setPopularArray(filteredResult);
+    } else {
+      setPopularArray([]);
     }
-  };
+  }
 
   const fetchPopularDetails = async () => {
     try {
       const res: any = await getDiagnosticsPopularResults('diagnostic', Number(cityId));
       if (res?.data?.success) {
         const product = res?.data?.data || [];
-        setPopularArray(product);
+        isModify ? checkGenderSku(product) : setPopularArray(product);
         setIsLoading(false);
       }
       setIsLoading?.(false);
@@ -263,6 +223,39 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       aphConsole.log({ error });
       setGlobalLoading?.(false);
       setIsLoading?.(false);
+    }
+  };
+
+  const fetchPricesForItems = async (item: any) => {
+    const itemId = [Number(item?.diagnostic_item_id)];
+    try {
+      const res = await getDiagnosticWidgetPricing(client, cityId, itemId);
+      if (
+        !!res?.data?.findDiagnosticsWidgetsPricing?.diagnostics &&
+        res?.data?.findDiagnosticsWidgetsPricing?.diagnostics?.length > 0
+      ) {
+        const result = res?.data?.findDiagnosticsWidgetsPricing?.diagnostics?.[0];
+        fetchPrices(item, 'popular', result);
+      } else {
+        onAddCartItem(
+          item?.diagnostic_item_id,
+          item?.diagnostic_item_name,
+          DiagnosticPopularSearchGenderMapping(item?.diagnostic_item_gender),
+          DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.POPULAR_SEARCH,
+          item?.diagnostic_inclusions,
+          item?.test_parameters_data?.length || item?.diagnostic_inclusions?.length
+        );
+      }
+    } catch (error) {
+      onAddCartItem(
+        item?.diagnostic_item_id,
+        item?.diagnostic_item_name,
+        DiagnosticPopularSearchGenderMapping(item?.diagnostic_item_gender),
+        DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.POPULAR_SEARCH,
+        item?.diagnostic_inclusions,
+        item?.test_parameters_data?.length || item?.diagnostic_inclusions?.length
+      );
+      CommonBugFender('fetchPricesForItems_SearchTestScene', error);
     }
   };
 
@@ -285,7 +278,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   };
 
   const onSearchTest = async (_searchText: string) => {
-    setShowMatchingMedicines(true);
     setIsLoading(true);
     try {
       const res: any = await getDiagnosticSearchResults(client, _searchText, Number(cityId), 50);
@@ -307,19 +299,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       showGenericALert(error);
     }
   };
-
-  const savePastSearch = (sku: string, name: string) =>
-    client.mutate({
-      mutation: SAVE_SEARCH,
-      variables: {
-        saveSearchInput: {
-          type: SEARCH_TYPE.TEST,
-          typeId: sku,
-          typeName: name,
-          patient: currentPatient?.id || '',
-        },
-      },
-    });
 
   const postDiagnosticAddToCartEvent = (
     name: string,
@@ -353,8 +332,10 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const onAddCartItem = (
     itemId: string | number,
     itemName: string,
+    itemGender: any,
     source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
     inclusions?: any[],
+    parameterCount?: number,
     rate?: number,
     collectionType?: TEST_COLLECTION_TYPE,
     pricesObject?: any,
@@ -365,7 +346,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     const priceToShow = !!pricesObject
       ? diagnosticsDisplayPrice(pricesObject, isDiagnosticCircleSubscription)?.priceToShow
       : 0;
-    savePastSearch(`${itemId}`, itemName).catch((e) => {});
     postDiagnosticAddToCartEvent(
       stripHtml(itemName),
       `${itemId}`,
@@ -374,27 +354,32 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       source,
       inclusions
     );
-    const addedItem = {
-      id: `${itemId}`,
-      name: stripHtml(itemName),
-      price: !!pricesObject?.rate ? pricesObject?.rate : pricesObject?.price || 0,
-      specialPrice: !!pricesObject?.specialPrice
-        ? pricesObject?.specialPrice!
-        : !!pricesObject?.rate
-        ? pricesObject?.rate
-        : pricesObject?.price || 0,
-      circlePrice: pricesObject?.circlePrice,
-      circleSpecialPrice: pricesObject?.circleSpecialPrice,
-      discountPrice: pricesObject?.discountPrice,
-      discountSpecialPrice: pricesObject?.discountSpecialPrice,
-      mou: 1,
-      thumbnail: '',
-      collectionMethod: collectionType! || TEST_COLLECTION_TYPE?.HC,
-      groupPlan: selectedPlan?.groupPlan || DIAGNOSTIC_GROUP_PLAN.ALL,
-      packageMrp: pricesObject?.packageMrp || 0,
-      inclusions: inclusions == null ? [Number(itemId)] : inclusions,
-      isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
-    };
+    const normalPrice = !!pricesObject?.rate ? pricesObject?.rate : pricesObject?.price || 0;
+    const normalSpecialPrice = !!pricesObject?.specialPrice
+      ? pricesObject?.specialPrice!
+      : !!pricesObject?.rate
+      ? pricesObject?.rate
+      : pricesObject?.price || 0;
+
+    const addedItem = createDiagnosticAddToCartObject(
+      Number(itemId),
+      stripHtml(itemName),
+      itemGender,
+      normalPrice,
+      normalSpecialPrice,
+      pricesObject?.circlePrice,
+      pricesObject?.circleSpecialPrice,
+      pricesObject?.discountPrice,
+      pricesObject?.discountSpecialPrice,
+      collectionType! || TEST_COLLECTION_TYPE?.HC,
+      selectedPlan?.groupPlan || DIAGNOSTIC_GROUP_PLAN.ALL,
+      pricesObject?.packageMrp || 0,
+      inclusions == null ? [Number(itemId)] : inclusions,
+      AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
+      '',
+      !!parameterCount ? parameterCount : !!pricesObject ? pricesObject?.parameterCount : null
+    );
+
     isModify &&
       setModifiedPatientCart?.([
         {
@@ -430,7 +415,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const renderHeader = () => {
     const cartItemsCount = isModify
       ? cartItems?.length
-      : calculateDiagnosticCartItems(cartItems, patientCartItems);
+      : calculateDiagnosticCartItems(cartItems, patientCartItems)?.length;
     return (
       <Header
         container={{ borderBottomWidth: 1 }}
@@ -571,107 +556,46 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     );
   };
 
-  const renderPastSearchItem = (
-    pastSeacrh: getPatientPastMedicineSearches_getPatientPastMedicineSearches,
-    containerStyle: StyleProp<ViewStyle>
-  ) => {
-    return (
-      <TouchableOpacity
-        activeOpacity={1}
-        key={pastSeacrh.typeId!}
-        style={[styles.pastSearchItemStyle, containerStyle]}
-        onPress={() => {
-          fetchPackageDetails(pastSeacrh.name!, (product) => {
-            const packageMrp = product?.packageCalculatedMrp;
-            const pricesForItem = getPricesForItem(product?.diagnosticPricing, packageMrp!);
-            if (!pricesForItem?.itemActive) {
-              return null;
-            }
-            const specialPrice = pricesForItem?.specialPrice!;
-            const price = pricesForItem?.price!;
-            const circlePrice = pricesForItem?.circlePrice!;
-            const circleSpecialPrice = pricesForItem?.circleSpecialPrice!;
-            const discountPrice = pricesForItem?.discountPrice!;
-            const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
-            const mrpToDisplay = pricesForItem?.mrpToDisplay!;
-
-            props.navigation.navigate(AppRoutes.TestDetails, {
-              itemId: `${product?.itemId}`,
-              comingFrom: AppRoutes.SearchTestScene,
-              testDetails: {
-                Rate: price,
-                specialPrice: specialPrice! || price,
-                circleRate: circlePrice,
-                circleSpecialPrice: circleSpecialPrice,
-                discountPrice: discountPrice,
-                discountSpecialPrice: discountSpecialPrice,
-                Gender: product?.gender,
-                ItemID: `${product?.itemId}`,
-                ItemName: product?.itemName,
-                FromAgeInDays: product?.fromAgeInDays,
-                ToAgeInDays: product?.toAgeInDays,
-                collectionType: product?.collectionType,
-                preparation: product?.testPreparationData,
-                testDescription: product?.testPreparationData,
-                source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.FULL_SEARCH,
-                type: product?.itemType,
-                packageMrp: product?.packageCalculatedMrp!,
-                mrpToDisplay: mrpToDisplay,
-                inclusions:
-                  product?.inclusions == null ? [Number(product?.inclusions)] : product?.inclusions,
-              } as TestPackageForDetails,
-            });
-          });
-        }}
-      >
-        <Text style={styles.pastSearchTextStyle}>{pastSeacrh.name}</Text>
-      </TouchableOpacity>
-    );
-  };
-
-  const renderPastSearches = () => {
-    return (
-      <ScrollView bounces={false} onScroll={() => Keyboard.dismiss()}>
-        {pastSearches?.length > 0 && (
-          <SectionHeaderComponent sectionTitle={'Past Searches'} style={{ marginBottom: 0 }} />
-        )}
-        <View style={styles.pastSearchContainerStyle}>
-          {pastSearches
-            .slice(0, 5)
-            .map((pastSearch, i, array) =>
-              renderPastSearchItem(pastSearch!, i == array?.length - 1 ? { marginRight: 0 } : {})
-            )}
-        </View>
-      </ScrollView>
-    );
-  };
-
-  function fetchPrices(data: any) {
+  function fetchPrices(data: any, source: string, apiResult?: any) {
     const pricesForItem = getPricesForItem(
-      data?.diagnostic_item_price,
+      source == 'popular' && !!apiResult
+        ? apiResult?.diagnosticPricing
+        : data?.diagnostic_item_price,
       data?.packageCalculatedMrp!
     );
-    const obj = {
-      id: data?.diagnostic_item_id,
-      name: data?.diagnostic_item_name,
-      mou: 1,
-      price: pricesForItem?.price!,
-      thumbnail: null,
-      specialPrice: pricesForItem?.specialPrice!,
-      circlePrice: pricesForItem?.circlePrice,
-      circleSpecialPrice: pricesForItem?.circleSpecialPrice!,
-      discountPrice: pricesForItem?.discountPrice!,
-      discountSpecialPrice: pricesForItem?.discountSpecialPrice!,
-      collectionMethod: TEST_COLLECTION_TYPE.HC,
-      groupPlan: pricesForItem?.planToConsider?.groupPlan,
-      packageMrp: data?.packageCalculatedMrp!,
-      inclusions: data?.diagnostic_inclusions,
-    };
+
+    const obj = createDiagnosticAddToCartObject(
+      data?.diagnostic_item_id,
+      data?.diagnostic_item_name,
+      source == 'popular' ? apiResult?.gender : data?.diagnostic_item_gender,
+      pricesForItem?.price!,
+      pricesForItem?.specialPrice!,
+      pricesForItem?.circlePrice,
+      pricesForItem?.circleSpecialPrice!,
+      pricesForItem?.discountPrice!,
+      pricesForItem?.discountSpecialPrice!,
+      TEST_COLLECTION_TYPE.HC,
+      pricesForItem?.planToConsider?.groupPlan,
+      data?.packageCalculatedMrp!,
+      data?.diagnostic_inclusions,
+      AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
+      '',
+      data?.diagnostic_inclusions_test_parameter_data?.length || data?.diagnostic_inclusions?.length
+    );
     onAddCartItem(
       data?.diagnostic_item_id,
       data?.diagnostic_item_name,
-      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PARTIAL_SEARCH,
+      source == 'popular'
+        ? apiResult?.gender
+        : DiagnosticPopularSearchGenderMapping(data?.diagnostic_item_gender),
+      source == 'search'
+        ? DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PARTIAL_SEARCH
+        : DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.POPULAR_SEARCH,
       data?.diagnostic_inclusions,
+      source == 'search'
+        ? data?.diagnostic_inclusions_test_parameter_data?.length ||
+            data?.diagnostic_inclusions?.length
+        : data?.test_parameters_data || data?.diagnostic_inclusions?.length,
       obj?.price,
       TEST_COLLECTION_TYPE.HC,
       obj
@@ -689,9 +613,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
             comingFrom: AppRoutes.SearchTestScene,
           });
         }}
-        onPressAddToCart={() => {
-          fetchPrices(product);
-        }}
+        onPressAddToCart={() => fetchPrices(product, 'search')}
         data={product}
         loading={true}
         showSeparator={index !== diagnosticResults?.length - 1}
@@ -805,6 +727,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       </>
     );
   };
+
   const renderPopularDiagnostic = (data: ListRenderItemInfo<any>) => {
     const { index, item } = data;
     return (
@@ -818,14 +741,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
             comingFrom: AppRoutes.SearchTestScene,
           });
         }}
-        onPressAddToCart={() => {
-          onAddCartItem(
-            item?.diagnostic_item_id,
-            item?.diagnostic_item_name,
-            DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.POPULAR_SEARCH,
-            item?.diagnostic_inclusions
-          );
-        }}
+        onPressAddToCart={() => fetchPricesForItems(item)}
         data={item}
         loading={true}
         showSeparator={index !== diagnosticResults?.length - 1}
@@ -848,7 +764,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       });
     }
   }
-
   const renderStickyBottom = () => {
     const cartCount = cartItems?.length > 9 ? `${cartItems?.length}` : `0${cartItems?.length}`;
     return (
@@ -919,50 +834,10 @@ const styles = StyleSheet.create({
     height: 50,
     paddingLeft: 10,
   },
-  deliveryPinCodeContaner: {
-    ...theme.viewStyles.cardContainer,
-    paddingHorizontal: 20,
-    paddingVertical: Platform.OS == 'ios' ? 12 : 7,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#f7f8f5',
-  },
-  pinCodeStyle: {
-    ...theme.fonts.IBMPlexSansMedium(14),
-    color: theme.colors.SHERPA_BLUE,
-    flex: 0.9,
-  },
-  pinCodeTextInput: {
-    ...theme.fonts.IBMPlexSansMedium(14),
-    color: theme.colors.SHERPA_BLUE,
-    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
-    borderBottomWidth: 2,
-    paddingBottom: 3,
-    paddingLeft: Platform.OS === 'ios' ? 0 : -3,
-    paddingTop: 0,
-    width: Platform.OS === 'ios' ? 51 : 54,
-  },
   sorryTextStyle: {
     ...theme.fonts.IBMPlexSansMedium(12),
     color: '#890000',
     paddingVertical: 8,
-  },
-  pastSearchContainerStyle: {
-    flexWrap: 'wrap',
-    flexDirection: 'row',
-    marginHorizontal: 20,
-  },
-  pastSearchItemStyle: {
-    ...theme.viewStyles.cardViewStyle,
-    backgroundColor: 'white',
-    marginTop: 16,
-    marginRight: 16,
-  },
-  pastSearchTextStyle: {
-    color: '#00b38e',
-    padding: 12,
-    ...theme.fonts.IBMPlexSansSemiBold(14),
   },
   headingSections: { ...theme.viewStyles.text('B', isSmallDevice ? 14 : 15, '#01475B', 1, 22) },
   viewDefaultContainer: {
@@ -980,30 +855,6 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     backgroundColor: 'white',
     marginBottom: GO_TO_CART_HEIGHT,
-  },
-  cartDetailView: {
-    position: 'absolute',
-    backgroundColor: theme.colors.APP_YELLOW_COLOR,
-    bottom: isIphoneX ? 10 : 0,
-    height: GO_TO_CART_HEIGHT,
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  itemAddedText: {
-    marginLeft: 20,
-    ...theme.viewStyles.text('SB', isSmallDevice ? 13 : 14, theme.colors.WHITE),
-    lineHeight: 16,
-    textAlign: 'left',
-    alignSelf: 'center',
-  },
-  goToCartText: {
-    marginRight: 20,
-    ...theme.viewStyles.text('SB', isSmallDevice ? 15 : 16, theme.colors.WHITE),
-    lineHeight: 20,
-    textAlign: 'right',
-    alignSelf: 'center',
   },
   crossIconStyle: {
     position: 'absolute',

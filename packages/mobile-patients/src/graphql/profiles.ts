@@ -6670,8 +6670,8 @@ export const POST_WEB_ENGAGE = gql`
 `;
 
 export const GET_DIAGNOSTICS_RECOMMENDATIONS = gql`
-  mutation getDiagnosticItemRecommendations($itemIds: [Int]!, $records: Int) {
-    getDiagnosticItemRecommendations(itemIds: $itemIds, numberOfRecordsToFetch: $records) {
+  mutation getDiagnosticItemRecommendations($itemIds: [Int]!, $records: Int, $genderFilters: [Gender]) {
+    getDiagnosticItemRecommendations(itemIds: $itemIds, numberOfRecordsToFetch: $records, genderFilters:$genderFilters) {
       itemsData {
         itemId
         itemName
@@ -6831,6 +6831,7 @@ export const GET_DIAGNOSTIC_SEARCH_RESULTS = gql`
       data {
         diagnostic_item_id
         diagnostic_item_name
+        diagnostic_item_gender
         testParametersCount
         diagnostic_inclusions
         diagnostic_item_alias
@@ -7049,8 +7050,8 @@ export const GET_CAMPAIGN_ID_FOR_REFERRER = gql`
 `;
 
 export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS = gql`
-  query getDiagnosticPackageRecommendations($itemId: Int!, $cityId: Int!) {
-    getDiagnosticPackageRecommendations(itemId: $itemId, cityId: $cityId) {
+  query getDiagnosticPackageRecommendations($itemId: Int!, $cityId: Int!, $genderFilters: [Gender]) {
+    getDiagnosticPackageRecommendations(itemId: $itemId, cityId: $cityId, genderFilters: $genderFilters) {
       packageRecommendations {
         itemId
         itemName
@@ -7078,8 +7079,8 @@ export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS = gql`
 `;
 
 export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS_V2 = gql`
-  query getDiagnosticPackageRecommendationsv2($recommendationInputItems: [recommendationInputItem]!, $cityId: Int!) {
-    getDiagnosticPackageRecommendationsv2(recommendationInputItems: $recommendationInputItems, cityId: $cityId) {
+  query getDiagnosticPackageRecommendationsv2($recommendationInputItems: [recommendationInputItem]!, $cityId: Int!, $genderFilters: [Gender]) {
+    getDiagnosticPackageRecommendationsv2(recommendationInputItems: $recommendationInputItems, cityId: $cityId, genderFilters: $genderFilters) {
       packageRecommendations {
         id
         itemId

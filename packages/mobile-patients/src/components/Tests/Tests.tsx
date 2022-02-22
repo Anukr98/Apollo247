@@ -43,7 +43,6 @@ import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-imag
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
-  GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
   GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
   SET_DEFAULT_ADDRESS,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -95,7 +94,6 @@ import {
   FlatList,
   Modal,
   Platform,
-  Animated,
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { NavigationScreenProps, NavigationEvents } from 'react-navigation';
@@ -119,10 +117,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import _ from 'lodash';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import {
-  GetSubscriptionsOfUserByStatus,
-  GetSubscriptionsOfUserByStatusVariables,
-} from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
+import { GetSubscriptionsOfUserByStatusVariables } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
 import {
   diagnosticServiceability,
@@ -138,11 +133,14 @@ import {
   getUserSubscriptionStatus,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
+  createDiagnosticAddToCartObject,
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
+  DIAGNOSTIC_ITEM_GENDER,
   DIAGNOSTIC_PINCODE_SOURCE_TYPE,
   getPricesForItem,
-  sourceHeaders,
-} from '@aph/mobile-patients/src/utils/commonUtils';
+  getParameterCount,
+} from '@aph/mobile-patients/src/components/Tests/utils/helpers';
+import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import Carousel from 'react-native-snap-carousel';
 import CertifiedCard from '@aph/mobile-patients/src/components/Tests/components/CertifiedCard';
 import {
@@ -156,7 +154,7 @@ import {
   DiagnosticTrackOrderViewed,
   DiagnosticTrackPhleboClicked,
   DiagnosticViewReportClicked,
-} from '@aph/mobile-patients/src/components/Tests/Events';
+} from '@aph/mobile-patients/src/components/Tests/utils/Events';
 import ItemCard from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
 import PackageCard from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
@@ -242,6 +240,7 @@ export interface DiagnosticWidgetItem {
   itemIcon: string;
   diagnosticPricing: any;
   packageCalculatedMrp: any;
+  gender?: string | DIAGNOSTIC_ITEM_GENDER;
 }
 
 export interface DiagnosticWidget {
@@ -331,6 +330,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [imgHeight, setImgHeight] = useState<number>(
     AppConfig.Configuration.DIAGNOSTICS_HOME_PAGE_BANNER_HEIGHT | 160
   );
+  const singleItem = AppConfig.Configuration.DIAGNOSTICS_HOME_SINGLE_ITEM;
   const [slideIndex, setSlideIndex] = useState(0);
   const [banners, setBanners] = useState([]);
   const [cityId, setCityId] = useState('');
@@ -392,7 +392,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
   );
   const isCartAvailable = !!cartItems && cartItems?.length > 0;
   const cartItemsCount =
-    calculateDiagnosticCartItems(cartItems, patientCartItems)?.length + shopCartItems?.length;
+    calculateDiagnosticCartItems(cartItems, patientCartItems)?.length +
+    (shopCartItems?.length || 0);
 
   const cache = new Cache({
     namespace: 'tests',
@@ -849,7 +850,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         allItemIds
       );
       let newWidgetsData = [...filterWidgets];
-
       const priceResult = res?.data?.findDiagnosticsWidgetsPricing;
       if (!!priceResult && !!priceResult?.diagnostics && priceResult?.diagnostics?.length > 0) {
         const widgetPricingArr = priceResult?.diagnostics;
@@ -858,6 +858,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
         } else {
           setWidgetPrices(filterWidgets, widgetPricingArr, newWidgetsData);
         }
+      } else {
+        setIsPriceAvailable(true);
+        setPastOrderRecommendationShimmer(false);
+        setSectionLoading(false);
       }
       setLoading?.(false);
     } catch (error) {
@@ -915,10 +919,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
           (pricingData: any) => Number(pricingData?.itemId) === Number(wItem?.itemId)
         );
         if (findIndex !== -1) {
-          (newWidgetsData[i].diagnosticWidgetData[j].packageCalculatedMrp =
-            widgetPricingArr?.[findIndex]?.packageCalculatedMrp),
-            (newWidgetsData[i].diagnosticWidgetData[j].diagnosticPricing =
-              widgetPricingArr?.[findIndex]?.diagnosticPricing);
+          newWidgetsData[i].diagnosticWidgetData[j].packageCalculatedMrp =
+            widgetPricingArr?.[findIndex]?.packageCalculatedMrp;
+          newWidgetsData[i].diagnosticWidgetData[j].diagnosticPricing =
+            widgetPricingArr?.[findIndex]?.diagnosticPricing;
+          newWidgetsData[i].diagnosticWidgetData[j].gender = widgetPricingArr?.[findIndex]?.gender;
         }
       }
     }
@@ -964,6 +969,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             packageCalculatedMrp: _diagItems?.packageCalculatedMrp,
             inclusions: _diagItems?.inclusions,
             inclusionData: _diagItems?.inclusions,
+            gender: _diagItems?.gender,
           });
         }
       });
@@ -1608,18 +1614,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   };
   const renderStaticBanner = () => {
-    const imageUrl = "https://newassets.apollo247.com/uatcms/2021-06/senior citizen-01_0.jpg"
+    const imageUrl = 'https://newassets.apollo247.com/uatcms/2021-06/senior citizen-01_0.jpg';
     return (
       <View>
         <ImageNative
-        resizeMode="contain"
-        style={{ width: '100%' , height: imgHeight}}
-        source={{ uri: imageUrl }}
+          resizeMode="contain"
+          style={{ width: '100%', height: imgHeight }}
+          source={{ uri: imageUrl }}
         />
       </View>
-    )
-  }
- 
+    );
+  };
+
   function _handleNavigationFromBanner(item: any, url: string) {
     //for rtpcr - drive through - open webview
     //for radiology
@@ -1693,6 +1699,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }
 
   const renderSliderItem = ({ item, index }: { item: any; index: number }) => {
+    let resizedImageUrl = item?.bannerImage + '?imwidth=' + Math.floor(winWidth);
     const handleOnPress = () => {
       if (item?.newredirectUrl && item?.newredirectUrl != '') {
         _handleNavigationFromBanner(item, item?.newredirectUrl);
@@ -1706,7 +1713,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
         <ImageNative
           resizeMode="cover"
           style={{ width: '100%', minHeight: imgHeight }}
-          source={{ uri: item?.bannerImage }}
+          source={{ uri: resizedImageUrl }}
+          progressiveRenderingEnabled={true}
         />
       </TouchableOpacity>
     );
@@ -2101,7 +2109,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const openGallery = () => {
     Platform.OS == 'android' && setIsPrescriptionUpload(false);
-    setLoading(true)
+    setLoading(true);
     ImagePicker.openPicker({
       cropping: false,
       hideBottomControls: true,
@@ -2115,7 +2123,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     })
       .then((response) => {
         const images = response as ImageCropPickerResponse[];
-        setLoading(true)
+        setLoading(true);
         const isGreaterThanSpecifiedSize = images.find(({ size }) => size > MAX_FILE_SIZE);
         if (isGreaterThanSpecifiedSize) {
           Alert.alert(string.common.uhOh, string.diagnostics.invalidFileSize);
@@ -2123,7 +2131,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }
         const uploadedImages = formatResponse(images);
         Platform.OS == 'ios' && setIsPrescriptionUpload(false);
-        setLoading(false)
+        setLoading(false);
         props.navigation.navigate(AppRoutes.SubmittedPrescription, {
           type: 'Gallery',
           phyPrescriptionsProp: [...phyPrescriptionUploaded, ...uploadedImages],
@@ -2132,7 +2140,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         });
       })
       .catch((e: Error) => {
-        setLoading(false)
+        setLoading(false);
         Platform.OS == 'ios' && setIsPrescriptionUpload(false);
         CommonBugFender('Tests_onClickGallery', e);
       });
@@ -2620,7 +2628,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
     _navigateToPatientsPage();
   }
 
-  const singleItem = AppConfig.Configuration.DIAGNOSTICS_HOME_SINGLE_ITEM;
+  function _navigateToDetailsPage(singleItemData: any, source: string) {
+    props.navigation.navigate(AppRoutes.TestDetails, {
+      itemId: source == 'cartSummary' ? singleItemData?.id : singleItemData?.itemId,
+      comingFrom: AppRoutes.Tests,
+    });
+  }
+
   const renderSingleItem = () => {
     let singleItemFilterData: any[] = [];
     for (let index = 0; index < widgetsData?.length; index++) {
@@ -2635,10 +2649,15 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const packageMrpForItem = singleItemData?.packageCalculatedMrp!;
     const getDiagnosticPricingForItem = singleItemData?.diagnosticPricing;
     const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
+    const { getMandatoryParameterCount } = getParameterCount(singleItemData, 'incObservationData');
+
     return (
       <>
         {!!singleItemData?.itemTitle && !!pricesForItem?.price ? (
-          <View style={styles.singleItemContainer}>
+          <TouchableOpacity
+            style={styles.singleItemContainer}
+            onPress={() => _navigateToDetailsPage(singleItemData, 'singleItemCard')}
+          >
             <View style={styles.itemFirst}>
               <View style={{ flexDirection: 'row' }}>
                 <VirusGreen style={{ height: 24 }} />
@@ -2664,25 +2683,27 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 title={string.diagnostics.bookNow}
                 style={styles.buttonTop}
                 onPress={() => {
-                  const singleItemObj = {
-                    circlePrice: pricesForItem?.circlePrice!,
-                    circleSpecialPrice: pricesForItem?.circleSpecialPrice!,
-                    collectionMethod: TEST_COLLECTION_TYPE.HC,
-                    discountPrice: pricesForItem?.discountPrice!,
-                    discountSpecialPrice: pricesForItem?.discountSpecialPrice!,
-                    groupPlan: pricesForItem?.planToConsider?.groupPlan!,
-                    id: singleItemData?.itemId,
-                    inclusions: singleItemData?.inclusionData?.map((item: any) => {
-                      return item?.incItemId;
-                    }),
-                    isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
-                    mou: 1,
-                    name: singleItemData?.itemTitle,
-                    packageMrp: packageMrpForItem,
-                    price: pricesForItem?.price!,
-                    specialPrice: pricesForItem?.specialPrice!,
-                    thumbnail: singleItemData?.itemImageUrl,
-                  };
+                  const inclusions = singleItemData?.inclusionData?.map((item: any) => {
+                    return item?.incItemId;
+                  });
+                  const singleItemObj = createDiagnosticAddToCartObject(
+                    singleItemData?.itemId,
+                    singleItemData?.itemTitle,
+                    singleItemData?.gender,
+                    pricesForItem?.price!,
+                    pricesForItem?.specialPrice!,
+                    pricesForItem?.circlePrice!,
+                    pricesForItem?.circleSpecialPrice!,
+                    pricesForItem?.discountPrice!,
+                    pricesForItem?.discountSpecialPrice!,
+                    TEST_COLLECTION_TYPE.HC,
+                    pricesForItem?.planToConsider?.groupPlan!,
+                    packageMrpForItem,
+                    inclusions,
+                    AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
+                    singleItemData?.itemImageUrl,
+                    getMandatoryParameterCount
+                  );
                   onPressSingleBookNow(singleItemObj);
                 }}
               />
@@ -2690,7 +2711,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             <View style={styles.bottomGreenView}>
               <Text style={styles.bottomText}>{string.diagnostics.forFamily}</Text>
             </View>
-          </View>
+          </TouchableOpacity>
         ) : null}
       </>
     );
@@ -2914,6 +2935,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           client={client}
           cityId={serviceableObject?.cityId || diagnosticServiceabilityData?.cityId}
           recommendationCount={(count) => _setRecommendationsCount(count)}
+          _navigateToTDP={(item) => _navigateToDetailsPage(item, 'cartSummary')}
         />
       </View>
     );
@@ -3087,7 +3109,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderGridComponent = (data: any, item: any, index: number) => {
     const imageIcon = !!item?.itemIcon
-      ? item?.itemIcon
+      ? item?.itemIcon + '?imwidth=' + 40
       : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_ICON;
     return (
       <TouchableOpacity
@@ -3114,7 +3136,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
       >
         <View style={styles.circleView}>
           {imageIcon != '' ? (
-            <ImageNative resizeMode="contain" style={styles.image} source={{ uri: imageIcon }} />
+            <ImageNative
+              resizeMode="contain"
+              style={styles.image}
+              source={{ uri: imageIcon }}
+              progressiveRenderingEnabled
+            />
           ) : (
             <WidgetLiverIcon style={styles.image} resizeMode={'contain'} />
           )}

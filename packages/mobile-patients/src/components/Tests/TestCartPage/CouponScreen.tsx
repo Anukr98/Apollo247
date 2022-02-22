@@ -27,7 +27,7 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { Overlay } from 'react-native-elements';
-import { createDiagnosticValidateCouponLineItems } from '@aph/mobile-patients/src/utils/commonUtils';
+import { createDiagnosticValidateCouponLineItems } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 
 const screenHeight = Dimensions.get('window').height;
 export interface CouponScreenProps

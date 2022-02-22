@@ -85,7 +85,7 @@ import {
   DiagnosticAddTestClicked,
   DiagnosticRescheduleOrder,
   DiagnosticCancellationRetention,
-} from '@aph/mobile-patients/src/components/Tests/Events';
+} from '@aph/mobile-patients/src/components/Tests/utils/Events';
 import { OrderTestCard } from '@aph/mobile-patients/src/components/Tests/components/OrderTestCard';
 import {
   diagnosticCancelOrder,
@@ -117,6 +117,7 @@ import { PatientListOverlay } from '@aph/mobile-patients/src/components/Tests/co
 import { getDiagnosticOrdersListByParentOrderID_getDiagnosticOrdersListByParentOrderID_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByParentOrderID';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 import { PhleboCallPopup } from '@aph/mobile-patients/src/components/Tests/components/PhleboCallPopup';
+import { checkPatientWithSkuGender } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 
 type orderList = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList;
 
@@ -559,7 +560,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         ({
           itemId: Number(item?.itemId),
           price: item?.price,
-          mrp: populateMrp(item), //check this
+          mrp: populateMrp(item),
           groupPlan: item?.groupPlan,
         } as DiagnosticLineItem)
     );
@@ -1311,7 +1312,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       <FlatList
         data={ctaArray}
         numColumns={ctaColumn}
-        renderItem={({ item, index }) => renderView(item, index)}
+        renderItem={({ item, index }: { item: string; index: number }) => renderView(item, index)}
       />
     );
   };
@@ -2239,11 +2240,28 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   }
 
+  function _onPressAddNewProfile() {
+    setShowPatientListOverlay(false);
+    props.navigation.navigate(AppRoutes.EditProfile, {
+      isEdit: false,
+      isPoptype: true,
+      mobileNumber: currentPatient?.mobileNumber,
+      onNewProfileAdded: onNewProfileAdded,
+      onPressBackButton: _onPressBackButton,
+    });
+  }
+
   const renderPatientsListOverlay = () => {
     const orderPatient = allCurrentPatients?.find(
       (item: any) => item?.id === selectedOrder?.patientId
     );
     const updatePatientCheck = updatePatientSwitchChecks(selectedOrder!);
+    const skuItem = selectedOrder?.diagnosticOrderLineItems!;
+    const getPatientDisableValue = allCurrentPatients?.map((patient: any) =>
+      checkPatientWithSkuGender(skuItem, patient)
+    );
+    const checkIsPatientDisableWithSku =
+      !!getPatientDisableValue && getPatientDisableValue?.find((value: boolean) => value == true);
     return (
       <PatientListOverlay
         showCloseIcon={true}
@@ -2252,16 +2270,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         onPressDone={(_selectedPatient: any) => {
           _onPressDoneSwitchUhid(_selectedPatient, updatePatientCheck);
         }}
-        onPressAddNewProfile={() => {
-          setShowPatientListOverlay(false);
-          props.navigation.navigate(AppRoutes.EditProfile, {
-            isEdit: false,
-            isPoptype: true,
-            mobileNumber: currentPatient?.mobileNumber,
-            onNewProfileAdded: onNewProfileAdded,
-            onPressBackButton: _onPressBackButton,
-          });
-        }}
+        onPressAddNewProfile={() => _onPressAddNewProfile()}
         patientSelected={orderPatient}
         onPressAndroidBack={() => {
           setShowPatientListOverlay(false);
@@ -2275,6 +2284,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         onCloseError={() => setSwitchPatientResponse('')}
         refetchResult={() => _afterSuccess()}
         removeAllSwitchRestrictions={updatePatientCheck}
+        skuItem={skuItem!}
+        showGenderSkuMsg={!!checkIsPatientDisableWithSku}
       />
     );
   };

@@ -30,7 +30,7 @@ import {
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { DiagnosticOrderSummaryViewed } from '@aph/mobile-patients/src/components/Tests/Events';
+import { DiagnosticOrderSummaryViewed } from '@aph/mobile-patients/src/components/Tests/utils/Events';
 import { Down, Up, DownloadOrange, OneApollo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { PassportPaitentOverlay } from '@aph/mobile-patients/src/components/Tests/components/PassportPaitentOverlay';

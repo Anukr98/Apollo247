@@ -1212,13 +1212,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const [proActiveAppointments, setProHealthActiveAppointment] = useState([] as any);
   const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
   const { APP_ENV } = AppConfig;
-  const {
-    refreeReward,
-    setRefreeReward,
-    setRewardId,
-    setCampaignId,
-    setCampaignName,
-  } = useReferralProgram();
+  const { setRewardId, setCampaignId, setCampaignName } = useReferralProgram();
   const [isReferrerAvailable, setReferrerAvailable] = useState<boolean>(false);
   const {
     setHdfcPlanName,
@@ -1240,9 +1234,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     pinCode,
     isPharmacyPincodeServiceable,
     serverCartItems,
-    locationCode,
   } = useShoppingCart();
-  const cartItemsCount = cartItems?.length + serverCartItems?.length;
+  const cartItemsCount = cartItems?.length + serverCartItems?.length! || 0;
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [previousPatient, setPreviousPatient] = useState<any>([]);
