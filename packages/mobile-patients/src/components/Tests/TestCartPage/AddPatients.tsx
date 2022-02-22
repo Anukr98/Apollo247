@@ -269,7 +269,9 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     );
     const filterMaleSku = filterGenderSKU(arrayToSearch, GENDER.MALE);
     const filterFemaleSku = filterGenderSKU(arrayToSearch, GENDER.FEMALE);
-    const hasAllSku = arrayToSearch?.length == 0;
+    const hasAllSku = arrayToSearch?.find(
+      (cItem) => cItem?.gender == GENDER.ALL || cItem?.gender == GENDER.OTHER
+    );
 
     const hasAllFemaleSku =
       !!!hasAllSku && filterFemaleSku?.length > 0 && filterMaleSku?.length == 0;

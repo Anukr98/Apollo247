@@ -586,8 +586,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       data?.diagnostic_item_id,
       data?.diagnostic_item_name,
       source == 'popular'
-        ? apiResult?.gender
-        : DiagnosticPopularSearchGenderMapping(data?.diagnostic_item_gender),
+        ? DiagnosticPopularSearchGenderMapping(apiResult?.gender)
+        : data?.diagnostic_item_gender,
       source == 'search'
         ? DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PARTIAL_SEARCH
         : DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.POPULAR_SEARCH,
