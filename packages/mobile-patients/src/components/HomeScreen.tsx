@@ -2275,7 +2275,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Home Screen');
           postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Home Screen');
           postHomeCleverTapEvent(CleverTapEventName.BUY_MEDICINES, 'Home Screen');
-          props.navigation.navigate('MEDICINES', { focusSearch: true, comingFrom: '247 Home CTA' });
+          props.navigation.navigate('MEDICINES', { comingFrom: '247 Home CTA' });
           const eventAttributes:
             | WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED]
             | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED] = {
