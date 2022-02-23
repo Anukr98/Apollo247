@@ -287,7 +287,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setNewAddressAddedHomePage,
     patientCartItems,
     modifiedOrder,
-    diagnosticSlot
+    diagnosticSlot,
   } = useDiagnosticsCart();
   const {
     serverCartItems: shopCartItems,
@@ -1716,7 +1716,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <TouchableOpacity activeOpacity={1} onPress={handleOnPress}>
         <ImageNative
-          resizeMode="cover"
+          resizeMode="stretch"
           style={{ width: '100%', minHeight: imgHeight }}
           source={{ uri: resizedImageUrl }}
           progressiveRenderingEnabled={true}
@@ -2663,8 +2663,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }
 
   const topItem = AppConfig.Configuration.DIAGNOSTICS_HOME_TOP_ITEM_DETAILS;
-  const topItemDetails = topItem?.topItemDetails?.filter((item:any)=>{
-    return item?.cityId == cityId
+  const topItemDetails = topItem?.topItemDetails?.filter((item: any) => {
+    return item?.cityId == cityId;
   });
   useEffect(() => {
     if (topItemDetails?.length > 0) {
@@ -2680,7 +2680,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderSingleItem = () => {
     let singleItemFilterData: any[] = [];
-    let itemtype = ''
+    let itemtype = '';
     for (let index = 0; index < widgetsData?.length; index++) {
       const element = widgetsData?.[index];
       element?.diagnosticWidgetData?.filter((item: any) => {
@@ -2717,7 +2717,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
       topItemData?.itemImageUrl,
       getMandatoryParameterCount
     );
-    const slashedPrice = diagnosticsDisplayPrice(singleItemObj,isDiagnosticCircleSubscription)?.slashedPrice;
+    const slashedPrice = diagnosticsDisplayPrice(singleItemObj, isDiagnosticCircleSubscription)
+      ?.slashedPrice;
     return (
       <>
         {!!topItemData?.itemTitle && !!pricesForItem?.price ? (
@@ -3620,7 +3621,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     justifyContent: 'center',
     marginRight: 10,
-    textDecorationLine:'line-through'
+    textDecorationLine: 'line-through',
   },
   viewSecond: {
     flexDirection: 'row',
@@ -3692,7 +3693,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 15, theme.colors.SHERPA_BLUE, 1, 20),
     textAlign: 'left',
     width: '60%',
-    flexWrap:'wrap'
+    flexWrap: 'wrap',
   },
   bottomArea: {
     backgroundColor: colors.APP_GREEN,
