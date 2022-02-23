@@ -1911,11 +1911,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         ? newArray.concat(recommedationData).concat(alsoAddListData)
         : recommedationData;
     const inclusionIdArray: any[] = [];
-    const inclusionIds = cartItems?.map((item) => {
-      item?.inclusions?.map((_item: any) => {
-        inclusionIdArray?.push(_item);
-      });
-    });
     const dataToRender = dataToShow?.filter((item: any) => {
       if (!!item?.diagnosticInclusions && item?.diagnosticInclusions?.length > 0) {
         return item?.diagnosticInclusions?.filter((_item: any) => {
