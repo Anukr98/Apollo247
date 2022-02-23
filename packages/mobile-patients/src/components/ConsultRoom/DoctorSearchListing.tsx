@@ -596,42 +596,44 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   }, []);
 
   const getDoctorOfTheHour = async (partnerDoctor: boolean = false, state?: string) => {
-    client
-      .query<getPlatinumDoctor>({
-        query: GET_PLATINUM_DOCTOR,
-        fetchPolicy: 'no-cache',
-        variables: {
-          specialtyId: specialityId,
-          zoneType: ZoneType.STATE,
-          zone: state || locationDetails?.state,
-          partnerDoctor,
-        },
-      })
-      .then(({ data }) => {
-        const platinum_doctor = g(data, 'getPlatinumDoctor', 'doctors', '0' as any);
-        if (platinum_doctor) {
-          setPlatinumDoctor(platinum_doctor);
-          postPlatinumDoctorWEGEvents(platinum_doctor, WebEngageEventName.DOH_Viewed, state);
-          postPlatinumDoctorCleverTapEvents(
-            platinum_doctor,
-            CleverTapEventName.CONSULT_DOH_Viewed,
-            state
+    if (specialityId) {
+      client
+        .query<getPlatinumDoctor>({
+          query: GET_PLATINUM_DOCTOR,
+          fetchPolicy: 'no-cache',
+          variables: {
+            specialtyId: specialityId,
+            zoneType: ZoneType.STATE,
+            zone: state || locationDetails?.state,
+            partnerDoctor,
+          },
+        })
+        .then(({ data }) => {
+          const platinum_doctor = g(data, 'getPlatinumDoctor', 'doctors', '0' as any);
+          if (platinum_doctor) {
+            setPlatinumDoctor(platinum_doctor);
+            postPlatinumDoctorWEGEvents(platinum_doctor, WebEngageEventName.DOH_Viewed, state);
+            postPlatinumDoctorCleverTapEvents(
+              platinum_doctor,
+              CleverTapEventName.CONSULT_DOH_Viewed,
+              state
+            );
+          } else {
+            setPlatinumDoctor(null);
+          }
+        })
+        .catch((e) => {
+          postWEGPatientAPIError(
+            currentPatient,
+            '',
+            'DoctorSearchListing',
+            'GET_PLATINUM_DOCTOR',
+            JSON.stringify(e)
           );
-        } else {
           setPlatinumDoctor(null);
-        }
-      })
-      .catch((e) => {
-        postWEGPatientAPIError(
-          currentPatient,
-          '',
-          'DoctorSearchListing',
-          'GET_PLATINUM_DOCTOR',
-          JSON.stringify(e)
-        );
-        setPlatinumDoctor(null);
-        CommonBugFender('GET_PLATINUM_DOCTOR', e);
-      });
+          CommonBugFender('GET_PLATINUM_DOCTOR', e);
+        });
+    }
   };
 
   async function fetchAddress(partnerDoctor: boolean = false, from?: string) {
