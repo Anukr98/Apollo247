@@ -1361,7 +1361,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           client,
           recommendationInputItems,
           Number(addressCityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
-          [patientDetails?.gender]
+          [patientDetails?.gender],
+          cartItemsForSinglePatient?.[0]?.groupPlan
         );
         if (getPackageRecommendationsResponse?.data?.getDiagnosticPackageRecommendationsv2) {
           const getResult =

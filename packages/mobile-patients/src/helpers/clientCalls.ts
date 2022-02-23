@@ -1657,7 +1657,8 @@ export const getDiagnosticsPackageRecommendationsv2 = (
   client: ApolloClient<object>,
   recommendationInputItems: recommendationInputItem[],
   cityId: number,
-  genderFilter?: [Gender]
+  genderFilter?: [Gender],
+  groupPlan?: string
 ) => {
   return client.query<getDiagnosticPackageRecommendationsv2, getDiagnosticPackageRecommendationsv2Variables>({
     query: GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS_V2,
@@ -1667,7 +1668,8 @@ export const getDiagnosticsPackageRecommendationsv2 = (
     variables: {
       recommendationInputItems: recommendationInputItems,
       cityId: cityId,
-      genderFilters: genderFilter
+      genderFilters: genderFilter,
+      groupPlan: groupPlan
     },
     fetchPolicy: 'no-cache',
   });
