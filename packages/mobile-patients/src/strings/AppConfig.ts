@@ -309,7 +309,7 @@ const appStaticVariables = {
         ctaPhoneNumber: '040-4821-3009',
         ctaText: 'Call to Order',
         ctaItemIds: [2446],
-        ctaDisplayHrsArray: [8,9,10,11]
+        ctaDisplayHrsArray: [8, 9, 10, 11],
       },
     ],
     ctaDetailsDefault: {
@@ -318,12 +318,30 @@ const appStaticVariables = {
       ctaPhoneNumber: '040-4821-3322',
       ctaText: 'Call to Order',
       ctaItemIds: [2446],
-      ctaDisplayHrsArray: [8,9,10,11]
+      ctaDisplayHrsArray: [8, 9, 10, 11],
     },
   },
   DIAGNOSTICS_SHOW_UPLOAD_PRESCRIPTION_SECTION: true,
   DIAGNOSTICS_HOME_SINGLE_ITEM: {
-    id: "2446",
+    id: '2446',
+  },
+  DIAGNOSTICS_HOME_TOP_ITEM_DETAILS: {
+    topItemDetails: [
+      {
+        cityId: 216,
+        itemId: 2499,
+        itemName: '',
+        ctaText: '',
+        price: 1999,
+        iconUrl1: '',
+        iconUrl2: '',
+        iconUrl3: '',
+        textLine1: '',
+        textLine2: '',
+        textLine3: '',
+        isCardVisible: false,
+      },
+    ],
   },
   DIAGNOSTICS_HOME_PAGE_BANNER_HEIGHT: 160,
   DIAGNOSTICS_PHLEBO_CALL_NUMBER: '08046807674',
@@ -344,8 +362,8 @@ const appStaticVariables = {
     frequentlyBrought: string.diagnostics.frequentlyBrought,
     topBookedTests: string.diagnostics.topBookedTests,
     similarPackages: string.diagnostics.similarPackages,
-    topPackages: "Top Packages with ",
-    relatedPackages : string.diagnosticsDetails.relatedPackages
+    topPackages: 'Top Packages with ',
+    relatedPackages: string.diagnosticsDetails.relatedPackages,
   },
   DeliveryIn_TAT_Text: 'Express Delivery',
   WHATSAPP_TO_ORDER: {
