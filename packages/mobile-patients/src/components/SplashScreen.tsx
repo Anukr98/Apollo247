@@ -191,6 +191,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const CONST_SPLASH_LOADER = [string.splash.CAPSULE, string.splash.SYRINGE, string.splash.STETHO];
   const [selectedAnimationIndex, setSelectedAnimationIndex] = useState(0);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+
   const {
     setReferralGlobalData,
     setReferralMainBanner,

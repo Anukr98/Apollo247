@@ -7589,3 +7589,56 @@ export const CHECK_DEPRECATED_APP_VERSION = gql`
     }
   }
 `;
+
+export const MEDICINE_HOMEPAGE_API_CALLS = gql`
+  query medicineHomepageCalls(
+    $patientUhid: String!,
+    $mobile_number: String!
+    $banner_context: String!
+    $user_state: UserState
+    $banner_display_type: [BannerDisplayType!],
+    $status: [String!]!
+    ) {
+      getRecommendedProductsList(patientUhid: $patientUhid) {
+        recommendedProducts {
+          productSku
+          productName
+          productImage
+          productPrice
+          productSpecialPrice
+          isPrescriptionNeeded
+          categoryName
+          status
+          mou
+          urlKey
+        }
+      }
+
+      GetAllGroupBannersOfUser(
+        mobile_number: $mobile_number
+        banner_context: $banner_context
+        user_state: $user_state
+        banner_display_type: $banner_display_type
+      ) {
+        code
+        success
+        message
+        response {
+          _id
+          is_active
+          banner
+          banner_template_info
+          cta_action
+          meta
+          banner_display_type
+        }
+      }
+
+      GetSubscriptionsOfUserByStatus(mobile_number: $mobile_number, status: $status) {
+        code
+        success
+        message
+        response
+      }
+  }
+`;
