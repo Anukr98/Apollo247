@@ -268,7 +268,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     getUserType();
     setProductSubstitutes?.([]);
     const propsData = props.navigation.getParam('data');
-    getMedicineDetails(pharmacyPincode, axdcCode, propsData?.sku);
+    getMedicineDetails(pharmacyPincode, axdcCode, propsData?.sku || sku);
     if (propsData) {
       const newData = {
         ...propsData,
