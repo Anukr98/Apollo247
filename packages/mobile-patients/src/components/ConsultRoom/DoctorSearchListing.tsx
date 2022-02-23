@@ -596,6 +596,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   }, []);
 
   const getDoctorOfTheHour = async (partnerDoctor: boolean = false, state?: string) => {
+    if (!specialityId) {
+      return;
+    }
     client
       .query<getPlatinumDoctor>({
         query: GET_PLATINUM_DOCTOR,
