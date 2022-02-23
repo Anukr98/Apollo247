@@ -130,6 +130,7 @@ import {
   updatePatientAppVersion,
   getDiagnosticSearchResults,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { Cache } from 'react-native-cache';
 import {
   FirebaseEventName,
   PatientInfoFirebase,
@@ -196,6 +197,7 @@ import {
   Keyboard,
   TextInput,
   BackHandler,
+  Image as ImageNative,
 } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { ScrollView, Switch } from 'react-native-gesture-handler';
@@ -1125,6 +1127,14 @@ export const tabBarOptions: TabBarOptions[] = [
 
 export interface HomeScreenProps extends NavigationScreenProps {}
 export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
+  const homeCache = new Cache({
+    namespace: 'home',
+    policy: {
+      maxEntries: 100,
+    },
+    backend: AsyncStorage,
+  });
+
   const { isIphoneX } = DeviceHelper();
   const {
     setLocationDetails,
@@ -1238,7 +1248,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const cartItemsCount = cartItems?.length + serverCartItems?.length! || 0;
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
-  const [previousPatient, setPreviousPatient] = useState<any>([]);
+  const [previousPatient, setPreviousPatient] = useState<any>(currentPatient);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [menuViewOptions, setMenuViewOptions] = useState<number[]>([]);
   const [currentAppointments, setCurrentAppointments] = useState<string>('0');
@@ -1260,6 +1270,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const circleActivatedRef = useRef<boolean>(circleActivated);
   const [referAndEarnPrice, setReferAndEarnPrice] = useState('100');
   const scrollCount = useRef<number>(0);
+
+  //banner
+  const [bannerFirstImage, setBannerFirstImage] = useState<string>('');
+  const [showProxyBannerContainer, setShowProxyBannerContainer] = useState(true);
+
+  //health credit
+  const [isHealthCreditLoading, setHealthCreditLoading] = useState<boolean>(true);
+
+  setTimeout(function() {
+    setShowProxyBannerContainer(false);
+  }, 3000);
 
   //prohealth
   const [isProHealthActive, setProHealthActive] = useState<boolean>(false);
@@ -1323,11 +1344,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     );
 
     handleCachedData();
+    updateOnHomeLaunch();
     getPatientApiCall();
     setVaccineLoacalStorageData();
     cleverTapEventForLoginDone();
     fetchUserAgent();
     firebaseTokenCheck();
+    fetchServerCart();
   }, []);
 
   const handleSearchClose = () => {
@@ -1364,6 +1387,45 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const handleCachedData = async () => {
     setBannerLoading(true);
 
+    homeCache.get('bannerFirstImage').then((bannerFirstImage: any) => {
+      if (bannerFirstImage) {
+        setBannerFirstImage(bannerFirstImage);
+      }
+    });
+
+    homeCache.get('healthCredits').then((healthCredits: any) => {
+      if (healthCredits) {
+        setHealthCredits(healthCredits);
+        setHealthCreditLoading(false);
+      }
+    });
+
+    Promise.all([
+      homeCache.get('isCircleMember'),
+      homeCache.get('planValidity'),
+      homeCache.get('renewNow'),
+      homeCache.get('circleStatus'),
+      homeCache.get('circleSavings'),
+    ]).then((values: any[]) => {
+      if (values[0]) {
+        setIsCircleMember(values[0]);
+      }
+      if (values[1]) {
+        setCirclePlanValidity!!(values[1]);
+      }
+      if (values[2]) {
+        setRenewNow!!(values[2]);
+      }
+      if (values[3]) {
+        setCircleStatus!!(values[3]);
+      }
+      if (values[4]) {
+        setCircleSavings!!(values[4]);
+      }
+
+      setCircleDataLoading(false);
+    });
+
     const cacheDataStringBuffer = await appGlobalCache.getAll();
 
     const offersListStringBuffer = cacheDataStringBuffer?.offersList?.value || '[]';
@@ -1379,31 +1441,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     }
     setBannerLoading(false);
 
-    const isCircleMemberCached = cacheDataStringBuffer?.isCircleMember?.value || '';
-    if (isCircleMemberCached) {
-      setIsCircleMember(isCircleMemberCached);
-    }
-
-    const planValidityCached = cacheDataStringBuffer?.planValidity?.value;
-    if (planValidityCached) {
-      setCirclePlanValidity!!(planValidityCached);
-    }
-
-    const renewNowCached = cacheDataStringBuffer?.renewNow?.value;
-    if (renewNowCached) {
-      setRenewNow!!(renewNowCached);
-    }
-
-    const circleStatusCached = cacheDataStringBuffer?.circleStatus?.value;
-    if (circleStatusCached) {
-      setCircleStatus!!(circleStatusCached);
-    }
-
-    const circleSavingsCached = cacheDataStringBuffer?.circleSavings?.value;
-    if (circleSavingsCached) {
-      setCircleSavings!!(circleSavingsCached);
-    }
-
     const isCircleMembers = (await AsyncStorage.getItem('isCircleMember')) || '';
     setIsCircleMember(isCircleMembers);
   };
@@ -1411,17 +1448,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const fetchUserAgent = () => {
     try {
       let userAgent = UserAgent?.getUserAgent();
-      if (userAgent) {
-        fetchServerCart(userAgent);
-      }
       AsyncStorage.setItem(USER_AGENT, userAgent);
     } catch {}
   };
-
-  //for prohealth option
-  useEffect(() => {
-    checkProhealthStatus();
-  }, [currentPatient]);
 
   async function checkProhealthStatus() {
     const storedUhid: any = await AsyncStorage.getItem('selectUserUHId');
@@ -1430,23 +1459,18 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     if (
       currentPatient?.id &&
       currentPatient?.uhid &&
-      previousPatient?.uhid != currentPatient?.uhid &&
       (!!storedUhid ? storedUhid == currentPatient?.uhid : storedUhid == null)
     ) {
       checkIsProhealthActive(currentPatient); //to show prohealth option
       getActiveProHealthAppointments(currentPatient); //to show the prohealth appointments
     }
   }
+
   const updateAppVersion = (currentPatient: any) => {
     if (currentPatient?.id) {
       updatePatientAppVersion(client, currentPatient);
     }
   };
-
-  useEffect(() => {
-    checkCleverTapLoginStatus(currentPatient);
-    updateAppVersion(currentPatient);
-  }, [currentPatient]);
 
   const getEventParams = async () => {
     const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
@@ -1516,12 +1540,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       props.navigation.navigate('ShareReferLink');
     } catch (e) {}
   };
-
-  useEffect(() => {
-    if (currentPatient?.id) {
-      saveDeviceNotificationToken(currentPatient.id);
-    }
-  }, [currentPatient]);
 
   const phrNotificationCount = getPhrNotificationAllCount(phrNotificationData!);
 
@@ -1674,13 +1692,47 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         setWEGUserAttributes();
       }
 
-      if (!bannerData) {
-        getUserBanners();
+      //check if previousPatient is not equalto currentPatient
+      //if yes then update then call the desired api and also update the previousPatient
+      if (
+        previousPatient?.uhid != currentPatient?.uhid ||
+        previousPatient?.id != currentPatient?.id
+      ) {
+        //DIFFRENT PATIENT
+        updateOnHomeLaunch();
+        setPreviousPatient(currentPatient);
+      } else {
+        // SAME PATIENT
       }
-
-      getUserSubscriptionsWithBenefits();
     } catch (e) {}
   }, [currentPatient]);
+
+  const updateOnHomeLaunch = () => {
+    //banner data
+    if (!bannerData) {
+      getUserBanners();
+    }
+
+    //call the desired apis
+    getUserSubscriptionsWithBenefits();
+    //for prohealth option
+    checkProhealthStatus();
+
+    checkCleverTapLoginStatus(currentPatient);
+    updateAppVersion(currentPatient);
+
+    if (currentPatient?.id) {
+      saveDeviceNotificationToken(currentPatient.id);
+    }
+
+    if (currentPatient) {
+      AsyncStorage.setItem('selectedProfileId', JSON.stringify(currentPatient.id));
+      if (selectedProfile !== currentPatient.id) {
+        getAppointmentsCount();
+        setSelectedProfile(currentPatient.id);
+      }
+    }
+  };
 
   useEffect(() => {
     if (upgradePlans?.length) {
@@ -2436,7 +2488,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     fetchCarePlans();
     getUserSubscriptionsByStatus(true);
     checkCircleSelectedPlan();
-    //setBannerData && setBannerData([]);
     getAskApolloLeadConfig();
     firebaseRemoteConfigForReferrer();
   }, []);
@@ -2697,8 +2748,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const getUserSubscriptionsByStatus = async (onAppLoad?: boolean) => {
-    setCircleDataLoading(true);
-
     try {
       const query: GetSubscriptionsOfUserByStatusVariables = {
         mobile_number: g(currentPatient, 'mobileNumber'),
@@ -2731,7 +2780,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           const paymentStoredVal =
             typeof paymentRef == 'string' ? JSON.parse(paymentRef) : paymentRef;
           AsyncStorage.setItem('isCircleMember', 'yes');
-          appGlobalCache.set('isCircleMember', 'yes');
+          homeCache.set('isCircleMember', 'yes');
 
           circleData?.status === 'disabled'
             ? AsyncStorage.setItem('isCircleMembershipExpired', 'yes')
@@ -2782,9 +2831,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           setCirclePlanId && setCirclePlanId(circleData?.plan_id);
           setCircleStatus && setCircleStatus(circleData?.status);
 
-          appGlobalCache.set('planValidity', planValidity);
-          appGlobalCache.set('renewNow', circleData?.renewNow ? 'yes' : 'no');
-          appGlobalCache.set('circleStatus', circleData?.status);
+          homeCache.set('planValidity', planValidity);
+          homeCache.set('renewNow', circleData?.renewNow ? 'yes' : 'no');
+          homeCache.set('circleStatus', circleData?.status);
 
           paymentStoredVal &&
             setCirclePaymentReference &&
@@ -2795,9 +2844,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           AsyncStorage.setItem('isCircleMember', 'no');
           setCirclePlanValidity && setCirclePlanValidity(null);
 
-          appGlobalCache.remove('planValidity');
-          appGlobalCache.set('isCircleMember', 'no');
-          appGlobalCache.set('circleStatus', '');
+          homeCache.remove('planValidity');
+          homeCache.set('isCircleMember', 'no');
+          homeCache.set('circleStatus', '');
 
           setCirclePaymentReference && setCirclePaymentReference(null);
           setCirclePlanId && setCirclePlanId('');
@@ -2839,7 +2888,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       };
       onAppLoad && logHomePageViewed(WEGAttributes);
     }
-    setCircleDataLoading(false);
   };
 
   const setNonCircleValues = () => {
@@ -2903,7 +2951,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       const deliverySavings = savings?.delivery || 0;
       const totalSavings = consultSavings + pharmaSavings + diagnosticsSavings + deliverySavings;
       setCircleSavings && setCircleSavings(Math.ceil(totalSavings));
-      appGlobalCache.set('circleSavings', Math.ceil(totalSavings));
+      homeCache.set('circleSavings', Math.ceil(totalSavings));
     } catch (error) {
       CommonBugFender('MyMembership_fetchCircleSavings', error);
     }
@@ -2912,6 +2960,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     var cachedHealthCredit: any = await getHealthCredits();
     if (cachedHealthCredit != null) {
       setHealthCredits && setHealthCredits(cachedHealthCredit.healthCredit);
+      setHealthCreditLoading(false);
       return; // no need to call api
     }
 
@@ -2927,6 +2976,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       const credits = res?.data?.getOneApolloUser?.availableHC;
       setHealthCredits && setHealthCredits(credits);
       persistHealthCredits(credits);
+      homeCache.set('healthCredits', credits || 0);
     } catch (error) {
       CommonBugFender('MyMembership_fetchCircleSavings', error);
     }
@@ -2945,6 +2995,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         setBannerDataHome && setBannerDataHome(res);
         setBannerData && setBannerData(res);
         appGlobalCache.set('bannerData', res);
+        homeCache.set('bannerFirstImage', res ? res[0] : null);
       }
     } catch (error) {
       setBannerDataHome && setBannerDataHome([]);
@@ -3132,18 +3183,19 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     }
   };
 
-  useEffect(() => {
-    currentPatient && setshowSpinner(false);
-    if (!currentPatient) {
-      // getPatientApiCall();
-    } else {
-      AsyncStorage.setItem('selectedProfileId', JSON.stringify(currentPatient.id));
-      if (selectedProfile !== currentPatient.id) {
-        getAppointmentsCount();
-        setSelectedProfile(currentPatient.id);
-      }
-    }
-  }, [currentPatient, props.navigation.state.params]);
+  // Intentionally commentted NOT Required Any more - WILL Delete later
+  // useEffect(() => {
+  //   currentPatient && setshowSpinner(false);
+  //   if (!currentPatient) {
+  //     // getPatientApiCall();
+  //   } else {
+  //     AsyncStorage.setItem('selectedProfileId', JSON.stringify(currentPatient.id));
+  //     if (selectedProfile !== currentPatient.id) {
+  //       getAppointmentsCount();
+  //       setSelectedProfile(currentPatient.id);
+  //     }
+  //   }
+  // }, [props.navigation.state.params]);
 
   const getAppointmentsCount = () => {
     client
@@ -3844,9 +3896,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                           <Text
                             style={[theme.viewStyles.text('M', 11, item.subtitleColor!, 1, 18)]}
                           >
-                            {healthCredits && healthCredits >= 30
-                              ? '₹' + healthCredits + ' ' + item.subtitle
-                              : 'Get 100% Genuine Medicines'}
+                            {getHealthCreditStatements(healthCredits, item.subtitle)}
                           </Text>
                         </View>
                       </View>
@@ -3893,6 +3943,22 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         })}
       </View>
     );
+  };
+
+  const getHealthCreditStatements = (healthCredits: number, text: string) => {
+    if (isHealthCreditLoading) {
+      return '₹' + '--' + ' ' + text;
+    } else {
+      if (healthCredits) {
+        if (healthCredits >= 30) {
+          return '₹' + healthCredits + ' ' + text;
+        } else {
+          return 'Get 100% Genuine Medicines';
+        }
+      } else {
+        return 'Get 100% Genuine Medicines';
+      }
+    }
   };
 
   const renderServicesForYouView = () => {
@@ -4313,6 +4379,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     }
   };
 
+  const getHomeBanner = () => {
+    return (
+      <View style={{ height: 200 }}>
+        <View style={{ position: 'absolute', width: '100%' }}>
+          {showProxyBannerContainer ? renderBannerPlaceHolder() : null}
+        </View>
+        {renderBannersCarousel()}
+      </View>
+    );
+  };
+
   const dataBannerCards = (darktheme: any) => {
     const datatoadd = bannerDataHome?.filter((item: any) => item?.banner_display_type === 'card');
 
@@ -4537,6 +4614,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     return mPath;
   };
 
+  const getMobileURLMWEB = (url: string) => {
+    const ext = url?.includes('.jpg') ? '.jpg' : url?.includes('.jpeg') ? 'jpeg' : '.png';
+    const txt = url.split(ext)[0];
+    const path = txt.split('/');
+    path.pop();
+    const name = url.split(ext)[0].split('/')[txt.split('/').length - 1];
+    const mPath = path.join('/').concat('/mweb_'.concat(name).concat(ext));
+    return mPath;
+  };
+
   const onClickCircleBenefits = (
     membershipState: 'Expired' | 'About to Expire' | 'Not Expiring' | 'New User',
     action: any
@@ -4547,6 +4634,29 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       action,
       circlePlanValidity,
       circleSubscriptionId
+    );
+  };
+
+  const renderCircleBox = () => {
+    return (
+      <LinearGradientComponent
+        style={[
+          styles.circleContainer,
+          {
+            borderWidth: 1,
+            borderColor: '#F9D5B4',
+            height: 57,
+            alignItems: 'center',
+            justifyContent: 'center',
+          },
+        ]}
+        colors={['#FFEEDB', '#FFFCFA']}
+      >
+        <Image
+          style={{ alignSelf: 'flex-start', width: 46, height: 29, marginLeft: 13 }}
+          source={require('@aph/mobile-patients/src/components/ui/icons/circleLogo.webp')}
+        />
+      </LinearGradientComponent>
     );
   };
 
@@ -5764,20 +5874,37 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const renderBannerPlaceHolder = () => {
+    if (!bannerFirstImage) {
+      return null;
+    }
+
+    let bannerImage = getMobileURLMWEB(bannerFirstImage?.banner) + '?imwidth=' + Math.floor(width);
+
     return (
       <View style={{ marginBottom: 12, marginHorizontal: 16, marginTop: 12 }}>
-        <View
+        <ImageNative
+          resizeMode="cover"
+          fadeDuration={50}
+          borderRadius={6}
+          progressiveRenderingEnabled={true}
           style={{
-            height: 145,
+            width: '100%',
+            height: 160,
             backgroundColor: colors.OFF_WHITE_DARK,
             borderRadius: 6,
+            alignSelf: 'center',
+          }}
+          source={{
+            uri: bannerImage,
           }}
         />
-        <View style={{ flexDirection: 'row', alignSelf: 'center', marginTop: 22 }}>
+
+        {/* Below dots - Intentionally commented for future use case - will delete later  */}
+        {/* <View style={{ flexDirection: 'row', alignSelf: 'center', marginTop: 22 }}>
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(() => {
             return <View style={styles.bannerDots} />;
           })}
-        </View>
+        </View> */}
       </View>
     );
   };
@@ -6206,12 +6333,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             <View style={{ width: '100%' }}>
               <View style={styles.viewName}>
                 {renderMenuOptions()}
-
                 {offersListCache?.length > 0 && renderHeadings('Offers For You')}
+
                 {/* Don't delete this*/}
                 {/* {offersListCache.length === 0 && offersListLoading && renderOffersForYouShimmer()} */}
-                {(offersListCache?.length > 0 || !offersListLoading) && renderOffersForYou()}
 
+                {(offersListCache?.length > 0 || !offersListLoading) && renderOffersForYou()}
                 {isReferrerAvailable && renderReferralBanner()}
 
                 {currentAppointments != '0' || myDoctorsCount != 0 ? (
@@ -6227,20 +6354,24 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
                 {renderHeadings('Circle Membership and More')}
 
-                {isCircleMember === 'yes' && renderCircle()}
-                {isCircleMember === 'no' && renderCircleBuyNow()}
+                {circleDataLoading ? (
+                  renderCircleBox()
+                ) : (
+                  <View style={{}}>
+                    {isCircleMember === 'yes' && renderCircle()}
+                    {isCircleMember === 'no' && renderCircleBuyNow()}
+                  </View>
+                )}
 
                 {showCirclePlans && renderCircleSubscriptionPlans()}
                 {showCircleActivationcr && renderCircleActivation()}
 
-                {!bannerData || bannerLoading ? renderBannerPlaceHolder() : renderBannersCarousel()}
+                {getHomeBanner()}
 
                 {renderHeadings('Book Doctor Consult')}
                 <View>{renderSecondaryConsultationCta()}</View>
-
                 {renderHeadings('Services For You')}
                 {renderServicesForYouView()}
-
                 {renderHeadings('Apollo Prohealth')}
                 {proActiveAppointments?.length == 0 && <View>{renderProhealthBanner()}</View>}
                 {proActiveAppointments?.length > 0 && (

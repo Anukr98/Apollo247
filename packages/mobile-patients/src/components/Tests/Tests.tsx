@@ -101,6 +101,7 @@ import {
   CALL_TO_ORDER_CTA_PAGE_ID,
   DiagnosticCTJourneyType,
   DIAGNOSTIC_ORDER_STATUS,
+  REPORT_TAT_SOURCE,
   TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
@@ -129,10 +130,12 @@ import {
   getDiagnosticsByItemIdCityId,
   getDiagnosticsOrder,
   getDiagnosticsPastOrderRecommendations,
+  getReportTAT,
   getUserBannersList,
   getUserSubscriptionStatus,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
+  diagnosticsDisplayPrice,
   createDiagnosticAddToCartObject,
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   DIAGNOSTIC_ITEM_GENDER,
@@ -284,6 +287,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setNewAddressAddedHomePage,
     patientCartItems,
     modifiedOrder,
+    diagnosticSlot
   } = useDiagnosticsCart();
   const {
     serverCartItems: shopCartItems,
@@ -367,6 +371,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [priceAvailable, setPriceAvailable] = useState<boolean>(false);
   const [fetchAddressLoading, setFetchAddressLoading] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>('');
+  const [reportTat, setReportTat] = useState<string>('');
   const [diagnosticResults, setDiagnosticResults] = useState<
     searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
   >([]);
@@ -2627,7 +2632,45 @@ export const Tests: React.FC<TestsProps> = (props) => {
     addCartItem?.(item);
     _navigateToPatientsPage();
   }
+  async function fetchReportTat(itemId: string | number) {
+    const selectedAddressIndex = addresses?.findIndex(
+      (address) => address?.id == deliveryAddressId
+    );
+    const itemIds = [Number(itemId)];
+    const id = Number(cityId);
+    const pincode = diagnosticLocation?.pincode!;
+    const formattedDate = moment(diagnosticSlot?.date).format('YYYY/MM/DD');
+    const dateTimeInUTC = moment(formattedDate + ' ' + diagnosticSlot?.slotStartTime).toISOString();
+    try {
+      const result = await getReportTAT(
+        client,
+        !!diagnosticSlot && !isEmptyObject(diagnosticSlot) ? dateTimeInUTC : null,
+        id,
+        !!pincode ? Number(pincode) : 0,
+        itemIds,
+        REPORT_TAT_SOURCE.TEST_DETAILS_PAGE
+      );
+      if (result?.data?.getConfigurableReportTAT) {
+        const getMaxReportTat = result?.data?.getConfigurableReportTAT?.preOrderReportTATMessage!;
+        setReportTat(getMaxReportTat);
+      } else {
+        setReportTat('');
+      }
+    } catch (error) {
+      CommonBugFender('fetchReportTat_Tests', error);
+      setReportTat('');
+    }
+  }
 
+  const topItem = AppConfig.Configuration.DIAGNOSTICS_HOME_TOP_ITEM_DETAILS;
+  const topItemDetails = topItem?.topItemDetails?.filter((item:any)=>{
+    return item?.cityId == cityId
+  });
+  useEffect(() => {
+    if (topItemDetails?.length > 0) {
+      fetchReportTat(topItemDetails?.[0]?.itemId);
+    }
+  }, [topItemDetails?.length]);
   function _navigateToDetailsPage(singleItemData: any, source: string) {
     props.navigation.navigate(AppRoutes.TestDetails, {
       itemId: source == 'cartSummary' ? singleItemData?.id : singleItemData?.itemId,
@@ -2637,80 +2680,97 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderSingleItem = () => {
     let singleItemFilterData: any[] = [];
+    let itemtype = ''
     for (let index = 0; index < widgetsData?.length; index++) {
       const element = widgetsData?.[index];
       element?.diagnosticWidgetData?.filter((item: any) => {
-        if (item?.itemId == singleItem?.id) {
+        if (item?.itemId == topItemDetails?.[0]?.itemId) {
+          itemtype = element?.diagnosticWidgetType;
           singleItemFilterData?.push(item);
         }
       });
     }
-    const singleItemData = singleItemFilterData?.[0];
-    const packageMrpForItem = singleItemData?.packageCalculatedMrp!;
-    const getDiagnosticPricingForItem = singleItemData?.diagnosticPricing;
+    const topItemData = singleItemFilterData?.[0];
+    const packageMrpForItem = topItemData?.packageCalculatedMrp!;
+    const getDiagnosticPricingForItem = topItemData?.diagnosticPricing;
     const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
-    const { getMandatoryParameterCount } = getParameterCount(singleItemData, 'incObservationData');
-
+    const reportMsg = reportTat || string.diagnostics.sameDayReports;
+    const { getMandatoryParameterCount } = getParameterCount(topItemData, 'incObservationData');
+    const inclusions = topItemData?.inclusionData?.map((item: any) => {
+      return item?.incItemId;
+    });
+    const singleItemObj = createDiagnosticAddToCartObject(
+      topItemData?.itemId,
+      topItemData?.itemTitle,
+      topItemData?.gender,
+      pricesForItem?.price!,
+      pricesForItem?.specialPrice!,
+      pricesForItem?.circlePrice!,
+      pricesForItem?.circleSpecialPrice!,
+      pricesForItem?.discountPrice!,
+      pricesForItem?.discountSpecialPrice!,
+      TEST_COLLECTION_TYPE.HC,
+      pricesForItem?.planToConsider?.groupPlan!,
+      packageMrpForItem,
+      inclusions,
+      AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
+      topItemData?.itemImageUrl,
+      getMandatoryParameterCount
+    );
+    const slashedPrice = diagnosticsDisplayPrice(singleItemObj,isDiagnosticCircleSubscription)?.slashedPrice;
     return (
       <>
-        {!!singleItemData?.itemTitle && !!pricesForItem?.price ? (
+        {!!topItemData?.itemTitle && !!pricesForItem?.price ? (
           <TouchableOpacity
             style={styles.singleItemContainer}
-            onPress={() => _navigateToDetailsPage(singleItemData, 'singleItemCard')}
+            onPress={() => _navigateToDetailsPage(topItemData, 'singleItemCard')}
           >
             <View style={styles.itemFirst}>
               <View style={{ flexDirection: 'row' }}>
                 <VirusGreen style={{ height: 24 }} />
-                <Text style={styles.singleItemName}>{singleItemData?.itemTitle}</Text>
+                <Text style={styles.singleItemName}>
+                  {topItemDetails?.[0]?.itemName || topItemData?.itemTitle}
+                </Text>
               </View>
+              {isDiagnosticCircleSubscription ? (
+                <Text style={[styles.singleSlashedItemPrice]}>
+                  {string.common.Rs}
+                  {slashedPrice}
+                </Text>
+              ) : null}
               <Text style={styles.singleItemPrice}>
                 {string.common.Rs}
-                {pricesForItem?.price}
+                {topItemDetails?.[0]?.price || pricesForItem?.price}
               </Text>
             </View>
             <View style={styles.viewSecond}>
               <View style={{ marginLeft: 45 }}>
-                <View style={styles.blueFirst}>
-                  <ClockBlue style={styles.blueIcon} />
-                  <Text style={styles.blueText}>{string.diagnostics.sameDayReports}</Text>
-                </View>
-                <View style={styles.blueSecond}>
-                  <HomeBlue style={styles.blueIcon} />
-                  <Text style={styles.blueText}>{string.diagnostics.freeHomeCollection}</Text>
-                </View>
+                {reportMsg ? (
+                  <View style={styles.blueFirst}>
+                    <ClockBlue style={styles.blueIcon} />
+                    <Text style={styles.blueText}>{reportMsg}</Text>
+                  </View>
+                ) : null}
+                {topItemDetails?.[0]?.textLine2 ? (
+                  <View style={styles.blueSecond}>
+                    <HomeBlue style={styles.blueIcon} />
+                    <Text style={styles.blueText}>{topItemDetails?.[0]?.textLine2}</Text>
+                  </View>
+                ) : null}
               </View>
               <Button
-                title={string.diagnostics.bookNow}
+                title={topItemDetails?.[0]?.ctaText || string.diagnostics.bookNow}
                 style={styles.buttonTop}
                 onPress={() => {
-                  const inclusions = singleItemData?.inclusionData?.map((item: any) => {
-                    return item?.incItemId;
-                  });
-                  const singleItemObj = createDiagnosticAddToCartObject(
-                    singleItemData?.itemId,
-                    singleItemData?.itemTitle,
-                    singleItemData?.gender,
-                    pricesForItem?.price!,
-                    pricesForItem?.specialPrice!,
-                    pricesForItem?.circlePrice!,
-                    pricesForItem?.circleSpecialPrice!,
-                    pricesForItem?.discountPrice!,
-                    pricesForItem?.discountSpecialPrice!,
-                    TEST_COLLECTION_TYPE.HC,
-                    pricesForItem?.planToConsider?.groupPlan!,
-                    packageMrpForItem,
-                    inclusions,
-                    AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
-                    singleItemData?.itemImageUrl,
-                    getMandatoryParameterCount
-                  );
                   onPressSingleBookNow(singleItemObj);
                 }}
               />
             </View>
-            <View style={styles.bottomGreenView}>
-              <Text style={styles.bottomText}>{string.diagnostics.forFamily}</Text>
-            </View>
+            {topItemDetails?.[0]?.textLine3 ? (
+              <View style={styles.bottomGreenView}>
+                <Text style={styles.bottomText}>{topItemDetails?.[0]?.textLine3}</Text>
+              </View>
+            ) : null}
           </TouchableOpacity>
         ) : null}
       </>
@@ -2751,7 +2811,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       >
         {widgetsData?.length == 0 && reloadWidget && renderLowNetwork()}
         {renderWidgetItems(widget1)} {/**1 */}
-        {!!singleItem?.id && renderSingleItem()}
+        {!!topItemDetails?.[0]?.itemId && topItemDetails?.[0]?.isCardVisible && renderSingleItem()}
         {currentPatient && renderOrderAndPrescriptionPanel()}
         {latestPrescriptionShimmer
           ? renderDiagnosticCardShimmer()
@@ -3547,13 +3607,20 @@ const styles = StyleSheet.create({
   singleItemName: {
     ...theme.viewStyles.text('SB', 16, colors.SHERPA_BLUE, 1),
     marginLeft: 5,
-    width: '75%',
+    width: '65%',
   },
   singleItemPrice: {
     ...theme.viewStyles.text('SB', 16, colors.SHERPA_BLUE, 1),
     alignSelf: 'center',
     justifyContent: 'center',
     marginRight: 10,
+  },
+  singleSlashedItemPrice: {
+    ...theme.viewStyles.text('SB', 14, colors.LIGHTISH_GRAY, 1),
+    alignSelf: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+    textDecorationLine:'line-through'
   },
   viewSecond: {
     flexDirection: 'row',
@@ -3624,7 +3691,8 @@ const styles = StyleSheet.create({
   prescriptionText: {
     ...theme.viewStyles.text('SB', 15, theme.colors.SHERPA_BLUE, 1, 20),
     textAlign: 'left',
-    width: '50%',
+    width: '60%',
+    flexWrap:'wrap'
   },
   bottomArea: {
     backgroundColor: colors.APP_GREEN,

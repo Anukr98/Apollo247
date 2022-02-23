@@ -690,7 +690,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   patientNameView: {
-    maxWidth: screenWidth * 0.45, //160
+    maxWidth: screenWidth * 0.45,
     justifyContent: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',

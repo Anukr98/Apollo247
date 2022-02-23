@@ -78,7 +78,7 @@ export const ExpressSlotMessageRibbon: React.FC<ExpressSlotMessageRibbonProps> =
 };
 
 const styles = StyleSheet.create({
-  outerExpressView: { backgroundColor: colors.APP_GREEN, marginBottom: 2 },
+  outerExpressView: { backgroundColor: colors.APP_GREEN },
   innerExpressView: {
     flexDirection: 'row',
     padding: 4,
