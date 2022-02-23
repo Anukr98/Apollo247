@@ -428,6 +428,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           } else if (data && data.message) {
             setIsMedicineError(true);
           }
+          setLoading(false);
         })
         .catch((err) => {
           CommonBugFender('ProductDetailsScene_getMedicineDetailsV2Api', err);
