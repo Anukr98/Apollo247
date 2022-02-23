@@ -2253,7 +2253,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           };
           postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Home Screen');
           postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Home Screen');
-          postDiagnosticHomepageViewedEvent()
+          postDiagnosticHomepageViewedEvent('Homepage hero button')
           props.navigation.navigate('TESTS', { focusSearch: true, homeScreenAttributes });
         });
       },
@@ -2276,7 +2276,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED,
             'Home Screen'
           );
-          postHomepageEvent()
+          postHomepageEvent('Homepage banner')
           props.navigation.navigate(AppRoutes.DoctorSearch);
         });
       },
@@ -2347,9 +2347,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     },
   ];
 
-  const postHomepageEvent = () => {
+  const postHomepageEvent = (source: 'Homepage banner' | 'Offer widget') => {
     const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_HOMEPAGE_VIEWED] = {
-      'Nav src': 'Homepage banner',
+      'Nav src': source,
       'User': `${currentPatient?.firstName} ${currentPatient?.lastName}`,
       'UHID': currentPatient?.uhid,
       'Gender': currentPatient?.gender,
@@ -2359,9 +2359,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     postCleverTapEvent(CleverTapEventName.CONSULT_HOMEPAGE_VIEWED, eventAttributes)
   }
 
-  const postDiagnosticHomepageViewedEvent = () => {
+  const postDiagnosticHomepageViewedEvent = (source: 'Homepage hero button' | 'Offer widget') => {
     const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_HOMEPAGE_VIEWED] = {
-      'Nav src': 'Homepage hero button',
+      'Nav src': source,
       'User': `${currentPatient?.firstName} ${currentPatient?.lastName}`,
       'UHID': currentPatient?.uhid,
       'Gender': currentPatient?.gender,
@@ -4298,6 +4298,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const navigateCTAActions = (action: any, url: string) => {
     if (action?.type == 'REDIRECT') {
       if (action.cta_action == 'SPECIALITY_LISTING') {
+        postHomepageEvent('Offer widget')
         props.navigation.navigate(AppRoutes.DoctorSearch);
       } else if (action.cta_action == 'PHARMACY_LANDING') {
         props.navigation.navigate('MEDICINES');
@@ -4316,6 +4317,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         const homeScreenAttributes = {
           Source: DiagnosticHomePageSource.BANNER,
         };
+        postDiagnosticHomepageViewedEvent('Offer widget')
         props.navigation.navigate('TESTS', { homeScreenAttributes });
       } else if (action.cta_action == 'MEMBERSHIP_DETAIL_CIRCLE') {
         props.navigation.navigate('MembershipDetails', {

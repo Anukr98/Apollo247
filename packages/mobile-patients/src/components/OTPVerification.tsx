@@ -125,12 +125,12 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [updatedTimerValue, setUpdatedTimerValue] = useState<number>(0)
   const [newOTPNeeded, setNewOTPNeeded] = useState<boolean>(false)
 
-  const inputBoxFirst = useRef(null)
-  const inputBoxSecond = useRef(null)
-  const inputBoxThird = useRef(null)
-  const inputBoxFourth = useRef(null)
-  const inputBoxFifth = useRef(null)
-  const inputBoxSixth = useRef(null)
+  const inputBoxFirst = useRef<TextInput>(null)
+  const inputBoxSecond = useRef<TextInput>(null)
+  const inputBoxThird = useRef<TextInput>(null)
+  const inputBoxFourth = useRef<TextInput>(null)
+  const inputBoxFifth = useRef<TextInput>(null)
+  const inputBoxSixth = useRef<TextInput>(null)
   const [otpArray, setOtpArray] = useState(['','','','','',''])
 
   const styles = StyleSheet.create({
