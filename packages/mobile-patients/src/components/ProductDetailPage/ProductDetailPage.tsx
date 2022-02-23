@@ -416,7 +416,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
 
   const getMedicineDetails = (zipcode?: string, pinAcdxCode?: string, selectedSku?: string) => {
     if (urlKey || selectedSku) {
-      getMedicineDetailsApiV2(selectedSku || urlKey, pinAcdxCode || axdcCode, pharmacyPincode)
+      getMedicineDetailsApiV2(selectedSku || urlKey || '', pinAcdxCode || axdcCode, pharmacyPincode)
         .then(({ data }) => {
           const productDetails = g(data, 'productdp', '0' as any);
 
@@ -433,10 +433,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           CommonBugFender('ProductDetailsScene_getMedicineDetailsV2Api', err);
           aphConsole.log('ProductDetailsScene err\n', err);
           setApiError(!!err);
-          setLoading(false);
-        });
+        })
+        .finally(() => setLoading(false));
     } else {
-      getMedicineDetailsApi(sku, pinAcdxCode || axdcCode, pharmacyPincode)
+      getMedicineDetailsApi(sku || '', pinAcdxCode || axdcCode, pharmacyPincode)
         .then(({ data }) => {
           const productDetails = g(data, 'productdp', '0' as any);
           if (productDetails) {
@@ -444,14 +444,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           } else if (data && data.message) {
             setIsMedicineError(true);
           }
-          setLoading(false);
         })
         .catch((err) => {
           CommonBugFender('ProductDetailsScene_getMedicineDetailsApi', err);
           aphConsole.log('ProductDetailsScene err\n', err);
           setApiError(!!err);
-          setLoading(false);
-        });
+        })
+        .finally(() => setLoading(false));
     }
   };
 
@@ -490,7 +489,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     }
   };
 
-  const getBoughtTogetherData = (productSku: string, productDetails) => {
+  const getBoughtTogetherData = (productSku: string, productDetails: MedicineProductDetails) => {
     const mainProduct = {
       id: productDetails.id,
       sku: productDetails.sku,
