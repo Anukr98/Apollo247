@@ -972,6 +972,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
           };
         } catch (e) {}
       }
+
       try {
         client
           .mutate<updatePatient, updatePatientVariables>({
@@ -986,7 +987,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
               AsyncStorage.setItem('userLoggedIn', 'true'),
               AsyncStorage.setItem('signUp', 'false'),
               AsyncStorage.setItem('gotIt', patient ? 'true' : 'false'),
-              createOneApolloUser(data?.updatePatient?.patient?.id!),
+              createOneApolloUser(data?.data?.updatePatient?.patient?.id!),
               postAppsFlyerEventAppInstallViaReferral(data);
             if (preApolloExistingUser && preApolloExistingUser === 'true') {
               setCurrentPatientId(patientDetails.id);
