@@ -859,7 +859,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           payload: payload,
           isCircleAddedToCart: isCircleAddedToCart,
           verticalSpecificEventAttributes,
-          amount: amount,
+          amount: props.navigation.getParam('amount'),
         });
         break;
       case 'consult':
@@ -869,7 +869,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           paymentId: paymentId,
           defaultClevertapEventParams: defaultClevertapEventParams,
           payload: payload,
-          amount: amount,
+          amount: props.navigation.getParam('amount'),
         });
         break;
       case 'pharma':
@@ -888,7 +888,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           );
         props.navigation.navigate(AppRoutes.PaymentStatusPharma, {
           paymentStatus: paymentStatus,
-          amount: amount,
+          amount: props.navigation.getParam('amount'),
           paymentId: paymentId,
           orderDetails: orderDetails,
           checkoutEventAttributes: checkoutEventAttributes,
@@ -921,7 +921,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           orderId: orderDetails?.orderId,
           paymentStatus: paymentStatus,
           paymentId: paymentId,
-          amount: amount,
+          amount: props.navigation.getParam('amount'),
           defaultClevertapEventParams: defaultClevertapEventParams,
           payload: payload,
         });
