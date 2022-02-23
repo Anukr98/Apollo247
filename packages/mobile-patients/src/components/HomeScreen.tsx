@@ -1308,7 +1308,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   ]);
 
   const [offersListCache, setOffersListCache] = useState<any[]>([]);
-  const [appointmentCountCache, setAppointmentCountCache] = useState<string>('0');
+
   const [isCircleMemberCache, setIsCircleMemberCache] = useState<String>('');
 
   const saveDeviceNotificationToken = async (id: string) => {
@@ -1398,8 +1398,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     homeCache.get('healthCredits').then((healthCredits: any) => {
       if (healthCredits) {
         setHealthCredits(healthCredits);
-        setHealthCreditLoading(false);
       }
+      setHealthCreditLoading(false);
     });
 
     Promise.all([
@@ -1434,7 +1434,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     setOffersListCache(JSON.parse(offersListStringBuffer));
 
     const count = cacheDataStringBuffer?.appointmentCount?.value || '0';
-    setAppointmentCountCache(count);
+    if (count) {
+      setCurrentAppointments(count);
+    }
 
     const bannerDataCached = cacheDataStringBuffer?.bannerData?.value || '';
 
@@ -3212,7 +3214,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         const count = data?.data?.getPatientFutureAppointmentCount?.activeConsultsCount || 0;
         setCurrentAppointments(`${count}`);
         appGlobalCache.set('appointmentCount', JSON.stringify(count));
-        setAppointmentCountCache(JSON.stringify(count));
       })
       .catch((e) => {
         CommonBugFender('ConsultRoom_getPatientFutureAppointmentCount', e);
@@ -6356,7 +6357,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                 {(offersListCache?.length > 0 || !offersListLoading) && renderOffersForYou()}
                 {isReferrerAvailable && renderReferralBanner()}
 
-                {currentAppointments != '0' || myDoctorsCount != 0 ? (
+                {currentAppointments != '0' ||
+                currentAppointments != undefined ||
+                myDoctorsCount > 0 ? (
                   renderHeadings('My Doctors')
                 ) : (
                   <Text style={{ paddingTop: 12 }}> </Text>
