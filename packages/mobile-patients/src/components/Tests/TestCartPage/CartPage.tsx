@@ -323,7 +323,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       '',
       isRecommendationShown,
       recomData,
-      paitentTotalCart
+      paitentTotalCart,
+      groupRecommendations?.[0]
     );
   }
 
@@ -438,7 +439,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         '',
         isRecommendationShown,
         recomData,
-        paitentTotalCart
+        paitentTotalCart,
+        groupRecommendations?.[0]
       );
     }
   }, [cartItems?.length, recomData?.length, loading]);
