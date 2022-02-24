@@ -869,6 +869,9 @@ export const PremiumIcon: React.FC<IconProps> = (props) => (
 export const DownloadOrange: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/download_o_3x.webp')} />
 );
+export const AcceptGreen: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/accept3x.webp')} />
+);
 
 export const OneApollo: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/health_credits.webp')} />

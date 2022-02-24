@@ -226,8 +226,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
   const [reportTat, setReportTat] = useState([] as any);
   const [showAllPreviousItems, setShowAllPreviousItems] = useState<boolean>(false);
-  const [openRecommedations, setOpenRecommedations] = useState<boolean>(false);
-  const [showrecommendationPopUp, setShowrecommendationPopUp] = useState<boolean>(false);
+  const [openRecommedations, setOpenRecommedations] = useState<boolean>(true);
   const [groupRecommendations, setGroupRecommendations] = useState([] as any);
   const isCartPresent = isDiagnosticSelectedCartEmpty(
     isModifyFlow ? modifiedPatientCart : patientCartItems
@@ -1427,49 +1426,25 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     const priceDiff =
       diagnosticsDisplayPrice(grpItem, isDiagnosticCircleSubscription)?.priceToShow -
       getCartTotalPrice();
+    const patientId = patientCartItems?.[0]?.patientId;
     return (
       <>
-        {/* Group Recommendations start here */}
-        <TouchableOpacity
-          style={[
-            styles.recommedationHeaderContainer,
-            {
-              borderBottomStartRadius: openRecommedations ? 0 : 10,
-              borderBottomEndRadius: openRecommedations ? 0 : 10,
-            },
-          ]}
-          onPress={() => {
-            setOpenRecommedations(!openRecommedations);
-          }}
-        >
-          <Text style={styles.textStyleHeading}>
-            {`Recommended for you • ${
-              priceDiff > 0
-                ? `${
-                    groupRecommendations?.[0]?.extraInclusionsCount > 1
-                      ? `${groupRecommendations?.[0]?.extraInclusionsCount} Tests`
-                      : `${groupRecommendations?.[0]?.extraInclusionsCount} Test`
-                  } @ ₹ ${priceDiff?.toFixed()} Only`
-                : `Save ₹ ${Math.abs(priceDiff)?.toFixed()}`
-            }`}
-          </Text>
-          {openRecommedations ? (
-            <ArrowUpWhite style={styles.iconStyleArrow} />
-          ) : (
-            <ArrowDownWhite style={styles.iconStyleArrow} />
-          )}
-        </TouchableOpacity>
         <RecommedationGroupCard
           cartItems={cartItems}
           patientItems={patientItems}
           data={groupRecommendations?.[0]}
           showRecommedation={openRecommedations}
           onPressAdd={() => {
-            setShowrecommendationPopUp(true);
+            _onPressProceed(patientId, grpItem)
           }}
           showPrice={Number(priceDiff?.toFixed())}
           showAddButton={true}
           showTestWorth={true}
+          priceDiff={priceDiff}
+          groupRecommendations={groupRecommendations}
+          onPressArrow={()=>{
+            setOpenRecommedations(!openRecommedations);
+          }}
         />
       </>
     );
@@ -1591,86 +1566,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     );
   };
 
-  const renderRecommedationGroupPopUp = () => {
-    const groupItem = groupRecommendations?.[0];
-    const getDiagnosticPricingForItem = groupItem?.diagnosticPricing;
-    const packageMrpForItem = groupItem?.packageCalculatedMrp!;
-    const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
-    const patientItems = patientCartItems?.[0]?.cartItems?.filter((cItem) => cItem?.isSelected);
-    const patientId = patientCartItems?.[0]?.patientId;
-    const getPatientName = getPatientNameById(allCurrentPatients, patientId);
-
-    const grpItem = createDiagnosticAddToCartObject(
-      groupItem?.itemId,
-      groupItem?.itemName,
-      groupItem?.gender,
-      pricesForItem?.price!,
-      pricesForItem?.specialPrice!,
-      pricesForItem?.circlePrice!,
-      pricesForItem?.circleSpecialPrice!,
-      pricesForItem?.discountPrice!,
-      pricesForItem?.discountSpecialPrice!,
-      groupItem?.collectionType,
-      pricesForItem?.planToConsider?.groupPlan!,
-      packageMrpForItem,
-      groupItem?.inclusions,
-      AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
-      groupItem?.itemImageUrl
-    );
-
-    const priceToShow = diagnosticsDisplayPrice(grpItem, isDiagnosticCircleSubscription)
-      ?.priceToShow;
-    return (
-      <Overlay
-        isVisible
-        onRequestClose={() => setShowrecommendationPopUp(false)}
-        windowBackgroundColor={'rgba(0, 0, 0, 0.6)'}
-        containerStyle={{ marginBottom: 0 }}
-        fullScreen
-        transparent
-        overlayStyle={styles.phrOverlayStyle}
-      >
-        <View style={styles.popupContainer}>
-          <Text style={styles.textInclusionsRecom}>
-            {string.diagnosticsCartPage.recommendedText}
-            <Text style={styles.boldTextRecom}> {getPatientName} </Text>
-          </Text>
-          <RecommedationGroupCard
-            cartItems={cartItems}
-            patientItems={patientItems}
-            data={groupRecommendations?.[0]}
-            showRecommedation={openRecommedations}
-            containerStyle={styles.groupRecommendationContainer}
-            onPressAdd={() => {}}
-            showAddButton={false}
-            showTestWorth={false}
-            scrollEnabled={true}
-            showPrice={0}
-            priceToDisplayOnPopUp={priceToShow}
-            showPrice={0}
-          />
-          <View style={styles.promoButtonContainer}>
-            <TouchableOpacity
-              style={styles.proceedToCancelTouch}
-              onPress={() => {
-                setShowrecommendationPopUp(false);
-              }}
-            >
-              <Text style={styles.yellowText}>{string.common.goBack}</Text>
-            </TouchableOpacity>
-            <Button
-              onPress={() => _onPressProceed(patientId, grpItem)}
-              style={{ width: '40%' }}
-              title={'PROCEED'}
-            />
-          </View>
-        </View>
-      </Overlay>
-    );
-  };
 
   function _onPressProceed(patientId: string, addToCartData: DiagnosticsCartItem) {
-    setShowrecommendationPopUp(false);
     const allItems = [addToCartData];
     addPatientCartItem?.(patientId, allItems!);
   }
@@ -1678,9 +1575,10 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   const renderEachPatientCartCount = (count: number) => {
     return (
       <View style={styles.cartCountView}>
-        <Text style={styles.cartCountText}>{`${count < 10 ? `0${count}` : count} ${
+        <Text style={styles.cartCountText}>{`Cart Value | ${count} ${
           count == 1 ? 'item' : 'items'
-        } in your cart`}</Text>
+        }`}</Text>
+        <Text style={styles.cartCountText}>{`${string.common.Rs}${grandTotal}`}</Text>
       </View>
     );
   };
@@ -1999,13 +1897,15 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       <View style={{ margin: 16 }}>
         {renderAddTestOption()}
         {!!isCartEmpty && !isCartEmpty ? renderEmptyCart() : renderCartItems()}
-        {isAllMinorPatients
-          ? null
-          : !shouldShowRecommendations
-          ? !!recommedationData && recommedationData?.length > 0
-            ? renderCartWidgets()
-            : !!alsoAddListData && alsoAddListData?.length > 0 && !hasPackageSKU
-            ? renderCartWidgets()
+        {!groupRecommendations?.length
+          ? isAllMinorPatients
+            ? null
+            : !shouldShowRecommendations
+            ? !!recommedationData && recommedationData?.length > 0
+              ? renderCartWidgets()
+              : !!alsoAddListData && alsoAddListData?.length > 0 && !hasPackageSKU
+              ? renderCartWidgets()
+              : null
             : null
           : null}
         {showPatientOverlay ? renderPatientOverlay() : null}
@@ -2218,7 +2118,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         </ScrollView>
         {renderAddressSection()}
       </SafeAreaView>
-      {showrecommendationPopUp ? renderRecommedationGroupPopUp() : null}
       {renderCallToOrder()}
       {renderStickyBottom()}
     </View>
@@ -2380,8 +2279,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#E0E9EC',
     borderRadius: 10,
     borderWidth: 1,
+    flexDirection: 'row',
     borderColor: '#E0E9EC',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 10,
     padding: 16,
