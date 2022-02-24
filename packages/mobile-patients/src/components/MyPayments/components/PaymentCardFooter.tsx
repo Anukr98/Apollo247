@@ -45,13 +45,22 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
         doctor,
         appointmentType,
         appointmentRefunds,
+        orderType,
+        subscriptionOrderDetails,
       } = item;
       const { refund } = PaymentOrders;
       const refundInfo = refund?.length ? refund : appointmentRefunds;
-      leftHeaderText = 'Dr. ' + doctor.name;
+      leftHeaderText =
+        orderType === 'CONSULT'
+          ? 'Dr. ' + doctor.name
+          : subscriptionOrderDetails?.plan_id?.toUpperCase();
       type = appointmentType === 'ONLINE' ? 'Online Consult' : 'Clinic Visit';
       aptType = appointmentType;
-      const paymentInfo = PaymentOrders?.paymentStatus ? PaymentOrders : appointmentPayments[0];
+      const paymentInfo = subscriptionOrderDetails?.status
+        ? subscriptionOrderDetails?.status
+        : PaymentOrders?.paymentStatus
+        ? PaymentOrders
+        : appointmentPayments[0];
       if (!paymentInfo) {
         status = 'PENDING';
         return {
@@ -60,6 +69,7 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
           type: type,
           status: status,
           aptType: aptType,
+          orderType,
         };
       } else if (refundInfo?.length) {
         status = 'TXN_REFUND';
@@ -69,6 +79,7 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
           type: type,
           status: status,
           aptType: aptType,
+          orderType,
         };
       } else {
         status = paymentInfo?.paymentStatus;
@@ -78,6 +89,7 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
           type: type,
           status: status,
           aptType: aptType,
+          orderType,
         };
       }
     } else {
@@ -141,7 +153,7 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
     );
   };
   const lowerSection = () => {
-    const { dateAndTime, type } = statusItemValues();
+    const { dateAndTime, type, orderType } = statusItemValues();
     return (
       <View style={styles.lowerView}>
         <View>
@@ -149,11 +161,13 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
             {dateAndTime}
           </Text>
         </View>
-        <View>
-          <Text style={{ ...theme.viewStyles.text('M', 12, colors.CARD_HEADER, 0.6, 20, 0.04) }}>
-            {type}
-          </Text>
-        </View>
+        {orderType === 'CONSULT' ? (
+          <View>
+            <Text style={{ ...theme.viewStyles.text('M', 12, colors.CARD_HEADER, 0.6, 20, 0.04) }}>
+              {type}
+            </Text>
+          </View>
+        ) : null}
       </View>
     );
   };
