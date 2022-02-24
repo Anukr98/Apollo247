@@ -1753,7 +1753,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           !!order?.patientObj?.gender
             ? order?.patientObj?.gender === Gender.MALE
               ? 'Mr.'
-              : 'Ms.'
+              : order?.patientObj?.gender === Gender.FEMALE
+              ? 'Ms.'
+              : ''
             : ''
         }
         patientDetails={!!order?.patientObj ? order?.patientObj : null}
@@ -2257,8 +2259,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     );
     const updatePatientCheck = updatePatientSwitchChecks(selectedOrder!);
     const skuItem = selectedOrder?.diagnosticOrderLineItems!;
-    const getPatientDisableValue = allCurrentPatients?.map((patient: any) =>
-      checkPatientWithSkuGender(skuItem, patient)
+    const removeAllOther = checkPatientWithSkuGender(skuItem)?.removeAllOther;
+    const getPatientDisableValue = allCurrentPatients?.map(
+      (patient: any) => checkPatientWithSkuGender(skuItem, patient)?.nonValidPatient
     );
     const checkIsPatientDisableWithSku =
       !!getPatientDisableValue && getPatientDisableValue?.find((value: boolean) => value == true);
@@ -2286,6 +2289,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         removeAllSwitchRestrictions={updatePatientCheck}
         skuItem={skuItem!}
         showGenderSkuMsg={!!checkIsPatientDisableWithSku}
+        skuGender={
+          !!removeAllOther && removeAllOther?.length > 0
+            ? removeAllOther?.[0]
+            : selectedOrder?.patientObj?.gender?.toLowerCase()
+        }
       />
     );
   };
