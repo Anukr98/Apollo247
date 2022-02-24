@@ -3833,11 +3833,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const renderListCount = (count: string | number) => {
-    if (Number.parseInt(appointmentCountCache) > 0) {
+    if (Number.parseInt(currentAppointments) > 0) {
       return (
         <View style={styles.countContainer}>
           <Text style={{ ...theme.viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 20, 0) }}>
-            {appointmentCountCache}
+            {currentAppointments}
           </Text>
         </View>
       );
