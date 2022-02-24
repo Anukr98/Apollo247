@@ -72,6 +72,7 @@ export const ShowBottomPopUp: React.FC<ShowBottomPopUpProps> = (props) => {
           animationOutTiming={500}
         >
           <KeyboardAwareScrollView
+            keyboardShouldPersistTaps={'always'}
             contentContainerStyle={{ flexGrow: 1 }}
             extraHeight={Platform.OS == 'ios' ? 325 : undefined}
           >

@@ -1263,7 +1263,10 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         <SafeAreaView style={{ flex: 1 }}>
           {renderHeader()}
           {!fetching ? (
-            <ScrollView contentContainerStyle={styles.container}>
+            <ScrollView
+              keyboardShouldPersistTaps={'always'}
+              contentContainerStyle={styles.container}
+            >
               {renderOffers()}
               {renderPreferredPaymentOptions()}
               {showPaymentOptions()}

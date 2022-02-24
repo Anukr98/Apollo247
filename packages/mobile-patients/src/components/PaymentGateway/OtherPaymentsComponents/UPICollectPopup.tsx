@@ -79,11 +79,15 @@ export const UPICollectPopup: React.FC<UPICollectProps> = (props) => {
   };
 
   const renderUPIInput = () => {
+    const conatinerstyles = {
+      ...styles.conatinerstyles,
+      borderColor: isVPAvalid ? '#00B38E' : '#BF2600',
+    };
     return (
       <View>
-        <View style={{ ...styles.inputCont, borderColor: isVPAvalid ? '#00B38E' : '#FF748E' }}>
+        <View style={{ ...styles.inputCont }}>
           <TextInputComponent
-            conatinerstyles={styles.conatinerstyles}
+            conatinerstyles={conatinerstyles}
             autoFocus={Platform?.OS == 'ios' ? false : true}
             inputStyle={styles.inputStyle}
             value={VPA}
@@ -124,6 +128,7 @@ export const UPICollectPopup: React.FC<UPICollectProps> = (props) => {
     return (
       <FlatList
         data={UPIBanks}
+        keyboardShouldPersistTaps={'always'}
         horizontal={true}
         showsHorizontalScrollIndicator={false}
         renderItem={(item: any) => (
@@ -146,7 +151,7 @@ export const UPICollectPopup: React.FC<UPICollectProps> = (props) => {
 
   const renderUPICollectMsg = () => {
     return isVPAvalid ? null : (
-      <Text style={{ ...styles.upiCollectMsg, color: '#CF8F6A' }}>
+      <Text style={{ ...styles.upiCollectMsg, color: '#BF2600' }}>
         Invalid UPI Id, Please check again
       </Text>
     );
@@ -196,7 +201,6 @@ const styles = StyleSheet.create({
   inputCont: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
     marginBottom: 4,
   },
   conatinerstyles: {
@@ -208,7 +212,6 @@ const styles = StyleSheet.create({
     borderColor: '#00B38E',
     borderRadius: 4,
     paddingHorizontal: 12,
-    // borderBottomWidth: 0,
   },
   UPIBankCont: {
     borderRadius: 4,
