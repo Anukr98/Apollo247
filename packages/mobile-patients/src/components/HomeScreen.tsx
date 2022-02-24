@@ -1065,6 +1065,13 @@ const styles = StyleSheet.create({
     marginVertical: 6,
     marginRight: 4,
   },
+  medCTAButton: {
+    width: 106,
+    height: 32,
+    borderRadius: 4,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 0,
+  },
 });
 
 const RewardStatus = {
@@ -4229,7 +4236,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               </View>
 
               <View style={{ marginTop: 0.5, marginRight: 16 }}>
-                <CashbackIcon style={{ width: 21.6, height: 30 }} />
+                {item?.coupon_code && item?.coupon_code?.length > 0 ? (
+                  <CashbackIcon style={{ width: 21.6, height: 30 }} />
+                ) : null}
               </View>
             </View>
 
@@ -4258,31 +4267,33 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             </Text>
 
             <View style={styles.medBottomContainer}>
-              <View style={styles.medCouponContainer}>
-                <Text
-                  style={{
-                    ...theme.viewStyles.text('M', 12, offerDesignTemplate?.coupon_color, 1, 18),
-                  }}
-                >
-                  {`Coupon: ${
-                    item?.coupon_code?.length > 12
-                      ? item?.coupon_code?.substring(0, 12)
-                      : item?.coupon_code
-                  }`}
-                </Text>
-              </View>
+              {item?.coupon_code && item?.coupon_code?.length > 0 ? (
+                <View style={styles.medCouponContainer}>
+                  <Text
+                    style={{
+                      ...theme.viewStyles.text('M', 12, offerDesignTemplate?.coupon_color, 1, 18),
+                    }}
+                  >
+                    {`Coupon: ${
+                      item?.coupon_code?.length > 12
+                        ? item?.coupon_code?.substring(0, 12)
+                        : item?.coupon_code
+                    }`}
+                  </Text>
+                </View>
+              ) : (
+                <Text> </Text>
+              )}
 
-              <View style={[styles.bottomRightArrowView, { flex: 0.5 }]}>
+              <View style={[styles.bottomRightArrowView, { flex: 0.5, alignItems: 'flex-end' }]}>
                 <Button
                   title={item?.cta?.text}
-                  style={{
-                    width: 106,
-                    height: 32,
-                    borderRadius: 4,
-                    backgroundColor: offerDesignTemplate?.cta?.bg_color,
-                    shadowOffset: { width: 0, height: 0 },
-                    elevation: 0,
-                  }}
+                  style={[
+                    styles.medCTAButton,
+                    {
+                      backgroundColor: offerDesignTemplate?.cta?.bg_color,
+                    },
+                  ]}
                   titleTextStyle={{ color: offerDesignTemplate?.cta?.text_color }}
                   onPress={() => textForNotch !== 'Offer Expired' && onOfferCtaPressed(item, 1)}
                   disabled={false}
