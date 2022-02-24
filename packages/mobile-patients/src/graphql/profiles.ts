@@ -4729,6 +4729,7 @@ export const CONSULT_ORDER_PAYMENT_DETAILS = gql`
       }
       appointments {
         id
+        orderType
         doctorId
         displayId
         appointmentDateTime
@@ -4736,6 +4737,12 @@ export const CONSULT_ORDER_PAYMENT_DETAILS = gql`
         status
         appointmentType
         discountedAmount
+        subscriptionOrderDetails{
+          _id,
+          status,
+          plan_id
+          group_plan_id
+        }
         appointmentRefunds {
           refundAmount
           txnTimestamp

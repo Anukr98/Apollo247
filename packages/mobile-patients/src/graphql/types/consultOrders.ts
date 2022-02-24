@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { STATUS, REFUND_STATUS } from "./globalTypes";
+import { PAY_ORDER_TYPE, STATUS, REFUND_STATUS } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: consultOrders
@@ -14,6 +14,14 @@ export interface consultOrders_consultOrders_meta {
   pageNo: number | null;
   pageSize: number | null;
   total: number | null;
+}
+
+export interface consultOrders_consultOrders_appointments_subscriptionOrderDetails {
+  __typename: "SUBSCRIPTION_ORDER_DETAILS";
+  _id: string | null;
+  status: string | null;
+  plan_id: string | null;
+  group_plan_id: string | null;
 }
 
 export interface consultOrders_consultOrders_appointments_appointmentRefunds {
@@ -53,6 +61,7 @@ export interface consultOrders_consultOrders_appointments_doctor {
 export interface consultOrders_consultOrders_appointments {
   __typename: "ApptResponse";
   id: string | null;
+  orderType: PAY_ORDER_TYPE | null;
   doctorId: string | null;
   displayId: number | null;
   appointmentDateTime: any | null;
@@ -60,6 +69,7 @@ export interface consultOrders_consultOrders_appointments {
   status: STATUS | null;
   appointmentType: string | null;
   discountedAmount: number | null;
+  subscriptionOrderDetails: consultOrders_consultOrders_appointments_subscriptionOrderDetails | null;
   appointmentRefunds: (consultOrders_consultOrders_appointments_appointmentRefunds | null)[] | null;
   appointmentPayments: (consultOrders_consultOrders_appointments_appointmentPayments | null)[] | null;
   PaymentOrders: consultOrders_consultOrders_appointments_PaymentOrders | null;

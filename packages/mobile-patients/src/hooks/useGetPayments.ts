@@ -52,7 +52,7 @@ export const useGetPayments = (
         const { consultOrders } = data;
         const { appointments } = consultOrders;
         const { meta } = consultOrders;
-        const freshAppointments = appointments?.filter((item) => item.appointmentType === 'ONLINE');
+        const freshAppointments = appointments?.filter((item: any) => item.appointmentType === 'ONLINE' || item.orderType === 'SUBSCRIPTION');
         setPayments(freshAppointments);
 
         setmeta(meta);
