@@ -1065,6 +1065,13 @@ const styles = StyleSheet.create({
     marginVertical: 6,
     marginRight: 4,
   },
+  medCTAButton: {
+    width: 106,
+    height: 32,
+    borderRadius: 4,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 0,
+  },
 });
 
 const RewardStatus = {
@@ -4274,19 +4281,19 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                     }`}
                   </Text>
                 </View>
-              ) : null}
+              ) : (
+                <Text> </Text>
+              )}
 
-              <View style={[styles.bottomRightArrowView, { flex: 0.5 }]}>
+              <View style={[styles.bottomRightArrowView, { flex: 0.5, alignItems: 'flex-end' }]}>
                 <Button
                   title={item?.cta?.text}
-                  style={{
-                    width: 106,
-                    height: 32,
-                    borderRadius: 4,
-                    backgroundColor: offerDesignTemplate?.cta?.bg_color,
-                    shadowOffset: { width: 0, height: 0 },
-                    elevation: 0,
-                  }}
+                  style={[
+                    styles.medCTAButton,
+                    {
+                      backgroundColor: offerDesignTemplate?.cta?.bg_color,
+                    },
+                  ]}
                   titleTextStyle={{ color: offerDesignTemplate?.cta?.text_color }}
                   onPress={() => textForNotch !== 'Offer Expired' && onOfferCtaPressed(item, 1)}
                   disabled={false}
