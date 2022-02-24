@@ -1855,6 +1855,7 @@ export interface CleverTapEvents {
     Mode: 'Customer' | 'Automated';
     itemIdsInCart: any;
     itemNamesinCart: any;
+    'Source': any
   };
   [CleverTapEventName.DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE]: {
     'Item ID'?: string | number;

@@ -689,7 +689,8 @@ export function DiagnosticRemoveFromCartClicked(
   mode: 'Customer' | 'Automated',
   currentPatient?: any,
   isDiagnosticCircleSubscription?: boolean | undefined,
-  cartItems?: DiagnosticsCartItem[]
+  cartItems?: DiagnosticsCartItem[],
+  source?: any
 ) {
   try {
     const getPatientAttributes = createPatientAttributes(currentPatient);
@@ -707,6 +708,7 @@ export function DiagnosticRemoveFromCartClicked(
       Pincode: pincode,
       Mode: mode,
       'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+      'Source': source,
       itemIdsInCart: JSON.stringify(
         newCart?.map((item: any) => {
           return item?.id;

@@ -87,6 +87,7 @@ import { postPharmacyAddNewAddressClick } from '@aph/mobile-patients/src/helpers
 import {
   DiagnosticAddresssSelected,
   DiagnosticAddToCartClicked,
+  DiagnosticAddToCartEvent,
   DiagnosticCartViewed,
   DiagnosticRemoveFromCartClicked,
 } from '@aph/mobile-patients/src/components/Tests/utils/Events';
@@ -129,6 +130,7 @@ import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { RecommedationGroupCard } from '@aph/mobile-patients/src/components/Tests/components/RecommedationGroupCard';
 import { Overlay } from 'react-native-elements';
 import { ExpressSlotMessageRibbon } from '@aph/mobile-patients/src/components/Tests/components/ExpressSlotMessageRibbon';
+import { DIAGNOSTICS_ITEM_TYPE } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 type Address = savePatientAddress_savePatientAddress_patientAddress;
 type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
@@ -1262,7 +1264,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     );
   };
 
-  const onRemoveCartItem = ({ id, name }: DiagnosticsCartItem, patientId: string) => {
+  const onRemoveCartItem = ({ id, name }: DiagnosticsCartItem, patientId: string, isUndo: boolean) => {
     // check if patient cartItems has the removed item. If it does, then don't remove it from the overall.
     const getSelectedItemInCart = checkIsItemRemovedFromAll(patientCartItems, id);
     removePatientCartItem?.(patientId, id);
@@ -1294,7 +1296,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         'Customer',
         currentPatient,
         isDiagnosticCircleSubscription,
-        cartItems
+        cartItems,
+        isUndo ? 'Package Recommendations' : ''
       );
     } else {
       DiagnosticRemoveFromCartClicked(
@@ -1304,7 +1307,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         'Customer',
         currentPatient,
         isDiagnosticCircleSubscription,
-        cartItems
+        cartItems,
+        isUndo ? 'Package Recommendations' : ''
       );
     }
   };
@@ -1437,6 +1441,18 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           data={groupRecommendations?.[0]}
           showRecommedation={openRecommedations}
           onPressAdd={() => {
+            DiagnosticAddToCartEvent(
+              groupItem?.itemName,
+              `${groupItem?.itemId}`,
+              pricesForItem?.price, //mrp
+              diagnosticsDisplayPrice(grpItem, isDiagnosticCircleSubscription)?.priceToShow, //actual selling price
+              DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.CART_PAGE,
+              DIAGNOSTICS_ITEM_TYPE.PACKAGE,
+              'Package Recommendations',
+              currentPatient,
+              isDiagnosticCircleSubscription,
+              groupItem?.inclusions
+            );
             _onPressProceed(patientId, grpItem)
           }}
           showPrice={Number(priceDiff?.toFixed())}
