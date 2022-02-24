@@ -421,7 +421,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     if (!!currentPatient && !isDiagnosticCircleSubscription) {
       getUserSubscriptionsByStatus();
     }
-    if (movedFrom === 'deeplink') {
+    if (movedFrom && movedFrom === 'deeplink') {
       postDiagnosticHomepageViewedEvent('Direct')
       BackHandler.addEventListener('hardwareBackPress', handleBack);
       return () => {
@@ -494,7 +494,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setBannerData && setBannerData([]); // default banners to be empty
       getUserBanners();
-      if(movedFrom !== 'deeplink')
+      if(movedFrom  && movedFrom !== 'deeplink')
         postDiagnosticHomepageViewedEvent('Bottom Bar')
     });
     const didBlur = props.navigation.addListener('didBlur', (payload) => {});

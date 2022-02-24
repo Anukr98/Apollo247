@@ -2347,7 +2347,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     },
   ];
 
-  const postHomepageEvent = (source: 'Homepage banner' | 'Offer widget') => {
+  const postHomepageEvent = (source: 'Homepage banner' | 'Offer widget HP') => {
     const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_HOMEPAGE_VIEWED] = {
       'Nav src': source,
       'User': `${currentPatient?.firstName} ${currentPatient?.lastName}`,
@@ -2359,7 +2359,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     postCleverTapEvent(CleverTapEventName.CONSULT_HOMEPAGE_VIEWED, eventAttributes)
   }
 
-  const postDiagnosticHomepageViewedEvent = (source: 'Homepage hero button' | 'Offer widget') => {
+  const postDiagnosticHomepageViewedEvent = (source: 'Homepage hero button' | 'Offer widget HP') => {
     const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_HOMEPAGE_VIEWED] = {
       'Nav src': source,
       'User': `${currentPatient?.firstName} ${currentPatient?.lastName}`,
@@ -4298,7 +4298,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const navigateCTAActions = (action: any, url: string) => {
     if (action?.type == 'REDIRECT') {
       if (action.cta_action == 'SPECIALITY_LISTING') {
-        postHomepageEvent('Offer widget')
+        postHomepageEvent('Offer widget HP')
         props.navigation.navigate(AppRoutes.DoctorSearch);
       } else if (action.cta_action == 'PHARMACY_LANDING') {
         props.navigation.navigate('MEDICINES');
@@ -4317,7 +4317,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         const homeScreenAttributes = {
           Source: DiagnosticHomePageSource.BANNER,
         };
-        postDiagnosticHomepageViewedEvent('Offer widget')
+        postDiagnosticHomepageViewedEvent('Offer widget HP')
         props.navigation.navigate('TESTS', { homeScreenAttributes });
       } else if (action.cta_action == 'MEMBERSHIP_DETAIL_CIRCLE') {
         props.navigation.navigate('MembershipDetails', {
