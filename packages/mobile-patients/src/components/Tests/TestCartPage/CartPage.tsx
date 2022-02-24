@@ -1570,6 +1570,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   };
 
   const renderPreviousOrderItems = (item: orderListLineItems) => {
+    const getGroupPlan = item?.groupPlan;
+    const findPriceWithGroupPlan = item?.pricingObj?.find((val) => val?.groupPlan == getGroupPlan);
     return (
       <View style={styles.commonTax}>
         <View style={{ width: '65%' }}>
@@ -1583,7 +1585,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         <View style={styles.previousOrderView}>
           <Text style={[styles.commonText, styles.previousOrderPrice]}>
             {string.common.Rs}
-            {convertNumberToDecimal(item?.price) || null}
+            {!!findPriceWithGroupPlan
+              ? convertNumberToDecimal(findPriceWithGroupPlan?.price)
+              : convertNumberToDecimal(item?.price) || null}
           </Text>
         </View>
       </View>
