@@ -88,7 +88,7 @@ export const UPICollectPopup: React.FC<UPICollectProps> = (props) => {
         <View style={{ ...styles.inputCont }}>
           <TextInputComponent
             conatinerstyles={conatinerstyles}
-            autoFocus={Platform?.OS == 'ios' ? false : true}
+            autoFocus={true}
             inputStyle={styles.inputStyle}
             value={VPA}
             onChangeText={(text) => {
