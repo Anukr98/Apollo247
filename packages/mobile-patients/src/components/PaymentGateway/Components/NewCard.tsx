@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, Platform } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { StyleSheet, Text, View, Image, TouchableOpacity, Platform, TextInput } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -54,6 +54,10 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
   };
   const [isCardSupported, setIsCardSupported] = useState<boolean>(true);
   const [outageStatus, setOutageStatus] = useState<string>('UP');
+  const [focussed, setFocussed] = useState<string>('');
+  const nameRef = useRef<any>(null);
+  const cvvRef = useRef<any>(null);
+  const expiryRef = useRef<any>(null);
   const bestOffer = getBestOffer(offers, cardbin?.id);
   let ExpYear = validity.slice(3);
   const isExpired = ExpYear?.length == 2 && Number(ExpYear) < new Date().getFullYear() % 100;
@@ -61,7 +65,9 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
     isCardValid && cardNumber?.replace(/\-/g, '')?.length >= 6
       ? checkIsCardSupported()
       : setIsCardSupported(true);
-    (cardNumber?.replace(/\-/g, '')?.length == 6 || cardNumber?.replace(/\-/g, '')?.length == 12) &&
+    (cardNumber?.replace(/\-/g, '')?.length == 6 ||
+      cardNumber?.replace(/\-/g, '')?.length == 12 ||
+      cardNumber?.replace(/\-/g, '')?.length >= 14) &&
       getOffers();
   }, [cardbin]);
 
@@ -140,6 +146,9 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
       setCardNumber(text);
     }
     fetchCardInfo(text);
+    if (newlength == getMaxLength()) {
+      nameRef?.current?.focus();
+    }
   }
 
   function updateValidity(text: string) {
@@ -154,6 +163,9 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
     oldLength < newlength && val.length == 2 && (val = val + '/');
     val.length > 2 && val.indexOf('/') == -1 && (val = val[0] + val[1] + '/' + val[2]);
     setValidity(val);
+    if (val.length == 5) {
+      cvvRef?.current?.focus();
+    }
   }
 
   function isPayNowDisabled() {
@@ -182,14 +194,15 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
   const cardNumberInput = () => {
     const conatinerstyles = {
       ...styles.conatinerstyles,
-      borderColor: isCardValid && isCardSupported ? '#00B38E' : '#BF2600',
-      borderWidth: 2,
+      borderColor:
+        isCardValid && isCardSupported ? (focussed == 'number' ? '#00B38E' : '#D8D8D8') : '#BF2600',
+      borderWidth: focussed == 'number' ? 2 : 1,
     };
     return (
       <View>
         <TextInputComponent
-          conatinerstyles={styles.conatinerstyles}
-          autoFocus={Platform?.OS == 'ios' ? false : true}
+          conatinerstyles={conatinerstyles}
+          autoFocus={true}
           inputStyle={styles.inputStyle}
           value={cardNumber}
           onChangeText={(text) => updateCard(text)}
@@ -197,6 +210,7 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
           maxLength={getMaxLength()}
           icon={renderCardIcon()}
           placeholder={'Card Number'}
+          onFocus={() => setFocussed('number')}
         />
         {renderSubContainer()}
       </View>
@@ -229,15 +243,25 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
 
   const userNameInput = () => {
     return (
-      <View style={{ marginTop: 10 }}>
-        <TextInputComponent
-          conatinerstyles={styles.conatinerstyles}
-          inputStyle={styles.inputStyle}
+      <View
+        style={{
+          marginTop: 10,
+          borderRadius: 4,
+          borderColor: focussed == 'name' ? '#00B38E' : '#D8D8D8',
+          borderWidth: focussed == 'name' ? 2 : 1,
+        }}
+      >
+        <TextInput
+          ref={(ref: any) => (nameRef.current = ref)}
+          style={styles.containerStyle2}
           value={name}
           onChangeText={(text) => setName(text)}
           keyboardType={'default'}
           maxLength={50}
           placeholder={'Name on Card'}
+          onFocus={() => setFocussed('name')}
+          placeholderTextColor={theme.colors.placeholderTextColor}
+          onSubmitEditing={() => expiryRef?.current?.focus()}
         />
       </View>
     );
@@ -265,21 +289,24 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
     return <Text style={styles.inValidText}>Card Expired</Text>;
   };
   const validityInput = () => {
-    const conatinerstyles = {
-      ...styles.conatinerstyles,
-      borderColor: isExpired ? '#BF2600' : '#D8D8D8',
-      borderWidth: isExpired ? 2 : 1,
-    };
     return (
-      <View style={{ marginTop: 24, flex: 0.5 }}>
-        <TextInputComponent
-          conatinerstyles={conatinerstyles}
-          inputStyle={styles.inputStyle}
+      <View
+        style={{
+          ...styles.constainerStyle3,
+          flex: 0.5,
+          borderColor: isExpired ? '#BF2600' : focussed == 'expiry' ? '#00B38E' : '#D8D8D8',
+          borderWidth: isExpired || focussed == 'expiry' ? 2 : 1,
+        }}
+      >
+        <TextInput
+          ref={(ref: any) => (expiryRef.current = ref)}
+          style={{ ...styles.containerStyle2, height: 35 }}
           value={validity}
           onChangeText={(text) => updateValidity(text)}
           keyboardType={'numeric'}
           maxLength={5}
           placeholder={'Exp Date (MM/YY)'}
+          onFocus={() => setFocussed('expiry')}
         />
         <View style={{ height: 16 }}>{isExpired && renderExpired()}</View>
       </View>
@@ -288,24 +315,32 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
 
   const cvvInput = () => {
     return (
-      <View style={{ marginTop: 24, flex: 0.45 }}>
-        <TextInputComponent
-          conatinerstyles={styles.conatinerstyles}
-          inputStyle={styles.inputStyle}
+      <View
+        style={{
+          ...styles.constainerStyle3,
+          borderColor: focussed == 'cvv' ? '#00B38E' : '#D8D8D8',
+          borderWidth: focussed == 'cvv' ? 2 : 1,
+        }}
+      >
+        <TextInput
+          ref={(ref: any) => (cvvRef.current = ref)}
+          style={{ ...styles.containerStyle2, height: 35, flex: 0.6 }}
           value={CVV}
           onChangeText={(text) => setCVV(text)}
           keyboardType={'numeric'}
           maxLength={cardDetails?.cvv_length?.[0] ? cardDetails.cvv_length[0] : 4}
           secureTextEntry={true}
           placeholder="CVV"
-          icon={renderCVVIcon()}
+          onFocus={() => setFocussed('cvv')}
+          placeholderTextColor={theme.colors.placeholderTextColor}
         />
+        {renderCVVIcon()}
       </View>
     );
   };
 
   const renderCVVIcon = () => {
-    return <CvvIcon style={{ height: 24, width: 38, marginRight: 8, marginBottom: 8 }} />;
+    return <CvvIcon style={{ height: 24, width: 38, marginRight: 8 }} />;
   };
 
   const saveCardOption = () => {
@@ -372,8 +407,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingTop: 12,
     paddingBottom: 8,
-    // paddingHorizontal: 20,
-    // paddingBottom: 15,
   },
   cardNumberTxt: {
     ...theme.fonts.IBMPlexSansMedium(12),
@@ -384,11 +417,30 @@ const styles = StyleSheet.create({
     height: 40,
     paddingBottom: 0,
     borderWidth: 1,
-    borderColor: '#D8D8D8',
     borderRadius: 4,
     backgroundColor: '#fff',
     justifyContent: 'center',
     paddingTop: 0,
+  },
+  containerStyle2: {
+    height: 40,
+    paddingBottom: 0,
+    backgroundColor: '#fff',
+    paddingTop: 0,
+    ...theme.fonts.IBMPlexSansMedium(14),
+    paddingLeft: 20,
+    color: theme.colors.SHERPA_BLUE,
+  },
+  constainerStyle3: {
+    marginTop: 24,
+    flex: 0.45,
+    borderRadius: 4,
+    backgroundColor: '#fff',
+    marginBottom: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    height: 40,
   },
   inputStyle: {
     borderBottomWidth: 0,
