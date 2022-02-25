@@ -1749,6 +1749,11 @@ export interface CleverTapEvents {
     'Recommendation Shown': string;
     'Recommendation Item ids': any;
     'Cart Value': any;
+    'Package Recommendation Shown'?: 'Yes' | 'No';
+    'Package Recommendation ItemId'?: string | undefined;
+    'Package Recommendation ItemName'?: string | undefined;
+    'Package Recommendation Price'?: number | undefined;
+    'Package Recommendation Extra Tests'?: any
   };
   [CleverTapEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED]: {
     'Slot time': string;
@@ -1850,6 +1855,7 @@ export interface CleverTapEvents {
     Mode: 'Customer' | 'Automated';
     itemIdsInCart: any;
     itemNamesinCart: any;
+    'Source': any
   };
   [CleverTapEventName.DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE]: {
     'Item ID'?: string | number;

@@ -1278,6 +1278,11 @@ export interface WebEngageEvents {
     'Delivery charge'?: number;
     'Coupon code used'?: string;
     'Coupon Discount'?: number;
+    'Package Recommendation Shown'?: 'Yes' | 'No';
+    'Package Recommendation ItemId'?: string | undefined;
+    'Package Recommendation ItemName'?: string | undefined;
+    'Package Recommendation Price'?: number | undefined;
+    'Package Recommendation Extra Tests'?: any
   };
   [WebEngageEventName.DIAGNOSTIC_SLOT_TIME_SELECTED]: {
     'Slot time': string;

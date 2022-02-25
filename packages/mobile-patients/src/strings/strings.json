@@ -1,6 +1,7 @@
 {
   "common": {
     "add": "Add",
+    "selectPackage": "SELECT PACKAGE",
     "availableNow": "AVAILABLE NOW",
     "okay": "okay!",
     "add_profile_imp_text": "Important : You will not be able to edit \nthese details once you have saved them!",

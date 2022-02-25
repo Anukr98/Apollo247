@@ -7083,8 +7083,18 @@ export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS = gql`
 `;
 
 export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS_V2 = gql`
-  query getDiagnosticPackageRecommendationsv2($recommendationInputItems: [recommendationInputItem]!, $cityId: Int!, $genderFilters: [Gender]) {
-    getDiagnosticPackageRecommendationsv2(recommendationInputItems: $recommendationInputItems, cityId: $cityId, genderFilters: $genderFilters) {
+  query getDiagnosticPackageRecommendationsv2(
+    $recommendationInputItems: [recommendationInputItem]!
+    $cityId: Int!
+    $genderFilters: [Gender]
+    $groupPlan: DIAGNOSTICS_GROUPPLAN!
+  ) {
+    getDiagnosticPackageRecommendationsv2(
+      recommendationInputItems: $recommendationInputItems
+      cityId: $cityId
+      genderFilters: $genderFilters
+      groupPlan: $groupPlan
+    ) {
       packageRecommendations {
         id
         itemId
@@ -7101,10 +7111,10 @@ export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS_V2 = gql`
         totalSavings
         extraInclusionsCount
         price
-        diagnosticInclusions{
+        diagnosticInclusions {
           itemId
           name
-          observations{
+          observations {
             observationName
             mandatoryValue
           }
