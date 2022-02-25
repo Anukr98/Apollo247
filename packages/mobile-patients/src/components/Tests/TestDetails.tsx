@@ -1794,7 +1794,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       testInclusions,
       AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
       cmsTestDetails?.diagnosticItemImageUrl,
-      getMandatoryParameterCount + nonInclusionParamters
+      getMandatoryParameterCount + nonInclusionParamters?.length
     );
 
     isModify &&
