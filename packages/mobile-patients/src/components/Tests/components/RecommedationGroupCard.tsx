@@ -161,7 +161,7 @@ export const RecommedationGroupCard: React.FC<RecommedationGroupCardProps> = (pr
           >{`includes ${totalInclusionCount} Tests`}</Text>
           <View style={{ marginTop: 10, flexDirection: 'column' }}>
             {existingItems?.map((item: any) => {
-              return <View style={styles.inclusionItemView}>{renderItemList(item.name)}</View>;
+              return <View style={styles.inclusionItemView}>{renderItemList(item?.name)}</View>;
             })}
             <View style={styles.inclusionItemView}>
               <AcceptGreen style={styles.acceptTick} />
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
     marginTop: -20,
   },
   subContainer: {
-    backgroundColor: '#E8FAFF',
+    backgroundColor: colors.LIGHT_BLUE_DIAG,
     borderBottomStartRadius: 10,
     borderBottomEndRadius: 10,
   },
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
   },
   recommedationHeaderContainer: {
     flex: 1,
-    backgroundColor: '#007C9D',
+    backgroundColor: colors.DARK_BLUE_DIAG,
     paddingHorizontal: 10,
     paddingVertical: 5,
     flexDirection: 'row',
