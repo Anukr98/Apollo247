@@ -147,7 +147,7 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
     }
     fetchCardInfo(text);
     if (newlength == getMaxLength()) {
-      nameRef.current.focus();
+      nameRef?.current?.focus();
     }
   }
 
@@ -164,7 +164,7 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
     val.length > 2 && val.indexOf('/') == -1 && (val = val[0] + val[1] + '/' + val[2]);
     setValidity(val);
     if (val.length == 5) {
-      cvvRef.current.focus();
+      cvvRef?.current?.focus();
     }
   }
 
@@ -261,7 +261,7 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
           placeholder={'Name on Card'}
           onFocus={() => setFocussed('name')}
           placeholderTextColor={theme.colors.placeholderTextColor}
-          onSubmitEditing={() => expiryRef.current.focus()}
+          onSubmitEditing={() => expiryRef?.current?.focus()}
         />
       </View>
     );
