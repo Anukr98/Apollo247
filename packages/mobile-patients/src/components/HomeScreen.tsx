@@ -119,7 +119,7 @@ import {
   GenerateTokenforCM,
   notifcationsApi,
   GenrateVitalsToken_CM,
-  GetAllUHIDSForNumber_CM,
+  GetProhealthActiveStatusForUhid_CM,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
 import UserAgent from 'react-native-user-agent';
@@ -3459,8 +3459,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const checkIsProhealthActive = async (currentPatientDetails: any) => {
     setPreviousPatient(currentPatientDetails);
     const storedUhid: any = await AsyncStorage.getItem('selectUserUHId');
-    const selectedUHID = storedUhid ? storedUhid : g(currentPatient, 'uhid');
-
+    const selectedUHID = storedUhid ? storedUhid : currentPatient?.uhid;
     const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
     const item = JSON.parse(retrievedItem || 'null');
     const callByPrism: any = await AsyncStorage.getItem('callByPrism');
@@ -3486,17 +3485,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
          * caching the api for 24 hrs.
          */
         const getCachedApiResult: any = await getItem('mobileNumber_CM_Result');
-        const getPhoneNumber =
-          patientDetails?.mobileNumber?.length > 10
-            ? patientDetails?.mobileNumber?.slice(patientDetails?.mobileNumber?.length - 10)
-            : patientDetails?.mobileNumber;
+        const getAllPatientUhid = allPatients?.map((patient: any) => patient?.uhid);
+
         if (!!getCachedApiResult && getCachedApiResult?.data) {
           updateSDKOption(getCachedApiResult?.data, selectedUHID, currentPatientDetails);
         } else {
-          const res: any = await GetAllUHIDSForNumber_CM(getPhoneNumber! || '');
-          if (res?.data?.response && res?.data?.errorCode === 0) {
-            let resultData = res?.data?.response?.signUpUserData;
-            if (resultData?.length > 0) {
+          const res: any = await GetProhealthActiveStatusForUhid_CM(getAllPatientUhid);
+          if (res?.data?.response) {
+            let resultData = res?.data?.response;
+            if (!!resultData && resultData?.length > 0) {
               const obj = {
                 data: resultData,
                 expireAt: 1440,
@@ -3963,19 +3960,20 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
   const renderServicesForYouView = () => {
     let arrayList = isProHealthActive ? listValuesForProHealth : listValues;
+    console.log({ arrayList });
     return (
       <View style={styles.menuOptionsContainer}>
-        {arrayList.map((item) => {
-          if (item.id > 3) {
+        {arrayList?.map((item) => {
+          if (item?.id > 3) {
             return (
-              <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
+              <TouchableOpacity activeOpacity={1} onPress={item?.onPress}>
                 <View style={styles.bottomCardView}>
-                  <View style={styles.bottomImageView}>{item.image}</View>
+                  <View style={styles.bottomImageView}>{item?.image}</View>
                   <View style={styles.bottomTextView}>
                     <Text
                       style={[theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 20)]}
                     >
-                      {item.title}
+                      {item?.title}
                     </Text>
                   </View>
                   <View style={styles.bottomRightArrowView}>
@@ -5441,7 +5439,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   function webViewGoBack() {
     //call the api.
     getPatientApiCall(); //to check if new user is added
-    checkIsProhealthActive(currentPatient); //to show prohealth option
     getActiveProHealthAppointments(currentPatient); //to show the prohealth appointments
   }
 
