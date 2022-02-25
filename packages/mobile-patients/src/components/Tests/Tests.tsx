@@ -2675,6 +2675,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
     props.navigation.navigate(AppRoutes.TestDetails, {
       itemId: source == 'cartSummary' ? singleItemData?.id : singleItemData?.itemId,
       comingFrom: AppRoutes.Tests,
+      source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME,
+      section: string.common.homePageItem
     });
   }
 

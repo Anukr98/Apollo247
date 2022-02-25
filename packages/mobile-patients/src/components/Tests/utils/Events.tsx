@@ -299,7 +299,8 @@ export async function DiagnosticDetailsViewed(
   pharmacyCircleAttributes: any,
   isDiagnosticCircleSubscription?: boolean | undefined,
   originalItemIds?: string[] | null,
-  section?: string
+  section?: string,
+  sectionStr?: string,
 ) {
   try {
     const getPatientAttributes = await createPatientAttributes(currentPatient);
@@ -319,6 +320,8 @@ export async function DiagnosticDetailsViewed(
     }
     if (section) {
       eventAttributes['Section name'] = section;
+    } else if (sectionStr) {
+      eventAttributes['Section name'] = sectionStr;
     }
     if (!!originalItemIds) {
       eventAttributes['Original Item ids'] = JSON.stringify(originalItemIds);
