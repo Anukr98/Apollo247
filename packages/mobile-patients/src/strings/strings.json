@@ -1,6 +1,7 @@
 {
   "common": {
     "add": "Add",
+    "selectPackage": "SELECT PACKAGE",
     "availableNow": "AVAILABLE NOW",
     "okay": "okay!",
     "add_profile_imp_text": "Important : You will not be able to edit \nthese details once you have saved them!",
@@ -182,7 +183,8 @@
     "cancelRefundBody": "We regret the inconvenience caused. We’ll issue you a full refund.",
     "goBack": "GO BACK",
     "proceedCta": "PROCEED TO CONNECT",
-    "showDigitalData": "SHOW DIGITAL REPORT"
+    "showDigitalData": "SHOW DIGITAL REPORT",
+    "homePageItem": "Home page item card"
   },
   "diagnosticsLocation": {
     "savedAddressText": "Saved Addresses",

@@ -37,6 +37,7 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
   const { data, isCircleSubscribed, searchedString } = props;
   const name = data?.diagnostic_item_name || '';
   const itemType = data?.diagnostic_item_itemType;
+  const skuGender = data?.diagnostic_item_gender;
   const isAddedToCart = !!cartItems?.find(
     (item) => Number(item?.id) == Number(data?.diagnostic_item_id)
   );
@@ -211,7 +212,7 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
   const renderInvalidGenderSkuMsg = (itemType: string, customStyle: boolean) => {
     const msg = string.diagnostics.skuGenderMessage
       ?.replace('{{skuType}}', itemType?.toLowerCase())
-      ?.replace('{{gender}}', patientGender?.toLowerCase());
+      ?.replace('{{gender}}', DiagnosticItemGenderMapping(skuGender)?.toLowerCase());
     return (
       <InfoMessage
         content={msg}

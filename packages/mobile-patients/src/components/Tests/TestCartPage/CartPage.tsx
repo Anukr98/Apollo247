@@ -87,6 +87,7 @@ import { postPharmacyAddNewAddressClick } from '@aph/mobile-patients/src/helpers
 import {
   DiagnosticAddresssSelected,
   DiagnosticAddToCartClicked,
+  DiagnosticAddToCartEvent,
   DiagnosticCartViewed,
   DiagnosticRemoveFromCartClicked,
 } from '@aph/mobile-patients/src/components/Tests/utils/Events';
@@ -129,6 +130,7 @@ import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { RecommedationGroupCard } from '@aph/mobile-patients/src/components/Tests/components/RecommedationGroupCard';
 import { Overlay } from 'react-native-elements';
 import { ExpressSlotMessageRibbon } from '@aph/mobile-patients/src/components/Tests/components/ExpressSlotMessageRibbon';
+import { DIAGNOSTICS_ITEM_TYPE } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 type Address = savePatientAddress_savePatientAddress_patientAddress;
 type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
@@ -226,8 +228,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
   const [reportTat, setReportTat] = useState([] as any);
   const [showAllPreviousItems, setShowAllPreviousItems] = useState<boolean>(false);
-  const [openRecommedations, setOpenRecommedations] = useState<boolean>(false);
-  const [showrecommendationPopUp, setShowrecommendationPopUp] = useState<boolean>(false);
+  const [openRecommedations, setOpenRecommedations] = useState<boolean>(true);
   const [groupRecommendations, setGroupRecommendations] = useState([] as any);
   const isCartPresent = isDiagnosticSelectedCartEmpty(
     isModifyFlow ? modifiedPatientCart : patientCartItems
@@ -324,7 +325,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       '',
       isRecommendationShown,
       recomData,
-      paitentTotalCart
+      paitentTotalCart,
+      groupRecommendations?.[0]
     );
   }
 
@@ -439,7 +441,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         '',
         isRecommendationShown,
         recomData,
-        paitentTotalCart
+        paitentTotalCart,
+        groupRecommendations?.[0]
       );
     }
   }, [cartItems?.length, recomData?.length, loading]);
@@ -1261,7 +1264,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     );
   };
 
-  const onRemoveCartItem = ({ id, name }: DiagnosticsCartItem, patientId: string) => {
+  const onRemoveCartItem = ({ id, name }: DiagnosticsCartItem, patientId: string, isUndo: boolean) => {
     // check if patient cartItems has the removed item. If it does, then don't remove it from the overall.
     const getSelectedItemInCart = checkIsItemRemovedFromAll(patientCartItems, id);
     removePatientCartItem?.(patientId, id);
@@ -1293,7 +1296,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         'Customer',
         currentPatient,
         isDiagnosticCircleSubscription,
-        cartItems
+        cartItems,
+        isUndo ? 'Package Recommendations' : ''
       );
     } else {
       DiagnosticRemoveFromCartClicked(
@@ -1303,7 +1307,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         'Customer',
         currentPatient,
         isDiagnosticCircleSubscription,
-        cartItems
+        cartItems,
+        isUndo ? 'Package Recommendations' : ''
       );
     }
   };
@@ -1361,7 +1366,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           client,
           recommendationInputItems,
           Number(addressCityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
-          [patientDetails?.gender]
+          [patientDetails?.gender],
+          cartItemsForSinglePatient?.[0]?.groupPlan
         );
         if (getPackageRecommendationsResponse?.data?.getDiagnosticPackageRecommendationsv2) {
           const getResult =
@@ -1426,49 +1432,37 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     const priceDiff =
       diagnosticsDisplayPrice(grpItem, isDiagnosticCircleSubscription)?.priceToShow -
       getCartTotalPrice();
+    const patientId = patientCartItems?.[0]?.patientId;
     return (
       <>
-        {/* Group Recommendations start here */}
-        <TouchableOpacity
-          style={[
-            styles.recommedationHeaderContainer,
-            {
-              borderBottomStartRadius: openRecommedations ? 0 : 10,
-              borderBottomEndRadius: openRecommedations ? 0 : 10,
-            },
-          ]}
-          onPress={() => {
-            setOpenRecommedations(!openRecommedations);
-          }}
-        >
-          <Text style={styles.textStyleHeading}>
-            {`Recommended for you • ${
-              priceDiff > 0
-                ? `${
-                    groupRecommendations?.[0]?.extraInclusionsCount > 1
-                      ? `${groupRecommendations?.[0]?.extraInclusionsCount} Tests`
-                      : `${groupRecommendations?.[0]?.extraInclusionsCount} Test`
-                  } @ ₹ ${priceDiff?.toFixed()} Only`
-                : `Save ₹ ${Math.abs(priceDiff)?.toFixed()}`
-            }`}
-          </Text>
-          {openRecommedations ? (
-            <ArrowUpWhite style={styles.iconStyleArrow} />
-          ) : (
-            <ArrowDownWhite style={styles.iconStyleArrow} />
-          )}
-        </TouchableOpacity>
         <RecommedationGroupCard
           cartItems={cartItems}
           patientItems={patientItems}
           data={groupRecommendations?.[0]}
           showRecommedation={openRecommedations}
           onPressAdd={() => {
-            setShowrecommendationPopUp(true);
+            DiagnosticAddToCartEvent(
+              groupItem?.itemName,
+              `${groupItem?.itemId}`,
+              pricesForItem?.price, //mrp
+              diagnosticsDisplayPrice(grpItem, isDiagnosticCircleSubscription)?.priceToShow, //actual selling price
+              DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.CART_PAGE,
+              DIAGNOSTICS_ITEM_TYPE.PACKAGE,
+              'Package Recommendations',
+              currentPatient,
+              isDiagnosticCircleSubscription,
+              groupItem?.inclusions
+            );
+            _onPressProceed(patientId, grpItem)
           }}
           showPrice={Number(priceDiff?.toFixed())}
           showAddButton={true}
           showTestWorth={true}
+          priceDiff={priceDiff}
+          groupRecommendations={groupRecommendations}
+          onPressArrow={()=>{
+            setOpenRecommedations(!openRecommedations);
+          }}
         />
       </>
     );
@@ -1570,6 +1564,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   };
 
   const renderPreviousOrderItems = (item: orderListLineItems) => {
+    const getGroupPlan = item?.groupPlan;
+    const findPriceWithGroupPlan = item?.pricingObj?.find((val) => val?.groupPlan == getGroupPlan);
     return (
       <View style={styles.commonTax}>
         <View style={{ width: '65%' }}>
@@ -1583,93 +1579,17 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         <View style={styles.previousOrderView}>
           <Text style={[styles.commonText, styles.previousOrderPrice]}>
             {string.common.Rs}
-            {convertNumberToDecimal(item?.price) || null}
+            {!!findPriceWithGroupPlan
+              ? convertNumberToDecimal(findPriceWithGroupPlan?.price)
+              : convertNumberToDecimal(item?.price) || null}
           </Text>
         </View>
       </View>
     );
   };
 
-  const renderRecommedationGroupPopUp = () => {
-    const groupItem = groupRecommendations?.[0];
-    const getDiagnosticPricingForItem = groupItem?.diagnosticPricing;
-    const packageMrpForItem = groupItem?.packageCalculatedMrp!;
-    const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
-    const patientItems = patientCartItems?.[0]?.cartItems?.filter((cItem) => cItem?.isSelected);
-    const patientId = patientCartItems?.[0]?.patientId;
-    const getPatientName = getPatientNameById(allCurrentPatients, patientId);
-
-    const grpItem = createDiagnosticAddToCartObject(
-      groupItem?.itemId,
-      groupItem?.itemName,
-      groupItem?.gender,
-      pricesForItem?.price!,
-      pricesForItem?.specialPrice!,
-      pricesForItem?.circlePrice!,
-      pricesForItem?.circleSpecialPrice!,
-      pricesForItem?.discountPrice!,
-      pricesForItem?.discountSpecialPrice!,
-      groupItem?.collectionType,
-      pricesForItem?.planToConsider?.groupPlan!,
-      packageMrpForItem,
-      groupItem?.inclusions,
-      AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
-      groupItem?.itemImageUrl
-    );
-
-    const priceToShow = diagnosticsDisplayPrice(grpItem, isDiagnosticCircleSubscription)
-      ?.priceToShow;
-    return (
-      <Overlay
-        isVisible
-        onRequestClose={() => setShowrecommendationPopUp(false)}
-        windowBackgroundColor={'rgba(0, 0, 0, 0.6)'}
-        containerStyle={{ marginBottom: 0 }}
-        fullScreen
-        transparent
-        overlayStyle={styles.phrOverlayStyle}
-      >
-        <View style={styles.popupContainer}>
-          <Text style={styles.textInclusionsRecom}>
-            {string.diagnosticsCartPage.recommendedText}
-            <Text style={styles.boldTextRecom}> {getPatientName} </Text>
-          </Text>
-          <RecommedationGroupCard
-            cartItems={cartItems}
-            patientItems={patientItems}
-            data={groupRecommendations?.[0]}
-            showRecommedation={openRecommedations}
-            containerStyle={styles.groupRecommendationContainer}
-            onPressAdd={() => {}}
-            showAddButton={false}
-            showTestWorth={false}
-            scrollEnabled={true}
-            showPrice={0}
-            priceToDisplayOnPopUp={priceToShow}
-            showPrice={0}
-          />
-          <View style={styles.promoButtonContainer}>
-            <TouchableOpacity
-              style={styles.proceedToCancelTouch}
-              onPress={() => {
-                setShowrecommendationPopUp(false);
-              }}
-            >
-              <Text style={styles.yellowText}>{string.common.goBack}</Text>
-            </TouchableOpacity>
-            <Button
-              onPress={() => _onPressProceed(patientId, grpItem)}
-              style={{ width: '40%' }}
-              title={'PROCEED'}
-            />
-          </View>
-        </View>
-      </Overlay>
-    );
-  };
 
   function _onPressProceed(patientId: string, addToCartData: DiagnosticsCartItem) {
-    setShowrecommendationPopUp(false);
     const allItems = [addToCartData];
     addPatientCartItem?.(patientId, allItems!);
   }
@@ -1677,9 +1597,10 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   const renderEachPatientCartCount = (count: number) => {
     return (
       <View style={styles.cartCountView}>
-        <Text style={styles.cartCountText}>{`${count < 10 ? `0${count}` : count} ${
+        <Text style={styles.cartCountText}>{`Cart Value | ${count} ${
           count == 1 ? 'item' : 'items'
-        } in your cart`}</Text>
+        }`}</Text>
+        <Text style={styles.cartCountText}>{`${string.common.Rs}${grandTotal}`}</Text>
       </View>
     );
   };
@@ -1911,11 +1832,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         ? newArray.concat(recommedationData).concat(alsoAddListData)
         : recommedationData;
     const inclusionIdArray: any[] = [];
-    const inclusionIds = cartItems?.map((item) => {
-      item?.inclusions?.map((_item: any) => {
-        inclusionIdArray?.push(_item);
-      });
-    });
     const dataToRender = dataToShow?.filter((item: any) => {
       if (!!item?.diagnosticInclusions && item?.diagnosticInclusions?.length > 0) {
         return item?.diagnosticInclusions?.filter((_item: any) => {
@@ -1998,13 +1914,15 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       <View style={{ margin: 16 }}>
         {renderAddTestOption()}
         {!!isCartEmpty && !isCartEmpty ? renderEmptyCart() : renderCartItems()}
-        {isAllMinorPatients
-          ? null
-          : !shouldShowRecommendations
-          ? !!recommedationData && recommedationData?.length > 0
-            ? renderCartWidgets()
-            : !!alsoAddListData && alsoAddListData?.length > 0 && !hasPackageSKU
-            ? renderCartWidgets()
+        {!groupRecommendations?.length
+          ? isAllMinorPatients
+            ? null
+            : !shouldShowRecommendations
+            ? !!recommedationData && recommedationData?.length > 0
+              ? renderCartWidgets()
+              : !!alsoAddListData && alsoAddListData?.length > 0 && !hasPackageSKU
+              ? renderCartWidgets()
+              : null
             : null
           : null}
         {showPatientOverlay ? renderPatientOverlay() : null}
@@ -2217,7 +2135,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         </ScrollView>
         {renderAddressSection()}
       </SafeAreaView>
-      {showrecommendationPopUp ? renderRecommedationGroupPopUp() : null}
       {renderCallToOrder()}
       {renderStickyBottom()}
     </View>
@@ -2379,8 +2296,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#E0E9EC',
     borderRadius: 10,
     borderWidth: 1,
+    flexDirection: 'row',
     borderColor: '#E0E9EC',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 10,
     padding: 16,

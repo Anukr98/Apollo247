@@ -191,6 +191,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
 
         const newCartItemsWithSkuSelections = isPriceNotZeroArray?.map((obj) =>
           !BOTH_GENDER_ARRAY.includes(obj?.gender!?.toLowerCase()) &&
+          !BOTH_GENDER_ARRAY.includes(patientDetails?.gender?.toLowerCase()) &&
           obj?.gender?.toLowerCase() != patientDetails?.gender?.toLowerCase()
             ? { ...obj, isSelected: false }
             : { ...obj, isSelected: true }
@@ -782,7 +783,9 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   }
 
   function _setSelectedPatient(patientDetails: any, ind: number) {
-    const isPresent = patientArray?.find((item: string) => patientDetails?.id == item);
+    const isPresent = !!patientCartItems
+      ? patientCartItems?.find((cart) => cart?.patientId == patientDetails?.id)
+      : patientArray?.find((item: string) => patientDetails?.id == item);
     if (!!isPresent) {
       const restOfArray = patientArray?.filter((item: string) => item != patientDetails?.id);
       setPatientArray(restOfArray);
@@ -796,20 +799,17 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
 
   function updatePatientItem(selectedPatient: any, selectedValue: boolean) {
     const filterEligibleSku = cartItems?.filter(
-      (val: DiagnosticsCartItem) =>
-        val?.gender?.toLowerCase() == selectedPatient?.gender?.toLowerCase() ||
-        val?.gender == GENDER.ALL ||
-        val?.gender == GENDER.OTHER
+      (cartItem: DiagnosticsCartItem) =>
+        cartItem?.gender?.toLowerCase() == selectedPatient?.gender?.toLowerCase() ||
+        BOTH_GENDER_ARRAY.includes(cartItem?.gender!?.toLowerCase()) ||
+        BOTH_GENDER_ARRAY.includes(selectedPatient?.gender?.toLowerCase())
     );
 
     const filterInEligibleSku = cartItems?.filter(
-      (val: DiagnosticsCartItem) =>
-        val?.gender?.toLowerCase() != selectedPatient?.gender?.toLowerCase() &&
-        !BOTH_GENDER_ARRAY.includes(val?.gender!?.toLowerCase())
-    );
-
-    const nonSelectableItems = filterEligibleSku?.filter(
-      (val) => !cartItems?.some((item) => item?.id == val?.id)
+      (cartItem: DiagnosticsCartItem) =>
+        cartItem?.gender?.toLowerCase() != selectedPatient?.gender?.toLowerCase() &&
+        !BOTH_GENDER_ARRAY.includes(cartItem?.gender!?.toLowerCase()) &&
+        !BOTH_GENDER_ARRAY.includes(selectedPatient?.gender!?.toLowerCase())
     );
 
     const updatedItems = JSON.parse(JSON.stringify(cartItems));
@@ -886,10 +886,11 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     return <Spearator />;
   };
 
-  function checkSkuPateintGender(test: any, patientDetails: any) {
+  function checkSkuPatientGender(test: any, patientDetails: any) {
     return (
       BOTH_GENDER_ARRAY?.includes(test?.gender?.toLowerCase()) ||
-      test?.gender?.toLowerCase() == patientDetails?.gender?.toLowerCase()
+      test?.gender?.toLowerCase() == patientDetails?.gender?.toLowerCase() ||
+      BOTH_GENDER_ARRAY?.includes(patientDetails?.gender?.toLowerCase())
     );
   }
 
@@ -904,7 +905,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     );
     const itemName = test?.name;
     const priceToShow = diagnosticsDisplayPrice(test, isDiagnosticCircleSubscription)?.priceToShow;
-    const skuPatientGender = checkSkuPateintGender(test, patientDetails);
+    const skuPatientGender = checkSkuPatientGender(test, patientDetails);
     const skuType = test?.inclusions?.length > 1 ? 'package' : 'test';
     const skuMsg = string.diagnostics.skuGenderMessage
       .replace('{{skuType}}', !!skuType ? skuType : 'test')
@@ -986,8 +987,10 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     const showGreenBg = !!patientSelectedItems && patientSelectedItems?.length > 0;
     const isMinorAge = checkPatientAge(item);
     const disablePatientForSkuGender =
-      ((item?.gender === GENDER.MALE || item?.gender === GENDER.ALL) && hasAllFemaleSku) ||
-      ((item?.gender === GENDER.FEMALE || item?.gender === GENDER.ALL) && hasAllMaleSku);
+      ((item?.gender === GENDER.MALE || BOTH_GENDER_ARRAY.includes(item?.gender)) &&
+        hasAllFemaleSku) ||
+      ((item?.gender === GENDER.FEMALE || BOTH_GENDER_ARRAY.includes(item?.gender)) &&
+        hasAllMaleSku);
 
     const itemViewStyle = [
       styles.patientItemViewStyle,

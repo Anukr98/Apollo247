@@ -299,7 +299,8 @@ export async function DiagnosticDetailsViewed(
   pharmacyCircleAttributes: any,
   isDiagnosticCircleSubscription?: boolean | undefined,
   originalItemIds?: string[] | null,
-  section?: string
+  section?: string,
+  sectionStr?: string,
 ) {
   try {
     const getPatientAttributes = await createPatientAttributes(currentPatient);
@@ -319,6 +320,8 @@ export async function DiagnosticDetailsViewed(
     }
     if (section) {
       eventAttributes['Section name'] = section;
+    } else if (sectionStr) {
+      eventAttributes['Section name'] = sectionStr;
     }
     if (!!originalItemIds) {
       eventAttributes['Original Item ids'] = JSON.stringify(originalItemIds);
@@ -418,7 +421,8 @@ export function DiagnosticCartViewed(
   couponCode: string,
   isRecommendationShown: boolean,
   recommendationData: any,
-  totalCart: any
+  totalCart: any,
+  recommendationPackageData?: any
 ) {
   try {
     const getPatientAttributes = createPatientAttributes(currentPatient);
@@ -472,6 +476,24 @@ export function DiagnosticCartViewed(
     if (!!couponCode && !!couponDiscount) {
       eventAttributes['Coupon code used'] = couponCode;
       eventAttributes['Coupon Discount'] = Number(couponDiscount);
+    }
+    const itemCartIds = totalCart?.map((item: any) => {
+      return Number(item?.id);
+    })
+    const extraTests = recommendationPackageData?.inclusionData?.filter((item: any) => {
+      if(!itemCartIds?.includes(item?.itemId))
+      return item?.name;
+    })
+    if (!!recommendationPackageData) {
+      eventAttributes['Package Recommendation Shown'] = !!recommendationPackageData ? 'Yes' : 'No';
+      eventAttributes['Package Recommendation ItemId'] = recommendationPackageData?.itemId;
+      eventAttributes['Package Recommendation ItemName'] = recommendationPackageData?.itemName;
+      eventAttributes['Package Recommendation Price'] = recommendationPackageData?.price;
+      eventAttributes['Package Recommendation Extra Tests'] = JSON.stringify(
+        extraTests?.map((item: any) => {
+          return item?.name;
+        })
+      );
     }
     // fireCircleBenifitAppliedEvent(currentPatient, validity, circleSubId, isCircle);
     fireCircleBenifitAppliedEvent(currentPatient, validity, circleSubId, isCircle);
@@ -670,7 +692,8 @@ export function DiagnosticRemoveFromCartClicked(
   mode: 'Customer' | 'Automated',
   currentPatient?: any,
   isDiagnosticCircleSubscription?: boolean | undefined,
-  cartItems?: DiagnosticsCartItem[]
+  cartItems?: DiagnosticsCartItem[],
+  source?: any
 ) {
   try {
     const getPatientAttributes = createPatientAttributes(currentPatient);
@@ -688,6 +711,7 @@ export function DiagnosticRemoveFromCartClicked(
       Pincode: pincode,
       Mode: mode,
       'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+      'Source': source,
       itemIdsInCart: JSON.stringify(
         newCart?.map((item: any) => {
           return item?.id;
