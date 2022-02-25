@@ -3960,7 +3960,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
 
   const renderServicesForYouView = () => {
     let arrayList = isProHealthActive ? listValuesForProHealth : listValues;
-    console.log({ arrayList });
     return (
       <View style={styles.menuOptionsContainer}>
         {arrayList?.map((item) => {
