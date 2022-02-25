@@ -376,6 +376,7 @@ const appStaticVariables = {
   DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER_TEXT: string.diagnosticsCartPage.reviewPagePolicyText,
   APOLLO247_API_KEY: '',
   ACTIVATE_NEW_JWT_TOKEN: false,
+  ALLOW_PHONEPE_QCLITE: true,
 };
 
 const DEV_top_specialties = [
