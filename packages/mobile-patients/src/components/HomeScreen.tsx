@@ -5931,12 +5931,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         const consultOptionClicked = !isEmptyObject(nav_props);
         consultOptionClicked &&
           postHomeCleverTapEvent(CleverTapEventName.OPTION_FROM_SEARCH_BAR_CLICKED, 'Search bar', {
-            'Doctor Name': data?.doctorName,
-            Speciality: data?.speciality,
+            'Doctor Name': nav_props?.doctorName,
+            Speciality: nav_props?.speciality,
             Vertical: 'Consult',
           });
         consultOptionClicked
-          ? !nav_props?.isSpeciality
+          ? pdp
             ? props.navigation.navigate(AppRoutes.DoctorDetails, nav_props)
             : props.navigation.navigate(AppRoutes.DoctorSearchListing, nav_props)
           : props.navigation.navigate(AppRoutes.DoctorSearch, { searchText });
