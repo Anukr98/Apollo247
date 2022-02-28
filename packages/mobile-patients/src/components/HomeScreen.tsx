@@ -5935,6 +5935,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             Speciality: nav_props?.speciality,
             Vertical: 'Consult',
           });
+        pdp && postDoctorProfileViewedEvent(nav_props);
         consultOptionClicked
           ? pdp
             ? props.navigation.navigate(AppRoutes.DoctorDetails, nav_props)
