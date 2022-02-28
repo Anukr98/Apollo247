@@ -159,6 +159,7 @@ export interface TestDetailsProps
     changeCTA?: boolean;
     stateId?: string;
     widgetTitle?: string;
+    section?: string;
   }> {}
 
 export const TestDetails: React.FC<TestDetailsProps> = (props) => {
@@ -212,6 +213,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const itemId =
     movedFrom == AppRoutes.CartPage ? testDetails?.ItemID : props.navigation.getParam('itemId');
   const source = props.navigation.getParam('source');
+  const section = props.navigation.getParam('section');
   const isAlreadyPartOfOrder =
     !!modifiedOrderItemIds &&
     modifiedOrderItemIds?.length &&
@@ -947,12 +949,13 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   useEffect(() => {
     if (testInfo?.Rate) {
       const itemType = (testInfo?.type! || testDetails?.type)?.toLowerCase();
+      const getSource  = isDeep == 'deeplink'
+      ? 'Deeplink'
+      : movedFrom == AppRoutes.SearchTestScene
+      ? source
+      : testInfo?.source! || testDetails?.source
       DiagnosticDetailsViewed(
-        isDeep == 'deeplink'
-          ? 'Deeplink'
-          : movedFrom == AppRoutes.SearchTestScene
-          ? source
-          : testInfo?.source! || testDetails?.source,
+        getSource == undefined ? source : getSource,
         itemName,
         !!itemType && itemType == DIAGNOSTICS_ITEM_TYPE.PACKAGE?.toLowerCase()
           ? DIAGNOSTICS_ITEM_TYPE.PACKAGE
@@ -971,7 +974,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             : 'You can also order'
           : !!widgetTitle
           ? widgetTitle
-          : ''
+          : '',
+          section,
       );
     }
   }, [testInfo]);
@@ -1261,9 +1265,11 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       itemId!,
       mrpToDisplay, //mrp
       priceToShow, //actual price
-      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS,
+      section == string.common.homePageItem
+        ? DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME
+        : DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS,
       testInclusions?.length < 2 ? DIAGNOSTICS_ITEM_TYPE.TEST : DIAGNOSTICS_ITEM_TYPE.PACKAGE,
-      '',
+      section == string.common.homePageItem ? section : '',
       currentPatient,
       isDiagnosticCircleSubscription,
       originalItemIds
@@ -1289,7 +1295,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       testInclusions,
       AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
       cmsTestDetails?.diagnosticItemImageUrl,
-      getMandatoryParameterCount + nonInclusionParamters
+      getMandatoryParameterCount + nonInclusionParamters?.length
     );
 
     isModify &&

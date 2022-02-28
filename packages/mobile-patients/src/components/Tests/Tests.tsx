@@ -2648,7 +2648,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         id,
         !!pincode ? Number(pincode) : 0,
         itemIds,
-        REPORT_TAT_SOURCE.TEST_DETAILS_PAGE
+        REPORT_TAT_SOURCE.CART_PAGE
       );
       if (result?.data?.getConfigurableReportTAT) {
         const getMaxReportTat = result?.data?.getConfigurableReportTAT?.preOrderReportTATMessage!;
@@ -2675,6 +2675,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
     props.navigation.navigate(AppRoutes.TestDetails, {
       itemId: source == 'cartSummary' ? singleItemData?.id : singleItemData?.itemId,
       comingFrom: AppRoutes.Tests,
+      source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME,
+      section: string.common.homePageItem
     });
   }
 
@@ -2745,7 +2747,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               </Text>
             </View>
             <View style={styles.viewSecond}>
-              <View style={{ marginLeft: 45 }}>
+              <View style={{ marginLeft: 30 }}>
                 {reportMsg ? (
                   <View style={styles.blueFirst}>
                     <ClockBlue style={styles.blueIcon} />
@@ -2754,7 +2756,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 ) : null}
                 {topItemDetails?.[0]?.textLine2 ? (
                   <View style={styles.blueSecond}>
-                    <HomeBlue style={styles.blueIcon} />
+                    <HomeBlue style={styles.blueIcon1} />
                     <Text style={styles.blueText}>{topItemDetails?.[0]?.textLine2}</Text>
                   </View>
                 ) : null}
@@ -3596,7 +3598,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#EDFAFD',
     borderRadius: 10,
     alignSelf: 'center',
-    marginVertical: 20,
+    marginTop: 15,
   },
   itemFirst: {
     flexDirection: 'row',
@@ -3627,7 +3629,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  blueIcon: { width: 18, height: 18 },
+  blueIcon: { width: 14, height: 14 },
+  blueIcon1: { width: 18, height: 14 },
   bottomGreenView: {
     backgroundColor: '#D7FAF3',
     justifyContent: 'flex-end',
@@ -3667,7 +3670,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 10,
     paddingVertical: 10,
   },
-  bottomText: { ...theme.viewStyles.text('SB', 16, '#46B29D', 1), alignSelf: 'center' },
+  bottomText: { ...theme.viewStyles.text('SB', 12, '#46B29D', 1), alignSelf: 'center' },
   closeContainer: {
     alignSelf: 'flex-end',
     margin: 10,
