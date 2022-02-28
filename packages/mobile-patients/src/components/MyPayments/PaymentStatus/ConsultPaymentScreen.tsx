@@ -148,28 +148,40 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
       displayId,
       discountedAmount,
       appointmentRefunds,
+      orderType,
+      subscriptionOrderDetails,
     } = itemDetails;
+    console.log('csk item', JSON.stringify(itemDetails));
     const { refund } = PaymentOrders;
     const refundInfo = refund?.length ? refund : appointmentRefunds;
-    const paymentInfo = PaymentOrders?.paymentStatus ? PaymentOrders : appointmentPayments[0];
+    const paymentInfo =
+      orderType === 'SUBSCRIPTION'
+        ? subscriptionOrderDetails
+        : PaymentOrders?.paymentStatus
+        ? PaymentOrders
+        : appointmentPayments?.[0];
     if (!paymentInfo) {
       status = 'PENDING';
-    } else if (refundInfo.length || paymentStatus == REFUND) {
+    } else if (refundInfo?.length || paymentStatus == REFUND) {
       const { paymentRefId, amountPaid } = paymentInfo;
       refId = paymentRefId;
       price = amountPaid;
       status = REFUND;
     } else {
       const { paymentStatus, paymentRefId, amountPaid } = paymentInfo;
-      status = paymentStatus;
-      refId = paymentRefId;
-      price = amountPaid;
+      status =
+        orderType === 'SUBSCRIPTION'
+          ? paymentInfo?.payment_reference?.payment_status
+          : paymentStatus;
+      refId = orderType === 'SUBSCRIPTION' ? paymentInfo?._id : paymentRefId;
+      price =
+        orderType === 'SUBSCRIPTION' ? paymentInfo?.payment_reference?.amount_paid : amountPaid;
     }
     return {
       status: status,
       refId: refId,
       price: `${string.common.Rs} ` + String(price),
-      orderId: displayId,
+      orderId: orderType === 'SUBSCRIPTION' ? paymentInfo?.order_id : displayId,
     };
   };
   const { refId, price, orderId, status } = statusItemValues();
@@ -385,7 +397,8 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
   };
   const renderStatusCard = () => {
     const orderIdText = 'Order ID: ' + String(orderId);
-    const { appointmentType, appointmentDateTime, doctor } = itemDetails || {};
+    const { appointmentType, appointmentDateTime, doctor, orderType, subscriptionOrderDetails } =
+      itemDetails || {};
     return (
       <View style={styles.statusCardStyle}>
         <View
@@ -438,10 +451,12 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
             {string.consultPayment.appointmentDetails}
           </Text>
           <Text style={theme.viewStyles.text('M', 12, theme.colors.CONSULT_SUCCESS_TEXT, 1, 20)}>
-            {appointmentType.charAt(0).toUpperCase() +
-              appointmentType.slice(1).toLowerCase() +
-              ' Consultation,' +
-              getDate(appointmentDateTime)}
+            {orderType === 'SUBSCRIPTION'
+              ? subscriptionOrderDetails?.plan_id?.toUpperCase()
+              : appointmentType.charAt(0).toUpperCase() +
+                appointmentType.slice(1).toLowerCase() +
+                ' Consultation,' +
+                getDate(appointmentDateTime)}
           </Text>
           <Text style={theme.viewStyles.text('M', 12, theme.colors.BLACK_COLOR, 1, 20)}>
             {doctor?.name}

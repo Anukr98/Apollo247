@@ -4745,6 +4745,7 @@ export const CONSULT_ORDER_PAYMENT_DETAILS = gql`
           transaction_date_time
           payment_reference
           sub_plan_id
+          order_id
         }
         appointmentRefunds {
           refundAmount

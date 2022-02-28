@@ -33,16 +33,27 @@ const FooterButton: FC<FooterButtonProps> = (props) => {
     let status = 'PENDING';
     let orderID = 0;
     if (paymentFor === 'consult') {
-      const { appointmentPayments, appointmentRefunds, PaymentOrders } = item;
+      const {
+        appointmentPayments,
+        appointmentRefunds,
+        PaymentOrders,
+        orderType,
+        subscriptionOrderDetails,
+      } = item;
       const { refund } = PaymentOrders;
       const refundInfo = refund?.length ? refund : appointmentRefunds;
-      const paymentInfo = PaymentOrders?.paymentStatus ? PaymentOrders : appointmentPayments[0];
+      const paymentInfo =
+        orderType === 'SUBSCRIPTION'
+          ? subscriptionOrderDetails
+          : PaymentOrders?.paymentStatus
+          ? PaymentOrders
+          : appointmentPayments[0];
       if (!paymentInfo) {
         status = 'PENDING';
-      } else if (refundInfo.length || paymentStatus == REFUND) {
+      } else if (refundInfo?.length || paymentStatus == REFUND) {
         status = REFUND;
       } else {
-        status = paymentInfo?.paymentStatus;
+        status = paymentInfo?.payment_reference?.amount_paid || paymentInfo?.paymentStatus;
       }
       return {
         status: status,
@@ -125,7 +136,10 @@ const FooterButton: FC<FooterButtonProps> = (props) => {
       User_Type: getUserType(allCurrentPatients),
       Relation: currentPatient?.relation || '',
     };
-    postCleverTapEvent(CleverTapEventName.CONSULT_ACTIVE_APPOINTMENTS, activeAppointmentsAttributes);
+    postCleverTapEvent(
+      CleverTapEventName.CONSULT_ACTIVE_APPOINTMENTS,
+      activeAppointmentsAttributes
+    );
     postCleverTapEvent(CleverTapEventName.CONSULT_GO_TO_CONSULT_ROOM_CLICKED, eventAttributes);
   };
 
