@@ -22,6 +22,9 @@ export interface consultOrders_consultOrders_appointments_subscriptionOrderDetai
   status: string | null;
   plan_id: string | null;
   group_plan_id: string | null;
+  transaction_date_time: any | null;
+  payment_reference: any | null;
+  sub_plan_id: any | null;
 }
 
 export interface consultOrders_consultOrders_appointments_appointmentRefunds {

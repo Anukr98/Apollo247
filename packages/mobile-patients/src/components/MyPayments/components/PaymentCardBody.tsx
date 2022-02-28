@@ -68,7 +68,8 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
         price = amountPaid;
         status = REFUND;
       } else if (orderType === 'SUBSCRIPTION') {
-        status = subscriptionOrderDetails?.status;
+        status = paymentInfo?.payment_reference?.payment_status || paymentInfo?.status;
+        price = paymentInfo?.payment_reference?.amount_paid;
       } else {
         const { paymentStatus, paymentRefId, amountPaid } = paymentInfo;
         status = paymentStatus;
