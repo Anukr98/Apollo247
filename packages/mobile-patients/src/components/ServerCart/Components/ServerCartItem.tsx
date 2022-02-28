@@ -20,6 +20,7 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 import { saveCart_saveCart_data_medicineOrderCartLineItems } from '@aph/mobile-patients/src/graphql/types/saveCart';
 import { CouponApplicable } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { renderCircleBottomShimmer } from '../../ui/ShimmerFactory';
 
 export interface ServerCartItemProps {
   item: saveCart_saveCart_data_medicineOrderCartLineItems;
@@ -27,19 +28,34 @@ export interface ServerCartItemProps {
   onUpdateQuantity: (quantity: number) => void;
   onPressDelete: () => void;
   onPressProduct: () => void;
+  userActionPayload?: any;
 }
 
 const { width } = Dimensions.get('window');
 
 export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
-  const { isCircleCart, cartCoupon } = useShoppingCart();
+  const { isCircleCart, cartCoupon, serverCartLoading } = useShoppingCart();
   const couponApplied = cartCoupon?.coupon && cartCoupon?.valid;
-  const { item, onUpdateQuantity, onPressDelete, onPressProduct } = props;
+  const { item, onUpdateQuantity, onPressDelete, onPressProduct, userActionPayload } = props;
   const [discountedPrice, setDiscountedPrice] = useState<any>(undefined);
   const [mrp, setmrp] = useState<number>(item?.price || 0);
   const itemAvailable = item?.isShippable && item?.sellOnline;
   const isCouponApplied =
     item?.isCouponApplicable == CouponApplicable.APPLIED && item?.couponDiscountPrice != 0;
+
+  const [isLoading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (
+      serverCartLoading &&
+      userActionPayload?.medicineOrderCartLineItems?.length &&
+      userActionPayload?.medicineOrderCartLineItems[0].medicineSKU === item?.sku
+    ) {
+      setLoading(true);
+    } else {
+      setLoading(false);
+    }
+  }, [userActionPayload, serverCartLoading]);
 
   useEffect(() => {
     setmrp(item?.price);
@@ -55,11 +71,11 @@ export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
     const isPrescriptionRequired = item?.isPrescriptionRequired == '1';
     return (
       <View style={[styles.imageContainer, { opacity: itemAvailable ? 1 : 0.3 }]}>
-        {isPrescriptionRequired && (
+        {isPrescriptionRequired ? (
           <View style={styles.rxSymbolContainer}>
             <PrescriptionRequiredIcon style={styles.rxSymbol} />
           </View>
-        )}
+        ) : null}
         <Image
           PlaceholderContent={isPrescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
           placeholderStyle={{ backgroundColor: 'transparent' }}
@@ -73,7 +89,7 @@ export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
 
   const renderProduct = () => {
     return (
-      <View style={{ flex: 1 }}>
+      <View style={[{ flex: 1 }, isLoading && { opacity: 0 }]}>
         <View style={{ flexDirection: 'row', marginBottom: 5 }}>
           <View style={{ flex: 0.85 }}>
             <TouchableOpacity onPress={onPressProduct}>
@@ -81,11 +97,11 @@ export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
                 {item?.name}
               </Text>
             </TouchableOpacity>
-            {item?.mou && (
+            {item?.mou ? (
               <Text
                 style={{ ...styles.info, opacity: itemAvailable ? 1 : 0.3 }}
               >{`(Pack of ${item?.mou})`}</Text>
-            )}
+            ) : null}
           </View>
           <TouchableOpacity onPress={onPressDelete} style={styles.delete}>
             {renderDelete()}
@@ -111,7 +127,7 @@ export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
         <View style={styles.lowerCountInnerView}>
           {renderQuantity()}
           {itemAvailable && !item?.freeProduct && !!couponApplied && renderCoupon()}
-          {isCircleCart && renderCareCashback()}
+          {isCircleCart ? renderCareCashback() : null}
         </View>
         {!item?.freeProduct ? renderPrice(priceToShow) : renderFree()}
       </View>
@@ -199,7 +215,7 @@ export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
   };
 
   function getDiscountPercent() {
-    if (isCouponApplied) {
+    if (isCouponApplied && !!item?.couponDiscountPrice) {
       return ((item?.couponDiscountPrice / mrp) * 100).toFixed(1);
     } else {
       return (((mrp - discountedPrice) / mrp) * 100).toFixed(1);
@@ -209,9 +225,9 @@ export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
   const renderDiscount = () => {
     return (
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        {!item?.freeProduct && (
+        {!item?.freeProduct ? (
           <Text style={styles.dicountPercent}>{`${getDiscountPercent()}%off`}</Text>
-        )}
+        ) : null}
         <Text style={styles.mrp}>{`MRP `}</Text>
         <Text style={styles.initialPrice}>{`₹${(mrp * item?.quantity).toFixed(2)}`}</Text>
       </View>
@@ -265,13 +281,18 @@ export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
       <View style={{ ...styles.card, backgroundColor: itemAvailable ? '#fff' : '#F0F1EC' }}>
         {renderImage()}
         {renderProduct()}
+        {isLoading ? (
+          <View style={{ position: 'absolute', right: 50, top: 20 }}>
+            {renderCircleBottomShimmer()}
+          </View>
+        ) : null}
       </View>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-  cardContainer: { marginHorizontal: 13, marginBottom: 10 },
+  cardContainer: { marginHorizontal: 13, marginBottom: 10, position: 'relative' },
   card: {
     ...theme.viewStyles.cardViewStyle,
     borderRadius: 5,

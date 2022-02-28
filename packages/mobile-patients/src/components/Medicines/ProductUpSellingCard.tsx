@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
   },
   priceAndAddToCartContainer: {
     justifyContent: 'center',
-    height: 60,
+    height: 75,
   },
   priceAndAddToCartButton: {
     flex: 1,

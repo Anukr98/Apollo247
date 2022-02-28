@@ -6,7 +6,11 @@ import {
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { isSmallDevice, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  isEmptyObject,
+  isSmallDevice,
+  nameFormater,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
@@ -16,6 +20,7 @@ import {
 import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
 import DiscountPercentage from '@aph/mobile-patients/src/components/Tests/components/DiscountPercentage';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 
 interface CartItemCardProps {
   index: number;
@@ -29,6 +34,11 @@ interface CartItemCardProps {
   duplicateArray?: any;
   comingFrom?: string;
   onPressCard: (test: any) => void;
+  showUndo?: boolean;
+  onPressUndo: (test: any) => void;
+  allItemsInCart?: any
+  groupRecommendationItem?: any
+  cartItemIds?: any
 }
 
 export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
@@ -41,36 +51,37 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     comingFrom,
     showCartInclusions,
     index,
+    showUndo,
+    allItemsInCart,
+    groupRecommendationItem,
+    cartItemIds
   } = props;
 
   const inclusionItem =
     duplicateArray?.length > 0 &&
     duplicateArray?.map((item: any) =>
-      Number(item?.toKeepItemIds) == Number(cartItem?.id)
-        ? nameFormater(item?.itemsToRemovalName, 'default')
-        : ''
+      Number(item?.toKeepItemIds) == Number(cartItem?.id) ? item?.itemsToRemovalName : ''
     );
   const filterInclusions =
     duplicateArray?.length > 0 && inclusionItem?.filter((item: string) => item != '');
 
   const finalFilterInclusions = filterInclusions?.length > 0 && [...new Set(filterInclusions)];
 
-  const inclusionItemToShow = !!finalFilterInclusions && finalFilterInclusions?.join(', ');
+  const inclusionItemToShow = !!finalFilterInclusions ? finalFilterInclusions?.join(', ') : '';
+
+  const inclusionsArray = !!inclusionItemToShow ? inclusionItemToShow?.split(', ') : [];
 
   const hasExtraData =
-    (!!reportGenItem && (reportGenItem?.itemPrepration || reportGenItem?.itemReportTat)) ||
-    reportTat?.preOrderReportTATMessage;
-  const inclusionCount = !!reportGenItem && reportGenItem?.itemParameterCount;
+    (!!reportTat && !isEmptyObject(reportTat) && reportTat?.preOrderReportTATMessage != '') ||
+    (!!reportGenItem && !isEmptyObject(reportGenItem) && reportGenItem?.itemPrepration != '');
+
+  const inclusionCount =
+    !!reportGenItem && !isEmptyObject(reportGenItem) && reportGenItem?.itemParameterCount;
 
   const showSavingsView =
     isCircleSubscribed &&
     !!cartItem?.circleSpecialPrice &&
     cartItem?.groupPlan === DIAGNOSTIC_GROUP_PLAN.CIRCLE;
-
-  const showDiscountSavingsView =
-    !showSavingsView &&
-    !!cartItem?.discountSpecialPrice &&
-    cartItem?.groupPlan === DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT;
 
   function _onPressCard(item: DiagnosticsCartItem) {
     props.onPressCard(item);
@@ -96,9 +107,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     );
     const promoteCircle = cartItem?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE; //if circle discount is more
     const promoteDiscount = promoteCircle ? false : discount < specialDiscount;
-    const hasOtherDiscount = discount > 0 ? discount : 0;
-    const discountPrice =
-      specialDiscount > 0 ? specialDiscount : hasOtherDiscount > 0 ? hasOtherDiscount : 0;
+
     return (
       <TouchableOpacity style={{}} onPress={() => _onPressCard(cartItem)}>
         <View
@@ -128,7 +137,9 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
                     {priceToShow}
                   </Text>
                 </View>
-                <View style={styles.removeIconView}>{renderRemoveIcon(cartItem)}</View>
+                <View style={styles.removeIconView}>
+                  {!showUndo ? renderRemoveIcon(cartItem) : renderUndo(cartItem)}
+                </View>
               </View>
               {renderPercentageDiscount(
                 promoteCircle && isCircleSubscribed
@@ -144,29 +155,38 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
           </View>
         </View>
         {renderInclusionsCount()}
-        {(!!reportGenItem || !!reportTat) && renderReportTat_preTestingReqrmnt()}
-        {comingFrom == AppRoutes.CartPage && showCartInclusions && !!inclusionItemToShow ? (
-          <View style={styles.inclusionView}>
-            <TestInfoIcon style={styles.timeIconStyle} />
-            <Text style={styles.inclusionText}>Includes {inclusionItemToShow}</Text>
-          </View>
-        ) : null}
+        {((!!reportGenItem && !isEmptyObject(reportGenItem)) ||
+          (!!reportTat && !isEmptyObject(reportTat))) &&
+          renderReportTat_preTestingReqrmnt()}
+        {comingFrom == AppRoutes.CartPage &&
+        showCartInclusions &&
+        !!inclusionsArray &&
+        inclusionsArray?.length > 0
+          ? renderConflictingItemView()
+          : null}
+        {showUndo && renderInclusionsInDetail()}
       </TouchableOpacity>
     );
   };
 
+  const renderConflictingItemView = () => {
+    return (
+      <View style={styles.inclusionView}>
+        <Text style={styles.inclusionCommonText}>Has common parameters with </Text>
+        {!!inclusionsArray &&
+          inclusionsArray?.map((item: any) => {
+            return (
+              <View style={styles.inclusionListView}>
+                <Text style={styles.inclusionsBullet}>{'\u2B24'}</Text>
+                <Text style={styles.inclusionText}> {nameFormater(item, 'default')}</Text>
+              </View>
+            );
+          })}
+      </View>
+    );
+  };
+
   const renderInclusionsCount = () => {
-    const discount = calculatePackageDiscounts(
-      cartItem?.packageMrp,
-      cartItem?.price,
-      cartItem?.specialPrice
-    );
-    const specialDiscount = calculatePackageDiscounts(
-      cartItem?.packageMrp,
-      cartItem?.discountPrice,
-      cartItem?.discountSpecialPrice
-    );
-    const promoteCircle = cartItem?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE; //if circle discount is more
     return (
       <View
         style={[
@@ -184,8 +204,6 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
             }`}</Text>
           </View>
         ) : null}
-        {/* {showSavingsView && renderDisountPercentage(true)}
-        {!showSavingsView && showDiscountSavingsView && renderSavingView(false)} */}
       </View>
     );
   };
@@ -193,7 +211,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   const renderReportTat_preTestingReqrmnt = () => {
     return !!hasExtraData ? (
       <View style={styles.reportView}>
-        {reportTat?.preOrderReportTATMessage || reportGenItem?.itemReportTat ? (
+        {!!reportTat && !isEmptyObject(reportTat) && reportTat?.preOrderReportTATMessage != '' ? (
           <View style={[styles.reportGenViewStyle, styles.reportViewStyle]}>
             <View style={styles.clockIconView}>
               <TestTimeIcon
@@ -206,9 +224,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
               />
             </View>
             <Text style={[styles.reportGenTextStyle, styles.reportBGText]}>
-              {!!reportTat?.preOrderReportTATMessage
-                ? reportTat?.preOrderReportTATMessage
-                : `Report in ${reportGenItem?.itemReportTat}`}
+              {reportTat?.preOrderReportTATMessage != '' && reportTat?.preOrderReportTATMessage}
             </Text>
           </View>
         ) : null}
@@ -218,8 +234,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
               styles.reportGenViewStyle,
               {
                 justifyContent: 'flex-start',
-                marginLeft:
-                  !!reportTat?.preOrderReportTATMessage || !!reportGenItem?.itemReportTat ? -4 : -8,
+                marginLeft: !!reportTat?.preOrderReportTATMessage ? -4 : -8,
               },
             ]}
           >
@@ -247,36 +262,40 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     );
   };
 
-  const renderSavingView = (isCircleDiscount: boolean) => {
-    const mrpToDisplay = diagnosticsDisplayPrice(cartItem, isCircleSubscribed)?.mrpToDisplay;
-
-    const savingAmount =
-      Number((!!cartItem?.packageMrp && cartItem?.packageMrp!) || mrpToDisplay) -
-      Number(isCircleDiscount ? cartItem?.circleSpecialPrice! : cartItem?.discountSpecialPrice!);
-
+  const renderUndo = (cartItem: any) => {
     return (
-      <>
-        {!!savingAmount && savingAmount > 0 ? (
-          <View style={styles.flexRow}>
-            {/* {isCircleDiscount ? (
-              <CircleLogo style={styles.circleLogoIcon} />
-            ) : (
-              <SpecialDiscountText isImage={false} text={string.diagnostics.test247Text} />
-            )} */}
-            <Text
-              style={[
-                styles.savingTextStyle,
-                {
-                  marginHorizontal: isCircleDiscount ? 0 : 3,
-                },
-              ]}
-            >
-              {'save'} {string.common.Rs}
-              {savingAmount}
-            </Text>
-          </View>
-        ) : null}
-      </>
+      <View style={{ flex: 0.1 }}>
+        <TouchableOpacity activeOpacity={1} onPress={() => props.onPressUndo(cartItem)}>
+          <Text style={styles.undoText}>UNDO</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderInclusionsInDetail = () => {
+    let otherInclusions: any[] = [];
+    let includedInclusions: any[] = [];
+
+    groupRecommendationItem?.inclusionData?.map((item: any) => {
+      if (cartItemIds?.includes(item?.itemId)) {
+        includedInclusions?.push(item);
+      } else {
+        otherInclusions?.push(item);
+      }
+    });
+    return (
+      <View>
+        {includedInclusions?.map((item) => (
+          <Text style={styles.textInclusion}> {`• ${item?.name}`}</Text>
+        ))}
+        <Text style={styles.textInclusion}> {`• Other Tests`}</Text>
+        {otherInclusions?.map((item) => (
+          <Text style={styles.textOtherInclusion}>
+            {'     '}
+            {`• ${item?.name}`}
+          </Text>
+        ))}
+      </View>
     );
   };
 
@@ -316,11 +335,12 @@ const styles = StyleSheet.create({
   cartItemText: {
     ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 1, 22),
   },
+  undoText: { ...theme.viewStyles.text('B', 14, colors.APP_YELLOW, 1), paddingBottom: 10 },
   removeTouch: {
     height: isSmallDevice ? 28 : 30,
     width: isSmallDevice ? 28 : 30,
     alignSelf: 'flex-start',
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   priceView: {
     justifyContent: 'flex-start',
@@ -374,15 +394,19 @@ const styles = StyleSheet.create({
     paddingTop: 6,
   },
   inclusionView: {
-    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
-    flexDirection: 'row',
-    alignItems: 'center',
+    backgroundColor: theme.colors.GREEN_BACKGROUND,
+    margin: 12,
+    marginTop: -4,
+    justifyContent: 'center',
     flex: 1,
   },
-  inclusionText: {
-    ...theme.viewStyles.text('M', 10, theme.colors.SHERPA_BLUE, 0.6, 16),
+  inclusionCommonText: {
+    ...theme.viewStyles.text('M', 10, theme.colors.SHERPA_BLUE, 1, 16, 0.04),
     padding: 8,
-    width: '87%',
+    paddingBottom: 4,
+  },
+  inclusionText: {
+    ...theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE, 1, 18),
   },
   inclusionCountText: {
     ...theme.viewStyles.text('M', isSmallDevice ? 10 : 11, theme.colors.LIGHT_BLUE, 0.6, 18, 0.04),
@@ -419,7 +443,7 @@ const styles = StyleSheet.create({
   },
   reportBGText: {
     textAlign: 'right',
-    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG, // backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
+    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
     borderTopRightRadius: 4,
     borderBottomRightRadius: 4,
     paddingRight: 6,
@@ -434,4 +458,22 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   discountPercentageView: { alignItems: 'flex-end', marginRight: 12, marginTop: -8 },
+  inclusionsBullet: {
+    color: theme.colors.SHERPA_BLUE,
+    fontSize: 4,
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+  inclusionListView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+    width: '87%',
+    paddingTop: 0,
+    marginLeft: 8,
+  },
+  textInclusion: {
+    ...theme.viewStyles.text('SB',12,colors.SHERPA_BLUE,1),padding:5
+  },
+  textOtherInclusion:{...theme.viewStyles.text('R',12,colors.SHERPA_BLUE,1),padding:5}
 });

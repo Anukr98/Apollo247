@@ -10,6 +10,7 @@ import React from 'react';
 import { Platform, Text, TextInput, TouchableOpacity } from 'react-native';
 import codePush, { CodePushOptions, DownloadProgress } from 'react-native-code-push';
 import { ReferralProgramProvider } from '@aph/mobile-patients/src/components/ReferralProgramProvider';
+import { InAppUpdate } from '@aph/mobile-patients/InAppUpdate'
 
 let codePushOptions: CodePushOptions = {
   checkFrequency: codePush.CheckFrequency.ON_APP_RESUME,
@@ -63,6 +64,10 @@ class AppContainer extends React.Component<AppContainerProps, AppContainerState>
   renderCodePushUi = () => {
     return <CodePushInfoUi codePushInfo={this.state.codePushInfo} />;
   };
+
+  async componentDidMount() {
+    InAppUpdate.checkUpdate()
+  }
 
   render() {
     return (

@@ -2,23 +2,22 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export interface CartTotalSectionProps {}
 
 export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
   const { cartSubscriptionDetails, serverCartAmount, isCircleCart } = useShoppingCart();
   const isCircleAddedToCart =
-    !!cartSubscriptionDetails?.currentSellingPrice &&
-    !!cartSubscriptionDetails?.subscriptionApplied;
-  const cartTotal = serverCartAmount?.cartTotal;
-  const cartSavings = serverCartAmount?.cartSavings;
-  const couponSavings = serverCartAmount?.couponSavings;
-  const deliveryCharges = serverCartAmount?.deliveryCharges;
-  const estimatedAmount = serverCartAmount?.estimatedAmount;
-  const isDeliveryFree = serverCartAmount?.isDeliveryFree;
-  const totalCashBack = serverCartAmount?.totalCashBack;
-  const packagingCharges = serverCartAmount?.packagingCharges;
+    (!!cartSubscriptionDetails?.currentSellingPrice &&
+      !!cartSubscriptionDetails?.subscriptionApplied) ||
+    false;
+  const cartTotal = serverCartAmount?.cartTotal || 0;
+  const cartSavings = serverCartAmount?.cartSavings || 0;
+  const couponSavings = serverCartAmount?.couponSavings || 0;
+  const deliveryCharges = serverCartAmount?.deliveryCharges || 0;
+  const estimatedAmount = serverCartAmount?.estimatedAmount || 0;
+  const isDeliveryFree = serverCartAmount?.isDeliveryFree || false;
+  const packagingCharges = serverCartAmount?.packagingCharges || 0;
 
   const renderCartTotal = () => {
     return cartTotal ? (
@@ -52,7 +51,9 @@ export const CartTotalSection: React.FC<CartTotalSectionProps> = (props) => {
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <View>
           <Text style={styles.text}>Delivery charges</Text>
-          {isCircleCart && <Text style={styles.circleMessage}>(Free for Circle Members)</Text>}
+          {isCircleCart && !!cartSubscriptionDetails?.subscriptionApplied ? (
+            <Text style={styles.circleMessage}>(Free for Circle Members)</Text>
+          ) : null}
         </View>
         {deliveryCharges && !isDeliveryFree ? (
           <Text style={styles.text}>+₹{deliveryCharges?.toFixed(2)}</Text>

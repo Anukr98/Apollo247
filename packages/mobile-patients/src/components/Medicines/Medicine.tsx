@@ -122,7 +122,7 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -178,6 +178,7 @@ import { CircleBottomContainer } from '@aph/mobile-patients/src/components/Medic
 import { WhatsappRedirectionStickyNote } from '@aph/mobile-patients/src/components/Medicines/Components/WhatsappRedirectionStickyNote';
 import { WhatsappRedirectionBanner } from '@aph/mobile-patients/src/components/Medicines/Components/WhatsappRedirectionBanner';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { UpdateAppPopup } from '@aph/mobile-patients/src/components/ui/UpdateAppPopup';
 
 const styles = StyleSheet.create({
   scrollViewStyle: {
@@ -268,6 +269,7 @@ export interface MedicineProps
 type Address = savePatientAddress_savePatientAddress_patientAddress;
 
 export const Medicine: React.FC<MedicineProps> = (props) => {
+  const { checkIsAppDepricated } = useAuth();
   const focusSearch = props.navigation.getParam('focusSearch');
   const showRecommendedSection = props.navigation.getParam('showRecommendedSection');
   const comingFrom = props.navigation.getParam('comingFrom');
@@ -283,6 +285,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setBannerData,
     bannerData,
     pharmacyUserType,
+    setIsRenew,
+    tabRouteJourney,
+    setTabRouteJourney,
   } = useAppCommonData();
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const {
@@ -315,6 +320,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setNewAddressAdded,
     setAddToCartSource,
     cartCircleSubscriptionId,
+    locationCode,
+    setServerCartItems,
   } = useShoppingCart();
   const {
     setUserActionPayload,
@@ -353,6 +360,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const pharmacyPincode = cartLocationDetails?.pincode || defaultAddress?.zipcode;
   const [isFocused, setIsFocused] = useState<boolean>(false);
   const [showWhatsappRedirectionIcon, setShowWhatsappRedirectionIcon] = useState<boolean>(true);
+  const [depricatedAppData, setDepricatedAppData] = useState<any>(null);
   const scrollViewRef = React.useRef<KeyboardAwareScrollView>(null);
   const windowHeight = Dimensions.get('window').height;
   const scrollCount = useRef<number>(0);
@@ -415,7 +423,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   useEffect(() => {
     populateCachedData();
-
+    checkIsAppDepricated(currentPatient?.mobileNumber)
+      .then(setDepricatedAppData)
+      .catch((error) => {
+        !!error && CommonBugFender('isAppVersionDeprecated_Medicine', error);
+      });
     if (comingFrom === 'deeplink') {
       BackHandler.addEventListener('hardwareBackPress', handleBack);
       return () => {
@@ -962,8 +974,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     });
   };
 
-  useEffect(() => {}, [loading, banners]);
-
   const findMinimumBannerHeight = (showLoader: boolean) => {
     if (banners?.length) {
       let imageUrl = productsThumbnailUrl(g(banners, '0' as any, 'image')!);
@@ -1248,13 +1258,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
     const renderDeliverToLocationCTA = () => {
       const deliveryAddress = addresses.find((item) => item?.id == cartAddressId);
-      const location = cartLocationDetails?.pincode
-        ? `${formatText(cartLocationDetails?.city || cartLocationDetails?.state || '', 18)} ${
-            cartLocationDetails?.pincode
-          }`
-        : deliveryAddress
+      const location = deliveryAddress?.zipcode
         ? `${formatText(deliveryAddress?.city || deliveryAddress?.state || '', 18)} ${
             deliveryAddress?.zipcode
+          }`
+        : cartLocationDetails?.pincode
+        ? `${formatText(cartLocationDetails?.city || cartLocationDetails?.state || '', 18)} ${
+            cartLocationDetails?.pincode
           }`
         : '';
       return (
@@ -1724,19 +1734,21 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
 
       if (data) {
-        if (data?.APOLLO?.[0]._id) {
-          AsyncStorage.setItem('circleSubscriptionId', data?.APOLLO?.[0]._id);
-          setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
+        const circleData = data?.APOLLO?.[0];
+        if (circleData._id) {
+          AsyncStorage.setItem('circleSubscriptionId', circleData._id);
+          setCircleSubscriptionId && setCircleSubscriptionId(circleData._id);
           setIsCircleSubscription && setIsCircleSubscription(true);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
           const planValidity = {
-            startDate: data?.APOLLO?.[0]?.start_date,
-            endDate: data?.APOLLO?.[0]?.end_date,
-            plan_id: data?.APOLLO?.[0]?.plan_id,
-            source_identifier: data?.APOLLO?.[0]?.source_meta_data?.source_identifier,
+            startDate: circleData?.start_date,
+            endDate: circleData?.end_date,
+            plan_id: circleData?.plan_id,
+            source_identifier: circleData?.source_meta_data?.source_identifier,
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
-          if (data?.APOLLO?.[0]?.status === 'disabled') {
+          setIsRenew && setIsRenew(!!circleData?.renewNow);
+          if (circleData?.status === 'disabled') {
             setIsCircleExpired && setIsCircleExpired(true);
             setNonCircleValues();
           } else {
@@ -1949,9 +1961,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [isSearchFocused, setSearchFocused] = useState(false);
   const [medicineSearchLoading, setMedicineSearchLoading] = useState<boolean>(false);
 
-  const onSearchMedicine = (_searchText: string) => {
+  const onSearchMedicine = (
+    _searchText: string,
+    pharmacyPincode: string,
+    locationCode: string,
+    axdcCode: string
+  ) => {
     setMedicineSearchLoading(true);
-    getMedicineSearchSuggestionsApi(_searchText, axdcCode, pharmacyPincode)
+    getMedicineSearchSuggestionsApi(_searchText, axdcCode, pharmacyPincode, locationCode)
       .then(({ data }) => {
         const products = data.products || [];
         const queries = data.queries || [];
@@ -2001,7 +2018,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   useEffect(() => {
-    debounce.current(searchText);
+    debounce.current(searchText, pharmacyPincode || '', locationCode, axdcCode);
   }, [searchText]);
 
   useEffect(() => {
@@ -2020,9 +2037,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   useEffect(() => {}, [showSuggestedQuantityNudge]);
 
-  const onSearch = (searchText: string) => {
+  const onSearch = (
+    searchText: string,
+    pharmacyPincode: string,
+    locationCode: string,
+    axdcCode: string
+  ) => {
     if (searchText.length >= 3) {
-      onSearchMedicine(searchText);
+      onSearchMedicine(searchText, pharmacyPincode || '', locationCode, axdcCode);
     } else {
       setMedicineList([]);
       setMedicineSearchLoading(false);
@@ -2142,9 +2164,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const getItemQuantity = (id: string) => {
+  const getItemQuantity = (id: string): number => {
     const foundItem = serverCartItems?.find((item) => item?.sku == id);
-    return foundItem ? foundItem.quantity : 0;
+    return foundItem ? Number(foundItem.quantity) : 0;
   };
 
   const onNotifyMeClick = (name: string) => {
@@ -2171,7 +2193,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const { item, index } = data;
     const key = 'queryName';
     const keywordArr = [];
-    medicineList.map((obj) => {
+    medicineList.map((obj: any) => {
       if (Object.keys(obj).includes(key)) {
         keywordArr.push(obj?.queryName);
       }
@@ -2206,7 +2228,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               sku: item?.sku,
               movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
             });
-            const availability = getAvailabilityForSearchSuccess(pharmacyPincode, item?.sku);
+            const availability = getAvailabilityForSearchSuccess(pharmacyPincode || '', item?.sku);
             const discount = getDiscountPercentage(item?.price, item?.special_price);
             const discountPercentage = discount ? discount + '%' : '0%';
             const cleverTapEventAttributes = {
@@ -2230,6 +2252,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           }
         }}
         onPressAddToCart={() => {
+          updateServerCartLocally(1, item?.sku);
           const comingFromSearch = true;
           const discount = getDiscountPercentage(item?.price, item?.special_price);
           const discountPercentage = discount ? discount + '%' : '0%';
@@ -2271,43 +2294,79 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         onPressAdd={() => {
           setSearchItemAdded(item?.sku);
           setSearchItemLoading({ ...searchItemLoading, [item?.sku]: true });
-          const q = getItemQuantity(item?.sku);
-          if (q == getMaxQtyForMedicineItem(item?.MaxOrderQty)) return;
-          setCurrentProductQuantityInCart(q + 1);
-          setUserActionPayload?.({
-            medicineOrderCartLineItems: [
-              {
-                medicineSKU: item?.sku,
-                quantity: q + 1,
-              },
-            ],
-          });
+          let qty: number = getItemQuantity(item?.sku);
+          if (qty < getMaxQtyForMedicineItem(item?.MaxOrderQty)) {
+            qty = qty + 1;
+            updateServerCartLocally(1, item?.sku);
+            setCurrentProductQuantityInCart(qty);
+            setUserActionPayload?.({
+              medicineOrderCartLineItems: [
+                {
+                  medicineSKU: item?.sku,
+                  quantity: qty,
+                },
+              ],
+            });
+          } else {
+            setCurrentProductQuantityInCart(qty + 1);
+            setUserActionPayload?.({
+              medicineOrderCartLineItems: [
+                {
+                  medicineSKU: item?.sku,
+                  quantity: qty + 1,
+                },
+              ],
+            });
+          }
         }}
         onPressSubstract={() => {
           setSearchItemAdded(item?.sku);
           setSearchItemLoading({ ...searchItemLoading, [item?.sku]: true });
-          const q = getItemQuantity(item?.sku);
-          setCurrentProductQuantityInCart(q - 1);
+          let qty: number = getItemQuantity(item?.sku);
+          qty = qty - 1;
+          updateServerCartLocally(-1, item?.sku);
+          setCurrentProductQuantityInCart(qty);
           setUserActionPayload?.({
             medicineOrderCartLineItems: [
               {
                 medicineSKU: item?.sku,
-                quantity: q - 1,
+                quantity: qty,
               },
             ],
           });
         }}
-        quantity={getItemQuantity(item?.sku)}
+        quantity={getItemQuantity(item?.sku) || 0}
         data={item}
         loading={searchItemLoading[item?.sku]}
+        disableAction={serverCartLoading}
         showSeparator={index !== medicineList?.length - 1}
         style={{
           marginHorizontal: 20,
           paddingBottom: index == medicineList?.length - 1 ? 20 : 0,
         }}
-        disableAction={searchItemAdded ? true : false}
       />
     );
+  };
+
+  const updateServerCartLocally = (quantity: number = 0, id: string) => {
+    try {
+      const items = serverCartItems || [];
+      let doesExists = false;
+      items.forEach((i) => {
+        const qty = i?.quantity || 0;
+        if (i?.sku === id) {
+          i.quantity = qty + quantity;
+          doesExists = true;
+          return;
+        }
+      });
+
+      if (!doesExists) {
+        items.push({ sku: id, quantity: 1 });
+      }
+
+      setServerCartItems && setServerCartItems(items);
+    } catch (e) {}
   };
 
   const renderSearchResults = () => {
@@ -2501,6 +2560,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderCircleCartDetails = () => (
     <CircleBottomContainer
+      serverCartLoading={serverCartLoading}
       onPressGoToCart={() => props.navigation.navigate(AppRoutes.ServerCart)}
       onPressUpgradeTo={() => {
         setShowCirclePopup(true);
@@ -2594,10 +2654,31 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const setRouteJourneyFromTabbar = () => {
+    if (!tabRouteJourney) {
+      setTabRouteJourney &&
+        setTabRouteJourney({
+          previousRoute: 'Medicine',
+          currentRoute: 'Medicine',
+        });
+    } else {
+      setTabRouteJourney &&
+        setTabRouteJourney({
+          previousRoute: tabRouteJourney?.currentRoute,
+          currentRoute: 'Medicine',
+        });
+      const eventArributes = {
+        'Page Name': tabRouteJourney?.currentRoute,
+      };
+      postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED, eventArributes);
+    }
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <NavigationEvents
-        onDidFocus={() => {
+        onDidFocus={(payload) => {
+          setRouteJourneyFromTabbar();
           scrollCount.current = 0;
         }}
         onDidBlur={postScrollScreenEvent}
@@ -2615,9 +2696,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           keyboardShouldPersistTaps="always"
           onScroll={(event) => {
             //increments only for down scroll
-            const currentOffset = event.nativeEvent.contentOffset?.y;
-            currentOffset > (this.offset || 0) && (scrollCount.current += 1);
-            this.offset = currentOffset;
+            try {
+              const currentOffset = event.nativeEvent.contentOffset?.y;
+              currentOffset > (this.offset || 0) && (scrollCount.current += 1);
+              this.offset = currentOffset;
+            } catch (e) {}
 
             bannerScrollRef.current &&
               bannerScrollRef.current.measure(
@@ -2637,7 +2720,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           </View>
         </KeyboardAwareScrollView>
       </SafeAreaView>
-      {!!serverCartItems?.length && renderCircleCartDetails()}
+
+      {(!!serverCartItems?.length || serverCartLoading) && renderCircleCartDetails()}
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
       {showCirclePopup && renderCircleMembershipPopup()}
       {showSuggestedQuantityNudge &&
@@ -2659,6 +2743,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       {AppConfig.Configuration.WHATSAPP_TO_ORDER.iconVisibility &&
         showWhatsappRedirectionIcon &&
         medicineList?.length === 0 && <WhatsappRedirectionStickyNote />}
+      <UpdateAppPopup depricatedAppData={depricatedAppData} />
     </View>
   );
 };

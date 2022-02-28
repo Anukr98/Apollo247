@@ -344,13 +344,16 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
   };
 
   const onHealthCardItemPress = (selectedItem: HospitalizationType) => {
-    const eventInputData = removeObjectProperty(selectedItem, 'hospitalizationFiles');
-    postCleverTapIfNewSession(
-      'Hospitalizations',
-      currentPatient,
-      eventInputData,
-      phrSession,
-      setPhrSession
+    let dateOfBirth = g(currentPatient, 'dateOfBirth');
+    let doctorConsultationAttributes = {
+      'Nav src': 'Hospitalizations',
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+    };
+    postCleverTapEvent(
+      CleverTapEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS,
+      doctorConsultationAttributes
     );
     props.navigation.navigate(AppRoutes.HealthRecordDetails, {
       data: selectedItem,
@@ -396,13 +399,14 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
       .then((status) => {
         if (status) {
           getLatestHospitalizationRecords();
-          const eventInputData = removeObjectProperty(selectedItem, 'hospitalizationFiles');
-          postCleverTapPHR(
-            currentPatient,
-            CleverTapEventName.PHR_DELETE_HOSPITALIZATIONS,
-            'Hospitalization',
-            eventInputData
-          );
+          let dateOfBirth = g(currentPatient, 'dateOfBirth');
+          let attributes = {
+            'Nav src': 'Hospitalization',
+            'Patient UHID': g(currentPatient, 'uhid'),
+            'Patient gender': g(currentPatient, 'gender'),
+            'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+          };
+          postCleverTapEvent(CleverTapEventName.PHR_DELETE_RECORD, attributes);
         } else {
           setShowSpinner(false);
         }

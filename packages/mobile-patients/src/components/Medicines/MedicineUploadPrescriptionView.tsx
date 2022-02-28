@@ -180,7 +180,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
                 width: 54,
               }}
             >
-              {item.fileType == 'pdf' ? (
+              {item.fileType?.includes('pdf') ? (
                 <FileBig
                   style={{
                     height: 45,

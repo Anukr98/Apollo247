@@ -37,7 +37,7 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
   const isCircleMember = !!circleSubscriptionId && !!cashback;
   const isIos = Platform.OS === 'ios';
   const renderCartCTA = () => {
-    const ctaText = isInStock ? 'ADD TO CART' : 'NOTIFY WHEN IN STOCK';
+    const ctaText = isInStock ? 'ADD TO CART' : 'NOTIFY ME';
     return (
       <View>
         <TouchableOpacity

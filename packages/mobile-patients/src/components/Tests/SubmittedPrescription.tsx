@@ -12,7 +12,6 @@ import {
   Dimensions,
   Image,
   TouchableOpacity,
-  Platform,
   BackHandler,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
@@ -44,6 +43,7 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import { addPatientPrescriptionRecord } from '@aph/mobile-patients/src/graphql/types/addPatientPrescriptionRecord';
 import {
   AddPrescriptionRecordInput,
+  DiagnosticCTJourneyType,
   MedicalRecordType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -59,10 +59,10 @@ import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 const { height } = Dimensions.get('window');
 import LottieView from 'lottie-react-native';
 import AsyncStorage from '@react-native-community/async-storage';
-import { getPatientPrismMedicalRecordsApi } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { DocumentPickerResponse } from 'react-native-document-picker';
-import ImageResizer from 'react-native-image-resizer';
-import RNFetchBlob from 'rn-fetch-blob';
+import {
+  convertPrismUrlToBlob,
+  getPatientPrismMedicalRecordsApi,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 const GreenTickAnimation = '@aph/mobile-patients/src/components/Tests/greenTickAnimation.json';
 
 export interface SubmittedPrescriptionProps extends NavigationScreenProps {
@@ -87,6 +87,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
   const [additionalNotes, setadditionalNotes] = useState<string>('');
   const [onSumbitSuccess, setOnSumbitSuccess] = useState<boolean>(false);
   const [isErrorOccured, setIsErrorOccured] = useState<boolean>(false);
+
   useEffect(() => {
     setLoading?.(false);
     fetchPatientPrescriptions();
@@ -146,6 +147,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
       </View>
     );
   };
+
   const setUploadedImages = (selectedImages: any) => {
     let imagesArray = [] as any;
     selectedImages?.forEach((item: any) => {
@@ -159,11 +161,14 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
     });
     return imagesArray;
   };
+
   useEffect(() => {
     if (EPrescriptionsProps && EPrescriptionsProps?.length) {
       const ePrescriptionArray = EPrescriptionsProps?.filter(
         (item: any, index: any) =>
-          EPrescriptionsProps?.findIndex((obj) => obj?.id == item?.id) === index
+          EPrescriptionsProps?.findIndex(
+            (obj) => obj?.id == item?.id && obj?.fileName == item?.fileName
+          ) === index
       );
       setEPrescriptionsProps(ePrescriptionArray);
     }
@@ -300,13 +305,13 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
         fileName: inputData?.prescriptionFiles?.[0]?.fileName,
         mimeType: inputData?.prescriptionFiles?.[0]?.mimeType,
       };
-
       DiagnosticPrescriptionSubmitted(
         currentPatient,
         prescriptionUrl ? prescriptionUrl : '',
         inputData?.prescriptionName ? inputData?.prescriptionName : '',
         userType,
-        isDiagnosticCircleSubscription
+        isDiagnosticCircleSubscription,
+        DiagnosticCTJourneyType?.UPLOAD_PRESCRIPTION
       );
     } else {
       let uploadUrl;
@@ -322,7 +327,8 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
         !!uploadUrl ? uploadUrl : '',
         inputData?.prescriptionName ? inputData?.prescriptionName : '',
         userType,
-        isDiagnosticCircleSubscription
+        isDiagnosticCircleSubscription,
+        DiagnosticCTJourneyType?.UPLOAD_PRESCRIPTION
       );
     }
     setOnSumbitSuccess(true);
@@ -333,13 +339,11 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
     userType: string,
     responseResult: any
   ) {
-    let url, allUrls, uploadUrl;
+    let url, allUrls, uploadUrl, finalConcatenatedUrl;
     if (responseResult?.prescriptionFiles?.length == 1) {
       url = responseResult?.prescriptionFiles?.[0]?.file_Url;
     } else {
-      url = responseResult?.prescriptionFiles?.map(
-        (attributes: any, index: number) => `${index + 1} - ${attributes?.file_Url}`
-      );
+      url = responseResult?.prescriptionFiles?.map((attributes: any) => `${attributes?.file_Url}`);
     }
 
     if (EPrescriptionsProps?.length > 0) {
@@ -348,19 +352,57 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
       allUrls = url?.concat(uploadUrl);
     }
 
-    const concatendatedUrl = allUrls?.map((item: any, index: number) => `${index + 1} - ${item}`);
-    const urlToUse = EPrescriptionsProps?.length > 0 ? concatendatedUrl : url;
+    const concatendatedUrl = allUrls?.map((item: any) => `${item}`);
+    const urlToUse = EPrescriptionsProps?.length > 0 ? concatendatedUrl : [url];
 
-    const newUrl = isArray(urlToUse) ? urlToUse?.map((item: any) => item)?.join(' ') : urlToUse;
+    try {
+      const getBlobUrls = await getBlobUrlFromPrismData(urlToUse?.flat());
+      finalConcatenatedUrl = getBlobUrls?.map(
+        (item: any, index: number) => `${index + 1} - ${item?.url}`
+      );
+    } catch (error) {
+      CommonBugFender('SubmittedPrecription_getBlobUrlFromPrism', error);
+      finalConcatenatedUrl = allUrls?.map((item: any, index: number) => `${index + 1} - ${item}`);
+    }
 
+    const newUrl = isArray(finalConcatenatedUrl)
+      ? finalConcatenatedUrl?.map((item: any) => item)?.join(' ')
+      : finalConcatenatedUrl;
+
+    let itemNames = [];
+    if (responseResult?.prescriptionFiles?.length == 1) {
+      itemNames = responseResult?.prescriptionFiles?.[0]?.fileName;
+    } else {
+      itemNames = responseResult?.prescriptionFiles?.map(
+        (attributes: any) => `${attributes?.fileName}`
+      );
+    }
     DiagnosticPrescriptionSubmitted(
       currentPatient,
       !!newUrl ? newUrl : '',
-      inputData?.prescriptionName ? inputData?.prescriptionName : '',
+      !!itemNames ? itemNames : '',
       userType,
-      isDiagnosticCircleSubscription
+      isDiagnosticCircleSubscription,
+      DiagnosticCTJourneyType?.UPLOAD_PRESCRIPTION
     );
     setOnSumbitSuccess(true);
+  }
+
+  async function getBlobUrlFromPrismData(urlArray: []) {
+    try {
+      const getResponse = Promise.all(
+        urlArray?.map((url: any) => convertPrismUrlToBlob(client, currentPatient?.id, url))
+      );
+      let allBlobUrlArray: { url: any }[] = [];
+      const getAllResponse = (await getResponse)?.map((item: any) => {
+        allBlobUrlArray.push({
+          url: item?.data?.fetchBlobURLWithPRISMData?.blobUrl,
+        });
+      });
+      return allBlobUrlArray;
+    } catch (error) {
+      CommonBugFender('SubmittedPrecription_getBlobUrlFromPrism_function', error);
+    }
   }
 
   const renderErrorMessage = () => {
@@ -437,7 +479,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
 
         <ScrollView bounces={false} scrollEventThrottle={1}>
           {isErrorOccured ? renderErrorMessage() : null}
-          <View style={styles.presStyle}>
+          <View style={[styles.presStyle, onSumbitSuccess && { height: height / 1.5 }]}>
             {!onSumbitSuccess ? (
               <>
                 {PhysicalPrescriptionsProps && PhysicalPrescriptionsProps?.length ? (
@@ -695,7 +737,7 @@ const styles = StyleSheet.create({
     elevation: 4,
     marginVertical: 5,
   },
-  presStyle: { flex: 1, padding: 10, height: height - 180 },
+  presStyle: { flex: 1, padding: 10 },
   containerStyle: { flex: 1, height: height },
   centerStyle: { justifyContent: 'center', alignItems: 'center' },
   centerStyleWidth: {

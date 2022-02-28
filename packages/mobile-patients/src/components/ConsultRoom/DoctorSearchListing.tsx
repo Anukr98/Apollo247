@@ -364,6 +364,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const doctorTypeFilter = props.navigation.getParam('doctorType');
   const cityFilter = props.navigation.getParam('city');
   const brandFilter = props.navigation.getParam('brand');
+  const isCircleOnly = props.navigation.getParam('isCircleOnly') || false; //aka isCare only, filtering circle doctor
+  const appliedCircleCouponCode = props.navigation.getParam('appliedCircleCouponCode');
   const scrollViewRef = React.useRef<ScrollView | null>(null);
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
@@ -594,6 +596,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   }, []);
 
   const getDoctorOfTheHour = async (partnerDoctor: boolean = false, state?: string) => {
+    if (!specialityId) {
+      return;
+    }
     client
       .query<getPlatinumDoctor>({
         query: GET_PLATINUM_DOCTOR,
@@ -972,7 +977,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       pageNo: pageNo ? pageNo + 1 : 1,
       pageSize: pageSize,
       searchText: searchText,
-      isCare: careDoctorsSwitch,
+      isCare: careDoctorsSwitch || isCircleOnly, //TODO set it true for only circle doctors
       consultMode: filterMode,
     };
 
@@ -995,15 +1000,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       .then(({ data }) => {
         setfetching(false);
         if (searchText?.length > 2) {
-          postConsultSearchCleverTapEvent(
-            searchText,
-            currentPatient,
-            allCurrentPatients,
-            data?.getDoctorList?.doctors?.length == 0,
-            'Doctor listing screen',
-            !!circleSubscriptionId,
-            circleSubPlanId || ''
-          );
+          setSearchResults(data?.getDoctorList?.doctors?.length == 0);
         }
         pageNo ? setpageNo(pageNo + 1) : setpageNo(1);
         setData(data, docTabSelected, pageNo);
@@ -1378,6 +1375,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         }}
         onPlanSelected={() => setShowCarePlanNotification(true)}
         selectedConsultMode={filter}
+        appliedCircleCouponCode={appliedCircleCouponCode}
       />
     ) : null;
   };
@@ -1708,6 +1706,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     );
   };
   const [doctorSearch, setDoctorSearch] = useState<string>('');
+  const [searchResults, setSearchResults] = useState<any>(null);
   useEffect(() => {
     if (isValidSearch(doctorSearch) && doctorSearch.length > 2) {
       fetchSpecialityFilterData(
@@ -1858,6 +1857,19 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           value={doctorSearch}
           placeholder="Search doctors"
           underlineColorAndroid="transparent"
+          onBlur={() => {
+            if (doctorSearch?.length > 2) {
+              postConsultSearchCleverTapEvent(
+                doctorSearch,
+                currentPatient,
+                allCurrentPatients,
+                searchResults,
+                'Doctor listing screen',
+                !!circleSubscriptionId,
+                circleSubPlanId || ''
+              );
+            }
+          }}
           onChangeText={(value) => {
             if (isValidSearch(value)) {
               const search = _.debounce(setDoctorSearch, 300);

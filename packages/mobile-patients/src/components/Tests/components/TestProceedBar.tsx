@@ -146,8 +146,7 @@ const styles = StyleSheet.create({
   },
   timeSlotMainViewStyle: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    padding: 12,
     backgroundColor: SKY_BLUE,
   },
   timeSlotChangeViewStyle: {

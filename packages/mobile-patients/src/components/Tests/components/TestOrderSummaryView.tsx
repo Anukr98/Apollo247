@@ -6,7 +6,6 @@ import moment from 'moment';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import {
   formatAddressForApi,
-  isEmptyObject,
   nameFormater,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -27,11 +26,12 @@ import {
   DIAGNOSTIC_STATUS_BEFORE_SUBMITTED,
   DIAGNOSTIC_PAYMENT_MODE_STATUS_ARRAY,
   AppConfig,
+  DIAGNOSTIC_ORDER_CANCELLED_STATUS,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { DiagnosticOrderSummaryViewed } from '@aph/mobile-patients/src/components/Tests/Events';
-import { Down, Up, DownloadOrange, CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Down, Up, DownloadOrange, OneApollo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { PassportPaitentOverlay } from '@aph/mobile-patients/src/components/Tests/components/PassportPaitentOverlay';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -42,6 +42,7 @@ import {
   updatePassportDetailsVariables,
 } from '@aph/mobile-patients/src/graphql/types/updatePassportDetails';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { CirclePurchase } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CirclePurchase';
 
 export interface LineItemPricing {
   packageMrp: number;
@@ -73,15 +74,22 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   const filterOrderLineItem =
     !!orderDetails &&
     orderDetails?.diagnosticOrderLineItems?.filter((item: any) => !item?.isRemoved);
+  const isParentOrder = orderDetails?.id == orderDetails?.parentOrderId;
+  const showHCOption = AppConfig.Configuration.DIAGNOSTICS_SHOW_HEALTH_CREDITS;
   const client = useApolloClient();
-  const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
+  const { showAphAlert, setLoading: setLoadingContext } = useUIElements();
 
   const isPrepaid = orderDetails?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
+  const showCircleMembershipDetails = isPrepaid && !!subscriptionDetails && isParentOrder;
   const salutation = !!orderDetails?.patientObj?.gender
     ? orderDetails?.patientObj?.gender === Gender.MALE
       ? 'Mr. '
       : 'Ms. '
     : '';
+  const circleMembershipCharges = subscriptionDetails?.payment_reference?.purchase_via_HC
+    ? subscriptionDetails?.payment_reference?.HC_used +
+      subscriptionDetails?.payment_reference?.amount_paid
+    : subscriptionDetails?.payment_reference?.amount_paid;
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
   const [showPreviousCard, setShowPreviousCard] = useState<boolean>(true);
@@ -89,7 +97,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   const [showCurrCard, setShowCurrCard] = useState<boolean>(true);
   const [passportNo, setPassportNo] = useState<string>('');
   const [newPassValue, setNewPassValue] = useState<string>(passportNo);
-  const [passportData, setPassportData] = useState<any>([])
+  const [passportData, setPassportData] = useState<any>([]);
 
   useEffect(() => {
     DiagnosticOrderSummaryViewed(
@@ -247,7 +255,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   const renderOrderId = () => {
     const bookedOn = moment(orderDetails?.createdDate)?.format('Do MMM') || null;
     return (
-      <View style={{ justifyContent: 'space-between', flexDirection: 'row' }}>
+      <View style={styles.passportView}>
         <View style={{ flex: 0.9 }}>
           <Text style={styles.orderId}>Order ID #{orderDetails?.displayId}</Text>
           <Text style={styles.bookedOn}>Booked on {bookedOn}</Text>
@@ -387,7 +395,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   const renderItemsCard = () => {
     return (
       <View style={styles.orderSummaryView}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+        <View style={styles.passportView}>
           <Text style={styles.itemHeading}> ITEM NAME</Text>
           <Text style={styles.itemHeading}> PRICE</Text>
         </View>
@@ -395,7 +403,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           return (
             <View style={styles.commonTax}>
               <View style={{ width: '65%' }}>
-                <View style={{ flexDirection: 'row' }}>
+                <View style={styles.flexRow}>
                   <Text style={styles.commonText}>
                     {!!item?.itemName ? item?.itemName : item?.diagnostics?.itemName}
                   </Text>
@@ -619,44 +627,17 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   }
 
   const renderSubscriptionCard = () => {
-    const duration = !!subscriptionDetails && subscriptionDetails?.group_plan?.valid_duration;
-    const circlePurchasePrice =
-      !!subscriptionDetails && subscriptionDetails?.payment_reference?.amount_paid;
-    const validity = moment(new Date(), 'DD/MM/YYYY').add('days', subscriptionDetails?.expires_in);
     return (
       <>
         {renderHeading(string.diagnosticsCircle.circleMembership)}
-        <View style={styles.circlePurchaseDetailsCard}>
-          <View style={{ flexDirection: 'row' }}>
-            <CircleLogo style={styles.circleLogoIcon} />
-            <View style={styles.circlePurchaseDetailsView}>
-              <Text style={styles.circlePurchaseText}>
-                Congrats! You have successfully purchased the {duration} months (Trial) Circle Plan
-                for {string.common.Rs}
-                {circlePurchasePrice}
-              </Text>
-              {!!totalCircleSaving && totalCircleSaving > 0 && (
-                <Text style={{ ...styles.savedTxt, marginTop: 8, fontWeight: '600' }}>
-                  You {''}
-                  <Text style={styles.savedAmt}>
-                    saved {string.common.Rs}
-                    {totalCircleSaving}
-                  </Text>
-                  {''} on your purchase.
-                </Text>
-              )}
-              <Text style={styles.circlePlanValidText}>
-                {`Valid till: ${moment(validity)?.format('D MMM YYYY')}`}
-              </Text>
-            </View>
-          </View>
-          <TouchableOpacity
-            onPress={() => _navigateToCircleBenefits()}
-            style={styles.viewAllBenefitsTouch}
-          >
-            <Text style={styles.yellowText}>VIEW ALL BENEFITS</Text>
-          </TouchableOpacity>
-        </View>
+        <CirclePurchase
+          subscriptionInfo={subscriptionDetails}
+          circleSavings={totalCircleSaving}
+          onPressBenefits={_navigateToCircleBenefits}
+          containerStyle={styles.circlePurchaseDetailsCard}
+          circleLogoIcon={styles.circleLogoIcon}
+          textContainerStyle={styles.circlePurchaseDetailsView}
+        />
       </>
     );
   };
@@ -664,6 +645,10 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   const renderPricesCard = () => {
     const totalSaving = totalCartSaving + totalDiscountSaving;
     const couponDiscount = orderDetails?.couponDiscAmount;
+    const toPayPrice =
+      showCircleMembershipDetails && !!circleMembershipCharges
+        ? circleMembershipCharges + orderDetails?.totalPrice
+        : orderDetails?.totalPrice;
     return (
       <View>
         {renderHeading('Total Charges')}
@@ -672,6 +657,8 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           {renderPrices('Discount on MRP', totalSaving, true, false, 1)} {/**totalCartSavings */}
           {renderPrices('Circle Discount', totalCircleSaving, true, false, 1)}
           {renderPrices('Coupon Discount', !!couponDiscount ? couponDiscount : 0, true, false, 1)}
+          {showCircleMembershipDetails &&
+            renderPrices('Circle Membership', circleMembershipCharges, false, false, 1)}
           {/**totalDiscountSaving */}
           {renderPrices(
             string.diagnosticsCartPage.homeCollectionText,
@@ -690,7 +677,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
             false
           )} */}
           <Spearator style={{ marginTop: 6, marginBottom: 6 }} />
-          {renderPrices('Total', orderDetails?.totalPrice, false, true, 2)}
+          {renderPrices('Total', toPayPrice, false, true, 2)}
         </View>
       </View>
     );
@@ -715,16 +702,89 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       ? orderDetails?.totalPrice
       : refundDetails?.[0]?.amount;
 
+    const getOffersResponse = orderDetails?.diagnosticOrderTransactions;
+    const getTotalEffectivePrice = !!getOffersResponse
+      ? getOffersResponse
+          ?.map((diag) => diag?.effectivePrepaidAmount)
+          ?.reduce((curr, prev) => prev! + curr!, 0)
+      : 0;
+
+    const totalEffectivePrice = showCircleMembershipDetails
+      ? getTotalEffectivePrice + subscriptionDetails?.payment_reference?.amount_paid
+      : getTotalEffectivePrice;
+
     return (
       <View>
         {renderHeading('Payment Mode')}
         <View style={styles.orderSummaryView}>
-          {renderPrices(txtToShow, orderDetails?.totalPrice, false)}
+          {renderPrices(
+            txtToShow,
+            !!getOffersResponse && getOffersResponse?.length > 0
+              ? totalEffectivePrice!
+              : orderDetails?.totalPrice,
+            false
+          )}
+          {!!getOffersResponse &&
+            getOffersResponse?.length > 0 &&
+            getOffersResponse?.map((item) => renderOffers(item))}
+          {showHCOption &&
+            !!getOffersResponse &&
+            getOffersResponse?.length > 0 &&
+            renderHealthCredits()}
           {!!refundText && renderPrices(refundText, refundAmountToShow, false)}
         </View>
       </View>
     );
   };
+
+  const renderHealthCredits = () => {
+    const totalHealthCredits = orderDetails?.diagnosticOrderTransactions?.reduce(
+      (prev: any, curr: any) => prev + curr?.healthCreditsUsed,
+      0
+    );
+    //in case user purchases circle with hc.
+    const getHcForCircle = !!subscriptionDetails
+      ? subscriptionDetails?.payment_reference?.purchase_via_HC
+        ? subscriptionDetails?.payment_reference?.HC_used
+        : 0
+      : 0;
+    const getTotalHealthCredits = isParentOrder
+      ? totalHealthCredits + Number(getHcForCircle! || 0)
+      : totalHealthCredits;
+    return (
+      <View style={styles.passportView}>
+        <View style={styles.flexRow}>
+          <OneApollo style={styles.iconSize} />
+          <Text style={styles.healthCreditsText}>
+            {string.diagnosticsCartPage.healthCredits}{' '}
+            <Text style={styles.redemmedText}>{string.diagnosticsCartPage.redemmedTxt}</Text>
+          </Text>
+        </View>
+        <View>
+          <Text style={styles.healthCreditsText}>
+            {string.common.Rs}
+            {getTotalHealthCredits?.toFixed(2)}
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
+  function getOffersDetails(transaction: any) {
+    const offersDetails =
+      transaction?.offers?.[0]?.offer_description?.title! || transaction?.offers?.[0]?.offer_code;
+    const offerAmount = transaction?.prepaidAmount - transaction?.effectivePrepaidAmount;
+    return {
+      offersDetails,
+      offerAmount,
+    };
+  }
+
+  const renderOffers = (transaction: any) => {
+    const { offersDetails, offerAmount } = getOffersDetails(transaction);
+    return !!offersDetails ? <View>{renderPrices(offersDetails, offerAmount, false)}</View> : null;
+  };
+
   const renderAddPassportView = () => {
     const itemIdArray = orderDetails?.diagnosticOrderLineItems?.filter((item: any) => {
       if (AppConfig.Configuration.DIAGNOSTICS_COVID_ITEM_IDS.includes(item?.itemId)) {
@@ -747,9 +807,14 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
             <Text style={styles.textlower}>{passportNo ? 'EDIT' : 'ADD'}</Text>
           </TouchableOpacity>
         </View>
-        {passportNo ? <View>
-          <Text style={styles.textmedium}>{string.diagnostics.passportNo}{passportNo}</Text>
-        </View> : null}
+        {passportNo ? (
+          <View>
+            <Text style={styles.textmedium}>
+              {string.diagnostics.passportNo}
+              {passportNo}
+            </Text>
+          </View>
+        ) : null}
       </View>
     ) : null;
   };
@@ -765,9 +830,9 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           updatePassportDetails(response);
           setShowPassportModal(false);
         }}
-        onChange={(res)=>{
-          setNewPassValue(res?.passportNo)
-          setPassportData(res)
+        onChange={(res) => {
+          setNewPassValue(res?.passportNo);
+          setPassportData(res);
         }}
         value={newPassValue}
         disableButton={!passportData?.[0]?.passportNo}
@@ -820,9 +885,9 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
         {!!getModifiedLineItems && getModifiedLineItems?.length > 0
           ? renderOrderBreakdownCard(getModifiedLineItems, string.diagnostics.currentCharges)
           : null}
-        {isPrepaid && !!subscriptionDetails ? renderSubscriptionCard() : null}
+        {showCircleMembershipDetails ? renderSubscriptionCard() : null}
         {renderPricesCard()}
-        {(orderDetails?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED && !isPrepaid) ||
+        {(DIAGNOSTIC_ORDER_CANCELLED_STATUS.includes(orderDetails?.orderStatus) && !isPrepaid) ||
         DIAGNOSTIC_PAYMENT_MODE_STATUS_ARRAY.includes(orderDetails?.orderStatus)
           ? null
           : renderPaymentCard()}
@@ -1003,6 +1068,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     borderColor: '#4CAF50',
     justifyContent: 'center',
+    alignSelf: 'center',
   },
   newText: {
     ...theme.viewStyles.text('SB', 10, 'white'),
@@ -1041,33 +1107,27 @@ const styles = StyleSheet.create({
   addressTextStyle: { ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 1, 18) },
   circlePurchaseDetailsCard: {
     ...theme.viewStyles.cardContainer,
-    marginBottom: 30,
     padding: 16,
     borderRadius: 5,
     borderWidth: 1,
     borderColor: 'transparent',
     borderLeftColor: '#007C9D',
     borderLeftWidth: 4,
+    backgroundColor: colors.WHITE,
   },
-  circleLogoIcon: { height: 45, width: 45, resizeMode: 'contain' },
-  circlePurchaseDetailsView: { width: '85%', marginHorizontal: 8 },
-  circlePurchaseText: { ...theme.viewStyles.text('R', 11, colors.SHERPA_BLUE, 1, 16) },
-  circlePlanValidText: {
-    ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 0.6, 16),
-    marginTop: 6,
+  circleLogoIcon: { height: 45, width: 45, resizeMode: 'contain', marginRight: 8 },
+  circlePurchaseDetailsView: { width: '85%' },
+  iconSize: {
+    height: 22,
+    width: 27,
+    resizeMode: 'contain',
   },
-  savedTxt: {
-    color: '#02475B',
-    ...theme.fonts.IBMPlexSansRegular(12),
-    lineHeight: 16,
+  healthCreditsText: {
+    ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 24),
+    marginLeft: 4,
   },
-  savedAmt: {
-    color: theme.colors.APP_GREEN,
-    ...theme.fonts.IBMPlexSansSemiBold(12),
+  redemmedText: {
+    ...theme.viewStyles.text('M', 14, theme.colors.CHAT_TILE_BG, 1, 24),
   },
-  viewAllBenefitsTouch: {
-    alignSelf: 'flex-end',
-    height: 25,
-    justifyContent: 'center',
-  },
+  flexRow: { flexDirection: 'row', alignItems: 'center' },
 });

@@ -8,7 +8,8 @@ import {
   UploadPrescSource,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE, DIAGNOSTIC_PINCODE_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
-import { DiagnosticHomePageSource } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { DiagnosticHomePageSource, DIAGNOSTICS_ITEM_TYPE } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { DiagnosticsDetailsPageViewedSource } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 
 type YesOrNo = 'Yes' | 'No';
 type HdfcPlan = 'SILVER' | 'GOLD' | 'PLATINUM';
@@ -184,7 +185,6 @@ export enum WebEngageEventName {
   USER_CHANGED_LOCATION = 'Change location',
   // Diagnostics Events
   DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic landing page viewed',
-  DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR = 'Diagnostic pincode entered',
   DIAGNOSTIC_LANDING_ITEM_SEARCHED = 'Diagnostic partial search',
   DIAGNOSTIC_ITEM_SEARCHED = 'Diagnostic full search',
   DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED = 'Diagnostic home page widgets',
@@ -1246,7 +1246,6 @@ export interface WebEngageEvents {
     'Order id': string;
     'Order status'?: string;
   };
-  [WebEngageEventName.DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR]: DiagnosticPinCode;
   [WebEngageEventName.DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED]: {
     'Item Name'?: string;
     'Item ID'?: string;
@@ -1255,25 +1254,15 @@ export interface WebEngageEvents {
     'Category Name'?: string;
   };
   [WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION]: {
-    Source:
-      | 'Full Search'
-      | 'Home Page'
-      | 'Cart page'
-      | 'Partial Search'
-      | 'Deeplink'
-      | 'Popular search'
-      | 'Category page';
+    'Item Id': string | number;
     'Item Name': string;
-    'Item Type'?: string;
-    'Item Code': string;
-    'Patient Name': string;
-    'Patient UHID': string;
-    'Item ID': string | number;
-    'Item Price'?: number | string;
+    'Item Type': DIAGNOSTICS_ITEM_TYPE;
+    'Item Price': number | string;
+    Source: DiagnosticsDetailsPageViewedSource;
     'Circle user'?: string;
     'Original Item ids'?: any;
     'Section name'?: string;
-  };
+    };
 
   [WebEngageEventName.DIAGNOSTIC_CART_VIEWED]: {
     'Page source': string;
@@ -1338,8 +1327,10 @@ export interface WebEngageEvents {
     'Thing to Improve selected': string;
   };
   [WebEngageEventName.DIAGNOSTIC_ADD_TO_CART]: {
+    'Item Id': string; // (SKUID) //type?
     'Item Name': string;
-    'Item ID': string; // (SKUID)
+    'Item Type': DIAGNOSTICS_ITEM_TYPE;
+    'Item Price': number; //type
     Source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE;
     'Section name'?: string;
     'Circle user': string;
@@ -1376,7 +1367,7 @@ export interface WebEngageEvents {
     'Banner title': string;
   };
   [WebEngageEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE]: {
-    'Selection type': 'New' | 'Existing';
+    'Selection type': 'Manual' | 'Automation';
     Serviceability: 'Yes' | 'No';
     Pincode: string | number;
     Source: 'Home page' | 'Cart page';

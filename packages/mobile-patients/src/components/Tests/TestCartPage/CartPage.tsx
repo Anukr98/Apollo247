@@ -9,14 +9,17 @@ import {
   FlatList,
   ScrollView,
   Dimensions,
+  TouchableOpacity,
 } from 'react-native';
 import {
   aphConsole,
+  checkPatientAge,
   extractPatientDetails,
   formatAddress,
   formatAddressForApi,
-  formatAddressWithLandmark,
   g,
+  getAge,
+  getPatientNameById,
   isAddressLatLngInValid,
   isDiagnosticSelectedCartEmpty,
   isEmptyObject,
@@ -41,9 +44,11 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { AccessLocation } from '@aph/mobile-patients/src/components/Medicines/Components/AccessLocation';
 import {
+  convertNumberToDecimal,
   diagnosticsDisplayPrice,
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   getPricesForItem,
+  getUpdatedCartItems,
   sourceHeaders,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import {
@@ -69,7 +74,7 @@ import {
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   CALL_TO_ORDER_CTA_PAGE_ID,
-  DiagnosticLineItem,
+  DiagnosticItemType,
   REPORT_TAT_SOURCE,
   TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -88,6 +93,7 @@ import {
   diagnosticServiceability,
   getDiagnosticCartRecommendations,
   getReportTAT,
+  getDiagnosticsPackageRecommendationsv2,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   findDiagnosticsByItemIDsAndCityID,
@@ -107,9 +113,20 @@ import {
 } from '@aph/mobile-patients/src/components/Tests/components/TimelineWizard';
 import { InfoMessage } from '@aph/mobile-patients/src/components/Tests/components/InfoMessage';
 import { MultiSelectPatientListOverlay } from '@aph/mobile-patients/src/components/Tests/components/MultiSelectPatientListOverlay';
-import { LongRightArrow, TestTubes } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  ArrowDownWhite,
+  ArrowUpWhite,
+  LongRightArrow,
+  TestTubes,
+  Up,
+  Down,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import ItemCard from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { RecommedationGroupCard } from '@aph/mobile-patients/src/components/Tests/components/RecommedationGroupCard';
+import { Overlay } from 'react-native-elements';
+import { ExpressSlotMessageRibbon } from '@aph/mobile-patients/src/components/Tests/components/ExpressSlotMessageRibbon';
 
 type Address = savePatientAddress_savePatientAddress_patientAddress;
 type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
@@ -163,10 +180,14 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     uploadPrescriptionRequired,
     coupon,
     hcCharges,
-    diagnosticSlot
+    diagnosticSlot,
   } = useDiagnosticsCart();
 
-  const { setAddresses: setMedAddresses,circlePlanValidity, circleSubscriptionId } = useShoppingCart();
+  const {
+    setAddresses: setMedAddresses,
+    circlePlanValidity,
+    circleSubscriptionId,
+  } = useShoppingCart();
 
   const {
     locationDetails,
@@ -191,6 +212,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   const [showNonServiceableText, setShowNonServiceableText] = useState<boolean>(false);
   const [showPriceMismatch, setShowPriceMismatch] = useState<boolean>(false);
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
+  const cartItemsForSinglePatient = patientCartItems?.[0]?.cartItems?.filter((item) => item?.isSelected);
   const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
   const [overallArray, setOverallArray] = useState([] as any);
@@ -200,7 +222,10 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   const [widgetSelectedItem, setWidgetSelectedItem] = useState([] as any);
   const [slideCallToOrder, setSlideCallToOrder] = useState<boolean>(false);
   const [reportTat, setReportTat] = useState([] as any);
-
+  const [showAllPreviousItems, setShowAllPreviousItems] = useState<boolean>(false);
+  const [openRecommedations, setOpenRecommedations] = useState<boolean>(false);
+  const [showrecommendationPopUp, setShowrecommendationPopUp] = useState<boolean>(false);
+  const [groupRecommendations, setGroupRecommendations] = useState([] as any);
   const isCartPresent = isDiagnosticSelectedCartEmpty(
     isModifyFlow ? modifiedPatientCart : patientCartItems
   );
@@ -211,9 +236,17 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   );
 
   const patientsOnCartPage = !!isCartPresent && isCartPresent?.map((item) => item?.patientId);
-  const patientListForOverlay =
+  const patientListForOverlay1 =
     !!patientsOnCartPage &&
     allCurrentPatients?.filter((items: any) => patientsOnCartPage.includes(items?.id));
+  const patientListForOverlay =
+    !!patientListForOverlay1 &&
+    patientListForOverlay1?.filter((items: any) => {
+      const age = getAge(items?.dateOfBirth);
+      if (!!age && age >= 10) {
+        return items;
+      }
+    });
 
   const addressText = isModifyFlow
     ? formatAddressForApi(modifiedOrder?.patientAddressObj) || ''
@@ -228,8 +261,10 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     fullDuplicateItems = '';
   var overallDuplicateArray = [] as any;
 
+  const arrayToUse = isModifyFlow ? modifiedPatientCart : patientCartItems;
+
   useEffect(() => {
-    triggerCartPageViewed();
+    triggerCartPageViewed(false, cartItems);
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setIsFocused(true);
       BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -247,23 +282,35 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   function triggerAddressSelected(servicable: 'Yes' | 'No') {
     const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
     const pinCodeFromAddress = addressToUse?.zipcode!;
+    triggerCartPageViewed(false, cartItems); //required to triggered it when address is being selected
     DiagnosticAddresssSelected(
-      newAddressAddedCartPage != '' ? 'New' : 'Existing',
+      newAddressAddedCartPage != '' ? 'Manual' : 'Automation',
       servicable,
       pinCodeFromAddress,
       'Cart page',
       currentPatient,
-      isDiagnosticCircleSubscription
+      isDiagnosticCircleSubscription,
+      addressToUse?.latitude,
+      addressToUse?.longitude,
+      addressToUse?.state,
+      addressToUse?.city
     );
     newAddressAddedCartPage != '' && setNewAddressAddedCartPage?.('');
   }
+  const paitentTotalCart: any[] = [];
+  patientCartItemsCopy?.map((item: any) => {
+    item?.cartItems?.map((_item: any) => {
+      paitentTotalCart?.push(_item);
+    });
+  });
 
-  function triggerCartPageViewed(isRecommendationShown : boolean,recomData: any) {
+  function triggerCartPageViewed(isRecommendationShown: boolean, recomData: any) {
     const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
     const pinCodeFromAddress = addressToUse?.zipcode!;
     const cityFromAddress = addressToUse?.city;
+    const checkIsRecomendationInCart = isRecommendationShown ? 'Cart widget' : 'cart page';
     DiagnosticCartViewed(
-      'cart page',
+      checkIsRecomendationInCart,
       currentPatient,
       cartItems,
       couponDiscount,
@@ -271,14 +318,16 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       uploadPrescriptionRequired,
       diagnosticSlot,
       coupon,
-      hcCharges,circlePlanValidity,
+      hcCharges,
+      circlePlanValidity,
       circleSubscriptionId,
       isDiagnosticCircleSubscription,
       pinCodeFromAddress,
       cityFromAddress,
       '',
       isRecommendationShown,
-      recomData
+      recomData,
+      paitentTotalCart
     );
   }
 
@@ -344,63 +393,55 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       getAddressServiceability();
     }
   }, [addresses, isFocused]);
-
-  function getUpdatedCartItems() {
-    const arrayToChoose = isModifyFlow ? modifiedPatientCart : patientCartItems;
-    const getExistingItems = arrayToChoose
-      ?.map((item) => item?.cartItems?.filter((idd) => idd?.id))
-      ?.flat();
-    const selectedUniqueItems = getExistingItems?.filter((i) => i?.isSelected);
-    const selectedUnqiueItemIds = [
-      ...new Set(selectedUniqueItems?.map((item) => Number(item?.id))),
-    ];
-
-    const findPackageSKU = selectedUniqueItems?.find((_item) => _item?.inclusions?.length > 1);
-    const hasPackageSKU = !!findPackageSKU;
-    return {
-      selectedUniqueItems,
-      selectedUnqiueItemIds,
-      hasPackageSKU,
-    };
-  }
-
+  useEffect(() => {
+    getGroupRecommendations();
+  }, [cartItems?.length]);
   /**consider only selected one + for package need to pass one argument + isPackage + if is package and recommendations are not there, then fallback should not come + 2 limit needs to be removed */
   useEffect(() => {
-    if (cartItems?.length > 0 && getUpdatedCartItems()?.selectedUnqiueItemIds?.length > 0) {
+    if (
+      cartItems?.length > 0 &&
+      getUpdatedCartItems(arrayToUse)?.selectedUnqiueItemIds?.length > 0
+    ) {
       const itemIds = isModifyFlow
-        ? getUpdatedCartItems()?.selectedUnqiueItemIds?.concat(modifiedOrderItemIds)
-        : getUpdatedCartItems()?.selectedUnqiueItemIds;
+        ? (getUpdatedCartItems(arrayToUse)?.selectedUnqiueItemIds?.concat(
+            modifiedOrderItemIds
+          ) as any)
+        : (getUpdatedCartItems(arrayToUse)?.selectedUnqiueItemIds as any);
       fetchReportTat(itemIds);
       fetchTestReportGenDetails(itemIds);
-      fetchCartPageRecommendations(itemIds, getUpdatedCartItems()?.selectedUniqueItems);
+      fetchCartPageRecommendations(itemIds, getUpdatedCartItems(arrayToUse)?.selectedUniqueItems);
     }
   }, [cartItems?.length, addressCityId]);
 
-  const recomData = recommedationData?.length > 2 ? recommedationData : alsoAddListData
+  const recomData = recommedationData?.length > 2 ? recommedationData : alsoAddListData;
+
   useEffect(() => {
     const isRecommendationShown = recommedationData?.length > 2;
-    if (cartItems?.length > 0 && recomData?.length > 0 && !loading) {
-    const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
-    const pinCodeFromAddress = addressToUse?.zipcode!;
-    const cityFromAddress = addressToUse?.city;
-    DiagnosticCartViewed(
-      'cart page',
-      currentPatient,
-      cartItems,
-      couponDiscount,
-      grandTotal,
-      uploadPrescriptionRequired,
-      diagnosticSlot,
-      coupon,
-      hcCharges,circlePlanValidity,
-      circleSubscriptionId,
-      isDiagnosticCircleSubscription,
-      pinCodeFromAddress,
-      cityFromAddress,
-      '',
-      isRecommendationShown,
-      recomData
-    );
+    if (cartItems?.length > 0 && recomData?.length > 0 && !loading && isFocused) {
+      const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
+      const pinCodeFromAddress = addressToUse?.zipcode!;
+      const cityFromAddress = addressToUse?.city;
+      const checkIsRecomendationInCart = isRecommendationShown ? 'Cart widget' : 'cart page';
+      DiagnosticCartViewed(
+        checkIsRecomendationInCart,
+        currentPatient,
+        cartItems,
+        couponDiscount,
+        grandTotal,
+        uploadPrescriptionRequired,
+        diagnosticSlot,
+        coupon,
+        hcCharges,
+        circlePlanValidity,
+        circleSubscriptionId,
+        isDiagnosticCircleSubscription,
+        pinCodeFromAddress,
+        cityFromAddress,
+        '',
+        isRecommendationShown,
+        recomData,
+        paitentTotalCart
+      );
     }
   }, [cartItems?.length, recomData?.length, loading]);
 
@@ -548,8 +589,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         Number(addressCityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
       );
       if (res?.data?.success) {
-        const result = g(res, 'data', 'data');
-        const widgetsData = g(res, 'data', 'widget_data', '0', 'diagnosticWidgetData');
+        const result = res?.data?.data;
+        const widgetsData = res?.data?.widget_data?.[0]?.diagnosticWidgetData;
         setReportGenDetails(result || []);
         const _itemIds = widgetsData?.map((item: any) => Number(item?.itemId));
         const _filterItemIds = _itemIds?.filter((val: any) => !cartItemsWithId?.includes(val));
@@ -681,14 +722,14 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     const getExisitngItems = patientCartItems
       ?.map((item) => item?.cartItems?.filter((idd) => idd?.id))
       ?.flat();
-    const selectedUnqiueItems = getExisitngItems?.filter((i) => i?.isSelected);
+    const selectedUnqiueItems = getExisitngItems?.filter((i: DiagnosticsCartItem) => i?.isSelected);
     const arrayToChoose = isModifyFlow ? cartItems : selectedUnqiueItems;
 
     if (results?.length == 0) {
       setLoading?.(false);
     }
     const disabledCartItems = arrayToChoose?.filter(
-      (cartItem) =>
+      (cartItem: DiagnosticsCartItem) =>
         !results?.find(
           (d: findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics) =>
             `${d?.itemId}` == cartItem?.id
@@ -697,7 +738,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     let isItemDisable = false,
       isPriceChange = false;
     if (arrayToChoose?.length > 0) {
-      arrayToChoose?.map((cartItem, index: number) => {
+      arrayToChoose?.map((cartItem: DiagnosticsCartItem, index: number) => {
         const isItemInCart = results?.findIndex(
           (item: any) => String(item?.itemId) === String(cartItem?.id)
         );
@@ -781,7 +822,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         //if items not available
         if (disabledCartItems?.length) {
           isItemDisable = true;
-          const disabledCartItemIds = disabledCartItems?.map((item) => item?.id);
+          const disabledCartItemIds = disabledCartItems?.map(
+            (item: DiagnosticsCartItem) => item?.id
+          );
           setLoading?.(false);
           removeDisabledCartItems(disabledCartItemIds);
           removeDisabledPatientCartItems(disabledCartItemIds);
@@ -949,7 +992,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         });
         const { data } = response;
         const patientAddress = data?.makeAdressAsDefault?.patientAddress;
-        const updatedAddresses = addresses.map((item) => ({
+        const updatedAddresses = addresses?.map((item) => ({
           ...item,
           defaultAddress: patientAddress?.id == item.id ? patientAddress?.defaultAddress : false,
         }));
@@ -996,7 +1039,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           props.navigation.push(AppRoutes.AddAddressNew, {
             KeyName: 'Update',
             addressDetails: address,
-            ComingFrom: AppRoutes.TestsCart,
+            ComingFrom: AppRoutes.CartPage,
             updateLatLng: true,
             source: 'Diagnostics Cart' as AddressSource,
           });
@@ -1024,7 +1067,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           hidePincodeCurrentLocation
           addresses={addresses}
           onPressSelectAddress={(_address) => {
-            CommonLogEvent(AppRoutes.TestsCart, 'Check service availability');
+            CommonLogEvent(AppRoutes.CartPage, 'Check service availability');
             setDefaultAddress(_address);
             const tests = cartItems?.filter(
               (item) => item.collectionMethod == TEST_COLLECTION_TYPE.CENTER
@@ -1063,7 +1106,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
             }
           }}
           onPressEditAddress={(_address) => {
-            _navigateToEditAddress('Update', _address, AppRoutes.TestsCart);
+            _navigateToEditAddress('Update', _address, AppRoutes.CartPage);
             hideAphAlert?.();
           }}
           onPressAddAddress={() => {
@@ -1104,26 +1147,26 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           style={[
             styles.addressOutermostView,
             {
-              minHeight: screenHeight > 800 ? 150 : screenHeight < 600 ? 165 : 175,
+              minHeight: screenHeight > 800 ? 150 : screenHeight < 600 ? 145 : 155,
             },
           ]}
         >
-          <Text style={styles.addressHeadingText}>
-            {nameFormater(string.diagnostics.homeVisitText, 'title')}
-          </Text>
-          <View>
-            <View style={styles.addressTextView}>
-              {!!addressText && (
-                <Text numberOfLines={2} style={styles.addressTextStyle}>
-                  {addressText}
-                </Text>
-              )}
-              {isModifyFlow ? null : (
-                <Text style={styles.changeTextStyle} onPress={() => showAddressPopup()}>
-                  {string.diagnostics.changeText}
-                </Text>
-              )}
-            </View>
+          <View style={styles.addressView}>
+            <Text style={styles.addressHeadingText}>
+              {nameFormater(string.diagnostics.homeVisitText, 'title')}
+            </Text>
+            {isModifyFlow ? null : (
+              <Text style={styles.changeTextStyle} onPress={() => showAddressPopup()}>
+                {string.diagnostics.changeText}
+              </Text>
+            )}
+          </View>
+          <View style={styles.addressTextView}>
+            {!!addressText && (
+              <Text numberOfLines={2} style={styles.addressTextStyle}>
+                {addressText}
+              </Text>
+            )}
           </View>
         </View>
       </>
@@ -1157,6 +1200,15 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   function _navigateToHomePage() {
     const pincode = selectedAddr?.zipcode;
     DiagnosticAddToCartClicked(pincode!, currentPatient);
+    const patientId = patientCartItems?.[0]?.patientId; // for group recommandation only
+    const groupItemPresentArr = patientCartItems?.[0]?.cartItems?.filter((item) => {
+      //checking the presence if group recommendation Item in the cart
+      return groupRecommendations?.[0]?.itemId == Number(item?.id);
+    });
+    if (groupItemPresentArr?.length == 1) {
+      _onPressRemoveCartItem(groupItemPresentArr?.[0], []);
+      addPatientCartItem?.(patientId, cartItems!);
+    }
     props.navigation.navigate('TESTS', { focusSearch: false });
   }
 
@@ -1230,14 +1282,20 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         id,
         name,
         addresses?.[selectedAddressIndex]?.zipcode!,
-        'Customer'
+        'Customer',
+        currentPatient,
+        isDiagnosticCircleSubscription,
+        cartItems
       );
     } else {
       DiagnosticRemoveFromCartClicked(
         id,
         name,
         diagnosticLocation?.pincode! || locationDetails?.pincode!,
-        'Customer'
+        'Customer',
+        currentPatient,
+        isDiagnosticCircleSubscription,
+        cartItems
       );
     }
   };
@@ -1269,10 +1327,135 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       </View>
     );
   };
+  async function getGroupRecommendations() {
+    let recommendationInputItems: { itemId?: number; itemType?: DiagnosticItemType }[] = [];
+    cartItemsForSinglePatient?.map((item) => {
+      const inclusionCount = cartItems?.find(
+               (cartItem) => cartItem?.id === item?.id
+          )?.inclusions?.length;
+      const newObj = {
+        itemId: Number(item?.id),
+        itemType: !!inclusionCount && inclusionCount > 1 ? DiagnosticItemType.PACKAGE : DiagnosticItemType.LABTEST,
+      };
+      recommendationInputItems?.push(newObj);
+    });
+    try {
+      const getPackageRecommendationsResponse = await getDiagnosticsPackageRecommendationsv2(
+        client,
+        recommendationInputItems,
+        Number(addressCityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
+      );
+      if (getPackageRecommendationsResponse?.data?.getDiagnosticPackageRecommendationsv2) {
+        const getResult =
+          getPackageRecommendationsResponse?.data?.getDiagnosticPackageRecommendationsv2
+            ?.packageRecommendations;
+        let packageArray: any = [];
+        getResult?.map((item) => {
+          packageArray.push({
+            ...item,
+            itemTitle: item?.itemName,
+            inclusionData: item?.diagnosticInclusions,
+          });
+        });
+        setGroupRecommendations(packageArray); // in case of this only 1 group package will be present
+      } else {
+        setGroupRecommendations([]);
+      }
+    } catch (error) {
+      setGroupRecommendations([]);
+      CommonBugFender('CartPage_getGroupRecommendations', error);
+    }
+  }
+
+
+  const renderGroupRecommendationsView = () => {
+    const groupItem = groupRecommendations?.[0];
+    const getDiagnosticPricingForItem = groupItem?.diagnosticPricing;
+    const packageMrpForItem = groupItem?.packageCalculatedMrp!;
+    const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
+    const patientItems = patientCartItems?.[0]?.cartItems?.filter((cItem) => cItem?.isSelected);
+    const getCartTotalPrice = () => {
+       const cartPrice = patientCartItems?.[0]?.cartItems?.reduce(
+         (totalPrice, item) => (totalPrice += item?.price),
+         0
+       );
+       return cartPrice;
+       };
+
+       const grpItem: DiagnosticsCartItem ={
+        id: groupItem?.itemId,
+        name:groupItem?.itemName,
+        mou: 1,
+        price: pricesForItem?.price!,
+        thumbnail: groupItem?.itemImageUrl,
+        specialPrice: pricesForItem?.specialPrice!, 
+        circlePrice: pricesForItem?.circlePrice!, //mrp
+        circleSpecialPrice: pricesForItem?.circleSpecialPrice!, //price
+        discountPrice: pricesForItem?.discountPrice!, //mrp
+        discountSpecialPrice: pricesForItem?.discountSpecialPrice!, //price
+        collectionMethod: groupItem?.collectionType,
+        groupPlan: pricesForItem?.planToConsider?.groupPlan!,
+        packageMrp: packageMrpForItem,
+        inclusions: groupItem?.inclusions,
+        isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG
+      }
+
+    
+    const priceDiff = diagnosticsDisplayPrice(grpItem, isDiagnosticCircleSubscription)?.priceToShow - getCartTotalPrice()
+    return (
+      <>
+        {/* Group Recommendations start here */}
+        <TouchableOpacity
+          style={[
+            styles.recommedationHeaderContainer,
+            {
+              borderBottomStartRadius: openRecommedations ? 0 : 10,
+              borderBottomEndRadius: openRecommedations ? 0 : 10,
+            },
+          ]}
+          onPress={() => {
+            setOpenRecommedations(!openRecommedations);
+          }}
+        >
+          <Text style={styles.textStyleHeading}>
+            {`Recommended for you • ${
+              priceDiff > 0
+                ? `${
+                    groupRecommendations?.[0]?.extraInclusionsCount > 1
+                      ? `${groupRecommendations?.[0]?.extraInclusionsCount} Tests`
+                      : `${groupRecommendations?.[0]?.extraInclusionsCount} Test`
+                  } @ ₹ ${priceDiff?.toFixed()} Only`
+                : `Save ₹ ${Math.abs(priceDiff)?.toFixed()}`
+            }`}
+          </Text>
+          {openRecommedations ? (
+            <ArrowUpWhite style={styles.iconStyleArrow} />
+          ) : (
+            <ArrowDownWhite style={styles.iconStyleArrow} />
+          )}
+        </TouchableOpacity>
+        <RecommedationGroupCard
+          cartItems={cartItems}
+          patientItems={patientItems}
+          data={groupRecommendations?.[0]}
+          showRecommedation={openRecommedations}
+          onPressAdd={() => {
+            setShowrecommendationPopUp(true);
+          }}
+          showPrice={Number(priceDiff?.toFixed())}
+          showAddButton={true}
+          showTestWorth={true}
+        />
+      </>
+    );
+  };
 
   const renderCartItems = () => {
     const getFilteredPatients = getSelectedPatientCartMapping();
-    //marginBottom : 50
+    const groupItemPresentArr = patientCartItems?.[0]?.cartItems?.filter((item) => {
+      //checking the presence if group recommendation Item in the cart
+      return groupRecommendations?.[0]?.itemId == Number(item?.id);
+    });
     return (
       <View style={{ marginTop: 16 }}>
         {!!getFilteredPatients && getFilteredPatients?.length > 0
@@ -1295,23 +1478,189 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                       )
                     : null}
                   {!!patientItems && patientItems?.length > 0 && (
-                    <FlatList
-                      contentContainerStyle={{ marginTop: 50 }}
-                      showsVerticalScrollIndicator={false}
-                      bounces={false}
-                      extraData={patientItems}
-                      style={styles.cartItemsFlatList}
-                      keyExtractor={keyExtractor}
-                      data={patientItems}
-                      ItemSeparatorComponent={() => renderSeparator()}
-                      renderItem={({ item, index }) => _renderCartItem(item, getPatient, index)}
-                    />
+                    <>
+                      <FlatList
+                        contentContainerStyle={{ marginTop: 50 }}
+                        showsVerticalScrollIndicator={false}
+                        bounces={false}
+                        extraData={patientItems}
+                        style={styles.cartItemsFlatList}
+                        keyExtractor={keyExtractor}
+                        data={patientItems}
+                        ItemSeparatorComponent={() => renderSeparator()}
+                        renderItem={({ item, index }) => _renderCartItem(item, getPatient, index)}
+                        ListFooterComponent={() =>
+                          isModifyFlow && !!getFilteredPatients && getFilteredPatients?.length
+                            ? renderPastOrderCart()
+                            : null
+                        }
+                      />
+                      {!!groupRecommendations?.length &&
+                        patientCartItems?.length == 1 &&
+                        groupItemPresentArr?.length == 0 &&
+                        renderGroupRecommendationsView()}
+                    </>
                   )}
                 </>
               );
             })
           : renderEmptyCart()}
       </View>
+    );
+  };
+
+  const renderPastOrderCart = () => {
+    const remainingItems = modifiedOrder?.diagnosticOrderLineItems?.length - 1;
+    const firstItem = modifiedOrder?.diagnosticOrderLineItems?.[0]?.itemName;
+    const orderLineItems = modifiedOrder?.diagnosticOrderLineItems! || [];
+    return (
+      <View style={[styles.previousView, { paddingBottom: showAllPreviousItems ? 16 : 12 }]}>
+        <TouchableOpacity
+          onPress={() => setShowAllPreviousItems(!showAllPreviousItems)}
+          style={styles.previousContainerTouch}
+        >
+          <View style={styles.previousItemInnerContainer}>
+            <Text style={styles.previousItemHeading}>
+              {nameFormater('Previously added to cart', 'default')}
+            </Text>
+
+            <View style={styles.arrowTouch}>
+              {showAllPreviousItems ? (
+                <Up style={styles.arrowIconStyle} />
+              ) : (
+                <Down style={styles.arrowIconStyle} />
+              )}
+            </View>
+          </View>
+          <Text style={[styles.previousItemHeading, styles.previousOrderItemText]}>
+            {nameFormater(firstItem?.slice(0, isSmallDevice ? 29 : 32), 'title')}{' '}
+            {remainingItems > 0 && `+ ${remainingItems} more`}
+          </Text>
+        </TouchableOpacity>
+        {showAllPreviousItems &&
+          orderLineItems?.map((item: orderListLineItems) => {
+            return renderPreviousOrderItems(item);
+          })}
+      </View>
+    );
+  };
+
+  const renderPreviousOrderItems = (item: orderListLineItems) => {
+    return (
+      <View style={styles.commonTax}>
+        <View style={{ width: '65%' }}>
+          <Text style={styles.commonText}>
+            {nameFormater(
+              !!item?.itemName ? item?.itemName! : item?.diagnostics?.itemName!,
+              'title'
+            )}
+          </Text>
+        </View>
+        <View style={styles.previousOrderView}>
+          <Text style={[styles.commonText, styles.previousOrderPrice]}>
+            {string.common.Rs}
+            {convertNumberToDecimal(item?.price) || null}
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
+  const renderRecommedationGroupPopUp = () => {
+    const groupItem = groupRecommendations?.[0];
+    const getDiagnosticPricingForItem = groupItem?.diagnosticPricing;
+    const packageMrpForItem = groupItem?.packageCalculatedMrp!;
+    const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
+    const patientItems = patientCartItems?.[0]?.cartItems?.filter((cItem) => cItem?.isSelected);
+    const patientId = patientCartItems?.[0]?.patientId;
+    const getPatientName = getPatientNameById(allCurrentPatients, patientId);
+   const grpItem: DiagnosticsCartItem ={
+     id: groupItem?.itemId,
+     name:groupItem?.itemName,
+     mou: 1,
+     price: pricesForItem?.price!,
+     thumbnail: groupItem?.itemImageUrl,
+     specialPrice: pricesForItem?.specialPrice!, 
+     circlePrice: pricesForItem?.circlePrice!, //mrp
+     circleSpecialPrice: pricesForItem?.circleSpecialPrice!, //price
+     discountPrice: pricesForItem?.discountPrice!, //mrp
+     discountSpecialPrice: pricesForItem?.discountSpecialPrice!, //price
+     collectionMethod: groupItem?.collectionType,
+     groupPlan: pricesForItem?.planToConsider?.groupPlan!,
+     packageMrp: packageMrpForItem,
+     inclusions: groupItem?.inclusions,
+     isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG
+   }
+
+   const priceToShow = diagnosticsDisplayPrice(grpItem, isDiagnosticCircleSubscription)?.priceToShow;
+    return (
+      <Overlay
+        isVisible
+        onRequestClose={() => setShowrecommendationPopUp(false)}
+        windowBackgroundColor={'rgba(0, 0, 0, 0.6)'}
+        containerStyle={{ marginBottom: 0 }}
+        fullScreen
+        transparent
+        overlayStyle={styles.phrOverlayStyle}
+      >
+        <View style={styles.popupContainer}>
+          <Text style={styles.textInclusionsRecom}>
+            Your cart would include the following items for
+            <Text style={styles.boldTextRecom}> {getPatientName} </Text>
+          </Text>
+          <RecommedationGroupCard
+            cartItems={cartItems}
+            patientItems={patientItems}
+            data={groupRecommendations?.[0]}
+            showRecommedation={openRecommedations}
+            containerStyle={{ borderRadius: 10, paddingBottom: 10, marginBottom: 50 }}
+            onPressAdd={() => {}}
+            showAddButton={false}
+            showTestWorth={false}
+            scrollEnabled={true}
+            showPrice={0}
+            priceToDisplayOnPopUp={priceToShow}
+          />
+          <View style={styles.promoButtonContainer}>
+            <TouchableOpacity
+              style={styles.proceedToCancelTouch}
+              onPress={() => {
+                setShowrecommendationPopUp(false);
+              }}
+            >
+              <Text style={styles.yellowText}>GO BACK</Text>
+            </TouchableOpacity>
+            <Button
+              onPress={() => {
+                setShowrecommendationPopUp(false);
+                // to add in the cart
+                const itemData = groupRecommendations?.[0];
+                const itemObj = {
+                  circlePrice: pricesForItem?.circlePrice!,
+                  circleSpecialPrice: pricesForItem?.circleSpecialPrice!,
+                  collectionMethod: itemData?.collectionType,
+                  discountPrice: pricesForItem?.discountPrice!,
+                  discountSpecialPrice: pricesForItem?.discountSpecialPrice!,
+                  groupPlan: pricesForItem?.planToConsider?.groupPlan!,
+                  id: itemData?.itemId,
+                  inclusions: itemData?.inclusions,
+                  isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
+                  mou: 1,
+                  name: itemData?.itemTitle,
+                  packageMrp: packageMrpForItem,
+                  price: pricesForItem?.price!,
+                  specialPrice: pricesForItem?.specialPrice!,
+                  thumbnail: itemData?.itemImageUrl,
+                };
+                const allItems = [itemObj];
+                addPatientCartItem?.(patientId, allItems!);
+              }}
+              style={{ width: '40%' }}
+              title={'PROCEED'}
+            />
+          </View>
+        </View>
+      </Overlay>
     );
   };
 
@@ -1385,7 +1734,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 
             if (comingFrom == 'diagnosticServiceablityChange') {
               product?.map((item) => {
-                const diagnosticPricing = g(item, 'diagnosticPricing');
+                const diagnosticPricing = item?.diagnosticPricing;
                 const packageMrp = item?.packageCalculatedMrp!;
                 const pricesForItem = getPricesForItem(diagnosticPricing, packageMrp);
                 if (!pricesForItem?.itemActive) {
@@ -1468,63 +1817,81 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     const filterDuplicateItemsForPatients =
       !!duplicateNameArray &&
       duplicateNameArray?.filter((item: any) => item?.patientId == patientItems?.id);
+    const patientId = patientCartItems?.[0]?.patientId; // for group recommandation only
+    const groupItemPresentArr = patientCartItems?.[0]?.cartItems?.filter((item) => {
+      //checking the presence if group recommendation Item in the cart
+      return groupRecommendations?.[0]?.itemId == Number(item?.id);
+    });
     return (
       <CartItemCard
         index={index}
         comingFrom={AppRoutes.CartPage}
         cartItem={test}
+        allItemsInCart = {cartItems}
+        groupRecommendationItem = {groupRecommendations?.[0]}
+        cartItemIds = {cartItemsWithId}
         selectedPatient={selectedPatient}
         isCircleSubscribed={isDiagnosticCircleSubscription}
         reportGenItem={reportGenItem}
         reportTat={reportTAT}
-        showCartInclusions={false} //showInclusions
+        showCartInclusions={true} //showInclusions
         duplicateArray={filterDuplicateItemsForPatients}
-        onPressCard={(item) => {
-          CommonLogEvent(AppRoutes.CartPage, 'Navigate to test details scene');
-          fetchPackageDetails(
-            item?.id,
-            (product) => {
-              props.navigation.navigate(AppRoutes.TestDetails, {
-                comingFrom: AppRoutes.TestsCart,
-                cityId: addressCityId,
-                testDetails: {
-                  ItemID: item?.id,
-                  ItemName: item?.name,
-                  Rate: item?.price,
-                  specialPrice: item?.specialPrice! || item?.price,
-                  circleRate: item?.circlePrice,
-                  circleSpecialPrice: item?.circleSpecialPrice,
-                  discountPrice: item?.discountPrice,
-                  discountSpecialPrice: item?.discountSpecialPrice,
-                  FromAgeInDays: product?.fromAgeInDays!,
-                  ToAgeInDays: product?.toAgeInDays!,
-                  Gender: product?.gender,
-                  collectionType: test?.collectionMethod,
-                  preparation: product?.testPreparationData,
-                  testDescription: product?.testDescription,
-                  source: 'Cart page',
-                  type: product?.itemType,
-                  packageMrp: item?.itemPackageMrp,
-                  inclusions: item?.inclusions == null ? [Number(item?.itemId)] : item?.inclusions,
-                } as TestPackageForDetails,
-              });
-            },
-            'onPress'
-          );
-        }}
-        onPressRemove={(item) => {
-          CommonLogEvent(AppRoutes.TestsCart, 'Remove item from cart');
-          if (isModifyFlow) {
-            removeCartItem?.(item?.id);
-          }
-          onRemoveCartItem(item, patientItems?.id);
+        onPressCard={(item) => _onPressCartItem(item, test)}
+        onPressRemove={(item) => _onPressRemoveCartItem(item, patientItems)}
+        showUndo={groupItemPresentArr?.length == 1}
+        onPressUndo={(item) => {
+          _onPressRemoveCartItem(item, patientItems);
+          addPatientCartItem?.(patientId, cartItems!);
         }}
       />
     );
   };
 
+  function _onPressRemoveCartItem(item: any, patientItems: any) {
+    CommonLogEvent(AppRoutes.CartPage, 'Remove item from cart');
+    if (isModifyFlow) {
+      removeCartItem?.(item?.id);
+    }
+    onRemoveCartItem(item, patientItems?.id);
+  }
+
+  function _onPressCartItem(item: any, test: DiagnosticsCartItem) {
+    CommonLogEvent(AppRoutes.CartPage, 'Navigate to test details scene');
+    updateCartInGroupRecommandation()
+    fetchPackageDetails(
+      item?.id,
+      (product) => {
+        props.navigation.navigate(AppRoutes.TestDetails, {
+          comingFrom: AppRoutes.CartPage,
+          cityId: addressCityId,
+          testDetails: {
+            ItemID: item?.id,
+            ItemName: item?.name,
+            Rate: item?.price,
+            specialPrice: item?.specialPrice! || item?.price,
+            circleRate: item?.circlePrice,
+            circleSpecialPrice: item?.circleSpecialPrice,
+            discountPrice: item?.discountPrice,
+            discountSpecialPrice: item?.discountSpecialPrice,
+            FromAgeInDays: product?.fromAgeInDays!,
+            ToAgeInDays: product?.toAgeInDays!,
+            Gender: product?.gender,
+            collectionType: test?.collectionMethod,
+            preparation: product?.testPreparationData,
+            testDescription: product?.testDescription,
+            source: 'Cart page',
+            type: product?.itemType,
+            packageMrp: item?.itemPackageMrp,
+            inclusions: item?.inclusions == null ? [Number(item?.itemId)] : item?.inclusions,
+          } as TestPackageForDetails,
+        });
+      },
+      'onPress'
+    );
+  }
+
   const renderCartWidgets = () => {
-    const hasPackageSKU = getUpdatedCartItems()?.hasPackageSKU;
+    const hasPackageSKU = getUpdatedCartItems(arrayToUse)?.hasPackageSKU;
     var newArray: string | any[] = [];
     const dataToShow =
       recommedationData?.length > 2
@@ -1532,9 +1899,31 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         : !hasPackageSKU
         ? newArray.concat(recommedationData).concat(alsoAddListData)
         : recommedationData;
+    const inclusionIdArray: any[] = [];
+    const inclusionIds = cartItems?.map((item) => {
+      item?.inclusions?.map((_item: any) => {
+        inclusionIdArray?.push(_item);
+      });
+    });
+    const dataToRender = dataToShow?.filter((item: any) => {
+      if (!!item?.diagnosticInclusions && item?.diagnosticInclusions?.length > 0) {
+        return item?.diagnosticInclusions?.filter((_item: any) => {
+          //for inclusion-inclusion matching
+          if (!inclusionIdArray?.includes(_item?.itemId)) {
+            return item;
+          } //for test-inclusion matching
+          else if (item?.itemId != _item?.itemId) {
+            return item;
+          }
+        });
+      } else if (!cartItemsWithId?.includes(item?.itemId)) {
+        //for test-test matching
+        return item;
+      }
+    });
     return (
       <>
-        {dataToShow?.length > 0 ? (
+        {dataToRender?.length > 0 ? (
           <ScrollView
             style={styles.widgetContainer}
             bounces={false}
@@ -1554,8 +1943,10 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                   fetchTestReportGenDetails(item?.itemId, item, SOURCE.ADD, addedItem);
                 }}
                 onPressRemoveItemFromCart={(item) => {}}
-                data={dataToShow}
-                recommedationDataSource = {recommedationData?.length > 2 ? 'Recommendations' : 'You can also order'}
+                data={dataToRender}
+                recommedationDataSource={
+                  recommedationData?.length > 2 ? 'Recommendations' : 'You can also order'
+                }
                 isCircleSubscribed={isDiagnosticCircleSubscription}
                 isServiceable={isServiceable}
                 isVertical={false}
@@ -1563,6 +1954,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                 source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.CART_PAGE}
                 sourceScreen={AppRoutes.CartPage}
                 changeCTA={true}
+                widgetHeading={
+                  recommedationData?.length > 2 ? 'Recommendations' : 'You can also order'
+                }
               />
             </View>
           </ScrollView>
@@ -1572,18 +1966,30 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   };
 
   const renderMainView = () => {
+    //if minor age patient is there in cart, then don't show recommendations
+    const minorPatientCheckInCart = !!isCartPresent
+      ? isCartPresent?.map((pItem) => {
+          const getPatientDetails = allCurrentPatients?.find(
+            (patient: any) => pItem?.patientId == patient?.id
+          );
+          return checkPatientAge(getPatientDetails);
+        })
+      : [false];
+    const isAllMinorPatients = !minorPatientCheckInCart?.includes(false);
     const shouldShowRecommendations = isModifyFlow
       ? modifiedPatientCart?.length == 0 || modifiedPatientCart?.[0]?.cartItems?.length == 0
       : patientCartItems?.length === 0 || isCartPresent?.length == 0;
     const isCartEmpty = isModifyFlow
       ? !(modifiedPatientCart?.length == 0 || modifiedPatientCart?.[0]?.cartItems?.length == 0)
       : !!isCartPresent && !isCartPresent;
-    const hasPackageSKU = getUpdatedCartItems()?.hasPackageSKU;
+    const hasPackageSKU = getUpdatedCartItems(arrayToUse)?.hasPackageSKU;
     return (
       <View style={{ margin: 16 }}>
         {renderAddTestOption()}
         {!!isCartEmpty && !isCartEmpty ? renderEmptyCart() : renderCartItems()}
-        {!shouldShowRecommendations
+        {isAllMinorPatients
+          ? null
+          : !shouldShowRecommendations
           ? !!recommedationData && recommedationData?.length > 0
             ? renderCartWidgets()
             : !!alsoAddListData && alsoAddListData?.length > 0 && !hasPackageSKU
@@ -1669,9 +2075,20 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         addPatientCartItem?.(patients?.patientId, addedItems!);
       });
   }
+  function updateCartInGroupRecommandation(){
+    const patientId = patientCartItems?.[0]?.patientId; // for group recommandation only
+    const groupItemPresentArr = patientCartItems?.[0]?.cartItems?.filter((item) => {
+      //checking the presence if group recommendation Item in the cart
+      return groupRecommendations?.[0]?.itemId == Number(item?.id);
+    });
+    if (groupItemPresentArr?.length == 1) {
+      setCartItems?.(patientCartItems?.[0]?.cartItems)
+    }
+  }
 
   function _validatePricesWithAddress() {
     // getAddressServiceability(true);
+    updateCartInGroupRecommandation()
     _navigateToNextScreen();
   }
 
@@ -1761,12 +2178,21 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       />
     );
   };
+  const renderExpressSlots = () => {
+    return diagnosticServiceabilityData && diagnosticLocation ? (
+      <ExpressSlotMessageRibbon
+        serviceabilityObject={diagnosticServiceabilityData}
+        selectedAddress={diagnosticLocation}
+      />
+    ) : null;
+  };
 
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={[{ ...theme.viewStyles.container }]}>
         {renderHeader()}
         {renderWizard()}
+        {renderExpressSlots()}
         <ScrollView
           bounces={false}
           style={{ flexGrow: 1 }}
@@ -1780,6 +2206,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         </ScrollView>
         {renderAddressSection()}
       </SafeAreaView>
+      {showrecommendationPopUp ? renderRecommedationGroupPopUp() : null}
       {renderCallToOrder()}
       {renderStickyBottom()}
     </View>
@@ -1788,8 +2215,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 
 const styles = StyleSheet.create({
   addressHeadingText: {
-    marginLeft: 16,
-    marginTop: 16,
     ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 1, 20),
   },
   changeTextStyle: {
@@ -1872,6 +2297,23 @@ const styles = StyleSheet.create({
     width: 16,
     marginLeft: 16,
   },
+  recommedationHeaderContainer: {
+    flex: 1,
+    backgroundColor: '#00B38E',
+    marginTop: -15,
+    paddingHorizontal: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  textStyleHeading: {
+    ...theme.viewStyles.text('SB', 12, colors.WHITE, 1),
+    padding: 5,
+  },
+  iconStyleArrow: {
+    width: 16,
+    height: 16,
+  },
   infoContainerStyle: {
     margin: -16,
     marginBottom: 8,
@@ -1933,9 +2375,108 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: -20,
     zIndex: 99,
-    margin: 16,
+    margin: 18,
     paddingBottom: 8,
   },
   cartCountText: { ...theme.viewStyles.text('SB', 12, theme.colors.SHERPA_BLUE, 1, 18) },
   patientNameCartItemView: { marginBottom: -50, zIndex: 3000 },
+  addressView: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignContent: 'center',
+    marginHorizontal: 16,
+    marginTop: 12,
+  },
+  previousContainerTouch: {
+    flexDirection: 'column',
+  },
+  previousItemInnerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  arrowIconStyle: { height: 25, width: 30, resizeMode: 'contain' },
+  previousItemHeading: {
+    ...theme.fonts.IBMPlexSansSemiBold(isSmallDevice ? 13 : 14),
+    color: theme.colors.SHERPA_BLUE,
+    lineHeight: 22,
+    width: '87%',
+  },
+
+  arrowTouch: {
+    width: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  commonTax: {
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 18,
+  },
+  commonText: {
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 13 : 14),
+    color: theme.colors.SHERPA_BLUE,
+    marginBottom: 5,
+    lineHeight: 18,
+  },
+  previousView: {
+    backgroundColor: theme.colors.BGK_GRAY,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    marginTop: 6,
+  },
+  previousOrderView: { flex: 1, alignItems: 'flex-end' },
+  previousOrderPrice: { lineHeight: 14, ...theme.fonts.IBMPlexSansBold(isSmallDevice ? 13 : 14) },
+  previousOrderItemText: {
+    ...theme.fonts.IBMPlexSansRegular(isSmallDevice ? 11 : 12),
+    lineHeight: 18,
+  },
+  phrOverlayStyle: {
+    padding: 0,
+    margin: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'transparent',
+    overflow: 'hidden',
+    elevation: 0,
+    bottom: 0,
+    position: 'absolute',
+  },
+  popupContainer: {
+    backgroundColor: theme.colors.WHITE,
+    marginTop: screenHeight - 461,
+    height: 461,
+    padding: 10,
+    borderTopStartRadius: 10,
+    borderTopEndRadius: 10,
+  },
+  textInclusionsRecom: {
+    ...theme.viewStyles.text('R', 16, colors.SHERPA_BLUE, 1),
+    padding: 10,
+    width: '85%',
+    textAlign: 'left',
+    paddingHorizontal: 10,
+  },
+  boldTextRecom: {
+    ...theme.viewStyles.text('SB', 16, colors.SHERPA_BLUE, 1),
+  },
+  promoButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingVertical: 10,
+    backgroundColor: colors.WHITE,
+    position: 'absolute',
+    width: '100%',
+    bottom: 0,
+    alignSelf: 'center',
+  },
+  yellowText: { ...theme.viewStyles.yellowTextStyle, fontSize: 14, textAlign: 'left' },
+  proceedToCancelTouch: {
+    height: 40,
+    width: '40%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });

@@ -5,6 +5,7 @@ const semiDarkClear = 'rgba(0, 0, 0, 0.3)';
 const lightColor = 'rgb(216, 216, 216)';
 const darkColor = 'rgb(115, 118, 131)';
 const sherpa_blue_light = 'rgba(1, 71, 91, 0.4)';
+const bluish_gray = 'rgba(204, 225, 230, 0.42)';
 
 const darkGray = '#bbbbbb';
 const hexWhite = '#ffffff';
@@ -61,9 +62,11 @@ const Card = {
 };
 
 const Common = {
+  GRAY_TWO: "#dddddd",
   DARK_GRAY: darkGray,
   BLACK_COLOR: black,
   DEFAULT_BACKGROUND_COLOR: '#f0f1ec',
+  LOGIN_BANNER_TEXT: "#00485D",
   INPUT_CURSOR_COLOR: app_green,
   APP_GREEN: app_green,
   DARK_BLUE: '#346CD9',
@@ -108,6 +111,7 @@ const Common = {
   CAROUSEL_INACTIVE_DOT: '#C4C4C4',
   ORANGE_BORDER: '#FA9E3E',
   GRAY: '#6A6A6A',
+  NEWGRAY: '#CECECE',
   DISABLE_TEXT: '#BCBCBC',
   RED: '#C5411E',
   LIGHTISH_GRAY: '#93B7C5',
@@ -148,9 +152,9 @@ const Common = {
   SOAP_STONE: '#FFFCFA',
   SKY_LIGHT_BLUE: '#C6EAFE',
   GOLDEN: '#FECF62',
-  ORANGE: "#FF774B",
-  LIGHT_ORANGE_YELLOW: "#FCA317",
-  GREEN_BACKGROUND: "#F5FFFD",
+  ORANGE: '#FF774B',
+  LIGHT_ORANGE_YELLOW: '#FCA317',
+  GREEN_BACKGROUND: '#F5FFFD',
   BGK_GRAY: '#f9f9f9',
   TEAL_BLUE: '#3F7281',
   SHERPA_BLUE_LIGHT: sherpa_blue_light,
@@ -164,12 +168,30 @@ const Common = {
   LIGHT_GREEN_ONE: '#E8EDF0',
   LIGHT_BLUE_TWO: '#DCF0FF',
   BLUE_GRADIENT_ONE: '#1C9FC2',
+  TUNDORA_GRAY: '#424242',
   LIGHT_GRAY_3: '#ECECEC',
-  DISCOUNT_GREEN: "#34AA55",
-  GREEN_BG: "#F3FFFF",
-  LIGHT_REFERRER_AQUA_ONE: "#85e2dc",
-  LIGHT_REFERRER_AQUA_TWO: "#FFFCFF",
-  BLUE_REFERRER_BORDER: "#74b9ed"
+  BLUISH_GRAY: bluish_gray,
+  DISCOUNT_GREEN: '#34AA55',
+  GREEN_BG: '#F3FFFF',
+  LIGHT_REFERRER_AQUA_ONE: '#85e2dc',
+  LIGHT_REFERRER_AQUA_TWO: '#FFFCFF',
+  BLUE_REFERRER_BORDER: '#74b9ed',
+  MERCURY_GRAY: '#e9e9e9',
+  ORANGE_DISABLED: "#f8952180",
+  ORANGE_ENABLED: "#f89521",
+  ORANGE_BG :"#FFF6DE",
+  SLOT_GRAY: "#F0F0F0",
+  PACIFIC_BLUE: '#00A0E3',
+  SHADE_OF_GRAY: 'rgba(2, 71, 91, 0.5)',
+  SHADE_OF_CYAN: '#013F32',
+  MULTISIGNUP_HEADING_BLUE: '#01495D',
+  LIGHT_BLUE_DOWN: '#02475bb0',
+  LIGHT_WHITE_GRAY: '#F0F0F0',
+  BUTTON_ORANGE: '#fc9916eb',
+  BUTTON_ORANGE_DISABLE: '#fc991661',
+  LIGHT_SOIL_COLOR: '#FCF0E3',
+  INFO_RED_COLOR: '#FF637B',
+  GRAY_BGK: '#F4F4F4'
 };
 
 const Header = {
@@ -237,6 +259,12 @@ const StatusColors = {
   REFUND: lightPaleRed,
 };
 
+const SignupColors = {
+  GRADIENT_LIGHT_YELLOW_ONE: '#F3ECD9',
+  GRADIENT_LIGHT_YELLOW_TWO: '#FFE8AD',
+  RED_BROWN: '#A15D59'
+}
+
 export const colors = {
   ...Buttons,
   ...Card,
@@ -249,4 +277,5 @@ export const colors = {
   ...TabBar,
   ...Capsule,
   ...StatusColors,
+  ...SignupColors
 };

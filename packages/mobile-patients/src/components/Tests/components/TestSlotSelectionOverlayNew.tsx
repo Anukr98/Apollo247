@@ -95,6 +95,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
 
   const dt = moment(props.slotBooked!).format('YYYY-MM-DD') || null;
   const tm = moment(props.slotBooked!)?.format('hh:mm A') || null; //format changed from hh:mm
+  let monthHeading = `${moment().format('MMMM')} ${moment().format('YYYY')}`;
 
   const [selectedDate, setSelectedDate] = useState<string>(moment(date).format('DD') || '');
   const [isPrepaidSlot, setPrepaidSlot] = useState<boolean>(
@@ -114,6 +115,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   const [afternoonSlots, setAfternoonSlots] = useState([] as any);
   const [eveningSlots, setEveningSlots] = useState([] as any);
   const [diagnosticSlotDuration, setDiagnosticSlotDuration] = useState<number>(slotDuration);
+  const [monthHeader, setMonthHeader] = useState<string>(monthHeading || '');
 
   type UniqueSlotType = typeof uniqueSlots[0];
 
@@ -135,7 +137,6 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
         .format(),
     });
   }
-  let monthHeading = `${moment().format('MMMM')} ${moment().format('YYYY')}`;
 
   //use formatTestSlot when time is coming in 24hr.
   let dropDownOptions = uniqueSlots?.map((val) => ({
@@ -173,10 +174,10 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   }, [selectedDayTab]);
 
   const fetchSlots = async (updatedDate?: Date) => {
-    let dateToCheck = !!updatedDate
-      ? moment(updatedDate)?.format('YYYY-MM-DD')
-      : moment(date)?.format('YYYY-MM-DD');
+    const dateToUse = !!updatedDate ? updatedDate : date;
+    let dateToCheck = moment(dateToUse)?.format('YYYY-MM-DD');
     setSelectedDate(moment(dateToCheck).format('DD'));
+    setMonthHeader(`${moment(dateToCheck).format('MMMM')} ${moment(dateToCheck).format('YYYY')}`);
     setLoading?.(true);
     setShowSpinner(true);
     try {
@@ -356,8 +357,15 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
     );
   };
   const renderSlotSelectionView = () => {
+    const distanceCharges = overallDistanceCharge;
     return (
-      <View style={styles.slotsView}>
+      <View
+        style={[
+          styles.slotsView,
+          { height: distanceCharges > 0 && !props.isReschdedule ? '65%' : '75%' },
+          !isReschdedule && { paddingBottom: 30 },
+        ]}
+      >
         <View style={styles.dayPhaseContainer}>
           {dayPhaseArray?.map((item, index) => (
             <TouchableOpacity
@@ -387,7 +395,12 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
             </TouchableOpacity>
           ))}
         </View>
-        <View style={styles.slotsList}>
+        <View
+          style={[
+            styles.slotsList,
+            { height: distanceCharges > 0 && !props.isReschdedule ? '80%' : '90%' },
+          ]}
+        >
           {!!overallSlotsArray && overallSlotsArray?.length != 0 ? (
             <FlatList
               bounces={false}
@@ -435,9 +448,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
         style={[
           styles.dateContentStyle,
           {
-            backgroundColor: isSelected
-              ? theme.colors.APP_GREEN
-              : theme.colors.DEFAULT_BACKGROUND_COLOR,
+            backgroundColor: isSelected ? theme.colors.APP_GREEN : theme.colors.SLOT_GRAY,
           },
         ]}
       >
@@ -486,7 +497,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
               padding: 10,
             }}
           >
-            {monthHeading}
+            {monthHeader}
           </Text>
           <View style={styles.dateArrayContainer}>
             {newDateArray?.map((item, index) => (
@@ -806,7 +817,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  slotsList: { marginBottom: 20, marginTop: 10 },
+  slotsList: { marginBottom: 20, marginTop: 10, backgroundColor: colors.WHITE },
   slotsView: { marginBottom: 30, flex: 1 },
 });
 

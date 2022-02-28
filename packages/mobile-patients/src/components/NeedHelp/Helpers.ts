@@ -13,6 +13,6 @@ export const getHelpSectionQueries = async (apolloClient: ApolloClient<object>) 
     variables: {},
     fetchPolicy: 'no-cache',
   });
-  return data?.getHelpSectionQueries?.needHelpQueries as HelpSectionQuery[];
+  return data?.getHelpSectionQueriesv2?.needHelpQueries as HelpSectionQuery[];
 };
 

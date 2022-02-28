@@ -11,6 +11,7 @@ import {
   Image,
   ImageBackground,
   Linking,
+  Dimensions,
 } from 'react-native';
 import {
   NavigationScreenProps,
@@ -70,6 +71,7 @@ import { postCircleWEGEvent } from '@aph/mobile-patients/src/components/CirclePl
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import AsyncStorage from '@react-native-community/async-storage';
 
+const screenWidth = Dimensions.get('window').width;
 const styles = StyleSheet.create({
   cardStyle: {
     ...theme.viewStyles.cardViewStyle,
@@ -656,7 +658,9 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
 
   const getEllipseBulletPoint = (text: string, index: number, isExpired: boolean) => {
     return (
-      <View style={[styles.ellipseBulletContainer, index === 2 ? { width: '75%' } : {}]}>
+      <View
+        style={[styles.ellipseBulletContainer, index === 2 ? { width: screenWidth / 1.7 } : {}]}
+      >
         <EllipseBulletPoint style={styles.ellipseBullet} />
         <Text
           style={theme.viewStyles.text('B', 13, isExpired ? '#979797' : '#007C9D', 1, 20, 0.35)}
@@ -685,7 +689,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
         >
           {isCanUpgradeToPlan ? `Key Benefits you get...` : `Benefits Available`}
         </Text>
-        {benefits.slice(0, 3).map((value, index) => {
+        {benefits?.slice(0, 3)?.map((value, index) => {
           return getEllipseBulletPoint(value.headerContent, index, isExpired);
         })}
         <Text
@@ -1075,6 +1079,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
               {!!hdfcUserSubscriptions?._id ||
               !!corporateSubscriptions?.length ||
               !!consultPlan?.length ||
+              circleSubscription ||
               isCircleExpired ? (
                 <Text style={styles.currentBenefits}>CURRENT BENEFITS</Text>
               ) : (

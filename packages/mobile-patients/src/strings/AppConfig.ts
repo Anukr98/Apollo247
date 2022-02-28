@@ -55,7 +55,7 @@ const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
 const tatTokenDev = 'GWjKtviqHa4r4kiQmcVH';
 const tatTokenProd = '8nBs8ucvbqlCGShwDr7oHv0mePqwhE';
 const apolloProdBaseUrl = 'https://magento.apollo247.com';
-const apolloUatBaseUrl = 'https://m226api.apollopharmacy.in';
+const apolloUatBaseUrl = 'https://uat.apollopharmacy.in';
 const tagalysBaseUrl = 'https://api-r1.tagalys.com/v1';
 const drupalAuthTokenDev = 'Basic Y29udGVudDp3YWxtYXJ0TlVUdG9reW9IZWlzdA==';
 const drupalAuthTokenProd = 'Basic Y29udGVudDp3YWxtYXJ0TlVUdG9reW9IZWlzdA==';
@@ -308,6 +308,7 @@ const appStaticVariables = {
         ctaPhoneNumber: '040-4821-3009',
         ctaText: 'Call to Order',
         ctaItemIds: [2446],
+        ctaDisplayHrsArray: [8,9,10,11]
       },
     ],
     ctaDetailsDefault: {
@@ -315,8 +316,15 @@ const appStaticVariables = {
       ctaDelaySeconds: 3,
       ctaPhoneNumber: '040-4821-3322',
       ctaText: 'Call to Order',
+      ctaItemIds: [2446],
+      ctaDisplayHrsArray: [8,9,10,11]
     },
   },
+  DIAGNOSTICS_SHOW_UPLOAD_PRESCRIPTION_SECTION: true,
+  DIAGNOSTICS_HOME_SINGLE_ITEM: {
+    id: "2446",
+  },
+  DIAGNOSTICS_HOME_PAGE_BANNER_HEIGHT: 160,
   DIAGNOSTICS_PHLEBO_CALL_NUMBER: '08046807674',
   DIAGNOSTICS_COVID_ITEM_IDS: [2446],
   FREE_CONSULT_MESSAGE: {
@@ -335,6 +343,8 @@ const appStaticVariables = {
     frequentlyBrought: string.diagnostics.frequentlyBrought,
     topBookedTests: string.diagnostics.topBookedTests,
     similarPackages: string.diagnostics.similarPackages,
+    topPackages: "Top Packages with ",
+    relatedPackages : string.diagnosticsDetails.relatedPackages
   },
   DeliveryIn_TAT_Text: 'Express Delivery',
   WHATSAPP_TO_ORDER: {
@@ -372,7 +382,8 @@ const appStaticVariables = {
       phoneNumber: string.diagnostics.uploadPrescriptionWhatsapp.whatsappPhoneNumber,
     },
   ],
-  DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER_TEXT: string.diagnosticsCartPage.reviewPagePolicyText
+  DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER_TEXT: string.diagnosticsCartPage.reviewPagePolicyText,
+  DIAGNOSTICS_SHOW_HEALTH_CREDITS: true 
 };
 
 const DEV_top_specialties = [
@@ -462,6 +473,56 @@ const QA_top_specialties = [
     speciality_order: '3',
     speciality_name: 'Urology',
     gender: 'MALE',
+  },
+];
+
+const HOME_CTA_CONFIG_DEFAULT = [
+  {
+    id: 1,
+    title: 'Buy Medicines and Essentials',
+    sub_title: "Health Credits Available'",
+    subtitle_image_tint_color: '',
+    subtitle_card_color: '#EAF6FF',
+    subtitle_color: '#2D6E85',
+    action_deeplink: '',
+  },
+  {
+    id: 2,
+    title: 'Book Lab Tests',
+    sub_title: 'Upto 60% Off',
+    subtitle_image_tint_color: '',
+    subtitle_card_color: '',
+    subtitle_color: '#A05D1F',
+    action_deeplink: '',
+  },
+  {
+    id: 3,
+    title: 'Consult a Doctor',
+    sub_title: 'Consult in 15 mins',
+    subtitle_image_tint_color: '',
+    subtitle_card_color: '#E6FFFD',
+    subtitle_color: '#1FA098',
+    action_deeplink: '',
+  },
+  {
+    id: 4,
+    title: 'Book Doctor by Symptoms',
+    action_deeplink: '',
+  },
+  {
+    id: 5,
+    title: 'Book Covid Vaccination',
+    action_deeplink: '',
+  },
+  {
+    id: 6,
+    title: 'Manage Diabetes',
+    action_deeplink: '',
+  },
+  {
+    id: 7,
+    title: 'View Health Records',
+    action_deeplink: '',
   },
 ];
 
@@ -566,17 +627,18 @@ export const ReturnOrderSubReason = [
 const PharmaApiConfig = {
   dev: {
     TRACK_EVENT: [`${tagalysBaseUrl}/analytics/events/track`],
-    MED_SEARCH: [`${apolloProdBaseUrl}/popcsrchprd_api.php`, pharmaToken201],
-    GET_SKU: [`${apolloProdBaseUrl}/popcsrchsku_api.php`, pharmaToken201],
-    MED_DETAIL: [apolloProdBaseUrl, pharmaToken201],
-    MED_SEARCH_SUGGESTION: [`${apolloProdBaseUrl}/popcsrchss_api.php`, pharmaToken201],
-    STORES_LIST: [apolloProdBaseUrl, pharmaToken201],
+    MED_SEARCH: [`${apolloUatBaseUrl}/popcsrchprd_api.php`, pharmaToken201],
+    GET_SKU: [`${apolloUatBaseUrl}/popcsrchsku_api.php`, pharmaToken201],
+    MED_DETAIL: [apolloUatBaseUrl, pharmaToken201],
+    MED_SEARCH_SUGGESTION: [`${apolloUatBaseUrl}/popcsrchss_api.php`, pharmaToken201],
+    STORES_LIST: [apolloUatBaseUrl, pharmaToken201],
     GET_STORE_INVENTORY: [
       `https://online.apollopharmacy.org/TAT/Apollo/GetStoreInventory`,
       pharmaTokenYXV,
     ],
-    PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
-    MED_CART_ITEMS_DETAILS: [`${apolloProdBaseUrl}/popcscrchcart_api.php`, pharmaToken201],
+    PIN_SERVICEABILITY: [apolloUatBaseUrl, pharmaToken201],
+    MED_CART_ITEMS_DETAILS: [`${apolloUatBaseUrl}/popcscrchcart_api.php`, pharmaToken201],
+    GET_LOCATION_CODE: [`${apolloUatBaseUrl}/v1/srcode/`, pharmaToken201],
     IMAGES_BASE_URL: [`https://newassets.apollo247.com/pub/media`],
     SPECIAL_OFFERS_IMAGES_BASE_URL: [`https://newassets.apollo247.com/pub/media`],
     COUPON_IMAGES_BASE_URL: [`https://newassets.apollo247.com`],
@@ -588,19 +650,19 @@ const PharmaApiConfig = {
       'https://online.apollopharmacy.org/UATTAT/Apollo/GetHeaderTat',
       pharmaTokenYXV,
     ],
-    GET_SUBSTITUTES: [`${apolloProdBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
-    PRODUCTS_BY_CATEGORY: [`${apolloProdBaseUrl}/categoryproducts_api.php`, pharmaToken201],
-    MEDICINE_PAGE: [`${apolloProdBaseUrl}/apollo_24x7_api.php?version=v2`, pharmaToken201],
-    BOUGHT_TOGETHER: [`${apolloProdBaseUrl}/popsrchboughttogether_api.php`, pharmaToken201],
+    GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
+    PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/categoryproducts_api.php`, pharmaToken201],
+    MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php?version=v2`, pharmaToken201],
+    BOUGHT_TOGETHER: [`${apolloUatBaseUrl}/popsrchboughttogether_api.php`, pharmaToken201],
     SPECIAL_OFFERS_PAGE_WIDGETS: ['https://uatcms.apollo247.com/api/special-offer/getwidget'],
     SPECIAL_OFFERS_PAGE_COUPONS: ['https://uatvalidcoupon.apollo247.com/offers'],
-    SPECIAL_OFFERS_CATEGORY: [`${apolloProdBaseUrl}/specialoffercategory_api.php`, pharmaToken201],
-    SPECIAL_OFFERS_BRANDS: [`${apolloProdBaseUrl}/specialofferbrand_api.php`, pharmaToken201],
+    SPECIAL_OFFERS_CATEGORY: [`${apolloUatBaseUrl}/specialoffercategory_api.php`, pharmaToken201],
+    SPECIAL_OFFERS_BRANDS: [`${apolloUatBaseUrl}/specialofferbrand_api.php`, pharmaToken201],
     SPECIAL_OFFERS_BRANDS_PRODUCTS: [
-      `${apolloProdBaseUrl}/popcsrchspecialoffer_api.php`,
+      `${apolloUatBaseUrl}/popcsrchspecialoffer_api.php`,
       pharmaToken201,
     ],
-    ALL_BRANDS: [`${apolloProdBaseUrl}/allbrands_api.php`, pharmaToken201],
+    ALL_BRANDS: [`${apolloUatBaseUrl}/allbrands_api.php`, pharmaToken201],
     GET_TEST_PACKAGES: [
       `http://uatlims.apollohl.in/ApolloLive/AskApollo.aspx?cmd=getpackagedata`,
       testApiCredentialsDev,
@@ -630,6 +692,7 @@ const PharmaApiConfig = {
     ],
     PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
     MED_CART_ITEMS_DETAILS: [`${apolloProdBaseUrl}/popcscrchcart_api.php`, pharmaToken201],
+    GET_LOCATION_CODE: [`${apolloProdBaseUrl}/v1/srcode/`, pharmaToken201],
     IMAGES_BASE_URL: [`https://newassets.apollo247.com/pub/media`],
     SPECIAL_OFFERS_IMAGES_BASE_URL: [`https://newassets.apollo247.com/pub/media`],
     COUPON_IMAGES_BASE_URL: [`https://newassets.apollo247.com`],
@@ -697,6 +760,7 @@ const ConfigurationDev = {
   DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: DEV_top_specialties,
+  HOME_CTA_CONFIG: HOME_CTA_CONFIG_DEFAULT,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
@@ -759,6 +823,7 @@ const ConfigurationQA = {
   DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top_specialties,
+  HOME_CTA_CONFIG: HOME_CTA_CONFIG_DEFAULT,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
@@ -790,6 +855,7 @@ const ConfigurationQA = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  PATIENT_VITALS: 'https://aph-staging-web-patients.apollo247.com/patient-vitals',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://aph-staging-web-patients.apollo247.com',
@@ -822,6 +888,7 @@ const ConfigurationQA2 = {
   DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top_specialties,
+  HOME_CTA_CONFIG: HOME_CTA_CONFIG_DEFAULT,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
@@ -851,6 +918,7 @@ const ConfigurationQA2 = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  PATIENT_VITALS: 'https://qapatients.apollo247.com/patient-vitals',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://qapatients.apollo247.com',
@@ -883,6 +951,7 @@ const ConfigurationQA3 = {
   DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top_specialties,
+  HOME_CTA_CONFIG: HOME_CTA_CONFIG_DEFAULT,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
@@ -913,6 +982,7 @@ const ConfigurationQA3 = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  PATIENT_VITALS: 'https://qathreepatients.apollo247.com/patient-vitals',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://qathreepatients.apollo247.com',
@@ -944,6 +1014,7 @@ const ConfigurationQA5 = {
   DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top_specialties,
+  HOME_CTA_CONFIG: HOME_CTA_CONFIG_DEFAULT,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
@@ -976,6 +1047,7 @@ const ConfigurationQA5 = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  PATIENT_VITALS: 'https://qa5patients.apollo247.com/patient-vitals',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://qa5patients.apollo247.com',
@@ -1007,6 +1079,7 @@ const ConfigurationQA6 = {
   DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top_specialties,
+  HOME_CTA_CONFIG: HOME_CTA_CONFIG_DEFAULT,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
@@ -1038,6 +1111,7 @@ const ConfigurationQA6 = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  PATIENT_VITALS: 'https://qa6patients.apollo247.com/patient-vitals',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://qa6patients.apollo247.com',
@@ -1070,6 +1144,7 @@ const ConfigurationVAPT = {
   DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top_specialties,
+  HOME_CTA_CONFIG: HOME_CTA_CONFIG_DEFAULT,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
@@ -1100,6 +1175,7 @@ const ConfigurationVAPT = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  PATIENT_VITALS: 'http://stagingpatients.apollo247.com/patient-vitals',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://stagingpatients.apollo247.com',
@@ -1131,6 +1207,7 @@ const ConfigurationProd = {
   DOCUMENT_BASE_URL: 'https://prodaphstorage.blob.core.windows.net/prodaphstorage/prodaphstorage/', //Production
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: top_specialties,
+  HOME_CTA_CONFIG: HOME_CTA_CONFIG_DEFAULT,
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
   ...Apollo247Config.prod,
@@ -1160,6 +1237,7 @@ const ConfigurationProd = {
   baseUrl: 'https://www.apollo247.com',
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE: 'https://newassets.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  PATIENT_VITALS: 'https://www.apollo247.com/patient-vitals',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://apollo247.com',
@@ -1192,6 +1270,7 @@ const ConfigurationPERFORM = {
   DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: DEV_top_specialties,
+  HOME_CTA_CONFIG: HOME_CTA_CONFIG_DEFAULT,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
@@ -1223,6 +1302,7 @@ const ConfigurationPERFORM = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  PATIENT_VITALS: 'https://aph-staging-web-patients.apollo247.com/patient-vitals',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://perfpatients.apollo247.com',
@@ -1255,6 +1335,7 @@ const ConfigurationDevReplica = {
   DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top_specialties,
+  HOME_CTA_CONFIG: HOME_CTA_CONFIG_DEFAULT,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
@@ -1286,6 +1367,7 @@ const ConfigurationDevReplica = {
   CIRCLE_PLAN_PRESELECTED: false,
   PROHEALTH_BANNER_IMAGE:
     'https://newassets-test.apollo247.com/images/banners/ProHealthAppLanding.jpg',
+  PATIENT_VITALS: 'https://aph-staging-web-patients.apollo247.com/patient-vitals',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://devpatients.apollo247.com',
@@ -1431,12 +1513,14 @@ export const SequenceForDiagnosticStatus = [
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
   DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED,
+  DIAGNOSTIC_ORDER_STATUS.CANCELLATION_REQUESTED,
 ];
 
 export const DIAGNOSTIC_ORDER_FAILED_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
+  DIAGNOSTIC_ORDER_STATUS.CANCELLATION_REQUESTED,
 ];
 export const DIAGNOSTIC_ORDER_FOR_PREPDATA = [
   DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED,
@@ -1525,6 +1609,7 @@ export const DIAGNOSTIC_VERTICAL_STATUS_TO_SHOW = [
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   REFUND_STATUSES.PENDING,
   REFUND_STATUSES.SUCCESS,
+  DIAGNOSTIC_ORDER_STATUS.CANCELLATION_REQUESTED,
 ];
 
 export const DIAGNOSTIC_HORIZONTAL_STATUS_TO_SHOW = [
@@ -1549,6 +1634,7 @@ export const DIAGNOSTIC_FAILURE_STATUS_ARRAY = [
   DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.CANCELLATION_REQUESTED,
 ];
 
 export const DIAGNOSTIC_FULLY_DONE_STATUS_ARRAY = [
@@ -1583,9 +1669,10 @@ export const DIAGNOSTIC_STATUS_BEFORE_SUBMITTED = [
   DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED_REQUEST,
+  DIAGNOSTIC_ORDER_STATUS.CANCELLATION_REQUESTED,
 ];
 
-export const DIAGNOSITC_PHELBO_TRACKING_STATUS = [
+export const DIAGNOSTIC_PHELBO_TRACKING_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
   DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED,
 ];
@@ -1606,6 +1693,18 @@ export const DIAGNOSTIC_SUB_STATUS_TO_SHOW = [
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
 ];
+
+export const ELIGIBLE_HC_VERTICALS = ['pharma', 'diagnostics'];
+
+enum DiagnosticBannerVisible {
+  APP = 'app',
+  WEB = 'web',
+  Both = 'both',
+}
+
+export const DIANOSTIC_BANNER_VISIBLE_ARRAY = [
+  DiagnosticBannerVisible.APP, DiagnosticBannerVisible.Both
+]
 
 export const TestsNewFeedbackData = {
   options: [
@@ -1798,6 +1897,7 @@ export const BLACK_LIST_CANCEL_STATUS_ARRAY = [
   'ORDER_CANCELLED_AFTER_REGISTRATION',
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
+  DIAGNOSTIC_ORDER_STATUS.CANCELLATION_REQUESTED,
 ];
 
 export const BLACK_LIST_RESCHEDULE_STATUS_ARRAY = [
@@ -1818,6 +1918,14 @@ export const BLACK_LIST_RESCHEDULE_STATUS_ARRAY = [
   'ORDER_CANCELLED_AFTER_REGISTRATION',
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
+  DIAGNOSTIC_ORDER_STATUS.CANCELLATION_REQUESTED,
+];
+
+export const DIAGNOSTIC_ORDER_CANCELLED_STATUS = [
+  DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
+  DIAGNOSTIC_ORDER_STATUS.CANCELLATION_REQUESTED,
+  'ORDER_CANCELLED_AFTER_REGISTRATION',
+  DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED_REQUEST,
 ];
 
 export const DIAGNOSTIC_ONLINE_PAYMENT_STATUS = [
@@ -1838,6 +1946,13 @@ export const DIAGNOSTIC_CALL_TO_ORDER_CTA = [
   CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL,
   CALL_TO_ORDER_CTA_PAGE_ID.TESTLISTING,
   CALL_TO_ORDER_CTA_PAGE_ID.TESTORDERSUMMARY,
+];
+
+export const DIAGNOSTIC_SHOW_RESCHEDULE_CANCEL_ARRAY = [
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_PLACED,
 ];
 
 type SpecialitiesType = {

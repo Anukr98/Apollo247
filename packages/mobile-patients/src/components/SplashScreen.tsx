@@ -52,6 +52,7 @@ import {
   checkUniversalURL,
   removeNullFromObj,
   filterAppLaunchSoruceAttributesByKey,
+  postOfferCardClickEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -193,7 +194,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const [springValue, setSpringAnimation] = useState(new Animated.Value(0));
   const CONST_SPLASH_LOADER = [string.splash.CAPSULE, string.splash.SYRINGE, string.splash.STETHO];
   const [selectedAnimationIndex, setSelectedAnimationIndex] = useState(0);
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const {
     setReferralGlobalData,
     setReferralMainBanner,
@@ -560,10 +561,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         fetchPolicy: 'no-cache',
       });
       let allowPayment = true;
+      // filtering diag orders whose allowPayment is set as false
       const diagOrder = response?.data?.getOrderInternal?.DiagnosticsPaymentDetails?.ordersList?.find(
-        (item: any) => item?.allowPayment
+        (item: any) => !item?.allowPayment
       );
-      allowPayment = !!diagOrder ? diagOrder?.allowPayment : true;
+      // if there is atleast one order whose allowpayment is set as false, then we shouldn't allow the payment
+      allowPayment = !!diagOrder ? false : true;
       if (allowPayment) {
         const paymentStatus = response?.data?.getOrderInternal?.payment_status;
         const allowedStatuses = ['PAYMENT_NOT_INITIATED', 'TXN_FAILURE', 'COD_COMPLETE'];
@@ -590,18 +593,19 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         }
       } else {
         navigateToHome(props.navigation);
-        showPaymentAlert();
+        showPaymentAlert(diagOrder?.paymentNotAllowedErrorString);
       }
     } catch (error) {
       navigateToHome(props.navigation);
     }
   };
 
-  const showPaymentAlert = () => {
+  const showPaymentAlert = (msg: string) => {
     showAphAlert!({
       title: 'Uh oh! :(',
-      description:
-        'Payment can’t be made for this order. Please check my order section for more details.',
+      description: !!msg
+        ? msg
+        : 'Payment can’t be made for this order. Please check my order section for more details.',
     });
   };
 
@@ -786,6 +790,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
           channel: 'Organic',
           is_first_launch: isFirstLaunch,
+          'Nav Src': 'Organic',
         });
       }
     } catch (error) {}
@@ -968,6 +973,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setPharmaHomeNudgeMessage,
     setPharmaCartNudgeMessage,
     setPharmaPDPNudgeMessage,
+    setTatDecidedPercentage,
+    circleSubscriptionId,
   } = useShoppingCart();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
@@ -1303,6 +1310,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'DeliveryIn_TAT_Text_QA',
       PROD: 'DeliveryIn_TAT_Text_PROD',
     },
+    Tat_Decided_Percentage: {
+      QA: 'Tat_Decided_Percentage_QA',
+      PROD: 'Tat_Decided_Percentage_PROD',
+    },
     Radiology_Url: {
       QA: 'QA_Radiology_Url',
       PROD: 'Radiology_Url',
@@ -1348,8 +1359,28 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       PROD: 'REFERRER_FAQS_DATA',
     },
     DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER: {
-      QA: 'QA_Diagnostic_Review_Disclaimer',
-      PROD: 'Diagnostic_Review_Disclaimer',
+      QA: 'QA_Diagnostic_Review_Disclaimer_New',
+      PROD: 'Diagnostic_Review_Disclaimer_New',
+    },
+    Diagnostics_Show_Upload_Prescription_Section: {
+      QA: 'QA_Diagnostics_Show_Upload_Prescription_Section',
+      PROD: 'Diagnostics_Show_Upload_Prescription_Section',
+    },
+    Diagnostics_Home_Single_Item: {
+      QA: 'QA_Diagnostics_Home_Single_Item',
+      PROD: 'Diagnostics_Home_Single_Item',
+    },
+    Diagnostics_Home_Page_Banner_Height: {
+      QA: 'QA_Diagnostics_Home_Page_Banner_Height',
+      PROD: 'Diagnostics_Home_Page_Banner_Height',
+    },
+    Diagnostics_Show_Health_Credits: {
+      QA: 'QA_Diagnostic_Show_HC',
+      PROD: 'Diagnostic_Show_HC',
+    },
+    HOME_CTA_CONFIG: {
+      QA: 'QA_HOME_CTA_CONFIG',
+      PROD: 'PROD_HOME_CTA_CONFIG',
     },
   };
 
@@ -1390,6 +1421,30 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     updateAppConfig(appConfigKey, value);
   };
 
+  const getNotchText = (expired_at: string, notch_text: string) => {
+    let textForNotch = '';
+    try {
+      const expiryTime = new Date(expired_at).getTime();
+      const now = new Date().getTime();
+      const diff: number = expiryTime - now;
+      let ms = diff;
+      const dd = Math.floor(ms / 1000 / 3600 / 24);
+      ms -= dd * 1000 * 60 * 60 * 24;
+      const hh = Math.floor(ms / 1000 / 3600);
+      ms -= hh * 1000 * 60 * 60;
+      const mm = Math.floor(ms / 1000 / 60);
+      textForNotch =
+        diff > 0 && hh > 0
+          ? notch_text?.replace('{time_till_expiry}', `${hh} Hrs ${mm} Min`)
+          : diff > 0 && hh === 0
+          ? notch_text?.replace('{time_till_expiry}', `${mm} Min`)
+          : 'Offer Expired';
+    } catch (e) {
+      CommonBugFender('csk error', e);
+    }
+    return textForNotch;
+  };
+
   const getOffers = async () => {
     setOffersListLoading && setOffersListLoading(true);
     const authToken: string = await validateAndReturnAuthToken();
@@ -1407,6 +1462,19 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       if (offers && offers.length > 0) {
         setOffersList && setOffersList(offers);
         appGlobalCache.set('offersList', JSON.stringify(offers));
+        const offerToLog = offers?.[0];
+        const textForNotch = getNotchText(offerToLog?.expired_at, offerToLog?.notch_text?.text);
+        postOfferCardClickEvent(
+          offerToLog,
+          '1',
+          textForNotch == 'Offer Expired',
+          allCurrentPatients,
+          currentPatient,
+          textForNotch,
+          !!circleSubscriptionId,
+          offers?.length,
+          'loaded'
+        );
       } else if (offers && offers.length === 0) {
         appGlobalCache.remove('offersList');
       }
@@ -1516,6 +1584,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         config.getString(key)
       );
       setPdpDisclaimerMessage?.(disclaimerMessagePdp);
+
+      const tatDecidedPercentage = getRemoteConfigValue('Tat_Decided_Percentage', (key) =>
+        config.getNumber(key)
+      );
+      setTatDecidedPercentage?.(tatDecidedPercentage);
 
       setAppConfig(
         'Min_Value_For_Pharmacy_Free_Delivery',
@@ -1785,7 +1858,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'DIAGNOSTICS_ENABLE_UPLOAD_PRESCRIPTION_VIA_WHATSAPP',
         (key) => config.getBoolean(key)
       );
-
       setAppConfig(
         'Diagnostics_UploadPrescription_Config',
         'DIAGNOSTICS_UPLOAD_PRESCRIPTION',
@@ -1798,6 +1870,35 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER',
         'DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER_TEXT',
         (key) => config.getString(key)
+      );
+      setAppConfig(
+        'Diagnostics_Show_Upload_Prescription_Section',
+        'DIAGNOSTICS_SHOW_UPLOAD_PRESCRIPTION_SECTION',
+        (key) => config.getBoolean(key)
+      );
+
+      setAppConfig(
+        'Diagnostics_Home_Page_Banner_Height',
+        'DIAGNOSTICS_HOME_PAGE_BANNER_HEIGHT',
+        (key) => config.getNumber(key)
+      );
+
+      setAppConfig(
+        'Diagnostics_Home_Single_Item',
+        'DIAGNOSTICS_HOME_SINGLE_ITEM',
+        (key) =>
+          JSON.parse(config.getString(key) || 'null') ||
+          AppConfig.Configuration.DIAGNOSTICS_HOME_SINGLE_ITEM
+      );
+
+      setAppConfig('Diagnostics_Show_Health_Credits', 'DIAGNOSTICS_SHOW_HEALTH_CREDITS', (key) =>
+        config.getBoolean(key)
+      );
+
+      setAppConfig(
+        'HOME_CTA_CONFIG',
+        'HOME_CTA_CONFIG',
+        (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.HOME_CTA_CONFIG
       );
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
@@ -1831,49 +1932,55 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       (key) =>
         (config.getString(key) && JSON.parse(config.getString(key))) || string.refAndEarn.global
     );
-    setReferralGlobalData?.(globalData);
+    setReferralGlobalData?.(globalData || string.refAndEarn.global);
     const mainBannerContent = getRemoteConfigValue(
       'REFERRER_MAIN_BANNER_CONTENT',
       (key) =>
         (config.getString(key) && JSON.parse(config.getString(key))) ||
         string.refAndEarn.referralMainBanner
     );
-    setReferralMainBanner?.(mainBannerContent);
+    setReferralMainBanner?.(mainBannerContent || string.refAndEarn.referralMainBanner);
     const shareReferrerLinkScreenContent = getRemoteConfigValue(
       'SHARE_REFERRER_LINK_CONENT',
       (key) =>
         (config.getString(key) && JSON.parse(config.getString(key))) ||
         string.refAndEarn.shareReferrerLink
     );
-    setShareReferrerLinkData?.(shareReferrerLinkScreenContent);
+    setShareReferrerLinkData?.(
+      shareReferrerLinkScreenContent || string.refAndEarn.shareReferrerLink
+    );
     const yourRewardScreenContent = getRemoteConfigValue(
       'YOUR_REWARD_SCREEN_DATA_CONTENT',
       (key) =>
         (config.getString(key) && JSON.parse(config.getString(key))) ||
         string.refAndEarn.yourRewards
     );
-    setYourRewardsScreenData?.(yourRewardScreenContent);
+    setYourRewardsScreenData?.(yourRewardScreenContent || string.refAndEarn.yourRewards);
     const congratulationsScreenContent = getRemoteConfigValue(
       'REFERRER_CONGRATULATIONS_PAGE',
       (key) =>
         (config.getString(key) && JSON.parse(config.getString(key))) ||
         string.refAndEarn.congratulationPage
     );
-    setCongratulationPageData?.(congratulationsScreenContent);
+    setCongratulationPageData?.(
+      congratulationsScreenContent || string.refAndEarn.congratulationPage
+    );
     const termsAndConditonsScreenContent = getRemoteConfigValue(
       'REFERRER_TERMS_AND_CONDITION_DATA',
       (key) =>
         (config.getString(key) && JSON.parse(config.getString(key))) ||
         string.refAndEarn.refererTermsAndCondition
     );
-    setRefererTermsAndConditionData?.(termsAndConditonsScreenContent);
+    setRefererTermsAndConditionData?.(
+      termsAndConditonsScreenContent || string.refAndEarn.refererTermsAndCondition
+    );
     const faqScreenContent = getRemoteConfigValue(
       'REFERRER_FAQS_DATA',
       (key) =>
         (config.getString(key) && JSON.parse(config.getString(key))) ||
         string.refAndEarn.refererFAQs
     );
-    setRefererFAQsData?.(faqScreenContent);
+    setRefererFAQsData?.(faqScreenContent || string.refAndEarn.refererFAQs);
   };
 
   const showUpdateAlert = (mandatory: boolean) => {

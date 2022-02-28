@@ -63,6 +63,7 @@ import {
   OrderVerticals,
   PLAN_ID,
   PLAN,
+  PlanPurchaseType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import moment from 'moment';
@@ -469,6 +470,9 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
           HC_used: 0,
         },
         transaction_date_time: new Date().toISOString(),
+        source_meta_data: {
+          purchase_type: isRenew ? PlanPurchaseType.renew : PlanPurchaseType.first_time,
+        },
       },
     };
     return client.mutate<CreateUserSubscription, CreateUserSubscriptionVariables>({
@@ -757,7 +761,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
             KNOW MORE
           </Text>
         </TouchableOpacity>
-        {!isModal && defaultCirclePlan && <View style={styles.seperatorLine} />}
+        {!isModal && defaultCirclePlan ? <View style={styles.seperatorLine} /> : null}
         {!isModal && defaultCirclePlan ? (
           <TouchableOpacity style={styles.knowMoreBtn} onPress={() => removeAutoAddedPlan()}>
             <Text style={{ ...theme.viewStyles.text('SB', 13, theme.colors.BORDER_BOTTOM_COLOR) }}>

@@ -17,8 +17,8 @@ export const QuantityButton: React.FC<QuantityButtonProps> = (props) => {
           {
             width: 18,
             height: 18,
-            margin: 16,
-            marginRight: props.text == '+' ? 0 : 16,
+            margin: 11,
+            marginRight: props.text == '+' ? 0 : 11,
             borderWidth: 1,
             borderColor: '#fc9916',
             justifyContent: 'center',

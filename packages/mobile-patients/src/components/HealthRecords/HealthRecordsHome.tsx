@@ -90,7 +90,7 @@ import { searchPHRApiWithAuthToken } from '@aph/mobile-patients/src/helpers/apiC
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationEvents, NavigationScreenProps } from 'react-navigation';
 import {
   getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_healthChecks_response,
   getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_labResults_response,
@@ -108,7 +108,6 @@ import { renderHealthRecordShimmer } from '@aph/mobile-patients/src/components/u
 import { useShoppingCart } from '../ShoppingCartProvider';
 import { getUniqueId } from 'react-native-device-info';
 import {
-  getClinicalDocuments,
   getClinicalDocuments,
   getClinicalDocumentsVariables,
   getClinicalDocuments_getClinicalDocuments_response_fileInfoList,
@@ -449,7 +448,12 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [clinicalDocs, setClinicalDocs] = useState<any>([]);
   const client = useApolloClient();
   const { getPatientApiCall } = useAuth();
-  const { phrNotificationData, setPhrNotificationData } = useAppCommonData();
+  const {
+    phrNotificationData,
+    setPhrNotificationData,
+    tabRouteJourney,
+    setTabRouteJourney,
+  } = useAppCommonData();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
   const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
@@ -491,6 +495,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     currentPatient?.patientMedicalHistory?.weight !== 'Not Recorded';
 
   const { circleSubscriptionId } = useShoppingCart();
+  let dateOfBirth = g(currentPatient, 'dateOfBirth');
 
   useEffect(() => {
     removeObjectNullUndefinedProperties(currentPatient);
@@ -673,8 +678,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           'healthChecks',
           'response'
         );
-        loadRecordsEvent.current &&
-          tabsClickedCleverTapEvent(CleverTapEventName.PHR_LOAD_HEALTH_RECORDS);
+
         loadRecordsEvent.current = false;
         setLabResults(labResultsData);
         setPrescriptions(prescriptionsData);
@@ -803,14 +807,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     });
   }, [labResults, healthChecksNew]);
 
-  const tabsClickedCleverTapEvent = (cleverTapEventName: CleverTapEventName) => {
-    const eventAttributes: CleverTapEvents[CleverTapEventName.MEDICAL_RECORDS] = {
-      ...removeObjectNullUndefinedProperties(currentPatient),
-    };
-    postWebEngageEvent(cleverTapEventName, eventAttributes);
-    postCleverTapEvent(cleverTapEventName, eventAttributes);
-  };
-
   const updateMedicalParametersCleverTapEvents = (
     cleverTapEventName: CleverTapEventName,
     type: string,
@@ -821,8 +817,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       value,
       ...removeObjectNullUndefinedProperties(currentPatient),
     };
-    postWebEngageEvent(cleverTapEventName, eventAttributes);
-    postCleverTapEvent(cleverTapEventName, eventAttributes);
   };
 
   const updateMedicalParameters = (height: string, weight: string, bloodGroup: string) => {
@@ -908,7 +902,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       'Page name': 'Health Record',
       'Circle Member': !!circleSubscriptionId ? 'True' : 'False',
     };
-    postCleverTapEvent(CleverTapEventName.HOME_ICON_CLICKED, eventAttributes);
   };
 
   const renderProfileDetailsView = () => {
@@ -1100,7 +1093,13 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     const onPressListItem = () => {
       switch (id) {
         case 1:
-          tabsClickedCleverTapEvent(CleverTapEventName.PHR_CLICK_DOCTOR_CONSULTATIONS);
+          let doctorConsultationAttributes = {
+            'Nav src': 'Doctor Consultations',
+            'Patient UHID': g(currentPatient, 'uhid'),
+            'Patient gender': g(currentPatient, 'gender'),
+            'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+          };
+          postCleverTapEvent(CleverTapEventName.PHR_CLICK_RECORD, doctorConsultationAttributes);
           props.navigation.navigate(AppRoutes.ConsultRxScreen, {
             consultArray: arrayValues,
             prescriptionArray: prescriptions,
@@ -1111,7 +1110,13 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           });
           break;
         case 2:
-          tabsClickedCleverTapEvent(CleverTapEventName.PHR_CLICK_TEST_REPORTS);
+          let testReportAttributes = {
+            'Nav src': 'Test Reports',
+            'Patient UHID': g(currentPatient, 'uhid'),
+            'Patient gender': g(currentPatient, 'gender'),
+            'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+          };
+          postCleverTapEvent(CleverTapEventName.PHR_CLICK_RECORD, testReportAttributes);
           props.navigation.navigate(AppRoutes.TestReportScreen, {
             testReportsData: testAndHealthCheck,
             authToken: prismAuthToken,
@@ -1121,41 +1126,78 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           });
           break;
         case 3:
-          tabsClickedCleverTapEvent(CleverTapEventName.PHR_CLICK_HOSPITALIZATIONS);
+          let hospitalizationAttributes = {
+            'Nav src': 'Hospitalization',
+            'Patient UHID': g(currentPatient, 'uhid'),
+            'Patient gender': g(currentPatient, 'gender'),
+            'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+          };
+          postCleverTapEvent(CleverTapEventName.PHR_CLICK_RECORD, hospitalizationAttributes);
           props.navigation.navigate(AppRoutes.HospitalizationScreen, {
             authToken: prismAuthToken,
             onPressBack: onBackArrowPressed,
           });
           break;
         case 4:
-          tabsClickedCleverTapEvent(CleverTapEventName.PHR_CLICK_HEALTH_CONDITIONS);
+          let HealthConditionScreenAttributes = {
+            'Nav src': 'Health Condition',
+            'Patient UHID': g(currentPatient, 'uhid'),
+            'Patient gender': g(currentPatient, 'gender'),
+            'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+          };
+          postCleverTapEvent(CleverTapEventName.PHR_CLICK_RECORD, HealthConditionScreenAttributes);
           props.navigation.navigate(AppRoutes.HealthConditionScreen, {
             authToken: prismAuthToken,
             onPressBack: onBackArrowPressed,
           });
           break;
         case 5:
-          tabsClickedCleverTapEvent(CleverTapEventName.PHR_CLICK_VACCINATION);
+          let vaccinationAttributes = {
+            'Nav src': 'Vaccination',
+            'Patient UHID': g(currentPatient, 'uhid'),
+            'Patient gender': g(currentPatient, 'gender'),
+            'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+          };
+          postCleverTapEvent(CleverTapEventName.PHR_CLICK_RECORD, vaccinationAttributes);
           props.navigation.navigate(AppRoutes.VaccinationScreen, {
             authToken: prismAuthToken,
             onPressBack: onBackArrowPressed,
           });
           break;
         case 6:
-          tabsClickedCleverTapEvent(CleverTapEventName.PHR_CLICK_BILLS);
+          let billAttributes = {
+            'Nav src': 'Bill',
+            'Patient UHID': g(currentPatient, 'uhid'),
+            'Patient gender': g(currentPatient, 'gender'),
+            'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+          };
+          postCleverTapEvent(CleverTapEventName.PHR_CLICK_RECORD, billAttributes);
           props.navigation.navigate(AppRoutes.BillScreen, {
             authToken: prismAuthToken,
             onPressBack: onBackArrowPressed,
           });
           break;
         case 7:
-          tabsClickedCleverTapEvent(CleverTapEventName.PHR_CLICK_INSURANCES);
+          let insuranceAttributes = {
+            'Nav src': 'Insurance',
+            'Patient UHID': g(currentPatient, 'uhid'),
+            'Patient gender': g(currentPatient, 'gender'),
+            'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+          };
+          postCleverTapEvent(CleverTapEventName.PHR_CLICK_RECORD, insuranceAttributes);
           props.navigation.navigate(AppRoutes.InsuranceScreen, {
             authToken: prismAuthToken,
             onPressBack: onBackArrowPressed,
           });
           break;
         case 8:
+          let clinicalDocumentAttributes = {
+            'Nav src': 'Clinical Documents',
+            'Patient UHID': g(currentPatient, 'uhid'),
+            'Patient gender': g(currentPatient, 'gender'),
+            'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+          };
+          postCleverTapEvent(CleverTapEventName.PHR_CLICK_RECORD, clinicalDocumentAttributes);
           props.navigation.navigate(AppRoutes.ClinicalDocumentListing, {
             onPressBack: onBackArrowPressed,
             callClinicalDocumentApi: onBackClinicalDocsPressed,
@@ -1282,6 +1324,13 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               top: 15,
             }}
             onPress={() => {
+              let clinicalDocumentAttributes = {
+                'Nav src': 'Clinical Documents',
+                'Patient UHID': g(currentPatient, 'uhid'),
+                'Patient gender': g(currentPatient, 'gender'),
+                'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+              };
+              postCleverTapEvent(CleverTapEventName.PHR_CLICK_RECORD, clinicalDocumentAttributes);
               var filtered = clinicalDocs?.filter(function(applyFilter: any) {
                 return applyFilter?.fileInfoList.length != 0;
               });
@@ -1478,7 +1527,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         : currentUpdatePopupId === 2
         ? 'Update Weight'
         : 'Update Blood Group';
-
+    let dateOfBirth = g(currentPatient, 'dateOfBirth');
     const onPressUpdate = () => {
       if (currentUpdatePopupId === 1) {
         if (heightArrayValue === HEIGHT_ARRAY.CM) {
@@ -1491,24 +1540,28 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             setShowUpdateProfileErrorPopup(true);
             setErrorPopupText(string.common.error_enter_number_text);
           } else {
+            let attributes = {
+              'Nav src': 'Height',
+              'Patient UHID': g(currentPatient, 'uhid'),
+              'Patient gender': g(currentPatient, 'gender'),
+              'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+            };
             updateMedicalParameters(
               height,
               currentPatient?.patientMedicalHistory?.weight,
               currentPatient?.patientMedicalHistory?.bloodGroup
             );
             isHeightAvailable
-              ? updateMedicalParametersCleverTapEvents(
-                  CleverTapEventName.PHR_UPDATE_HEIGHT,
-                  'Height',
-                  height
-                )
-              : updateMedicalParametersCleverTapEvents(
-                  CleverTapEventName.PHR_ADD_HEIGHT,
-                  'Height',
-                  height
-                );
+              ? postCleverTapEvent(CleverTapEventName.PHR_UPDATE_PERSONAL_DETAILS, attributes)
+              : postCleverTapEvent(CleverTapEventName.PHR_ADD_PERSONAL_DETAILS, attributes);
           }
         } else {
+          let attributes = {
+            'Nav src': 'Height',
+            'Patient UHID': g(currentPatient, 'uhid'),
+            'Patient gender': g(currentPatient, 'gender'),
+            'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+          };
           if (
             parseFloat(height) <= 0 ||
             !height ||
@@ -1524,19 +1577,17 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               currentPatient?.patientMedicalHistory?.bloodGroup
             );
             isHeightAvailable
-              ? updateMedicalParametersCleverTapEvents(
-                  CleverTapEventName.PHR_UPDATE_HEIGHT,
-                  'Height',
-                  height
-                )
-              : updateMedicalParametersCleverTapEvents(
-                  CleverTapEventName.PHR_ADD_HEIGHT,
-                  'Height',
-                  height
-                );
+              ? postCleverTapEvent(CleverTapEventName.PHR_UPDATE_PERSONAL_DETAILS, attributes)
+              : postCleverTapEvent(CleverTapEventName.PHR_ADD_PERSONAL_DETAILS, attributes);
           }
         }
       } else if (currentUpdatePopupId === 2) {
+        let attributes = {
+          'Nav src': 'Weight',
+          'Patient UHID': g(currentPatient, 'uhid'),
+          'Patient gender': g(currentPatient, 'gender'),
+          'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+        };
         if (parseFloat(weight) <= 0 || !weight) {
           setShowUpdateProfileErrorPopup(true);
         } else {
@@ -1546,34 +1597,24 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             currentPatient?.patientMedicalHistory?.bloodGroup
           );
           isWeightAvailable
-            ? updateMedicalParametersCleverTapEvents(
-                CleverTapEventName.PHR_UPDATE_WEIGHT,
-                'Weight',
-                weight
-              )
-            : updateMedicalParametersCleverTapEvents(
-                CleverTapEventName.PHR_ADD_WEIGHT,
-                'Weight',
-                weight
-              );
+            ? postCleverTapEvent(CleverTapEventName.PHR_UPDATE_PERSONAL_DETAILS, attributes)
+            : postCleverTapEvent(CleverTapEventName.PHR_ADD_PERSONAL_DETAILS, attributes);
         }
       } else {
+        let attributes = {
+          'Nav src': 'Blood Group',
+          'Patient UHID': g(currentPatient, 'uhid'),
+          'Patient gender': g(currentPatient, 'gender'),
+          'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+        };
         updateMedicalParameters(
           currentPatient?.patientMedicalHistory?.height,
           currentPatient?.patientMedicalHistory?.weight,
           bloodGroup?.key?.toString() || ''
         );
         currentPatient?.patientMedicalHistory?.bloodGroup
-          ? updateMedicalParametersCleverTapEvents(
-              CleverTapEventName.PHR_UPDATE_BLOOD_GROUP,
-              'BloodGroup',
-              bloodGroup?.title || ''
-            )
-          : updateMedicalParametersCleverTapEvents(
-              CleverTapEventName.PHR_ADD_BLOOD_GROUP,
-              'BloodGroup',
-              bloodGroup?.title || ''
-            );
+          ? postCleverTapEvent(CleverTapEventName.PHR_UPDATE_PERSONAL_DETAILS, attributes)
+          : postCleverTapEvent(CleverTapEventName.PHR_ADD_PERSONAL_DETAILS, attributes);
       }
     };
 
@@ -2007,9 +2048,25 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       />
     );
   };
+  const setRouteJourneyFromTabbar = () => {
+    if (!tabRouteJourney) {
+      setTabRouteJourney &&
+        setTabRouteJourney({
+          previousRoute: 'HEALTH RECORDS',
+          currentRoute: 'HEALTH RECORDS',
+        });
+    } else {
+      setTabRouteJourney &&
+        setTabRouteJourney({
+          previousRoute: tabRouteJourney?.currentRoute,
+          currentRoute: 'HEALTH RECORDS',
+        });
+    }
+  };
 
   return (
     <View style={{ flex: 1 }}>
+      <NavigationEvents onDidFocus={() => setRouteJourneyFromTabbar()} />
       <SafeAreaView style={theme.viewStyles.container}>
         {renderUpdateProfileDetailsPopup()}
         {renderHeader()}

@@ -7,6 +7,7 @@ import { DropdownBlueDown } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Substitutes } from '@aph/mobile-patients/src/components/Medicines/Components/Substitutes';
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { renderPDPComponentsShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 
 export interface ProductQuantityProps {
   maxOrderQuantity: number;
@@ -52,6 +53,19 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
 
   const { productSubstitutes } = useShoppingCart();
 
+  const renderQuantityView = () => {
+    if (sku) {
+      return (
+        <View style={styles.flexRow}>
+          {isSellOnline && renderQuantity()}
+          {isSellOnline && !!packSize && !!productForm && !!packForm && renderPackSize()}
+        </View>
+      );
+    } else {
+      return renderPDPComponentsShimmer(styles.quantityShimmer);
+    }
+  };
+
   const renderQuantity = () => {
     let maxQuantity: number = getMaxQtyForMedicineItem(maxOrderQuantity);
     const opitons = Array.from({
@@ -89,19 +103,21 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
 
   const renderCartCTA = () => {
     const ctaText = isInStock ? 'ADD TO CART' : 'NOTIFY WHEN IN STOCK';
-    return (
-      <View>
-        <TouchableOpacity
-          onPress={() => {
-            isInStock ? onAddToCart() : onNotifyMeClick();
-          }}
-          activeOpacity={0.7}
-          style={isInStock ? styles.addToCartCta : styles.notifyCta}
-        >
-          <Text style={isInStock ? styles.addToCartText : styles.notifyText}>{ctaText}</Text>
-        </TouchableOpacity>
-      </View>
-    );
+    if (isSellOnline && !isBanned) {
+      return (
+        <View>
+          <TouchableOpacity
+            onPress={() => {
+              isInStock ? onAddToCart() : onNotifyMeClick();
+            }}
+            activeOpacity={0.7}
+            style={isInStock ? styles.addToCartCta : styles.notifyCta}
+          >
+            <Text style={isInStock ? styles.addToCartText : styles.notifyText}>{ctaText}</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
   };
 
   const onAddToCart = () => {
@@ -114,10 +130,7 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
 
   return (
     <View style={{ paddingHorizontal: 15 }}>
-      <View style={styles.flexRow}>
-        {isSellOnline && renderQuantity()}
-        {isSellOnline && !!packSize && !!productForm && !!packForm && renderPackSize()}
-      </View>
+      {renderQuantityView()}
       {!!productSubstitutes && productSubstitutes?.length > 0 && (
         <Substitutes
           sku={sku}
@@ -129,7 +142,7 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
           setShowSubstituteInfo={setShowSubstituteInfo}
         />
       )}
-      {isSellOnline && !isBanned && renderCartCTA()}
+      {!!sku ? renderCartCTA() : renderPDPComponentsShimmer(styles.ctaShimmer)}
     </View>
   );
 };
@@ -171,5 +184,17 @@ const styles = StyleSheet.create({
   notifyText: {
     ...theme.viewStyles.text('B', 14, '#FCB716', 1, 25, 0.35),
     textAlign: 'center',
+  },
+  quantityShimmer: {
+    height: 30,
+    borderRadius: 10,
+    width: '80%',
+    marginVertical: 10,
+  },
+  ctaShimmer: {
+    height: 40,
+    borderRadius: 10,
+    width: '100%',
+    marginVertical: 10,
   },
 });

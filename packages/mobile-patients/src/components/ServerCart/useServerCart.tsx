@@ -16,9 +16,12 @@ import {
   CartInputData,
   PrescriptionType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { formatAddressToLocation } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  formatAddressToLocation,
+  setLocationCodeFromApi,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { getProductsByCategoryApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { Helpers } from '@aph/mobile-patients/src/components/MedicineCartPrescription';
@@ -27,6 +30,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import moment from 'moment';
 
 export const useServerCart = () => {
+  const { buildApolloClient, validateAndReturnAuthToken } = useAuth();
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const {
@@ -56,6 +60,8 @@ export const useServerCart = () => {
     pharmacyCircleAttributes,
     setTatDetailsForPrescriptionOptions,
     setCirclePlanSelected,
+    setLocationCode,
+    locationCode,
   } = useShoppingCart();
   const {
     axdcCode,
@@ -79,7 +85,7 @@ export const useServerCart = () => {
     if (userActionPayload && currentPatient?.id && userAgent) {
       const cartInputData: CartInputData = {
         ...userActionPayload,
-        patientId: currentPatient?.id,
+        patientId: userActionPayload?.patientId ? userActionPayload?.patientId : currentPatient?.id,
       };
       serverCartLoading === false ? saveServerCart(cartInputData) : {};
     }
@@ -123,8 +129,10 @@ export const useServerCart = () => {
       });
   };
 
-  const fetchServerCart = (userAgentInput?: string) => {
-    client
+  const fetchServerCart = async (userAgentInput?: string) => {
+    const authToken: string = await validateAndReturnAuthToken();
+    const apolloClient = buildApolloClient(authToken);
+    apolloClient
       .query({
         query: SERVER_CART_FETCH_CART,
         variables: {
@@ -210,6 +218,9 @@ export const useServerCart = () => {
         city: cartResponse?.city,
         state: cartResponse?.state,
       });
+      if (cartLocationDetails?.pincode !== cartResponse?.zipcode || !locationCode) {
+        setLocationCodeFromApi(cartResponse?.zipcode, setLocationCode, locationCode);
+      }
       setCartSubscriptionDetails?.(cartResponse?.subscriptionDetails);
       if (
         cartResponse?.subscriptionDetails?.currentSellingPrice &&
@@ -406,5 +417,6 @@ export const useServerCart = () => {
     uploadPhysicalPrescriptionsToServerCart,
     uploadEPrescriptionsToServerCart,
     removePrescriptionFromCart,
+    userActionPayload,
   };
 };

@@ -39,7 +39,14 @@ import {
   saveClinicalDocuments,
   saveClinicalDocumentsVariables,
 } from '@aph/mobile-patients/src/graphql/types/saveClinicalDocuments';
-import { handleGraphQlError, isValidText } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import {
+  g,
+  handleGraphQlError,
+  isValidText,
+  postCleverTapEvent,
+  postCleverTapPHR,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -1580,6 +1587,14 @@ export const AddClinicalDocumentDetails: React.FC<AddClinicalDocumentDetailsProp
         })
         .then((response: any) => {
           setShowSpinner(false);
+          let dateOfBirth = g(currentPatient, 'dateOfBirth');
+          let attributes = {
+            'Nav src': 'Clinical Documents',
+            'Patient UHID': g(currentPatient, 'uhid'),
+            'Patient gender': g(currentPatient, 'gender'),
+            'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+          };
+          postCleverTapEvent(CleverTapEventName.PHR_UPDATE_RECORD, attributes);
           props.navigation.navigate(AppRoutes.ClinicalDocumentListing, { apiCall: true });
         })
         .catch((error: any) => {

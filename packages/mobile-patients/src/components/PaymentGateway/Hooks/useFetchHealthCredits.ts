@@ -26,15 +26,15 @@ export const useFetchHealthCredits = (
   const initiate = async () => {
     try {
       const response = await fetchHealthCredits();
-      if (response.data.getOneApolloUser) {
-        setHealthCredits(response.data.getOneApolloUser.availableHC);
-        persistHealthCredits(response.data.getOneApolloUser.availableHC);
+      if (response?.data?.getOneApolloUser) {
+        setHealthCredits(response?.data?.getOneApolloUser?.availableHC);
+        persistHealthCredits(response?.data?.getOneApolloUser?.availableHC);
       }
     } catch (error) {}
   };
 
   useEffect(() => {
-    businessLine == 'pharma' && initiate();
+    initiate();
   }, []);
 
   return { healthCredits };

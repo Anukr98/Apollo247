@@ -372,13 +372,16 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
   };
 
   const onHealthCardItemPress = (selectedItem: MedicalInsuranceType) => {
-    const eventInputData = removeObjectProperty(selectedItem, 'insuranceFiles');
-    postCleverTapIfNewSession(
-      'Insurance',
-      currentPatient,
-      eventInputData,
-      phrSession,
-      setPhrSession
+    let dateOfBirth = g(currentPatient, 'dateOfBirth');
+    let doctorConsultationAttributes = {
+      'Nav src': 'Insurance',
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+    };
+    postCleverTapEvent(
+      CleverTapEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS,
+      doctorConsultationAttributes
     );
     props.navigation.navigate(AppRoutes.HealthRecordDetails, {
       data: selectedItem,
@@ -397,13 +400,14 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
       .then((status) => {
         if (status) {
           getLatestMedicalInsuranceRecords();
-          const eventInputData = removeObjectProperty(selectedItem, 'insuranceFiles');
-          postCleverTapPHR(
-            currentPatient,
-            CleverTapEventName.PHR_DELETE_INSURANCE,
-            'Insurance',
-            eventInputData
-          );
+          let dateOfBirth = g(currentPatient, 'dateOfBirth');
+          let attributes = {
+            'Nav src': 'Insurance',
+            'Patient UHID': g(currentPatient, 'uhid'),
+            'Patient gender': g(currentPatient, 'gender'),
+            'Patient age': moment(dateOfBirth).format('YYYY-MM-DD'),
+          };
+          postCleverTapEvent(CleverTapEventName.PHR_DELETE_RECORD, attributes);
         } else {
           setShowSpinner(false);
         }

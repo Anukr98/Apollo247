@@ -98,6 +98,7 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { CircleBenefitCouponDialog } from './CircleBenefitCouponDialog';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -307,6 +308,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const [showAvailPopup, setShowAvailPopup] = useState<boolean>(false);
   const [benefitId, setBenefitId] = useState<string>('');
   const [showUserConstentPopUp, setShowUserConsentPopup] = useState<boolean>(false);
+  const [showCircleBenfitCouponDialog, setShowCircleBenfitCouponDialog] = useState<boolean>(false);
   const [showDiabeticQuestionaire, setShowDiabeticQuestionaire] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [upgradePlans, setUpgradePlans] = useState<SubscriptionData[]>([]);
@@ -376,6 +378,10 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
               benefitCTAType: item?.benefitCTAType,
               benefitCTAAction: item?.benefitCTAAction?.meta?.actionMobile,
             };
+            const redirectUrl = item?.benefitCTAAction?.url;
+            if (redirectUrl) {
+              benefit['redirectUrl'] = redirectUrl;
+            }
             corporateBenefits.push(benefit);
           });
         }
@@ -955,7 +961,8 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     id: string | null,
     webengageevent: string | null,
     attribute: string | null,
-    identifierCms?: string
+    identifierCms?: string,
+    redirectUrl?: string
   ) => {
     if (webengageevent) {
       handleWebengageEvents(webengageevent);
@@ -1019,6 +1026,13 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         });
       } else if (action == Hdfc_values.PRO_HEALTH) {
         onPressHealthPro();
+      } else if (!!redirectUrl) {
+        props.navigation.navigate(AppRoutes.CommonWebView, {
+          url: redirectUrl,
+          isGoBack: true,
+        });
+      } else if (action == Hdfc_values.APPLY_CIRCLE_COUPON) {
+        setShowCircleBenfitCouponDialog(!showCircleBenfitCouponDialog);
       } else {
         props.navigation.navigate(AppRoutes.HomeScreen);
       }
@@ -1404,7 +1418,8 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
                   null,
                   null,
                   null,
-                  benefit?.benefitIdentifier
+                  benefit?.benefitIdentifier,
+                  benefit?.redirectUrl
                 );
               }}
             >
@@ -1460,6 +1475,23 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         </View>
         <Image style={styles.corporateBanner} source={{ uri: currentCorporatePlan?.bannerImage }} />
       </View>
+    );
+  };
+
+  const renderCircleBenefitCouponDialog = () => {
+    return (
+      <CircleBenefitCouponDialog
+        visible={showCircleBenfitCouponDialog}
+        onDismiss={() => setShowCircleBenfitCouponDialog(false)}
+        onProceed={() => {
+          props.navigation.navigate('DoctorSearchListing', {
+            isCircleOnly: true,
+            appliedCircleCouponCode: 'CIRCLEBENEFITS',
+          });
+
+          setShowCircleBenfitCouponDialog(false);
+        }}
+      />
     );
   };
 
@@ -1573,6 +1605,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           navigation={props.navigation}
         />
       ) : null}
+      {showCircleBenfitCouponDialog && renderCircleBenefitCouponDialog()}
       {showCircleActivation && renderCircleMembershipActivated()}
       {showCirclePlans && renderCircleSubscriptionPlans()}
       {loading && <Spinner />}

@@ -7,11 +7,31 @@
 // GraphQL mutation operation: getDiagnosticItemRecommendations
 // ====================================================
 
+export interface getDiagnosticItemRecommendations_getDiagnosticItemRecommendations_itemsData_observations {
+  __typename: "Observation";
+  observationName: string | null;
+  mandatoryValue: string | null;
+}
+
+export interface getDiagnosticItemRecommendations_getDiagnosticItemRecommendations_itemsData_diagnosticInclusions_observations {
+  __typename: "Observation";
+  observationName: string | null;
+  mandatoryValue: string | null;
+}
+
+export interface getDiagnosticItemRecommendations_getDiagnosticItemRecommendations_itemsData_diagnosticInclusions {
+  __typename: "DiagnosticInclusions";
+  itemId: number;
+  name: string;
+  observations: (getDiagnosticItemRecommendations_getDiagnosticItemRecommendations_itemsData_diagnosticInclusions_observations | null)[] | null;
+}
+
 export interface getDiagnosticItemRecommendations_getDiagnosticItemRecommendations_itemsData {
   __typename: "AffinityData";
   itemId: number;
   itemName: string;
-  combinedLift: number;
+  observations: (getDiagnosticItemRecommendations_getDiagnosticItemRecommendations_itemsData_observations | null)[] | null;
+  diagnosticInclusions: (getDiagnosticItemRecommendations_getDiagnosticItemRecommendations_itemsData_diagnosticInclusions | null)[] | null;
 }
 
 export interface getDiagnosticItemRecommendations_getDiagnosticItemRecommendations {

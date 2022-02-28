@@ -75,13 +75,11 @@ import { HelpChatScreen } from '@aph/mobile-patients/src/components/NeedHelp/Hel
 import { ShopByBrand } from '@aph/mobile-patients/src/components/Medicines/ShopByBrand';
 import { ImageSliderScreen } from '@aph/mobile-patients/src/components/ui/ImageSiderScreen';
 import AsyncStorage from '@react-native-community/async-storage';
-import { TestsCart } from '@aph/mobile-patients/src/components/Tests/TestsCart';
 import { MedAndTestCart } from '@aph/mobile-patients/src/components/Tests/MedAndTestCart';
 import { TestDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
 
 import { SearchTestScene } from '@aph/mobile-patients/src/components/Tests/SearchTestScene';
 import { YourOrdersTest } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/YourOrdersTests';
-import { OrderedTestStatus } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/OrderedTestStatus';
 import { TestOrderDetails } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/TestOrderDetails';
 import {
   CommonLogEvent,
@@ -250,7 +248,6 @@ export enum AppRoutes {
   ShopByBrand = 'ShopByBrand',
   ImageSliderScreen = 'ImageSliderScreen',
   TestsByCategory = 'TestsByCategory',
-  TestsCart = 'TestsCart',
   MedAndTestCart = 'MedAndTestCart',
   TestDetails = 'TestDetails',
   EditProfile = 'EditProfile',
@@ -260,7 +257,6 @@ export enum AppRoutes {
   MyMembership = 'MyMembership',
   MembershipDetails = 'MembershipDetails',
   YourOrdersTest = 'YourOrdersTest',
-  OrderedTestStatus = 'OrderedTestStatus',
   TestOrderDetails = 'TestOrderDetails',
   RenderPdf = 'RenderPdf',
   Tests = 'Tests',
@@ -599,9 +595,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.TestsByCategory]: {
     screen: TestsByCategory,
   },
-  [AppRoutes.TestsCart]: {
-    screen: TestsCart,
-  },
   [AppRoutes.MedAndTestCart]: {
     screen: MedAndTestCart,
   },
@@ -630,9 +623,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.YourOrdersTest]: {
     screen: YourOrdersTest,
-  },
-  [AppRoutes.OrderedTestStatus]: {
-    screen: OrderedTestStatus,
   },
   [AppRoutes.TestOrderDetails]: {
     screen: TestOrderDetails,

@@ -168,6 +168,7 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList {
   __typename: "DiagnosticOrders";
   id: string;
+  preBookingId: string | null;
   parentOrderId: string | null;
   primaryOrderID: string | null;
   isRescheduled: boolean | null;
@@ -213,6 +214,7 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   __typename: "DiagnosticOrdersResultMemberDetails";
   ordersList: (getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList | null)[] | null;
   ordersCount: number | null;
+  cancellationRequestedDisplayText: string | null;
   membersDetails: (getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_membersDetails | null)[] | null;
 }
 
@@ -225,4 +227,5 @@ export interface getDiagnosticOrdersListByMobileVariables {
   paginated?: boolean | null;
   limit?: number | null;
   offset?: number | null;
+  patientId?: string | null;
 }
