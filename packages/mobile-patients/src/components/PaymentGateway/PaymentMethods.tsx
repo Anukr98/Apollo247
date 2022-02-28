@@ -216,6 +216,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
   const { deleteServerCart } = useServerCart();
   const [otherPaymentSelected, setOtherPaymentSelected] = useState<any>(null);
+  const allowPhonePeQC = AppConfig.Configuration.ALLOW_PHONEPE_QCLITE;
 
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
@@ -635,14 +636,14 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     const offerId = bestOffer?.offer_id;
     const token = await getClientToken();
     token
-      ? wallet == 'PHONEPE' && phonePeReady
+      ? wallet == 'PHONEPE' && phonePeReady && allowPhonePeQC
         ? InitiateUPISDKTxn(requestId, token, paymentId, wallet, 'ANDROID_PHONEPE', offerId)
         : wallet == 'PAYTM' && payTmReady
         ? InitiateUPISDKTxn(requestId, token, paymentId, wallet, 'ANDROID_PAYTM', offerId)
         : InitiateWalletTxn(requestId, token, paymentId, wallet, offerId)
       : renderErrorPopup();
     const param =
-      wallet == 'PHONEPE' && phonePeReady
+      wallet == 'PHONEPE' && phonePeReady && allowPhonePeQC
         ? 'ANDROID_PHONEPE'
         : wallet == 'PAYTM' && payTmReady
         ? 'ANDROID_PAYTM'
@@ -690,7 +691,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     const token = await getClientToken();
     let paymentCode = app?.payment_method_code;
     paymentCode = Platform.OS == 'android' ? paymentCode : getIOSPackageName(paymentCode);
-    const sdkPresent = paymentCode == 'com.phonepe.app' && phonePeReady ? 'ANDROID_PHONEPE' : '';
+    const sdkPresent =
+      paymentCode == 'com.phonepe.app' && phonePeReady && allowPhonePeQC ? 'ANDROID_PHONEPE' : '';
     const paymentMethod = paymentCode == 'com.phonepe.app' ? 'PHONEPE' : '';
     token
       ? sdkPresent
