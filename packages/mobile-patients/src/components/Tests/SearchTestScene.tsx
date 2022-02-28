@@ -518,7 +518,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
             underlineColorAndroid="transparent"
             onChangeText={(value) => {
               if (isValidSearch(value)) {
-                if (!g(locationForDiagnostics, 'cityId')) {
+                if (!isModify && !g(locationForDiagnostics, 'cityId')) {
                   renderLocationNotServingPopup();
                   return;
                 }
