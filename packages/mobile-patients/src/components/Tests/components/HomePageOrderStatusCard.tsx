@@ -144,7 +144,12 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
   };
 
   return (
-    <View style={styles.container} key={orderId.toString()}>
+    <TouchableOpacity
+      activeOpacity={1}
+      style={styles.container}
+      key={orderId.toString()}
+      onPress={props.onPressBookNow}
+    >
       <View style={[styles.rowStyles]}>
         <Text style={[styles.heading1]}>
           {nameFormater(patientName!, 'title')} : #{orderId}
@@ -188,7 +193,7 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
       </View>
 
       {renderPreparationModal()}
-    </View>
+    </TouchableOpacity>
   );
 };
 

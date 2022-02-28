@@ -11,6 +11,7 @@ export interface getPatientLatestPrescriptions_getPatientLatestPrescriptions_cas
   __typename: "DiagnosticPrescriptionDiag";
   itemId: number | null;
   itemname: string;
+  gender: string | null;
   testInstruction: string | null;
 }
 

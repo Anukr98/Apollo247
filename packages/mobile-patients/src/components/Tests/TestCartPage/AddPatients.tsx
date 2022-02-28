@@ -1126,10 +1126,18 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
           const getNearByAddresses = addresses?.filter(
             (item) => Number(item?.zipcode) === Number(getHomePagePincode)
           );
-          if (!!getNearByAddresses && getNearByAddresses?.length > 1) {
+          const getSameCityAddresses = addresses?.filter(
+            (item) => item?.city?.toLowerCase() == locationToSelect?.city?.toLowerCase()
+          );
+          if (getNearByAddresses?.length > 0 && getNearByAddresses?.length > 1) {
             _getAddressWithLatLng(getHomePageLat!, getHomePageLong!, getNearByAddresses);
-          } else if (!!getNearByAddresses && getNearByAddresses?.length == 1) {
+          } else if (getNearByAddresses?.length == 1) {
             setDeliveryAddressId?.(getNearByAddresses?.[0]?.id);
+            _navigateToCartPage();
+          } else if (getSameCityAddresses?.length > 0 && getSameCityAddresses?.length > 1) {
+            _getAddressWithLatLng(getHomePageLat!, getHomePageLong!, getSameCityAddresses);
+          } else if (getSameCityAddresses?.length == 1) {
+            setDeliveryAddressId?.(getSameCityAddresses?.[0]?.id);
             _navigateToCartPage();
           } else {
             _navigateToAddressPage();

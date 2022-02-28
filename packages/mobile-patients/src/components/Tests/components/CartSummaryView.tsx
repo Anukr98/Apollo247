@@ -56,6 +56,18 @@ export interface CartPageSummaryProps {
   _navigateToTDP: (item: any) => void;
 }
 
+const {
+  LIGHT_BLUE_DIAG,
+  SHERPA_BLUE,
+  APP_YELLOW,
+  WHITE,
+  CHAT_TILE_BG,
+  LIGHT_BLUE,
+  GRAY_BGK,
+  ORANGE,
+  LIGHT_ORANGE_YELLOW,
+} = colors;
+
 export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
   const {
     containerStyle,
@@ -734,11 +746,11 @@ const styles = StyleSheet.create({
     width: '70%',
   },
   mainPriceText: {
-    ...theme.viewStyles.text('SB', isSmallDevice ? 12.5 : 14, theme.colors.SHERPA_BLUE, 1, 16),
+    ...theme.viewStyles.text('SB', isSmallDevice ? 12.5 : 14, SHERPA_BLUE, 1, 16),
     marginTop: 2,
   },
   packageSlashedPrice: {
-    ...theme.viewStyles.text('SB', isSmallDevice ? 9 : 10, theme.colors.SHERPA_BLUE, 0.6, 16),
+    ...theme.viewStyles.text('SB', isSmallDevice ? 9 : 10, SHERPA_BLUE, 0.6, 16),
     marginTop: 5,
     marginRight: 6,
   },
@@ -751,10 +763,10 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   viewDetailsText: {
-    ...theme.viewStyles.text('M', 12, colors.APP_YELLOW, 1, 16),
+    ...theme.viewStyles.text('M', 12, APP_YELLOW, 1, 16),
   },
   viewDetailsUpIcon: {
-    tintColor: theme.colors.APP_YELLOW,
+    tintColor: APP_YELLOW,
     height: 12,
     width: 12,
     resizeMode: 'contain',
@@ -762,48 +774,48 @@ const styles = StyleSheet.create({
     marginVertical: 3,
   },
   addCtaView: {
-    backgroundColor: colors.WHITE,
-    borderColor: colors.APP_YELLOW,
+    backgroundColor: WHITE,
+    borderColor: APP_YELLOW,
     borderRadius: 10,
     borderWidth: 1,
     padding: 6,
   },
   removeCtaView: {
-    backgroundColor: colors.ORANGE,
-    borderColor: colors.ORANGE,
+    backgroundColor: ORANGE,
+    borderColor: ORANGE,
     borderRadius: 10,
     borderWidth: 1,
     padding: 6,
   },
   addCta: {
-    ...theme.viewStyles.text('B', isSmallDevice ? 12 : 13, colors.LIGHT_ORANGE_YELLOW, 1, 18, 0),
+    ...theme.viewStyles.text('B', isSmallDevice ? 12 : 13, LIGHT_ORANGE_YELLOW, 1, 18, 0),
     textTransform: 'uppercase',
     textAlign: 'center',
   },
   removeCta: {
-    ...theme.viewStyles.text('B', isSmallDevice ? 12 : 13, colors.WHITE, 1, 18, 0),
+    ...theme.viewStyles.text('B', isSmallDevice ? 12 : 13, WHITE, 1, 18, 0),
     textTransform: 'uppercase',
     textAlign: 'center',
   },
-  perPersonText: { ...theme.viewStyles.text('R', 12, colors.LIGHT_BLUE, 1, 16) },
+  perPersonText: { ...theme.viewStyles.text('R', 12, LIGHT_BLUE, 1, 16) },
   topView: {
     flexDirection: 'row',
-    backgroundColor: colors.GRAY_BGK,
+    backgroundColor: GRAY_BGK,
     justifyContent: 'space-between',
     padding: 16,
     marginBottom: 8,
   },
-  itemCountText: { ...theme.viewStyles.text('SB', 14, colors.SHERPA_BLUE, 1, 18.2) },
-  showLessText: { ...theme.viewStyles.text('M', 14, colors.APP_YELLOW, 1, 19) },
+  itemCountText: { ...theme.viewStyles.text('SB', 14, SHERPA_BLUE, 1, 18.2) },
+  showLessText: { ...theme.viewStyles.text('M', 14, APP_YELLOW, 1, 19) },
   rowStyle: { flexDirection: 'row' },
   itemTypeView: {
     marginLeft: 6,
-    backgroundColor: colors.GRAY_BGK,
+    backgroundColor: GRAY_BGK,
     justifyContent: 'center',
     alignItems: 'center',
     height: 28,
   },
-  itemTypeText: { ...theme.viewStyles.text('M', 10, colors.LIGHT_BLUE, 1, 13) },
+  itemTypeText: { ...theme.viewStyles.text('M', 10, LIGHT_BLUE, 1, 13) },
   inclusionPercentageView: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -813,12 +825,12 @@ const styles = StyleSheet.create({
   },
   clockIcon: { height: 16, width: 12, resizeMode: 'contain' },
   reportTatText: {
-    ...theme.viewStyles.text('M', 10, colors.SHERPA_BLUE, 1, 16, 0.04),
+    ...theme.viewStyles.text('M', 10, SHERPA_BLUE, 1, 16, 0.04),
     marginLeft: 6,
   },
   reportTatButtonView: { flexDirection: 'row', marginRight: 16, marginTop: 4 },
   recommendationsOuterView: {
-    backgroundColor: colors.WHITE,
+    backgroundColor: WHITE,
     marginBottom: 16,
     marginRight: 16,
     padding: 12,
@@ -826,10 +838,10 @@ const styles = StyleSheet.create({
   cartItemsInnerView: { flexDirection: 'row', justifyContent: 'space-between', marginRight: 16 },
   nameTypeView: { flexDirection: 'row', width: '74%' },
   nameView: { maxWidth: '80%', justifyContent: 'flex-start' },
-  itemNameText: { ...theme.viewStyles.text('M', 14, colors.SHERPA_BLUE, 1, 22) },
-  recommendationsView: { backgroundColor: '#F2FBFF', marginTop: 12 },
+  itemNameText: { ...theme.viewStyles.text('M', 14, SHERPA_BLUE, 1, 22) },
+  recommendationsView: { backgroundColor: LIGHT_BLUE_DIAG, marginTop: 12 },
   recommendedForText: {
-    ...theme.viewStyles.text('M', 14, colors.CHAT_TILE_BG, 1, 19),
+    ...theme.viewStyles.text('M', 14, CHAT_TILE_BG, 1, 19),
     marginTop: 16,
     marginLeft: 16,
   },

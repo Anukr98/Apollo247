@@ -125,7 +125,7 @@ export async function DiagnosticAddToCartEvent(
   price: number,
   discountedPrice: number,
   source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
-  itemType: DIAGNOSTICS_ITEM_TYPE,
+  itemType: DIAGNOSTICS_ITEM_TYPE | any,
   section?: string,
   currentPatient?: any,
   isDiagnosticCircleSubscription?: boolean | undefined,
@@ -300,7 +300,7 @@ export async function DiagnosticDetailsViewed(
   isDiagnosticCircleSubscription?: boolean | undefined,
   originalItemIds?: string[] | null,
   section?: string,
-  sectionStr?: string,
+  sectionStr?: string
 ) {
   try {
     const getPatientAttributes = await createPatientAttributes(currentPatient);
@@ -479,11 +479,10 @@ export function DiagnosticCartViewed(
     }
     const itemCartIds = totalCart?.map((item: any) => {
       return Number(item?.id);
-    })
+    });
     const extraTests = recommendationPackageData?.inclusionData?.filter((item: any) => {
-      if(!itemCartIds?.includes(item?.itemId))
-      return item?.name;
-    })
+      if (!itemCartIds?.includes(item?.itemId)) return item?.name;
+    });
     if (!!recommendationPackageData) {
       eventAttributes['Package Recommendation Shown'] = !!recommendationPackageData ? 'Yes' : 'No';
       eventAttributes['Package Recommendation ItemId'] = recommendationPackageData?.itemId;
@@ -711,7 +710,7 @@ export function DiagnosticRemoveFromCartClicked(
       Pincode: pincode,
       Mode: mode,
       'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
-      'Source': source,
+      Source: source,
       itemIdsInCart: JSON.stringify(
         newCart?.map((item: any) => {
           return item?.id;
