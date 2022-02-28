@@ -85,7 +85,10 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
         status = paymentInfo?.paymentStatus;
         return {
           leftHeaderText: leftHeaderText,
-          dateAndTime: getDate(appointmentDateTime),
+          dateAndTime:
+            orderType === 'CONSULT'
+              ? getDate(appointmentDateTime)
+              : getDate(subscriptionOrderDetails?.transaction_date_time),
           type: type,
           status: status,
           aptType: aptType,
