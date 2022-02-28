@@ -2671,12 +2671,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
       fetchReportTat(topItemDetails?.[0]?.itemId);
     }
   }, [topItemDetails?.length]);
+
   function _navigateToDetailsPage(singleItemData: any, source: string) {
     props.navigation.navigate(AppRoutes.TestDetails, {
       itemId: source == 'cartSummary' ? singleItemData?.id : singleItemData?.itemId,
       comingFrom: AppRoutes.Tests,
       source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME,
-      section: string.common.homePageItem
+      section: string.common.homePageItem,
     });
   }
 
