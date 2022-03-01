@@ -269,7 +269,7 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
 
   const renderSkuName = (name: string, getItem: any) => {
     return (
-      <View style={{ minHeight: 40 }}>
+      <View style={{ minHeight: 40,width:'95%' }}>
         <Text style={[styles.itemNameText]} numberOfLines={2}>
           {name}
         </Text>
