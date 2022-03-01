@@ -142,6 +142,7 @@ import {
   DIAGNOSTIC_PINCODE_SOURCE_TYPE,
   getPricesForItem,
   getParameterCount,
+  DIAGNOSTIC_CTA_ITEMS,
 } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import Carousel from 'react-native-snap-carousel';
@@ -150,7 +151,9 @@ import {
   DiagnosticAddresssSelected,
   DiagnosticAddToCartEvent,
   DiagnosticBannerClick,
+  DiagnosticCtaClicked,
   DiagnosticHomePageClicked,
+  DiagnosticHomePageRecommendationsViewed,
   DiagnosticHomePageWidgetClicked,
   DiagnosticLandingPageViewedEvent,
   DiagnosticPrescriptionSubmitted,
@@ -2629,6 +2632,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return widgetType?.length > 0 && widgetType?.map((wid: any) => renderWidgetType(wid));
   }
   function onPressSingleBookNow(item: any) {
+    DiagnosticAddToCartEvent(
+      topItemDetails?.[0]?.itemName || item?.itemTitle,
+      item?.itemId,
+      topItemDetails?.[0]?.price || item?.price,
+      item?.discountPrice,
+      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME,
+      item?.itemType,
+      string.common.homePageItem,
+      currentPatient,
+      isDiagnosticCircleSubscription
+    );
     addCartItem?.(item);
     _navigateToPatientsPage();
   }
@@ -2892,6 +2906,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   };
 
+  useEffect(() => {
+    if (pastOrderRecommendations?.length > 0) {
+      const recommendationWidget = getRanking('0');
+      DiagnosticHomePageRecommendationsViewed(
+        pastOrderRecommendations,
+        currentPatient,
+        recommendationWidget?.[0]?.diagnosticWidgetData?.length,
+        pastOrderRecommendations?.length,
+        isDiagnosticCircleSubscription
+      )
+    }
+  }, [pastOrderRecommendations])
   const renderPastOrderRecommendations = (drupalRecommendations: any) => {
     const topTenPastRecommendations =
       pastOrderRecommendations?.length > 10

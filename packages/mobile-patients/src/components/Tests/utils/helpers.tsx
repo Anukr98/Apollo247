@@ -502,6 +502,11 @@ export enum DIAGNOSTIC_ITEM_GENDER {
   F = 'F',
   B = 'B',
 }
+export enum DIAGNOSTIC_CTA_ITEMS {
+  MAIN_HOME = 'Main Home CTA',
+  BOTTOM_BAR = 'Bottom Bar',
+  BANNER = 'Banner',
+}
 
 export enum DIANGNOSTIC_POPULAR_ITEM_GENDER {
   MALE = 'Male',

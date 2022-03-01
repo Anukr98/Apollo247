@@ -7,7 +7,7 @@ import {
   PharmaUserStatus,
   UploadPrescSource,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE, DIAGNOSTIC_PINCODE_SOURCE_TYPE } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE, DIAGNOSTIC_CTA_ITEMS, DIAGNOSTIC_PINCODE_SOURCE_TYPE } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import { DiagnosticHomePageSource, DIAGNOSTICS_ITEM_TYPE } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { DiagnosticsDetailsPageViewedSource } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 
@@ -217,6 +217,8 @@ export enum WebEngageEventName {
   DIGNOSTIC_PAYMENT_ABORTED = 'Diagnostic payment aborted',
   DIAGNOSITC_MODIFY_CLICKED = 'Diagnostic modify clicked',
   DIAGNOSTIC_MODIFY_ORDER = 'Diagnostic modify order',
+  DIAGNOSTIC_CTA_CLICKED = 'Home page diagnostics CTA clicked',
+  DIAGNOSTIC_HOME_PAGE_RECOMMENDATIONS_VIEWED = 'Diagnostic home page recommendations viewed',
 
   // Health Records
   CONSULT_RX = 'PHR Consult & RX',
@@ -1448,6 +1450,17 @@ export interface WebEngageEvents {
     'HC charge updated': 'Yes' | 'No';
     'payment mode': 'Prepaid' | 'Cash';
     'time of modification': string | Date;
+  };
+  [WebEngageEventName.DIAGNOSTIC_CTA_CLICKED]: {
+    'Circle user'?: string;
+    CTA: DIAGNOSTIC_CTA_ITEMS;
+  };
+  [WebEngageEventName.DIAGNOSTIC_HOME_PAGE_RECOMMENDATIONS_VIEWED]: {
+    'Recommendation ItemIds': string;
+    'Recommendation ItemNames': string;
+    'drupalCount': number | string | undefined;
+    'apiCount': number | string | undefined;
+    'Circle user'?: string
   };
 
   // ********** ConsultEvents ********** \\

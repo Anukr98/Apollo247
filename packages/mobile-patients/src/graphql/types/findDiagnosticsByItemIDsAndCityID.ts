@@ -46,6 +46,7 @@ export interface findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCi
   itemType: DIAGNOSTICS_TYPE | null;
   rate: number;
   gender: string;
+  imageUrl: string;
   itemRemarks: string;
   city: string;
   state: string;

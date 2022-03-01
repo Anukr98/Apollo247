@@ -8,7 +8,7 @@ import { PharmaUserStatus } from '@aph/mobile-patients/src/components/AppCommonD
 import { CircleEventSource, PAGE_ID_TYPE } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { ShoppingCartItem } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { DIAGNOSTIC_SLOT_TYPE } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE, DIAGNOSTIC_CTA_ITEMS } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import { DiagnosticsDetailsPageViewedSource } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { saveCart_saveCart_data_medicineOrderCartLineItems } from '@aph/mobile-patients/src/graphql/types/saveCart';
 
@@ -249,6 +249,8 @@ export enum CleverTapEventName {
   DIAGNOSTIC_RADIOLOGY_HOME_PAGE = 'Diagnostic Radiology lead gen page viewed',
   DIAGNOSTIC_RADIOLOGY_BOOKING_COMPLETE = 'Diagnostic Radiology Booking completed',
   DIAGNOSTIC_RETAIN_CANCELLATION = 'Diagnostic retain cancellation CTA clicked',
+  DIAGNOSTIC_CTA_CLICKED = 'Home page diagnostics CTA clicked',
+  DIAGNOSTIC_HOME_PAGE_RECOMMENDATIONS_VIEWED = 'Diagnostic home page recommendations viewed',
 
   //Conult Package Purchase Attribite
   CONSULT_PACKAGE_CLICKED = 'Consult Package Clicked',
@@ -3542,4 +3544,15 @@ export interface CleverTapEvents {
     "Patient Mobile": number;
     City : string;
   }
+  [CleverTapEventName.DIAGNOSTIC_CTA_CLICKED]: {
+    'Circle user'?: string;
+    CTA: DIAGNOSTIC_CTA_ITEMS;
+  };
+  [CleverTapEventName.DIAGNOSTIC_HOME_PAGE_RECOMMENDATIONS_VIEWED]: {
+    'Recommendation ItemIds': string;
+    'Recommendation ItemNames': string;
+    'drupalCount': number | string | undefined;
+    'apiCount': number | string | undefined;
+    'Circle user'?: string
+  };
 }

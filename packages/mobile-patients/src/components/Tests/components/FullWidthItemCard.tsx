@@ -169,7 +169,7 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
         return null;
       }
 
-      const imageUrl = getItem?.itemImageUrl;
+      const imageUrl = getItem?.itemImageUrl || getItem?.imageUrl;
       const name = getItem?.itemTitle || getItem?.itemName;
       const {
         priceToShow,

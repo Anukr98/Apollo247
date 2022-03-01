@@ -28,7 +28,7 @@ import {
 import { circleValidity } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
-import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE, DIAGNOSTIC_CTA_ITEMS } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientObj } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { AppConfig, AppEnv } from '@aph/mobile-patients/src/strings/AppConfig';
 import { DiagnosticCTJourneyType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -40,6 +40,7 @@ function createPatientAttributes(currentPatient: any) {
     'Patient Gender': currentPatient?.gender,
     'Patient Name': `${currentPatient?.firstName} ${currentPatient?.lastName}`,
     'Patient Age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
+    Relation: currentPatient?.relation,
   };
   return patientAttributes;
 }
@@ -338,6 +339,53 @@ export async function DiagnosticDetailsViewed(
       itemPrice,
       pharmacyCircleAttributes
     );
+  } catch (error) {}
+}
+
+export async function DiagnosticHomePageRecommendationsViewed(
+  recommendationItems: any,
+  currentPatient: any,
+  drupalCount: number,
+  apiCount: string,
+  isDiagnosticCircleSubscription?: boolean | undefined,
+) {
+  try {
+    const getPatientAttributes = await createPatientAttributes(currentPatient);
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_HOME_PAGE_RECOMMENDATIONS_VIEWED]
+      | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_HOME_PAGE_RECOMMENDATIONS_VIEWED] = {
+      ...getPatientAttributes,
+      'Recommendation ItemIds': JSON.stringify(recommendationItems?.map((item)=>{
+        return item?.itemId
+      })),
+      'Recommendation ItemNames': JSON.stringify(recommendationItems?.map((item)=>{
+        return item?.itemName
+      })),
+      'drupalCount': drupalCount,
+      'apiCount': apiCount,
+      'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+    };
+    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_HOME_PAGE_RECOMMENDATIONS_VIEWED, eventAttributes);
+    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_HOME_PAGE_RECOMMENDATIONS_VIEWED, eventAttributes);
+  } catch (error) {}
+}
+export async function DiagnosticCtaClicked(
+  currentPatient: any,
+  isDiagnosticCircleSubscription: boolean | undefined,
+  ctaString: DIAGNOSTIC_CTA_ITEMS,
+) {
+  try {
+    const getPatientAttributes = await createPatientAttributes(currentPatient);
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CTA_CLICKED]
+      | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_CTA_CLICKED] = {
+      ...getPatientAttributes,
+        'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+        'CTA': ctaString
+      }
+      console.log('eventAttributes :>> DiagnosticCtaClicked', eventAttributes);
+    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION, eventAttributes);
+    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_TEST_DESCRIPTION, eventAttributes);
   } catch (error) {}
 }
 
