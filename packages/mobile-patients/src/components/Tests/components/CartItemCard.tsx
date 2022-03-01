@@ -284,22 +284,21 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
       }
     });
     return (
-      <View>
+      <View style={styles.detailView}>
         {includedInclusions?.map((item) => (
           <Text style={styles.textInclusion}> {`• ${item?.name}`}</Text>
         ))}
-        {otherInclusions?.length > 0 ? (
-          <>
-            {' '}
-            <Text style={styles.textInclusion}> {`• Other Tests`}</Text>
-            {otherInclusions?.map((item) => (
+        {otherInclusions?.length > 0 && (
+            <><Text style={styles.textInclusion}> {`• Other Tests`}</Text><>
+            {otherInclusions?.map((item) => {
+              return;
               <Text style={styles.textOtherInclusion}>
                 {'     '}
                 {`• ${item?.name}`}
-              </Text>
-            ))}{' '}
-          </>
-        ) : null}
+              </Text>;
+            })}
+          </></>
+        )}
       </View>
     );
   };
@@ -341,6 +340,10 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 1, 22),
   },
   undoText: { ...theme.viewStyles.text('B', 14, colors.APP_YELLOW, 1), paddingBottom: 10 },
+  detailView: {
+    padding:10,
+    marginTop: -25
+  },
   removeTouch: {
     height: isSmallDevice ? 28 : 30,
     width: isSmallDevice ? 28 : 30,

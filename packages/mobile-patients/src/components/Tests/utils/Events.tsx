@@ -383,7 +383,6 @@ export async function DiagnosticCtaClicked(
         'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
         'CTA': ctaString
       }
-      console.log('eventAttributes :>> DiagnosticCtaClicked', eventAttributes);
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION, eventAttributes);
     postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_TEST_DESCRIPTION, eventAttributes);
   } catch (error) {}

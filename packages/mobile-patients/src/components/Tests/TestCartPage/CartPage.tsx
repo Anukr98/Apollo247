@@ -269,13 +269,27 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     });
     const willBlur = props.navigation.addListener('willBlur', (payload) => {
       setIsFocused(false);
+      // to remove group recommendation item from the cart
+      if (payload?.action?.routeName != AppRoutes.AddressSlotSelection) {
+        setLoading?.(true);
+        const patientId = patientCartItems?.[0]?.patientId; // for group recommandation only
+        const groupItemPresentArr = patientCartItems?.[0]?.cartItems?.filter((item) => {
+          //checking the presence if group recommendation Item in the cart
+          return groupRecommendations?.[0]?.itemId == Number(item?.id);
+        });
+        if (groupItemPresentArr?.length == 1) {
+          _onPressRemoveCartItem(groupItemPresentArr?.[0], [], true);
+          addPatientCartItem?.(patientId, cartItems!);
+        }
+        setLoading?.(false);
+      }
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     });
     return () => {
       didFocus && didFocus.remove();
       willBlur && willBlur.remove();
     };
-  }, []);
+  }, [groupRecommendations]);
 
   function triggerAddressSelected(servicable: 'Yes' | 'No') {
     const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
@@ -357,16 +371,18 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     } else if (isCartPresent?.length == 0) {
       props.navigation.navigate('TESTS', { focusSearch: true });
     } else {
+      setLoading?.(true);
       const patientId = patientCartItems?.[0]?.patientId; // for group recommandation only
       const groupItemPresentArr = patientCartItems?.[0]?.cartItems?.filter((item) => {
         //checking the presence if group recommendation Item in the cart
         return groupRecommendations?.[0]?.itemId == Number(item?.id);
       });
       if (groupItemPresentArr?.length == 1) {
-        _onPressRemoveCartItem(groupItemPresentArr?.[0], [], false);
+        _onPressRemoveCartItem(groupItemPresentArr?.[0], [], true);
         addPatientCartItem?.(patientId, cartItems!);
       }
-      props.navigation.goBack();
+      setLoading?.(false)
+        props.navigation.goBack();
     }
 
     return true;
@@ -1226,7 +1242,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       return groupRecommendations?.[0]?.itemId == Number(item?.id);
     });
     if (groupItemPresentArr?.length == 1) {
-      _onPressRemoveCartItem(groupItemPresentArr?.[0], [],false);
+      _onPressRemoveCartItem(groupItemPresentArr?.[0], [],true);
       addPatientCartItem?.(patientId, cartItems!);
     }
     props.navigation.navigate('TESTS', { focusSearch: false });
@@ -1611,7 +1627,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     data?.map((item: any) => {
       return (testsCount += item?.parameterCount);
     });
-    console.log('testCount :>> ', testsCount);
     return (
       <View style={styles.cartCountView}>
         <Text style={styles.cartCountText}>{`${count} ${
