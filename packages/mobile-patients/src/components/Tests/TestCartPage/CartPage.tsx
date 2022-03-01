@@ -357,6 +357,15 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     } else if (isCartPresent?.length == 0) {
       props.navigation.navigate('TESTS', { focusSearch: true });
     } else {
+      const patientId = patientCartItems?.[0]?.patientId; // for group recommandation only
+      const groupItemPresentArr = patientCartItems?.[0]?.cartItems?.filter((item) => {
+        //checking the presence if group recommendation Item in the cart
+        return groupRecommendations?.[0]?.itemId == Number(item?.id);
+      });
+      if (groupItemPresentArr?.length == 1) {
+        _onPressRemoveCartItem(groupItemPresentArr?.[0], [], false);
+        addPatientCartItem?.(patientId, cartItems!);
+      }
       props.navigation.goBack();
     }
 
@@ -1217,7 +1226,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       return groupRecommendations?.[0]?.itemId == Number(item?.id);
     });
     if (groupItemPresentArr?.length == 1) {
-      _onPressRemoveCartItem(groupItemPresentArr?.[0], []);
+      _onPressRemoveCartItem(groupItemPresentArr?.[0], [],false);
       addPatientCartItem?.(patientId, cartItems!);
     }
     props.navigation.navigate('TESTS', { focusSearch: false });
@@ -1459,6 +1468,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           showAddButton={true}
           showTestWorth={true}
           priceDiff={priceDiff}
+          cartValue={grandTotal}
           groupRecommendations={groupRecommendations}
           onPressArrow={()=>{
             setOpenRecommedations(!openRecommedations);
@@ -1765,22 +1775,22 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         showCartInclusions={true} //showInclusions
         duplicateArray={filterDuplicateItemsForPatients}
         onPressCard={(item) => _onPressCartItem(item, test)}
-        onPressRemove={(item) => _onPressRemoveCartItem(item, patientItems)}
+        onPressRemove={(item) => _onPressRemoveCartItem(item, patientItems,false)}
         showUndo={groupItemPresentArr?.length == 1}
         onPressUndo={(item) => {
-          _onPressRemoveCartItem(item, patientItems);
+          _onPressRemoveCartItem(item, patientItems,true);
           addPatientCartItem?.(patientId, cartItems!);
         }}
       />
     );
   };
 
-  function _onPressRemoveCartItem(item: any, patientItems: any) {
+  function _onPressRemoveCartItem(item: any, patientItems: any,isUndo:boolean) {
     CommonLogEvent(AppRoutes.CartPage, 'Remove item from cart');
     if (isModifyFlow) {
       removeCartItem?.(item?.id);
     }
-    onRemoveCartItem(item, patientItems?.id);
+    onRemoveCartItem(item, patientItems?.id, isUndo);
   }
 
   function _onPressCartItem(item: any, test: DiagnosticsCartItem) {

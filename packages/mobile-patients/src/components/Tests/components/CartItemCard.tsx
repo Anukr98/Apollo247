@@ -288,13 +288,18 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
         {includedInclusions?.map((item) => (
           <Text style={styles.textInclusion}> {`• ${item?.name}`}</Text>
         ))}
-        <Text style={styles.textInclusion}> {`• Other Tests`}</Text>
-        {otherInclusions?.map((item) => (
-          <Text style={styles.textOtherInclusion}>
-            {'     '}
-            {`• ${item?.name}`}
-          </Text>
-        ))}
+        {otherInclusions?.length > 0 ? (
+          <>
+            {' '}
+            <Text style={styles.textInclusion}> {`• Other Tests`}</Text>
+            {otherInclusions?.map((item) => (
+              <Text style={styles.textOtherInclusion}>
+                {'     '}
+                {`• ${item?.name}`}
+              </Text>
+            ))}{' '}
+          </>
+        ) : null}
       </View>
     );
   };
