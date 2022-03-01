@@ -383,9 +383,7 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
           description: 'File downloaded by download manager.',
         },
       })
-        .fetch('GET', String(getOrderInvoice), {
-          //some headers ..
-        })
+        .fetch('GET', String(getOrderInvoice), {})
         .then((res) => {
           if (Platform.OS === 'android') {
             Alert.alert('Download Complete');
@@ -400,7 +398,6 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
     } catch (error) {
       renderErrorPopup(`Something went wrong, please try again after sometime, Error Code: C1`);
       CommonBugFender('fetchingConsultInvoice', error);
-      console.log('csk inv er', JSON.stringify(error));
     }
   };
   const renderStatusCard = () => {
