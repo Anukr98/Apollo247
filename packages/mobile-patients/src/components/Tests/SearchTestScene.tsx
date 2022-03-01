@@ -698,9 +698,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
             style={[styles.viewDefaultContainer, bottomStyles]}
           >
             {popularPackages?.length > 0 ? (
-              <View>
+              <>
                 <Text style={styles.headingSections}>POPULAR PACKAGES</Text>
-                <View style={styles.defaultContainer}>
+                <View style={[styles.defaultContainer, { marginBottom: 20 }]}>
                   <FlatList
                     keyExtractor={(_, index) => `${index}`}
                     scrollEnabled={false}
@@ -709,10 +709,10 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
                     renderItem={renderPopularDiagnostic}
                   />
                 </View>
-              </View>
+              </>
             ) : null}
             {popularTests?.length > 0 ? (
-              <View>
+              <>
                 <Text style={styles.headingSections}>POPULAR TESTS</Text>
                 <View style={styles.defaultContainer}>
                   <FlatList
@@ -723,7 +723,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
                     renderItem={renderPopularDiagnostic}
                   />
                 </View>
-              </View>
+              </>
             ) : null}
           </ScrollView>
         )}
