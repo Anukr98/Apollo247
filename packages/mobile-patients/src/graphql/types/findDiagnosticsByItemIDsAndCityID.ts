@@ -19,6 +19,25 @@ export interface findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCi
   endDate: any | null;
 }
 
+export interface findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics_observations {
+  __typename: "Observation";
+  observationName: string | null;
+  mandatoryValue: string | null;
+}
+
+export interface findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics_diagnosticInclusions_observations {
+  __typename: "Observation";
+  observationName: string | null;
+  mandatoryValue: string | null;
+}
+
+export interface findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics_diagnosticInclusions {
+  __typename: "DiagnosticInclusions";
+  name: string;
+  itemId: number;
+  observations: (findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics_diagnosticInclusions_observations | null)[] | null;
+}
+
 export interface findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics {
   __typename: "Diagnostics";
   id: string;
@@ -27,6 +46,7 @@ export interface findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCi
   itemType: DIAGNOSTICS_TYPE | null;
   rate: number;
   gender: string;
+  imageUrl: string;
   itemRemarks: string;
   city: string;
   state: string;
@@ -38,6 +58,8 @@ export interface findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCi
   testDescription: string | null;
   inclusions: (number | null)[] | null;
   diagnosticPricing: (findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics_diagnosticPricing | null)[] | null;
+  observations: (findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics_observations | null)[] | null;
+  diagnosticInclusions: (findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics_diagnosticInclusions | null)[] | null;
 }
 
 export interface findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID {

@@ -276,7 +276,9 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
           !!order?.patientObj?.gender
             ? order?.patientObj?.gender === Gender.MALE
               ? 'Mr.'
-              : 'Ms.'
+              : order?.patientObj?.gender === Gender.FEMALE
+              ? 'Ms.'
+              : ''
             : ''
         }
         patientDetails={!!order?.patientObj ? order?.patientObj : null}

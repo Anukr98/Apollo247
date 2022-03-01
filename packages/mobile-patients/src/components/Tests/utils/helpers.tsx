@@ -502,6 +502,11 @@ export enum DIAGNOSTIC_ITEM_GENDER {
   F = 'F',
   B = 'B',
 }
+export enum DIAGNOSTIC_CTA_ITEMS {
+  MAIN_HOME = 'Main Home CTA',
+  BOTTOM_BAR = 'Bottom Bar',
+  BANNER = 'Banner',
+}
 
 export enum DIANGNOSTIC_POPULAR_ITEM_GENDER {
   MALE = 'Male',
@@ -607,12 +612,12 @@ export function getPatientDetailsById(allPatients: any, patientId: string) {
 //used for switch-uhid (where each sku determines the eligible patients)
 export function checkPatientWithSkuGender(
   skuItem: DiagnosticOrderLineItems[] | any,
-  patientDetails: any
+  patientDetails?: any
 ) {
   const getAllSkuGender = skuItem?.map((sku: DiagnosticOrderLineItems | any) =>
     DiagnosticItemGenderMapping(sku?.itemObj?.gender!)?.toLowerCase()
   );
-  const getPatientGender = patientDetails?.gender;
+  const getPatientGender = !!patientDetails ? patientDetails?.gender : '';
   const hasMaleFemale = getAllSkuGender?.find((item: GENDER) =>
     GENDER_ARRAY?.includes(item?.toLowerCase())
   );
@@ -631,7 +636,11 @@ export function checkPatientWithSkuGender(
         ? !removeAllOther?.includes(getPatientGender?.toLowerCase())
         : false
       : false;
-  return nonValidPatient;
+  return {
+    nonValidPatient,
+    getAllSkuGender,
+    removeAllOther,
+  };
 }
 
 //used for modify order (where patient gender specifies eligible sku's)
@@ -643,7 +652,8 @@ export function checkSku(
   const covertedSkuGender = convert ? DiagnosticItemGenderMapping(skuGender) : skuGender;
   const isSKUEligible =
     covertedSkuGender?.toLowerCase() == gender?.toLowerCase() ||
-    BOTH_GENDER_ARRAY.includes(covertedSkuGender?.toLowerCase());
+    BOTH_GENDER_ARRAY.includes(covertedSkuGender?.toLowerCase()) ||
+    BOTH_GENDER_ARRAY.includes(gender?.toLowerCase());
 
   return isSKUEligible;
 }

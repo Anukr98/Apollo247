@@ -103,7 +103,7 @@ import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails } fr
 import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsWithAreaID';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
-import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { getDiagnosticsByItemIdCityId, getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { NavigationActions, StackActions } from 'react-navigation';
 import { differenceInYears, parse } from 'date-fns';
 import stripHtml from 'string-strip-html';
@@ -124,6 +124,7 @@ import { getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientA
 import { handleOpenURL, pushTheView } from './deeplinkRedirection';
 import DeviceInfo from 'react-native-device-info';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { DiagnosticItemGenderMapping, DIAGNOSTIC_ITEM_GENDER, getPricesForItem } from '../components/Tests/utils/helpers';
 
 const width = Dimensions.get('window').width;
 
@@ -1457,14 +1458,30 @@ export const reOrderMedicines = async (
   };
 };
 
+function calculateInclusionsParameterCount(result: any){
+  function filterMandatoryResults (arr: any){
+    return arr?.filter((item: any)=> item?.mandatoryValue == '1');
+  }
+  let getMandatoryResults, count;
+  if(result?.diagnosticInclusions?.length > 0){
+    const getRes  =  result?.diagnosticInclusions?.map((item: any) => item?.observations)?.flat();
+    getMandatoryResults = filterMandatoryResults(getRes);
+    count = getMandatoryResults?.length ;
+  }
+  else{
+     getMandatoryResults = filterMandatoryResults(result?.observations);
+     count = getMandatoryResults?.length ;
+  }
+  return count;
+}
+
 export const addTestsToCart = async (
   testPrescription: getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[], // testsIncluded will not come from API
   apolloClient: ApolloClient<object>,
   pincode?: string,
   setLoading?: UIElementsContextProps['setLoading']
 ) => {
-  const detailQuery = async (itemId: string) =>
-    await getPackageInclusions(apolloClient, [Number(itemId)]);
+  const fetchPricesQuery = async (itemIds: Number[]) => await getDiagnosticsByItemIdCityId(apolloClient, AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID, itemIds);
   try {
     setLoading?.(true);
     const items = testPrescription?.filter((val) => val?.itemname)?.map((item) => item?.itemname);
@@ -1477,27 +1494,36 @@ export const addTestsToCart = async (
     if (searchQueries?.data?.success) {
       const searchResults = searchQueries?.data?.data;
       const searchQueriesData = searchResults?.filter((item: any) => !!item);
-      const detailQueries = Promise.all(
-        searchQueriesData?.map((item: any) => detailQuery(`${item.itemId}`))
-      );
-      const detailQueriesData = (await detailQueries)?.map(
-        (item: any) => g(item, 'data', 'getInclusionsOfMultipleItems', 'inclusions', 'length') || 1 // updating testsIncluded
-      );
+      const getAllItemId = searchQueriesData?.map((item: any)=> Number(item?.diagnostic_item_id));
+      const getResponse = await fetchPricesQuery(getAllItemId)
+      const getPricesForItems =  getResponse?.data?.findDiagnosticsByItemIDsAndCityID?.diagnostics;
       setLoading?.(false);
       const finalArray: DiagnosticsCartItem[] = Array.from({
         length: searchQueriesData?.length,
       }).map((_, index) => {
-        const s = searchQueriesData?.[index];
-        const testIncludedCount = detailQueriesData?.[index];
+        const s = searchQueriesData?.[index];  
+        const findDetailedResult =  getPricesForItems?.find((val: any)=> Number(val?.itemId) == Number(s?.diagnostic_item_id));
+        const count = calculateInclusionsParameterCount(findDetailedResult);
+        const packageMrpForItem = findDetailedResult?.packageCalculatedMrp!;
+        const getDiagnosticPricingForItem = findDetailedResult?.diagnosticPricing;
+        const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
+        const inclusions = s?.inclusions == null ? [Number(s?.diagnostic_item_id)] : s?.inclusions,
         return {
           id: `${s?.diagnostic_item_id}`,
           name: s?.diagnostic_item_name,
-          price: 0,
-          specialPrice: undefined,
+          price: pricesForItem?.price,
+          specialPrice: pricesForItem?.specialPrice,
+          circlePrice: pricesForItem?.circlePrice,
+          circleSpecialPrice: pricesForItem?.circleSpecialPrice,
+          discountPrice: pricesForItem?.discountPrice,
+          discountSpecialPrice: pricesForItem?.discountSpecialPrice,
           mou: 1,
           thumbnail: '',
           collectionMethod: TEST_COLLECTION_TYPE.HC,
-          inclusions: s?.inclusions == null ? [Number(s?.diagnostic_item_id)] : s?.inclusions,
+          inclusions:inclusions,
+          gender : !!findDetailedResult ? DiagnosticItemGenderMapping(findDetailedResult?.gender!) : DiagnosticItemGenderMapping(DIAGNOSTIC_ITEM_GENDER.B),
+          parameterCount : !!count ? count : inclusions?.length,
+          isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG
         } as DiagnosticsCartItem;
       });
       return finalArray;

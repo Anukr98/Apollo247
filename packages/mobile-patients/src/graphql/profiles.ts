@@ -1770,6 +1770,7 @@ export const GET_PACKAGE_INCLUSIONS = gql`
         sampleTypeName
         testParameters
         name
+        gender
         testPreparationData
       }
     }
@@ -1946,6 +1947,7 @@ export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
         itemType
         rate
         gender
+        imageUrl
         itemRemarks
         city
         state
@@ -1963,6 +1965,18 @@ export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
           status
           startDate
           endDate
+        }
+        observations{
+          observationName
+          mandatoryValue
+        }
+        diagnosticInclusions{
+          name
+          itemId
+          observations{
+            observationName
+            mandatoryValue
+          }
         }
       }
     }
@@ -5836,6 +5850,7 @@ export const GET_PATIENT_LATEST_PRESCRIPTION = gql`
         diagnosticPrescription {
           itemId
           itemname
+          gender
           testInstruction
         }
       }
@@ -6678,6 +6693,7 @@ export const GET_DIAGNOSTICS_RECOMMENDATIONS = gql`
         itemId
         itemName
         gender
+        imageUrl
         observations{
           observationName
           mandatoryValue
@@ -7549,6 +7565,7 @@ export const DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS = gql`
         itemId
         itemName
         gender
+        imageUrl
         observations{
           observationName
           mandatoryValue

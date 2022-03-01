@@ -142,6 +142,7 @@ import {
   DIAGNOSTIC_PINCODE_SOURCE_TYPE,
   getPricesForItem,
   getParameterCount,
+  DIAGNOSTIC_CTA_ITEMS,
 } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import Carousel from 'react-native-snap-carousel';
@@ -150,7 +151,9 @@ import {
   DiagnosticAddresssSelected,
   DiagnosticAddToCartEvent,
   DiagnosticBannerClick,
+  DiagnosticCtaClicked,
   DiagnosticHomePageClicked,
+  DiagnosticHomePageRecommendationsViewed,
   DiagnosticHomePageWidgetClicked,
   DiagnosticLandingPageViewedEvent,
   DiagnosticPrescriptionSubmitted,
@@ -287,7 +290,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setNewAddressAddedHomePage,
     patientCartItems,
     modifiedOrder,
-    diagnosticSlot
+    diagnosticSlot,
   } = useDiagnosticsCart();
   const {
     serverCartItems: shopCartItems,
@@ -1716,7 +1719,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <TouchableOpacity activeOpacity={1} onPress={handleOnPress}>
         <ImageNative
-          resizeMode="cover"
+          resizeMode="stretch"
           style={{ width: '100%', minHeight: imgHeight }}
           source={{ uri: resizedImageUrl }}
           progressiveRenderingEnabled={true}
@@ -2629,6 +2632,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return widgetType?.length > 0 && widgetType?.map((wid: any) => renderWidgetType(wid));
   }
   function onPressSingleBookNow(item: any) {
+    DiagnosticAddToCartEvent(
+      topItemDetails?.[0]?.itemName || item?.itemTitle,
+      item?.itemId,
+      topItemDetails?.[0]?.price || item?.price,
+      item?.discountPrice,
+      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME,
+      item?.itemType,
+      string.common.homePageItem,
+      currentPatient,
+      isDiagnosticCircleSubscription
+    );
     addCartItem?.(item);
     _navigateToPatientsPage();
   }
@@ -2648,7 +2662,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         id,
         !!pincode ? Number(pincode) : 0,
         itemIds,
-        REPORT_TAT_SOURCE.TEST_DETAILS_PAGE
+        REPORT_TAT_SOURCE.CART_PAGE
       );
       if (result?.data?.getConfigurableReportTAT) {
         const getMaxReportTat = result?.data?.getConfigurableReportTAT?.preOrderReportTATMessage!;
@@ -2663,24 +2677,27 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }
 
   const topItem = AppConfig.Configuration.DIAGNOSTICS_HOME_TOP_ITEM_DETAILS;
-  const topItemDetails = topItem?.topItemDetails?.filter((item:any)=>{
-    return item?.cityId == cityId
+  const topItemDetails = topItem?.topItemDetails?.filter((item: any) => {
+    return item?.cityId == cityId;
   });
   useEffect(() => {
     if (topItemDetails?.length > 0) {
       fetchReportTat(topItemDetails?.[0]?.itemId);
     }
   }, [topItemDetails?.length]);
+
   function _navigateToDetailsPage(singleItemData: any, source: string) {
     props.navigation.navigate(AppRoutes.TestDetails, {
       itemId: source == 'cartSummary' ? singleItemData?.id : singleItemData?.itemId,
       comingFrom: AppRoutes.Tests,
+      source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME,
+      section: string.common.homePageItem,
     });
   }
 
   const renderSingleItem = () => {
     let singleItemFilterData: any[] = [];
-    let itemtype = ''
+    let itemtype = '';
     for (let index = 0; index < widgetsData?.length; index++) {
       const element = widgetsData?.[index];
       element?.diagnosticWidgetData?.filter((item: any) => {
@@ -2717,7 +2734,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
       topItemData?.itemImageUrl,
       getMandatoryParameterCount
     );
-    const slashedPrice = diagnosticsDisplayPrice(singleItemObj,isDiagnosticCircleSubscription)?.slashedPrice;
+    const slashedPrice = diagnosticsDisplayPrice(singleItemObj, isDiagnosticCircleSubscription)
+      ?.slashedPrice;
     return (
       <>
         {!!topItemData?.itemTitle && !!pricesForItem?.price ? (
@@ -2744,7 +2762,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               </Text>
             </View>
             <View style={styles.viewSecond}>
-              <View style={{ marginLeft: 45 }}>
+              <View style={{ marginLeft: 30 }}>
                 {reportMsg ? (
                   <View style={styles.blueFirst}>
                     <ClockBlue style={styles.blueIcon} />
@@ -2753,7 +2771,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 ) : null}
                 {topItemDetails?.[0]?.textLine2 ? (
                   <View style={styles.blueSecond}>
-                    <HomeBlue style={styles.blueIcon} />
+                    <HomeBlue style={styles.blueIcon1} />
                     <Text style={styles.blueText}>{topItemDetails?.[0]?.textLine2}</Text>
                   </View>
                 ) : null}
@@ -2888,6 +2906,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   };
 
+  useEffect(() => {
+    if (pastOrderRecommendations?.length > 0) {
+      const recommendationWidget = getRanking('0');
+      DiagnosticHomePageRecommendationsViewed(
+        pastOrderRecommendations,
+        currentPatient,
+        recommendationWidget?.[0]?.diagnosticWidgetData?.length,
+        pastOrderRecommendations?.length,
+        isDiagnosticCircleSubscription
+      )
+    }
+  }, [pastOrderRecommendations])
   const renderPastOrderRecommendations = (drupalRecommendations: any) => {
     const topTenPastRecommendations =
       pastOrderRecommendations?.length > 10
@@ -3044,7 +3074,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           <Button
             title={nameFormater(string.diagnostics.goToCart, 'upper')}
             onPress={() => _navigateToPatientsPage()}
-            style={{ width: '90%' }}
+            style={{ width: winWidth / 2.3 }}
           />
         </View>
       </View>
@@ -3439,7 +3469,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         <>
           <View style={{ backgroundColor: colors.WHITE }}>
             {renderDiagnosticHeader()}
-            {renderSeperator()}
             {renderSearchBar()}
             {renderExpressSlots()}
             <Modal
@@ -3595,11 +3624,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#EDFAFD',
     borderRadius: 10,
     alignSelf: 'center',
-    marginVertical: 20,
+    marginTop: 15,
   },
   itemFirst: {
     flexDirection: 'row',
-    width: '100%',
+    width: '90%',
     marginVertical: 10,
     paddingHorizontal: 10,
     justifyContent: 'space-between',
@@ -3620,13 +3649,14 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     justifyContent: 'center',
     marginRight: 10,
-    textDecorationLine:'line-through'
+    textDecorationLine: 'line-through',
   },
   viewSecond: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  blueIcon: { width: 18, height: 18 },
+  blueIcon: { width: 14, height: 14 },
+  blueIcon1: { width: 18, height: 14 },
   bottomGreenView: {
     backgroundColor: '#D7FAF3',
     justifyContent: 'flex-end',
@@ -3666,7 +3696,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 10,
     paddingVertical: 10,
   },
-  bottomText: { ...theme.viewStyles.text('SB', 16, '#46B29D', 1), alignSelf: 'center' },
+  bottomText: { ...theme.viewStyles.text('SB', 12, '#46B29D', 1), alignSelf: 'center' },
   closeContainer: {
     alignSelf: 'flex-end',
     margin: 10,
@@ -3692,7 +3722,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 15, theme.colors.SHERPA_BLUE, 1, 20),
     textAlign: 'left',
     width: '60%',
-    flexWrap:'wrap'
+    flexWrap: 'wrap',
   },
   bottomArea: {
     backgroundColor: colors.APP_GREEN,

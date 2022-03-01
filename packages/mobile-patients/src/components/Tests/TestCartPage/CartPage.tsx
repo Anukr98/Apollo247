@@ -1576,6 +1576,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   };
 
   const renderPreviousOrderItems = (item: orderListLineItems) => {
+    const getGroupPlan = item?.groupPlan;
+    const findPriceWithGroupPlan = item?.pricingObj?.find((val) => val?.groupPlan == getGroupPlan);
     return (
       <View style={styles.commonTax}>
         <View style={{ width: '65%' }}>
@@ -1589,7 +1591,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         <View style={styles.previousOrderView}>
           <Text style={[styles.commonText, styles.previousOrderPrice]}>
             {string.common.Rs}
-            {convertNumberToDecimal(item?.price) || null}
+            {!!findPriceWithGroupPlan
+              ? convertNumberToDecimal(findPriceWithGroupPlan?.price)
+              : convertNumberToDecimal(item?.price) || null}
           </Text>
         </View>
       </View>
@@ -1845,11 +1849,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         ? newArray.concat(recommedationData).concat(alsoAddListData)
         : recommedationData;
     const inclusionIdArray: any[] = [];
-    const inclusionIds = cartItems?.map((item) => {
-      item?.inclusions?.map((_item: any) => {
-        inclusionIdArray?.push(_item);
-      });
-    });
     const dataToRender = dataToShow?.filter((item: any) => {
       if (!!item?.diagnosticInclusions && item?.diagnosticInclusions?.length > 0) {
         return item?.diagnosticInclusions?.filter((_item: any) => {

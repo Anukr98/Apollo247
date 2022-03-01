@@ -163,7 +163,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
         return null;
       }
 
-      const imageUrl = getItem?.itemImageUrl;
+      const imageUrl = getItem?.itemImageUrl || getItem?.imageUrl;
       const name = getItem?.itemTitle;
 
       const numberOfParametersToShow = isDiagnosticCircleSubscription ? 3 : 2;

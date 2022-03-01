@@ -329,7 +329,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
 
 const styles = StyleSheet.create({
   packageSlashedPrice: {
-    ...theme.viewStyles.text('SB', isSmallDevice ? 9 : 10, theme.colors.SHERPA_BLUE, 0.6, 14),
+    ...theme.viewStyles.text('SB', isSmallDevice ? 9 : 10, theme.colors.SHERPA_BLUE_LIGHT, 1, 14),
     marginTop: 5,
     marginRight: 6,
   },

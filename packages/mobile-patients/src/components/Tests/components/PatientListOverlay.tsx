@@ -27,6 +27,7 @@ import LottieView from 'lottie-react-native';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { checkPatientWithSkuGender } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import { InfoMessage } from '@aph/mobile-patients/src/components/Tests/components/InfoMessage';
+import { BOTH_GENDER_ARRAY } from '@aph/mobile-patients/src/strings/AppConfig';
 const screenHeight = Dimensions.get('window').height;
 
 const { SHERPA_BLUE, APP_YELLOW, CARD_BG, WHITE, APP_GREEN, CLEAR } = theme.colors;
@@ -51,6 +52,7 @@ interface PatientListOverlayProps {
   removeAllSwitchRestrictions?: boolean;
   skuItem?: DiagnosticOrderLineItems[] | any;
   showGenderSkuMsg?: boolean;
+  skuGender?: string;
 }
 
 export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => {
@@ -67,6 +69,7 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
     removeAllSwitchRestrictions,
     skuItem,
     showGenderSkuMsg,
+    skuGender,
   } = props;
   const { allCurrentPatients } = useAllCurrentPatients();
   const [selectedPatient, setSelectedPatient] = useState<any>(patientSelected);
@@ -76,8 +79,13 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
   const renderPatientListItem = ({ index, item }: { index: number; item: any }) => {
     const age = getAge(item?.dateOfBirth);
     const isMinorAge = customStyle && age != null && age != undefined && age <= 10;
-    const isPatientGenderDisabled =
-      customStyle && !!skuItem && checkPatientWithSkuGender(skuItem, item);
+    const checkPatientSkuDisability =
+      customStyle && !!skuItem && checkPatientWithSkuGender(skuItem, item)?.nonValidPatient;
+    //if patient list has other, then it would always be eligible for switch except minor
+    const isPatientGenderDisabled = checkPatientSkuDisability
+      ? !BOTH_GENDER_ARRAY.includes(item?.gender?.toLowerCase()) && !isMinorAge
+      : checkPatientSkuDisability;
+
     const patientSalutation = !!item?.gender
       ? item?.gender === Gender.FEMALE
         ? 'Ms.'
@@ -218,7 +226,7 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
   const renderPatientMsg = () => {
     const msg = string.diagnostics.switchUhidMsg?.replace(
       '{{gender}}',
-      selectedPatient?.gender?.toLowerCase()
+      skuGender! || patientSelected?.gender?.toLowerCase()
     );
     return (
       <InfoMessage

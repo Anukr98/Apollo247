@@ -168,8 +168,8 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
         return null;
       }
 
-      const imageUrl = getItem?.itemImageUrl;
-      const name = getItem?.itemTitle || getItem?.itemName;
+      const imageUrl = getItem?.itemImageUrl || getItem?.imageUrl;
+      const name = getItem?.itemName || getItem?.itemTitle;
       const isAddedToCart = !!cartItems?.find(
         (items) => Number(items?.id) == Number(getItem?.itemId)
       );

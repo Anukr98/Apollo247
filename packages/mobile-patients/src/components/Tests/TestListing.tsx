@@ -396,6 +396,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
             inclusionData: _widget?.inclusionData || _diagItems?.inclusions,
             inclusions: _widget?.diagnosticInclusions,
             observations: _widget?.observations,
+            imageUrl: _widget?.imageUrl
           });
         }
       });

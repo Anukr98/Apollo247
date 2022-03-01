@@ -169,7 +169,7 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
         return null;
       }
 
-      const imageUrl = getItem?.itemImageUrl;
+      const imageUrl = getItem?.itemImageUrl || getItem?.imageUrl;
       const name = getItem?.itemTitle || getItem?.itemName;
       const {
         priceToShow,
@@ -269,7 +269,7 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
 
   const renderSkuName = (name: string, getItem: any) => {
     return (
-      <View style={{ minHeight: 40 }}>
+      <View style={{ minHeight: 40,width:'95%' }}>
         <Text style={[styles.itemNameText]} numberOfLines={2}>
           {name}
         </Text>
