@@ -3443,7 +3443,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         <>
           <View style={{ backgroundColor: colors.WHITE }}>
             {renderDiagnosticHeader()}
-            {renderSeperator()}
             {renderSearchBar()}
             {renderExpressSlots()}
             <Modal
