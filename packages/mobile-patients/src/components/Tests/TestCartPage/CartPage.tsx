@@ -1332,7 +1332,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     name: string,
     genderAgeText: string,
     salutation: string,
-    count: number
+    count: number,
+    data: any
   ) => {
     return (
       <View style={styles.patientNameCartItemView}>
@@ -1345,7 +1346,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           {!!genderAgeText && <Text style={styles.patientNameText}>{genderAgeText}</Text>}
         </View>
 
-        {!!count && renderEachPatientCartCount(count)}
+        {!!count && renderEachPatientCartCount(count, data)}
       </View>
     );
   };
@@ -1502,7 +1503,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                         patientName,
                         genderAgeText,
                         patientSalutation,
-                        patientItems?.length
+                        patientItems?.length,
+                        patientItems
                       )
                     : null}
                   {!!patientItems && patientItems?.length > 0 && (
@@ -1600,12 +1602,17 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     addPatientCartItem?.(patientId, allItems!);
   }
 
-  const renderEachPatientCartCount = (count: number) => {
+  const renderEachPatientCartCount = (count: number, data: any) => {
+    let testsCount = 0;
+    data?.map((item: any) => {
+      return (testsCount += item?.parameterCount);
+    });
+    console.log('testCount :>> ', testsCount);
     return (
       <View style={styles.cartCountView}>
-        <Text style={styles.cartCountText}>{`Cart Value | ${count} ${
+        <Text style={styles.cartCountText}>{`${count} ${
           count == 1 ? 'item' : 'items'
-        }`}</Text>
+        } | ${testsCount} ${testsCount == 1 ? 'test' : 'tests'} included`}</Text>
         <Text style={styles.cartCountText}>{`${string.common.Rs}${grandTotal}`}</Text>
       </View>
     );
