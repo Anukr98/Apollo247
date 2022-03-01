@@ -158,6 +158,7 @@ import {
   getAsyncStorageValues,
   formatUrl,
   checkCleverTapLoginStatus,
+  isEmptyObject,
   postOfferCardClickEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
@@ -2253,7 +2254,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           };
           postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Home Screen');
           postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Home Screen');
-          postDiagnosticHomepageViewedEvent('Homepage hero button')
+          postDiagnosticHomepageViewedEvent('Homepage hero button');
           props.navigation.navigate('TESTS', { focusSearch: true, homeScreenAttributes });
         });
       },
@@ -2276,7 +2277,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED,
             'Home Screen'
           );
-          postHomepageEvent('Homepage banner')
+          postHomepageEvent('Homepage banner');
           props.navigation.navigate(AppRoutes.DoctorSearch);
         });
       },
@@ -2350,26 +2351,28 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const postHomepageEvent = (source: 'Homepage banner' | 'Offer widget HP') => {
     const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_HOMEPAGE_VIEWED] = {
       'Nav src': source,
-      'User': `${currentPatient?.firstName} ${currentPatient?.lastName}`,
-      'UHID': currentPatient?.uhid,
-      'Gender': currentPatient?.gender,
+      User: `${currentPatient?.firstName} ${currentPatient?.lastName}`,
+      UHID: currentPatient?.uhid,
+      Gender: currentPatient?.gender,
       'Mobile Number': currentPatient?.mobileNumber,
-      'Customer Id': currentPatient?.id
-    }
-    postCleverTapEvent(CleverTapEventName.CONSULT_HOMEPAGE_VIEWED, eventAttributes)
-  }
+      'Customer Id': currentPatient?.id,
+    };
+    postCleverTapEvent(CleverTapEventName.CONSULT_HOMEPAGE_VIEWED, eventAttributes);
+  };
 
-  const postDiagnosticHomepageViewedEvent = (source: 'Homepage hero button' | 'Offer widget HP') => {
+  const postDiagnosticHomepageViewedEvent = (
+    source: 'Homepage hero button' | 'Offer widget HP'
+  ) => {
     const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_HOMEPAGE_VIEWED] = {
       'Nav src': source,
-      'User': `${currentPatient?.firstName} ${currentPatient?.lastName}`,
-      'UHID': currentPatient?.uhid,
-      'Gender': currentPatient?.gender,
+      User: `${currentPatient?.firstName} ${currentPatient?.lastName}`,
+      UHID: currentPatient?.uhid,
+      Gender: currentPatient?.gender,
       'Mobile Number': currentPatient?.mobileNumber,
-      'Customer Id': currentPatient?.id
-    }
-    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_HOMEPAGE_VIEWED, eventAttributes)
-  }
+      'Customer Id': currentPatient?.id,
+    };
+    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_HOMEPAGE_VIEWED, eventAttributes);
+  };
 
   const listValues: menuOptions[] = [...listOptions];
 
@@ -4298,7 +4301,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const navigateCTAActions = (action: any, url: string) => {
     if (action?.type == 'REDIRECT') {
       if (action.cta_action == 'SPECIALITY_LISTING') {
-        postHomepageEvent('Offer widget HP')
+        postHomepageEvent('Offer widget HP');
         props.navigation.navigate(AppRoutes.DoctorSearch);
       } else if (action.cta_action == 'PHARMACY_LANDING') {
         props.navigation.navigate('MEDICINES');
@@ -4317,7 +4320,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         const homeScreenAttributes = {
           Source: DiagnosticHomePageSource.BANNER,
         };
-        postDiagnosticHomepageViewedEvent('Offer widget HP')
+        postDiagnosticHomepageViewedEvent('Offer widget HP');
         props.navigation.navigate('TESTS', { homeScreenAttributes });
       } else if (action.cta_action == 'MEMBERSHIP_DETAIL_CIRCLE') {
         props.navigation.navigate('MembershipDetails', {
@@ -5884,10 +5887,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     const eventAttributes = {
       'Nav src': 'Searchbar',
       'Test name': nav_props?.testName,
-      'Test id': nav_props?.itemId
-    }
-    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED, eventAttributes)
-  }
+      'Test id': nav_props?.itemId,
+    };
+    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED, eventAttributes);
+  };
 
   const onClickSearchItem = (key: string, pdp: boolean = false, nav_props: any = {}) => {
     // todo: for view all results
@@ -5913,27 +5916,31 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           'Test Name': nav_props?.testName,
           Vertical: 'Diagnostic',
         });
-        if(pdp) {
-          postProductListingPageViewedEvent(nav_props)
-          props.navigation.navigate(AppRoutes.TestDetails, nav_props)
-        }
-        else {
-          props.navigation.navigate(AppRoutes.SearchTestScene, { searchText: searchText, movedFrom: 'searchbar' });  
+        if (pdp) {
+          postProductListingPageViewedEvent(nav_props);
+          props.navigation.navigate(AppRoutes.TestDetails, nav_props);
+        } else {
+          props.navigation.navigate(AppRoutes.SearchTestScene, {
+            searchText: searchText,
+            movedFrom: 'searchbar',
+          });
         }
         break;
 
       case MedicalRecordType.CONSULTATION:
-        postHomeCleverTapEvent(CleverTapEventName.OPTION_FROM_SEARCH_BAR_CLICKED, 'Search bar', {
-          'Doctor Name': nav_props?.doctorName,
-          Speciality: nav_props?.speciality,
-          Vertical: 'Consult',
-        });
-        if(pdp) {
-          postDoctorProfileViewedEvent(nav_props)
-          props.navigation.navigate(AppRoutes.DoctorDetails, nav_props)
-        }
-        else
-          props.navigation.navigate(AppRoutes.DoctorSearchListing, nav_props);
+        const consultOptionClicked = !isEmptyObject(nav_props);
+        consultOptionClicked &&
+          postHomeCleverTapEvent(CleverTapEventName.OPTION_FROM_SEARCH_BAR_CLICKED, 'Search bar', {
+            'Doctor Name': nav_props?.doctorName,
+            Speciality: nav_props?.speciality,
+            Vertical: 'Consult',
+          });
+        pdp && postDoctorProfileViewedEvent(nav_props);
+        consultOptionClicked
+          ? pdp
+            ? props.navigation.navigate(AppRoutes.DoctorDetails, nav_props)
+            : props.navigation.navigate(AppRoutes.DoctorSearchListing, nav_props)
+          : props.navigation.navigate(AppRoutes.DoctorSearch, { searchText });
         break;
     }
   };
@@ -5943,10 +5950,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       'Nav src': 'Searchbar',
       'Doctor id': nav_props?.doctorId,
       'Doctor Name': nav_props?.doctorName,
-      'Specialty': nav_props?.speciality
-    }
-    postCleverTapEvent(CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED, eventAttributes)
-  }
+      Specialty: nav_props?.speciality,
+    };
+    postCleverTapEvent(CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED, eventAttributes);
+  };
 
   const renderSearchItem = ({ key, data }: any, index: number) => {
     return (

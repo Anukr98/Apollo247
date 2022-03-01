@@ -554,7 +554,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const scrollCount = useRef<number>(0);
   const [searchResults, setSearchResults] = useState<any>(null);
 
-  const isFromDeepLink = props.navigation.getParam('isFromDeeplink')
+  const isFromDeepLink = props.navigation.getParam('isFromDeeplink');
 
   useEffect(() => {
     if (!currentPatient) {
@@ -565,8 +565,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const client = useApolloClient();
 
   useEffect(() => {
-    if(isFromDeepLink)
-      postHomepageEvent()
+    if (isFromDeepLink) postHomepageEvent();
     const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       BackHandler.addEventListener('hardwareBackPress', backDataFunctionality);
     });
@@ -582,14 +581,14 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const postHomepageEvent = () => {
     const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_HOMEPAGE_VIEWED] = {
       'Nav src': 'Direct',
-      'User': `${currentPatient?.firstName} ${currentPatient?.lastName}`,
-      'UHID': currentPatient?.uhid,
-      'Gender': currentPatient?.gender,
+      User: `${currentPatient?.firstName} ${currentPatient?.lastName}`,
+      UHID: currentPatient?.uhid,
+      Gender: currentPatient?.gender,
       'Mobile Number': currentPatient?.mobileNumber,
-      'Customer Id': currentPatient?.id
-    }
-    postCleverTapEvent(CleverTapEventName.CONSULT_HOMEPAGE_VIEWED, eventAttributes)
-  }
+      'Customer Id': currentPatient?.id,
+    };
+    postCleverTapEvent(CleverTapEventName.CONSULT_HOMEPAGE_VIEWED, eventAttributes);
+  };
 
   const moveSelectedToTop = () => {
     if (currentPatient !== undefined) {
