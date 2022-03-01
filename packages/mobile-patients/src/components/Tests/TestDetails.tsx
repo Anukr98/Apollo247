@@ -408,10 +408,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     if (!!testInfo) {
       if (testInfo?.inclusions == null || testInfo?.inclusions?.length == 1) {
         if (frequentlyBroughtRecommendations?.length == 0 || topBookedTests?.length == 0) {
-          getFrequentlyBroughtRecommendations(testInfo?.ItemID);
+          getFrequentlyBroughtRecommendations(testInfo?.ItemID || itemId);
         }
         if (packageRecommendations?.length == 0) {
-          getPackageRecommendationsForTest(testInfo?.ItemID);
+          getPackageRecommendationsForTest(testInfo?.ItemID || itemId);
         }
       }
     }
@@ -717,34 +717,39 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   };
 
   async function getPackageRecommendationsForTest(itemId: string | number) {
-    setPackageRecommendationsShimmer(true);
-    try {
-      const getPackageRecommendationsResponse = await getDiagnosticsPackageRecommendations(
-        client,
-        Number(itemId!),
-        Number(cityIdToUse)
-      );
-      if (getPackageRecommendationsResponse?.data?.getDiagnosticPackageRecommendations) {
-        const getResult =
-          getPackageRecommendationsResponse?.data?.getDiagnosticPackageRecommendations
-            ?.packageRecommendations;
-        let packageArray: any = [];
-        getResult?.map((item) => {
-          packageArray.push({
-            ...item,
-            itemTitle: item?.itemName,
-            inclusionData: item?.diagnosticInclusions,
+    if (!!itemId) {
+      setPackageRecommendationsShimmer(true);
+      try {
+        const getPackageRecommendationsResponse = await getDiagnosticsPackageRecommendations(
+          client,
+          Number(itemId!),
+          Number(cityIdToUse)
+        );
+        if (getPackageRecommendationsResponse?.data?.getDiagnosticPackageRecommendations) {
+          const getResult =
+            getPackageRecommendationsResponse?.data?.getDiagnosticPackageRecommendations
+              ?.packageRecommendations;
+          let packageArray: any = [];
+          getResult?.map((item) => {
+            packageArray.push({
+              ...item,
+              itemTitle: item?.itemName,
+              inclusionData: item?.diagnosticInclusions,
+            });
           });
-        });
-        setPackageRecommendations(packageArray);
-      } else {
+          setPackageRecommendations(packageArray);
+        } else {
+          setPackageRecommendations([]);
+        }
+        setPackageRecommendationsShimmer(false);
+      } catch (error) {
         setPackageRecommendations([]);
+        setPackageRecommendationsShimmer(false);
+        CommonBugFender('TestDetails_getPackageRecommendationsForTest', error);
       }
-      setPackageRecommendationsShimmer(false);
-    } catch (error) {
+    } else {
       setPackageRecommendations([]);
-      setPackageRecommendationsShimmer(false);
-      CommonBugFender('TestDetails_getPackageRecommendationsForTest', error);
+      CommonBugFender('TestDetails_getPackageRecommendationsForTest', 'unable to fetch itemId');
     }
   }
 
@@ -838,47 +843,53 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   }
 
   async function getFrequentlyBroughtRecommendations(itemId: number | string) {
-    setFrequentlyBroughtShimmer(true);
-    try {
-      const recommedationResponse: any = await getDiagnosticCartRecommendations(
-        client,
-        [Number(itemId)],
-        10
-      );
-      if (recommedationResponse?.data?.getDiagnosticItemRecommendations) {
-        const getItems = recommedationResponse?.data?.getDiagnosticItemRecommendations?.itemsData;
-        if (getItems?.length > 0) {
-          const _itemIds = getItems?.map((item: any) => Number(item?.itemId));
-          const alreadyAddedItems = isModify
-            ? cartItemsWithId.concat(modifiedOrderItemIds)
-            : cartItemsWithId;
-          //already added items needs to be hidden
-          const _filterItemIds = _itemIds?.filter((val: any) =>
-            !!alreadyAddedItems && alreadyAddedItems?.length
-              ? !alreadyAddedItems?.includes(val)
-              : val
-          );
-          fetchWidgetPrices(
-            _filterItemIds,
-            cityIdToUse,
-            getWidgetTitle?.frequentlyBrought,
-            getItems
-          );
+    if (!!itemId) {
+      setFrequentlyBroughtShimmer(true);
+      try {
+        const recommedationResponse: any = await getDiagnosticCartRecommendations(
+          client,
+          [Number(itemId)],
+          10
+        );
+        if (recommedationResponse?.data?.getDiagnosticItemRecommendations) {
+          const getItems = recommedationResponse?.data?.getDiagnosticItemRecommendations?.itemsData;
+          if (getItems?.length > 0) {
+            const _itemIds = getItems?.map((item: any) => Number(item?.itemId));
+            const alreadyAddedItems = isModify
+              ? cartItemsWithId.concat(modifiedOrderItemIds)
+              : cartItemsWithId;
+            //already added items needs to be hidden
+            const _filterItemIds = _itemIds?.filter((val: any) =>
+              !!alreadyAddedItems && alreadyAddedItems?.length
+                ? !alreadyAddedItems?.includes(val)
+                : val
+            );
+            fetchWidgetPrices(
+              _filterItemIds,
+              cityIdToUse,
+              getWidgetTitle?.frequentlyBrought,
+              getItems
+            );
+          } else {
+            fetchTopBookedTests(itemId);
+            setFrequentlyBroughtShimmer(false);
+            setFrequentlyBroughtRecommendations([]);
+          }
         } else {
           fetchTopBookedTests(itemId);
           setFrequentlyBroughtShimmer(false);
           setFrequentlyBroughtRecommendations([]);
         }
-      } else {
+      } catch (error) {
         fetchTopBookedTests(itemId);
         setFrequentlyBroughtShimmer(false);
         setFrequentlyBroughtRecommendations([]);
+        CommonBugFender('TestDetails_fetchRecommendations', error);
       }
-    } catch (error) {
+    } else {
       fetchTopBookedTests(itemId);
-      setFrequentlyBroughtShimmer(false);
       setFrequentlyBroughtRecommendations([]);
-      CommonBugFender('TestDetails_fetchRecommendations', error);
+      CommonBugFender('TestDetails_fetchRecommendations', 'unable to set itemId');
     }
   }
 

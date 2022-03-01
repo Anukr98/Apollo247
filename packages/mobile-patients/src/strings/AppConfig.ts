@@ -308,7 +308,7 @@ const appStaticVariables = {
         ctaPhoneNumber: '040-4821-3009',
         ctaText: 'Call to Order',
         ctaItemIds: [2446],
-        ctaDisplayHrsArray: [8,9,10,11]
+        ctaDisplayHrsArray: [8, 9, 10, 11],
       },
     ],
     ctaDetailsDefault: {
@@ -317,12 +317,12 @@ const appStaticVariables = {
       ctaPhoneNumber: '040-4821-3322',
       ctaText: 'Call to Order',
       ctaItemIds: [2446],
-      ctaDisplayHrsArray: [8,9,10,11]
+      ctaDisplayHrsArray: [8, 9, 10, 11],
     },
   },
   DIAGNOSTICS_SHOW_UPLOAD_PRESCRIPTION_SECTION: true,
   DIAGNOSTICS_HOME_SINGLE_ITEM: {
-    id: "2446",
+    id: '2446',
   },
   DIAGNOSTICS_HOME_PAGE_BANNER_HEIGHT: 160,
   DIAGNOSTICS_PHLEBO_CALL_NUMBER: '08046807674',
@@ -343,8 +343,8 @@ const appStaticVariables = {
     frequentlyBrought: string.diagnostics.frequentlyBrought,
     topBookedTests: string.diagnostics.topBookedTests,
     similarPackages: string.diagnostics.similarPackages,
-    topPackages: "Top Packages with ",
-    relatedPackages : string.diagnosticsDetails.relatedPackages
+    topPackages: 'Top Packages with ',
+    relatedPackages: string.diagnosticsDetails.relatedPackages,
   },
   DeliveryIn_TAT_Text: 'Express Delivery',
   WHATSAPP_TO_ORDER: {
@@ -383,7 +383,9 @@ const appStaticVariables = {
     },
   ],
   DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER_TEXT: string.diagnosticsCartPage.reviewPagePolicyText,
-  DIAGNOSTICS_SHOW_HEALTH_CREDITS: true 
+  DIAGNOSTICS_SHOW_HEALTH_CREDITS: true,
+  APOLLO247_API_KEY: '',
+  ACTIVATE_NEW_JWT_TOKEN: false,
 };
 
 const DEV_top_specialties = [
@@ -1703,8 +1705,9 @@ enum DiagnosticBannerVisible {
 }
 
 export const DIANOSTIC_BANNER_VISIBLE_ARRAY = [
-  DiagnosticBannerVisible.APP, DiagnosticBannerVisible.Both
-]
+  DiagnosticBannerVisible.APP,
+  DiagnosticBannerVisible.Both,
+];
 
 export const TestsNewFeedbackData = {
   options: [

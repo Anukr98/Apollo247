@@ -30,16 +30,16 @@ export const LoginCarousel: React.FC<Props> = ({ focused }) => {
       const { consult, diagnostic, pharma } = data?.data || {};
       setdata([
         {
-          image: require('@aph/mobile-patients/src/images/home/loginBanner1.webp'),
+          image: require('@aph/mobile-patients/src/images/home/login_banner1.webp'),
           text: pharma?.title,
         },
         {
-          image: require('@aph/mobile-patients/src/images/home/loginBanner2.webp'),
-          text: consult?.title,
+          image: require('@aph/mobile-patients/src/images/home/login_banner2.webp'),
+          text: diagnostic?.title,
         },
         {
-          image: require('@aph/mobile-patients/src/images/home/loginBanner3.webp'),
-          text: diagnostic?.title,
+          image: require('@aph/mobile-patients/src/images/home/login_banner3.webp'),
+          text: consult?.title,
         },
       ]);
     } catch (err) {
@@ -50,12 +50,8 @@ export const LoginCarousel: React.FC<Props> = ({ focused }) => {
   const renderLoginCarousel = ({ item }: { item: Data }) => {
     return (
       <View>
-        <Image
-          source={item?.image}
-          resizeMode="contain"
-          style={{ height: imageHeight, width }}
-        />
-        <View style={{ alignItems: 'center', marginTop: 40 }}>
+        <Image source={item?.image} resizeMode="contain" style={{ height: imageHeight, width }} />
+        <View style={styles.descriptionContainer}>
           <Text style={styles.imageTitle}>{item?.text}</Text>
         </View>
       </View>
@@ -74,7 +70,7 @@ export const LoginCarousel: React.FC<Props> = ({ focused }) => {
   );
 
   return (
-    <View style={{ marginTop: '5%', height: height > 650 ? height * 0.4 : height * 0.35 }}>
+    <View style={{ marginTop: '5%', height: height * 0.4 }}>
       <Carousel
         onSnapToItem={setSlideIndex}
         sliderWidth={width}
@@ -108,5 +104,12 @@ const styles = StyleSheet.create({
   imageTitle: {
     ...theme.fonts.IBMPlexSansMedium(18),
     color: theme.colors.LOGIN_BANNER_TEXT,
+    textAlign: 'center',
+  },
+  descriptionContainer: {
+    alignItems: 'center',
+    marginTop: 40,
+    width: '80%',
+    alignSelf: 'center',
   },
 });

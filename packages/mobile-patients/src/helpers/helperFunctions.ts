@@ -126,6 +126,7 @@ import Share from 'react-native-share';
 import { getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientAddressObj } from '../graphql/types/getDiagnosticOrderDetails';
 import { handleOpenURL, pushTheView } from './deeplinkRedirection';
 import DeviceInfo from 'react-native-device-info';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 
 const width = Dimensions.get('window').width;
 
@@ -3125,17 +3126,17 @@ export const removeConsecutiveComma = (value: string) => {
 
 export const calculateCashbackForItem = (
   price: number,
-  type_id: string,
-  subcategory: string | null,
+  type_id: string | undefined,
+  subcategory: string | null | undefined,
   sku: string
 ) => {
   try {
     const { circleCashback } = useShoppingCart();
-    const categoryLevelkey = type_id ? type_id?.toUpperCase() : '';
+    const categoryLevelkey = !!type_id ? type_id?.toUpperCase() : '';
     const subCategoryLevelkey =
-      type_id && subcategory ? `${type_id?.toUpperCase()}~${subcategory}` : '';
+      !!type_id && !!subcategory ? `${type_id?.toUpperCase()}~${subcategory}` : '';
     const skuLevelkey =
-      type_id && subcategory && sku ? `${type_id?.toUpperCase()}~${subcategory}~${sku}` : '';
+      !!type_id && !!subcategory && sku ? `${type_id?.toUpperCase()}~${subcategory}~${sku}` : '';
     let cashbackFactor = 0;
     if (skuLevelkey !== '' && circleCashback?.[skuLevelkey] >= 0) {
       cashbackFactor = circleCashback?.[skuLevelkey];
@@ -3147,7 +3148,7 @@ export const calculateCashbackForItem = (
       cashbackFactor = 0;
     }
     const cashback = cashbackFactor ? ((price * cashbackFactor) / 100).toFixed(2) : '0';
-    return parseInt(cashback, 10) || 0;
+    return Number(cashback) || 0;
   } catch {
     return 0;
   }
@@ -4279,13 +4280,6 @@ export const getIOSPackageName = (packageName: string) => {
   }
 };
 
-export const getAsyncStorageValues = async () => {
-  const token = await AsyncStorage.getItem('jwt');
-  let user = await AsyncStorage.getItem('currentPatient');
-  user = JSON.parse(user)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber;
-  return [token, user];
-};
-
 export const getCirclePlanDetails = async (
   mobile_number: string,
   client: any
@@ -4313,6 +4307,7 @@ export const formatUrl = (url: string, token: string, userMobileNumber: string):
   if (queryParamsDelimiterIndex !== -1)
     uri = uri.concat(`&utm_token=${token}&utm_mobile_number=${userMobileNumber}`);
   else uri = uri.concat(`?utm_token=${token}&utm_mobile_number=${userMobileNumber}`);
+
   return uri;
 };
 

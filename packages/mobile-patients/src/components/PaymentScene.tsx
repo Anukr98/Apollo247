@@ -22,7 +22,6 @@ import {
   postAppsFlyerEvent,
   postFirebaseEvent,
   postCleverTapEvent,
-  getAsyncStorageValues,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { WebView } from 'react-native-webview';
 import {
@@ -102,6 +101,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const [isfocused, setisfocused] = useState<boolean>(false);
   const [token, setToken] = useState<string | null>('');
   const [userMobileNumber, setUserMobileNumber] = useState<string | null>('');
+  const { returnAuthToken } = useAuth();
 
   const { pharmacyUserTypeAttribute } = useAppCommonData();
 
@@ -128,11 +128,8 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
 
   useEffect(() => {
     const saveSessionValues = async () => {
-      const [loginToken, phoneNumber] = await getAsyncStorageValues();
-      setToken(JSON.parse(loginToken));
-      setUserMobileNumber(
-        JSON.parse(phoneNumber)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber
-      );
+      returnAuthToken?.().then(setToken);
+      setUserMobileNumber(currentPatient?.mobileNumber);
     };
     saveSessionValues();
     BackHandler.addEventListener('hardwareBackPress', handleBack);

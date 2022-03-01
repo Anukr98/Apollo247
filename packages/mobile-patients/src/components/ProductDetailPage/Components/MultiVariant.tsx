@@ -38,7 +38,7 @@ export const MultiVariant: React.FC<MultiVariantProps> = (props) => {
 
   useEffect(() => {
     checkAvailability();
-  }, [pincode]);
+  }, [pincode, currentSku]);
 
   const checkAvailability = () => {
     const skus = [];
@@ -67,9 +67,9 @@ export const MultiVariant: React.FC<MultiVariantProps> = (props) => {
               (resData) => resData?.sku === data?.sku
             );
             if (checkExist?.[0]?.exist) {
-              return { ...data, available: true };
+              return { ...data, available: 1 };
             }
-            return { ...data, available: false };
+            return { ...data, available: 0 };
           });
           setSkuAvailability(availabilityInfo);
         }
@@ -107,19 +107,22 @@ export const MultiVariant: React.FC<MultiVariantProps> = (props) => {
   };
 
   const handleClick = (variant, code) => {
-    let newSelectedItems = [...selectedOptions];
+    const newSelectedItems = [...selectedOptions];
     newSelectedItems[variant] = code;
-    let sku = multiVariantProducts?.[newSelectedItems.join('_')]?.sku;
+    const sku = multiVariantProducts?.[newSelectedItems.join('_')]?.sku;
     if (sku) {
       setSelectedOptions(newSelectedItems);
       onSelectVariant?.(sku);
     } else {
-      const selectedItem = Object.keys(multiVariantProducts)?.filter((item) =>
+      const selectedItems = Object.keys(multiVariantProducts)?.filter((item) =>
         item.includes(newSelectedItems?.[variant])
       );
-      let sku = multiVariantProducts?.[selectedItem?.[0]]?.sku;
+      // selected item may contain more than one matching elements
+      // we require first selected item in case main attribute is changed
+      const firstSelectedItem = selectedItems?.[0];
+      const sku = multiVariantProducts?.[firstSelectedItem]?.sku;
       if (sku) {
-        setSelectedOptions(selectedItem);
+        setSelectedOptions(firstSelectedItem?.split('_'));
         onSelectVariant?.(sku);
       }
     }

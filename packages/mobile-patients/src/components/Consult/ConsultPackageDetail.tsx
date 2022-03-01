@@ -75,6 +75,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     marginVertical: 7,
     marginHorizontal: 5,
+    alignItems: 'center',
   },
   planItemContainerSelected: {
     ...theme.viewStyles.cardViewStyle,
@@ -85,13 +86,14 @@ const styles = StyleSheet.create({
     marginVertical: 7,
     borderColor: theme.colors.APP_GREEN,
     borderWidth: 1,
+    alignItems: 'center',
   },
   singleUserPackageUserIcon: { height: 14, width: 14, marginHorizontal: 8 },
   familyPackageUserIcon: { height: 18, width: 18, marginHorizontal: 8 },
 
   planTitle: {
     ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE),
-    marginRight: 24,
+    marginRight: 50,
   },
   planBenefitsTitle: {
     marginTop: 16,
@@ -205,7 +207,7 @@ export const ConsultPackageDetail: React.FC<ConsultPackageDetailProps> = (props)
             setSeletectedPlanIndex(0);
           } else {
             const preSelectedIndex = Plandata?.findIndex((plan: any) => !!plan?.PlanPreSelected);
-            !!preSelectedIndex && preSelectedIndex > -1 && setSeletectedPlanIndex(preSelectedIndex);
+            preSelectedIndex > -1 && setSeletectedPlanIndex(preSelectedIndex);
           }
           setPackageDetailData(response?.data);
         } else {

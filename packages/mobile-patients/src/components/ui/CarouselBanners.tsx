@@ -4,6 +4,7 @@ import {
   TouchableOpacity,
   ImageBackground,
   Text,
+  Image as ImageNative,
   StyleSheet,
   Image,
   Linking,
@@ -57,6 +58,8 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+
+const { width: winWidth, height: winHeight } = Dimensions.get('window');
 
 interface CarouselProps extends NavigationScreenProps {
   circleActivated?: boolean;
@@ -222,7 +225,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
   const renderHdfcSliderItem = ({ item }) => {
     const { cta_action, banner_template_info, _id } = item;
     const fineText = item?.banner_template_info?.fineText;
-    const bannerUri = getMobileURL(item.banner);
+    const bannerUri = getMobileURL(item.banner) + '?imwidth=' + Math.floor(winWidth);
     const isDynamicBanner = item?.banner_template_info?.headerText1;
     const headerText1 = item?.banner_template_info?.headerText1;
     const headerText2 = item?.banner_template_info?.headerText2;
@@ -266,28 +269,43 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
           },
         ]}
       >
-        <ImageBackground
-          style={{
-            aspectRatio: 16 / 7,
-          }}
-          source={{
-            uri: bannerUri,
-          }}
-          resizeMode={'cover'}
-          borderRadius={6}
-        >
-          <View style={styles.bannerContainer}>
-            {headerText1 ? renderBannerText(headerText1) : null}
-            {headerText2 ? renderBannerText(headerText2) : null}
-            {headerText3 ? renderBannerText(headerText3) : null}
-            {subHeaderText1 ? renderBannerText(subHeaderText1, true, true) : null}
-            {subHeaderText2 ? renderBannerText(subHeaderText2, true) : null}
-          </View>
-          <View style={styles.bottomView}>
-            {renderUpgradeBtn(item)}
-            {fineText ? <Text style={styles.regularText}>{fineText}</Text> : null}
-          </View>
-        </ImageBackground>
+        {!subHeaderText2 && !btnTxt && !headerText3 ? (
+          <ImageNative
+            resizeMode="cover"
+            style={{ aspectRatio: 16 / 7, backgroundColor: theme.colors.OFF_WHITE_DARK }}
+            source={{
+              uri: bannerUri,
+            }}
+            fadeDuration={50}
+            borderRadius={6}
+            progressiveRenderingEnabled={true}
+          />
+        ) : (
+          <ImageBackground
+            style={{
+              aspectRatio: 16 / 7,
+            }}
+            source={{
+              uri: bannerUri,
+            }}
+            fadeDuration={50}
+            resizeMode={'cover'}
+            borderRadius={6}
+            progressiveRenderingEnabled={true}
+          >
+            <View style={styles.bannerContainer}>
+              {headerText1 ? renderBannerText(headerText1) : null}
+              {headerText2 ? renderBannerText(headerText2) : null}
+              {headerText3 ? renderBannerText(headerText3) : null}
+              {subHeaderText1 ? renderBannerText(subHeaderText1, true, true) : null}
+              {subHeaderText2 ? renderBannerText(subHeaderText2, true) : null}
+            </View>
+            <View style={styles.bottomView}>
+              {renderUpgradeBtn(item)}
+              {fineText ? <Text style={styles.regularText}>{fineText}</Text> : null}
+            </View>
+          </ImageBackground>
+        )}
       </TouchableOpacity>
     );
   };

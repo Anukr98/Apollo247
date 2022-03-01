@@ -130,6 +130,7 @@ import {
   updatePatientAppVersion,
   getDiagnosticSearchResults,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { Cache } from 'react-native-cache';
 import {
   FirebaseEventName,
   PatientInfoFirebase,
@@ -155,7 +156,7 @@ import {
   getAge,
   removeObjectNullUndefinedProperties,
   isValidSearch,
-  getAsyncStorageValues,
+  fileToBase64,
   formatUrl,
   checkCleverTapLoginStatus,
   isEmptyObject,
@@ -196,6 +197,7 @@ import {
   Keyboard,
   TextInput,
   BackHandler,
+  Image as ImageNative,
 } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { ScrollView, Switch } from 'react-native-gesture-handler';
@@ -226,6 +228,7 @@ import {
   renderBannerShimmer,
   renderGlobalSearchShimmer,
   renderAppointmentCountShimmer,
+  renderCircleBox,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import { ConsultedDoctorsCard } from '@aph/mobile-patients/src/components/ConsultRoom/Components/ConsultedDoctorsCard';
 import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/deeplinkRedirection';
@@ -248,6 +251,8 @@ import { useReferralProgram } from '@aph/mobile-patients/src/components/Referral
 import { setItem, getItem } from '@aph/mobile-patients/src/helpers/TimedAsyncStorage';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 import { UpdateAppPopup } from '@aph/mobile-patients/src/components/ui/UpdateAppPopup';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
+import DeviceInfo from 'react-native-device-info';
 
 const { Vitals } = NativeModules;
 
@@ -665,13 +670,20 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     width: '93%',
   },
-
   circleCardsContainer: {
     flex: 1,
     flexDirection: 'row',
     flexWrap: 'wrap',
     marginHorizontal: 4,
     marginVertical: 8,
+  },
+  bannerDots: {
+    height: 6,
+    borderRadius: 4,
+    marginHorizontal: 4,
+    justifyContent: 'flex-start',
+    backgroundColor: theme.colors.CAROUSEL_INACTIVE_DOT,
+    width: 6,
   },
   circleCards: {
     ...theme.viewStyles.cardViewStyle,
@@ -1058,6 +1070,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
     marginTop: 6,
   },
+  medCTAButton: {
+    width: 106,
+    height: 32,
+    borderRadius: 4,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 0,
+  },
 });
 
 const RewardStatus = {
@@ -1115,6 +1134,14 @@ export const tabBarOptions: TabBarOptions[] = [
 
 export interface HomeScreenProps extends NavigationScreenProps {}
 export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
+  const homeCache = new Cache({
+    namespace: 'home',
+    policy: {
+      maxEntries: 100,
+    },
+    backend: AsyncStorage,
+  });
+
   const { isIphoneX } = DeviceHelper();
   const {
     setLocationDetails,
@@ -1171,12 +1198,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [membershipPlans, setMembershipPlans] = useState<any>([]);
   const [circleDataLoading, setCircleDataLoading] = useState<boolean>(true);
-  const {
-    getPatientApiCall,
-    buildApolloClient,
-    validateAndReturnAuthToken,
-    checkIsAppDepricated,
-  } = useAuth();
+  const { getPatientApiCall, returnAuthToken, checkIsAppDepricated } = useAuth();
   const [selectedProfile, setSelectedProfile] = useState<string>('');
   const [isLocationSearchVisible, setLocationSearchVisible] = useState(false);
   const [showList, setShowList] = useState<boolean>(false);
@@ -1242,12 +1264,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const cartItemsCount = cartItems?.length + serverCartItems?.length;
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
-  const [previousPatient, setPreviousPatient] = useState<any>([]);
+  const [previousPatient, setPreviousPatient] = useState<any>(currentPatient);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [menuViewOptions, setMenuViewOptions] = useState<number[]>([]);
   const [currentAppointments, setCurrentAppointments] = useState<string>('0');
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
-  const [appointmentLoading, setAppointmentLoading] = useState<boolean>(false);
   const [enableCM, setEnableCM] = useState<boolean>(true);
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [isWEGFired, setWEGFired] = useState(false);
@@ -1265,6 +1286,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const circleActivatedRef = useRef<boolean>(circleActivated);
   const [referAndEarnPrice, setReferAndEarnPrice] = useState('100');
   const scrollCount = useRef<number>(0);
+
+  //banner
+  const [bannerFirstImage, setBannerFirstImage] = useState<string>('');
+  const [showProxyBannerContainer, setShowProxyBannerContainer] = useState(true);
+
+  //health credit
+  const [isHealthCreditLoading, setHealthCreditLoading] = useState<boolean>(true);
+
+  setTimeout(function() {
+    setShowProxyBannerContainer(false);
+  }, 3000);
 
   //prohealth
   const [isProHealthActive, setProHealthActive] = useState<boolean>(false);
@@ -1290,7 +1322,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   ]);
 
   const [offersListCache, setOffersListCache] = useState<any[]>([]);
-  const [appointmentCountCache, setAppointmentCountCache] = useState<string>('0');
+
   const [isCircleMemberCache, setIsCircleMemberCache] = useState<String>('');
 
   const saveDeviceNotificationToken = async (id: string) => {
@@ -1328,10 +1360,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     );
 
     handleCachedData();
+    updateOnHomeLaunch();
     getPatientApiCall();
     setVaccineLoacalStorageData();
     cleverTapEventForLoginDone();
     fetchUserAgent();
+    firebaseTokenCheck();
+    fetchServerCart();
   }, []);
 
   const handleSearchClose = () => {
@@ -1366,12 +1401,63 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     postCleverTapEvent(CleverTapEventName.SEARCH_BAR_CLICKED, eventAttributes);
   };
   const handleCachedData = async () => {
+    setBannerLoading(true);
+
+    homeCache.get('bannerFirstImage').then((bannerFirstImage: any) => {
+      if (bannerFirstImage) {
+        setBannerFirstImage(bannerFirstImage);
+      }
+    });
+
+    homeCache.get('healthCredits').then((healthCredits: any) => {
+      if (healthCredits) {
+        setHealthCredits(healthCredits);
+      }
+      setHealthCreditLoading(false);
+    });
+
+    Promise.all([
+      homeCache.get('isCircleMember'),
+      homeCache.get('planValidity'),
+      homeCache.get('renewNow'),
+      homeCache.get('circleStatus'),
+      homeCache.get('circleSavings'),
+    ]).then((values: any[]) => {
+      if (values[0]) {
+        setIsCircleMember(values[0]);
+      }
+      if (values[1]) {
+        setCirclePlanValidity!!(values[1]);
+      }
+      if (values[2]) {
+        setRenewNow!!(values[2]);
+      }
+      if (values[3]) {
+        setCircleStatus!!(values[3]);
+      }
+      if (values[4]) {
+        setCircleSavings!!(values[4]);
+      }
+
+      setCircleDataLoading(false);
+    });
+
     const cacheDataStringBuffer = await appGlobalCache.getAll();
+
     const offersListStringBuffer = cacheDataStringBuffer?.offersList?.value || '[]';
     setOffersListCache(JSON.parse(offersListStringBuffer));
 
     const count = cacheDataStringBuffer?.appointmentCount?.value || '0';
-    setAppointmentCountCache(count);
+    if (count) {
+      setCurrentAppointments(count);
+    }
+
+    const bannerDataCached = cacheDataStringBuffer?.bannerData?.value || '';
+
+    if (bannerDataCached) {
+      setBannerData!!(bannerDataCached || []);
+    }
+    setBannerLoading(false);
 
     const isCircleMembers = (await AsyncStorage.getItem('isCircleMember')) || '';
     setIsCircleMember(isCircleMembers);
@@ -1380,17 +1466,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const fetchUserAgent = () => {
     try {
       let userAgent = UserAgent?.getUserAgent();
-      if (userAgent) {
-        fetchServerCart(userAgent);
-      }
       AsyncStorage.setItem(USER_AGENT, userAgent);
     } catch {}
   };
-
-  //for prohealth option
-  useEffect(() => {
-    checkProhealthStatus();
-  }, [currentPatient]);
 
   async function checkProhealthStatus() {
     const storedUhid: any = await AsyncStorage.getItem('selectUserUHId');
@@ -1399,23 +1477,40 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     if (
       currentPatient?.id &&
       currentPatient?.uhid &&
-      previousPatient?.uhid != currentPatient?.uhid &&
       (!!storedUhid ? storedUhid == currentPatient?.uhid : storedUhid == null)
     ) {
       checkIsProhealthActive(currentPatient); //to show prohealth option
       getActiveProHealthAppointments(currentPatient); //to show the prohealth appointments
     }
   }
+
   const updateAppVersion = (currentPatient: any) => {
     if (currentPatient?.id) {
       updatePatientAppVersion(client, currentPatient);
     }
   };
 
-  useEffect(() => {
-    checkCleverTapLoginStatus(currentPatient);
-    updateAppVersion(currentPatient);
-  }, [currentPatient]);
+  const getEventParams = async () => {
+    const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
+    const phoneNumber = await AsyncStorage.getItem('phoneNumber');
+    const eventParams = {
+      mobileNumber: phoneNumber,
+      OS: Platform?.OS,
+      AppVersion: DeviceInfo.getVersion(),
+      loggedIn: userLoggedIn,
+    };
+    return eventParams;
+  };
+
+  // validating whether JWT token is returned by firebase or not
+  const firebaseTokenCheck = async () => {
+    const token = await returnAuthToken?.().catch((error) => {});
+    if (!token) {
+      // Firing a webEngage event to track number of anticipated logouts (if Logout is implemented incase of missing auth token)
+      const params = await getEventParams();
+      postWebEngageEvent(WebEngageEventName.LOGOUT_REQUIRED, params);
+    }
+  };
 
   //to be called only when the user lands via app launch
   const logHomePageViewed = async (attributes: any) => {
@@ -1463,12 +1558,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       props.navigation.navigate('ShareReferLink');
     } catch (e) {}
   };
-
-  useEffect(() => {
-    if (currentPatient?.id) {
-      saveDeviceNotificationToken(currentPatient.id);
-    }
-  }, [currentPatient]);
 
   const phrNotificationCount = getPhrNotificationAllCount(phrNotificationData!);
 
@@ -1539,7 +1628,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setVaccineLoacalStorageData();
       checkApisToCall();
-      getUserBanners();
+      handleCachedData();
 
       AsyncStorage.getItem('verifyCorporateEmailOtpAndSubscribe').then((data) => {
         if (JSON.parse(data || 'false') === true) {
@@ -1620,11 +1709,48 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         setWEGFired(true);
         setWEGUserAttributes();
       }
-      getUserBanners();
 
-      getUserSubscriptionsWithBenefits();
+      //check if previousPatient is not equalto currentPatient
+      //if yes then update then call the desired api and also update the previousPatient
+      if (
+        previousPatient?.uhid != currentPatient?.uhid ||
+        previousPatient?.id != currentPatient?.id
+      ) {
+        //DIFFRENT PATIENT
+        updateOnHomeLaunch();
+        setPreviousPatient(currentPatient);
+      } else {
+        // SAME PATIENT
+      }
     } catch (e) {}
   }, [currentPatient]);
+
+  const updateOnHomeLaunch = () => {
+    //banner data
+    if (!bannerData) {
+      getUserBanners();
+    }
+
+    //call the desired apis
+    getUserSubscriptionsWithBenefits();
+    //for prohealth option
+    checkProhealthStatus();
+
+    checkCleverTapLoginStatus(currentPatient);
+    updateAppVersion(currentPatient);
+
+    if (currentPatient?.id) {
+      saveDeviceNotificationToken(currentPatient.id);
+    }
+
+    if (currentPatient) {
+      AsyncStorage.setItem('selectedProfileId', JSON.stringify(currentPatient.id));
+      if (selectedProfile !== currentPatient.id) {
+        getAppointmentsCount();
+        setSelectedProfile(currentPatient.id);
+      }
+    }
+  };
 
   useEffect(() => {
     if (upgradePlans?.length) {
@@ -2219,7 +2345,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Home Screen');
           postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Home Screen');
           postHomeCleverTapEvent(CleverTapEventName.BUY_MEDICINES, 'Home Screen');
-          props.navigation.navigate('MEDICINES', { focusSearch: true, comingFrom: '247 Home CTA' });
+          props.navigation.navigate('MEDICINES', { comingFrom: '247 Home CTA' });
           const eventAttributes:
             | WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED]
             | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED] = {
@@ -2408,7 +2534,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     fetchCarePlans();
     getUserSubscriptionsByStatus(true);
     checkCircleSelectedPlan();
-    setBannerData && setBannerData([]);
     getAskApolloLeadConfig();
     firebaseRemoteConfigForReferrer();
   }, []);
@@ -2669,7 +2794,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const getUserSubscriptionsByStatus = async (onAppLoad?: boolean) => {
-    setCircleDataLoading(true);
     try {
       const query: GetSubscriptionsOfUserByStatusVariables = {
         mobile_number: g(currentPatient, 'mobileNumber'),
@@ -2702,6 +2826,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           const paymentStoredVal =
             typeof paymentRef == 'string' ? JSON.parse(paymentRef) : paymentRef;
           AsyncStorage.setItem('isCircleMember', 'yes');
+          homeCache.set('isCircleMember', 'yes');
 
           circleData?.status === 'disabled'
             ? AsyncStorage.setItem('isCircleMembershipExpired', 'yes')
@@ -2751,13 +2876,24 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           setRenewNow(circleData?.renewNow ? 'yes' : 'no');
           setCirclePlanId && setCirclePlanId(circleData?.plan_id);
           setCircleStatus && setCircleStatus(circleData?.status);
+
+          homeCache.set('planValidity', planValidity);
+          homeCache.set('renewNow', circleData?.renewNow ? 'yes' : 'no');
+          homeCache.set('circleStatus', circleData?.status);
+
           paymentStoredVal &&
             setCirclePaymentReference &&
             setCirclePaymentReference(paymentStoredVal);
         } else {
           setNonCircleValues();
           setIsCircleMember('no');
+          AsyncStorage.setItem('isCircleMember', 'no');
           setCirclePlanValidity && setCirclePlanValidity(null);
+
+          homeCache.remove('planValidity');
+          homeCache.set('isCircleMember', 'no');
+          homeCache.set('circleStatus', '');
+
           setCirclePaymentReference && setCirclePaymentReference(null);
           setCirclePlanId && setCirclePlanId('');
           fireFirstTimeLanded();
@@ -2798,7 +2934,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       };
       onAppLoad && logHomePageViewed(WEGAttributes);
     }
-    setCircleDataLoading(false);
   };
 
   const setNonCircleValues = () => {
@@ -2862,6 +2997,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       const deliverySavings = savings?.delivery || 0;
       const totalSavings = consultSavings + pharmaSavings + diagnosticsSavings + deliverySavings;
       setCircleSavings && setCircleSavings(Math.ceil(totalSavings));
+      homeCache.set('circleSavings', Math.ceil(totalSavings));
     } catch (error) {
       CommonBugFender('MyMembership_fetchCircleSavings', error);
     }
@@ -2870,6 +3006,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     var cachedHealthCredit: any = await getHealthCredits();
     if (cachedHealthCredit != null) {
       setHealthCredits && setHealthCredits(cachedHealthCredit.healthCredit);
+      setHealthCreditLoading(false);
       return; // no need to call api
     }
 
@@ -2885,13 +3022,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       const credits = res?.data?.getOneApolloUser?.availableHC;
       setHealthCredits && setHealthCredits(credits);
       persistHealthCredits(credits);
+      homeCache.set('healthCredits', credits || 0);
     } catch (error) {
       CommonBugFender('MyMembership_fetchCircleSavings', error);
     }
   };
 
   const getUserBanners = async () => {
-    setBannerLoading(true);
     try {
       const res: any = await getUserBannersList(
         client,
@@ -2899,13 +3036,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         string.banner_context.HOME,
         [BannerDisplayType.banner, BannerDisplayType.card]
       );
-      setBannerLoading(false);
+
       if (res) {
         setBannerDataHome && setBannerDataHome(res);
         setBannerData && setBannerData(res);
+        appGlobalCache.set('bannerData', res);
+        homeCache.set('bannerFirstImage', res ? res[0] : null);
       }
     } catch (error) {
-      setBannerLoading(false);
       setBannerDataHome && setBannerDataHome([]);
       setBannerData && setBannerData([]);
     }
@@ -3091,21 +3229,21 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     }
   };
 
-  useEffect(() => {
-    currentPatient && setshowSpinner(false);
-    if (!currentPatient) {
-      // getPatientApiCall();
-    } else {
-      AsyncStorage.setItem('selectedProfileId', JSON.stringify(currentPatient.id));
-      if (selectedProfile !== currentPatient.id) {
-        getAppointmentsCount();
-        setSelectedProfile(currentPatient.id);
-      }
-    }
-  }, [currentPatient, props.navigation.state.params]);
+  // Intentionally commentted NOT Required Any more - WILL Delete later
+  // useEffect(() => {
+  //   currentPatient && setshowSpinner(false);
+  //   if (!currentPatient) {
+  //     // getPatientApiCall();
+  //   } else {
+  //     AsyncStorage.setItem('selectedProfileId', JSON.stringify(currentPatient.id));
+  //     if (selectedProfile !== currentPatient.id) {
+  //       getAppointmentsCount();
+  //       setSelectedProfile(currentPatient.id);
+  //     }
+  //   }
+  // }, [props.navigation.state.params]);
 
   const getAppointmentsCount = () => {
-    setAppointmentLoading(true);
     client
       .query<getPatientFutureAppointmentCount>({
         query: GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
@@ -3118,13 +3256,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         const count = data?.data?.getPatientFutureAppointmentCount?.activeConsultsCount || 0;
         setCurrentAppointments(`${count}`);
         appGlobalCache.set('appointmentCount', JSON.stringify(count));
-        setAppointmentCountCache(JSON.stringify(count));
-        setAppointmentLoading(false);
       })
       .catch((e) => {
         CommonBugFender('ConsultRoom_getPatientFutureAppointmentCount', e);
       })
-      .finally(() => setAppointmentLoading(false));
+      .finally(() => {});
   };
 
   const firebaseRemoteConfigForReferrer = async () => {
@@ -3153,11 +3289,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       setEnableCM(eneabled);
     }
     const saveSessionValues = async () => {
-      const [loginToken, phoneNumber] = await getAsyncStorageValues();
-      setToken(JSON.parse(loginToken));
-      setUserMobileNumber(
-        JSON.parse(phoneNumber)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber
-      );
+      returnAuthToken?.().then(setToken);
+      setUserMobileNumber(currentPatient?.mobileNumber);
     };
     fetchData();
     saveSessionValues();
@@ -3566,9 +3699,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const saveRecentSearchTerm = async (search: string) => {
-    const authToken: string = await validateAndReturnAuthToken();
-    const apolloClient = buildApolloClient(authToken);
-    apolloClient
+    client
       .mutate<saveRecentVariables>({
         mutation: SAVE_RECENT_SEARCH,
         variables: {
@@ -3743,15 +3874,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const renderListCount = (count: string | number) => {
-    return appointmentLoading && appointmentCountCache === '0' ? (
-      renderAppointmentCountShimmer()
-    ) : (
-      <View style={styles.countContainer}>
-        <Text style={{ ...theme.viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 20, 0) }}>
-          {appointmentCountCache}
-        </Text>
-      </View>
-    );
+    if (Number.parseInt(currentAppointments) > 0) {
+      return (
+        <View style={styles.countContainer}>
+          <Text style={{ ...theme.viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 20, 0) }}>
+            {currentAppointments}
+          </Text>
+        </View>
+      );
+    } else {
+      return null;
+    }
   };
 
   const renderDeliveryRibbonTag = () => {
@@ -3809,9 +3942,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                           <Text
                             style={[theme.viewStyles.text('M', 11, item.subtitleColor!, 1, 18)]}
                           >
-                            {healthCredits && healthCredits >= 30
-                              ? '₹' + healthCredits + ' ' + item.subtitle
-                              : 'Get 100% Genuine Medicines'}
+                            {getHealthCreditStatements(healthCredits, item.subtitle)}
                           </Text>
                         </View>
                       </View>
@@ -3858,6 +3989,22 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         })}
       </View>
     );
+  };
+
+  const getHealthCreditStatements = (healthCredits: number, text: string) => {
+    if (isHealthCreditLoading) {
+      return '₹' + '--' + ' ' + text;
+    } else {
+      if (healthCredits) {
+        if (healthCredits >= 30) {
+          return '₹' + healthCredits + ' ' + text;
+        } else {
+          return 'Get 100% Genuine Medicines';
+        }
+      } else {
+        return 'Get 100% Genuine Medicines';
+      }
+    }
   };
 
   const renderServicesForYouView = () => {
@@ -4057,9 +4204,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           : diff > 0 && hh === 0
           ? notch_text?.replace('{time_till_expiry}', `${mm} Min`)
           : 'Offer Expired';
-    } catch (e) {
-      console.log('csk error', JSON.stringify(e));
-    }
+    } catch (e) {}
     return textForNotch;
   };
 
@@ -4118,7 +4263,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               </View>
 
               <View style={{ marginTop: 0.5, marginRight: 16 }}>
-                <CashbackIcon style={{ width: 21.6, height: 30 }} />
+                {item?.coupon_code && item?.coupon_code?.length > 0 ? (
+                  <CashbackIcon style={{ width: 21.6, height: 30 }} />
+                ) : null}
               </View>
             </View>
 
@@ -4143,31 +4290,33 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             </Text>
 
             <View style={styles.medBottomContainer}>
-              <View style={styles.medCouponContainer}>
-                <Text
-                  style={{
-                    ...theme.viewStyles.text('M', 12, offerDesignTemplate?.coupon_color, 1, 18),
-                  }}
-                >
-                  {`Coupon: ${
-                    item?.coupon_code?.length > 12
-                      ? item?.coupon_code?.substring(0, 12)
-                      : item?.coupon_code
-                  }`}
-                </Text>
-              </View>
+              {item?.coupon_code && item?.coupon_code?.length > 0 ? (
+                <View style={styles.medCouponContainer}>
+                  <Text
+                    style={{
+                      ...theme.viewStyles.text('M', 12, offerDesignTemplate?.coupon_color, 1, 18),
+                    }}
+                  >
+                    {`Coupon: ${
+                      item?.coupon_code?.length > 12
+                        ? item?.coupon_code?.substring(0, 12)
+                        : item?.coupon_code
+                    }`}
+                  </Text>
+                </View>
+              ) : (
+                <Text> </Text>
+              )}
 
-              <View style={[styles.bottomRightArrowView, { flex: 0.5 }]}>
+              <View style={[styles.bottomRightArrowView, { flex: 0.5, alignItems: 'flex-end' }]}>
                 <Button
                   title={item?.cta?.text}
-                  style={{
-                    width: 106,
-                    height: 32,
-                    borderRadius: 4,
-                    backgroundColor: offerDesignTemplate?.cta?.bg_color,
-                    shadowOffset: { width: 0, height: 0 },
-                    elevation: 0,
-                  }}
+                  style={[
+                    styles.medCTAButton,
+                    {
+                      backgroundColor: offerDesignTemplate?.cta?.bg_color,
+                    },
+                  ]}
                   titleTextStyle={{ color: offerDesignTemplate?.cta?.text_color }}
                   onPress={() => textForNotch !== 'Offer Expired' && onOfferCtaPressed(item, 1)}
                   disabled={false}
@@ -4262,7 +4411,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           navigation={props.navigation}
           planActivationCallback={() => {
             getUserSubscriptionsByStatus();
-
             getUserSubscriptionsWithBenefits();
             getUserBanners();
             circleActivatedRef.current = false;
@@ -4279,6 +4427,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         />
       );
     }
+  };
+
+  const getHomeBanner = () => {
+    return (
+      <View style={{ height: 200 }}>
+        <View style={{ position: 'absolute', width: '100%' }}>
+          {showProxyBannerContainer ? renderBannerPlaceHolder() : null}
+        </View>
+        {renderBannersCarousel()}
+      </View>
+    );
   };
 
   const dataBannerCards = (darktheme: any) => {
@@ -4337,14 +4496,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const openWebViewFromBanner = async (url: string) => {
-    const deviceToken = (await AsyncStorage.getItem('jwt')) || '';
-    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+    const deviceToken = (await returnAuthToken?.()) || '';
     let updatedUrl: string = '';
     if (url?.includes('apollo-pro-health')) {
       updatedUrl = url?.concat(
         '?utm_source=mobile_app',
         '&utm_token=',
-        currentDeviceToken,
+        deviceToken,
         '&utm_mobile_number=',
         currentPatient?.mobileNumber || ''
       );
@@ -4515,6 +4673,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     return mPath;
   };
 
+  const getMobileURLMWEB = (url: string) => {
+    const ext = url?.includes('.jpg') ? '.jpg' : url?.includes('.jpeg') ? 'jpeg' : '.png';
+    const txt = url.split(ext)[0];
+    const path = txt.split('/');
+    path.pop();
+    const name = url.split(ext)[0].split('/')[txt.split('/').length - 1];
+    const mPath = path.join('/').concat('/mweb_'.concat(name).concat(ext));
+    return mPath;
+  };
+
   const onClickCircleBenefits = (
     membershipState: 'Expired' | 'About to Expire' | 'Not Expiring' | 'New User',
     action: any
@@ -4528,24 +4696,30 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     );
   };
 
-  const renderCircle = () => {
-    /**
-     * CircleTypeCard0                    -> never subscribed
-     * CircleTypeCard1 && CircleTypeCard2 -> expiring soon in x days
-     * CircleTypeCard3 && CircleTypeCard4 -> latest active plans
-     * CircleTypeCard5 && CircleTypeCard6 ->  the expired plans
-     */
-    const expiry = circlePlanValidity ? timeDiffDaysFromNow(circlePlanValidity?.endDate) : '';
+  const renderCircleBox = () => {
+    return (
+      <LinearGradientComponent
+        style={[
+          styles.circleContainer,
+          {
+            borderWidth: 1,
+            borderColor: '#F9D5B4',
+            height: 57,
+            alignItems: 'center',
+            justifyContent: 'center',
+          },
+        ]}
+        colors={['#FFEEDB', '#FFFCFA']}
+      >
+        <Image
+          style={{ alignSelf: 'flex-start', width: 46, height: 29, marginLeft: 13 }}
+          source={require('@aph/mobile-patients/src/components/ui/icons/circleLogo.webp')}
+        />
+      </LinearGradientComponent>
+    );
+  };
 
-    const renew = renewNow !== '' && renewNow === 'yes' ? true : false;
-    renew ? setIsRenew && setIsRenew(true) : setIsRenew && setIsRenew(false);
-    const darktheme = circleStatus === 'disabled' ? true : false;
-    const cardlist = dataBannerCards(darktheme);
-
-    const expired = circlePlanValidity
-      ? dateFormatterDDMM(circlePlanValidity?.endDate, 'DD MMM YYYY')
-      : '';
-
+  const renderCicleContainer = (card: React.ReactNode, circleStatus: string, renew: boolean) => {
     return (
       <LinearGradientComponent
         style={[
@@ -4557,84 +4731,146 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         ]}
         colors={circleStatus === 'active' && !renew ? ['#FFEEDB', '#FFFCFA'] : ['#fff', '#fff']}
       >
-        {expiry > 0 && circleStatus === 'active' && renew && circleSavings > 0 ? (
-          <CircleTypeCard1
-            onButtonPress={() => {
-              setShowCirclePlans(true);
-              onClickCircleBenefits('About to Expire', 'renew');
-            }}
-            savings={circleSavings?.toString()}
-            credits={healthCredits?.toString()}
-            expiry={circlePlanValidity?.expiry}
-          />
-        ) : expiry > 0 && circleStatus === 'active' && renew ? (
-          <CircleTypeCard2
-            onButtonPress={() => {
-              setShowCirclePlans(true);
-              onClickCircleBenefits('About to Expire', 'renew');
-            }}
-            credits={healthCredits?.toString()}
-            expiry={circlePlanValidity?.expiry}
-          />
-        ) : expiry > 0 && circleStatus === 'active' && !renew && circleSavings > 0 ? (
-          <CircleTypeCard3
-            onButtonPress={() => {
-              onClickCircleBenefits('Not Expiring', string.Hdfc_values.MEMBERSHIP_DETAIL_CIRCLE);
-              props.navigation.navigate(AppRoutes.MembershipDetails, {
-                membershipType: 'CIRCLE PLAN',
-                isActive: true,
-                comingFrom: 'Circle Benifits(Home Screen)',
-                circleEventSource: 'Landing Home Page',
-              });
-            }}
-            credits={healthCredits?.toString()}
-            savings={circleSavings?.toString()}
-          />
-        ) : expiry > 0 && circleStatus === 'active' && !renew ? (
-          <CircleTypeCard4
-            onButtonPress={() => {
-              onClickCircleBenefits('Not Expiring', string.Hdfc_values.MEMBERSHIP_DETAIL_CIRCLE);
-              props.navigation.navigate(AppRoutes.MembershipDetails, {
-                membershipType: 'CIRCLE PLAN',
-                isActive: true,
-                comingFrom: 'Circle Benifits(Home Screen)',
-                circleEventSource: 'Landing Home Page',
-              });
-            }}
-            credits={healthCredits?.toString()}
-            savings={circleSavings?.toString()}
-          />
-        ) : circleStatus === 'disabled' && circleSavings > 0 ? (
-          <CircleTypeCard5
-            onButtonPress={() => {
-              setShowCirclePlans(true);
-              onClickCircleBenefits('Expired', 'renew');
-            }}
-            savings={circleSavings?.toString()}
-            credits={healthCredits?.toString()}
-            expired={expired}
-            renew={renew}
-          />
-        ) : circleStatus === 'disabled' ? (
-          <CircleTypeCard6
-            onButtonPress={() => {
-              setShowCirclePlans(true);
-              onClickCircleBenefits('Expired', 'renew');
-            }}
-            savings={circleSavings?.toString()}
-            credits={healthCredits?.toString()}
-            expired={expired}
-            renew={renew}
-          />
-        ) : null}
-        {/* these banners might get added in new design */}
-        {/* {renderCircleBannerCards} */}
-
-        <View style={styles.circleRowsContainer}>
-          {/* dont delete this containes, text rows and bottom text and elements can go here when added */}
-        </View>
+        {card}
       </LinearGradientComponent>
     );
+  };
+
+  const renderCircle = () => {
+    /**
+     * CircleTypeCard0                    -> never subscribed
+     * CircleTypeCard1 && CircleTypeCard2 -> expiring soon in x days
+     * CircleTypeCard3 && CircleTypeCard4 -> latest active plans
+     * CircleTypeCard5 && CircleTypeCard6 ->  the expired plans
+     */
+
+    const expiry = circlePlanValidity ? timeDiffDaysFromNow(circlePlanValidity?.endDate) : '';
+
+    const renew = renewNow !== '' && renewNow === 'yes' ? true : false;
+    renew ? setIsRenew && setIsRenew(true) : setIsRenew && setIsRenew(false);
+    const darktheme = circleStatus === 'disabled' ? true : false;
+    const cardlist = dataBannerCards(darktheme);
+
+    const expired = circlePlanValidity
+      ? dateFormatterDDMM(circlePlanValidity?.endDate, 'DD MMM YYYY')
+      : '';
+
+    if (expiry > 0 && circleStatus === 'active' && renew && circleSavings > 0) {
+      return renderCicleContainer(
+        <CircleTypeCard1
+          onButtonPress={() => {
+            setShowCirclePlans(true);
+            onClickCircleBenefits('About to Expire', 'renew');
+          }}
+          savings={circleSavings?.toString()}
+          credits={healthCredits?.toString()}
+          expiry={circlePlanValidity?.expiry}
+        />,
+        circleStatus,
+        renew
+      );
+    } else if (expiry > 0 && circleStatus === 'active' && renew) {
+      return renderCicleContainer(
+        <CircleTypeCard2
+          onButtonPress={() => {
+            setShowCirclePlans(true);
+            onClickCircleBenefits('About to Expire', 'renew');
+          }}
+          credits={healthCredits?.toString()}
+          expiry={circlePlanValidity?.expiry}
+        />,
+        circleStatus,
+        renew
+      );
+    } else if (expiry > 0 && circleStatus === 'active' && !renew && circleSavings) {
+      return renderCicleContainer(
+        <CircleTypeCard3
+          onButtonPress={() => {
+            onClickCircleBenefits('Not Expiring', string.Hdfc_values.MEMBERSHIP_DETAIL_CIRCLE);
+            props.navigation.navigate(AppRoutes.MembershipDetails, {
+              membershipType: 'CIRCLE PLAN',
+              isActive: true,
+              comingFrom: 'Circle Benifits(Home Screen)',
+              circleEventSource: 'Landing Home Page',
+            });
+          }}
+          credits={healthCredits?.toString()}
+          savings={circleSavings?.toString()}
+        />,
+        circleStatus,
+        renew
+      );
+    } else if (expiry > 0 && circleStatus === 'active' && !renew) {
+      return renderCicleContainer(
+        <CircleTypeCard4
+          onButtonPress={() => {
+            onClickCircleBenefits('Not Expiring', string.Hdfc_values.MEMBERSHIP_DETAIL_CIRCLE);
+            props.navigation.navigate(AppRoutes.MembershipDetails, {
+              membershipType: 'CIRCLE PLAN',
+              isActive: true,
+              comingFrom: 'Circle Benifits(Home Screen)',
+              circleEventSource: 'Landing Home Page',
+            });
+          }}
+          credits={healthCredits?.toString()}
+          savings={circleSavings?.toString()}
+        />,
+        circleStatus,
+        renew
+      );
+    } else if (expiry <= 0 && circleStatus === 'active' && !renew) {
+      return renderCicleContainer(
+        <CircleTypeCard5
+          onButtonPress={() => {
+            setShowCirclePlans(true);
+            onClickCircleBenefits('Expired', 'renew');
+          }}
+          savings={circleSavings?.toString()}
+          credits={healthCredits?.toString()}
+          expired={expired}
+          renew={renew}
+        />,
+        circleStatus,
+        renew
+      );
+    } else if (circleStatus === 'disabled' && circleSavings > 0) {
+      return renderCicleContainer(
+        <CircleTypeCard5
+          onButtonPress={() => {
+            setShowCirclePlans(true);
+            onClickCircleBenefits('Expired', 'renew');
+          }}
+          savings={circleSavings?.toString()}
+          credits={healthCredits?.toString()}
+          expired={expired}
+          renew={renew}
+        />,
+        circleStatus,
+        renew
+      );
+    } else if (circleStatus === 'disabled') {
+      return renderCicleContainer(
+        <CircleTypeCard6
+          onButtonPress={() => {
+            setShowCirclePlans(true);
+            onClickCircleBenefits('Expired', 'renew');
+          }}
+          savings={circleSavings?.toString()}
+          credits={healthCredits?.toString()}
+          expired={expired}
+          renew={renew}
+        />,
+        circleStatus,
+        renew
+      );
+    }
+
+    //     {/* these banners might get added in new design */}
+    //     {/* {renderCircleBannerCards} */}
+
+    //     <View style={styles.circleRowsContainer}>
+    //       {/* dont delete this containes, text rows and bottom text and elements can go here when added */}
+    //     </View>
   };
 
   const renderCircleBuyNow = () => {
@@ -4993,11 +5229,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const onPressHealthPro = async () => {
-    const deviceToken = (await AsyncStorage.getItem('jwt')) || '';
-    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+    const deviceToken = (await returnAuthToken?.()) || '';
     const healthProWithParams = AppConfig.Configuration.APOLLO_PRO_HEALTH_URL.concat(
       '&utm_token=',
-      currentDeviceToken,
+      deviceToken,
       '&utm_mobile_number=',
       currentPatient && g(currentPatient, 'mobileNumber') ? currentPatient.mobileNumber : ''
     );
@@ -5696,6 +5931,42 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     );
   };
 
+  const renderBannerPlaceHolder = () => {
+    if (!bannerFirstImage) {
+      return null;
+    }
+
+    let bannerImage = getMobileURLMWEB(bannerFirstImage?.banner) + '?imwidth=' + Math.floor(width);
+
+    return (
+      <View style={{ marginBottom: 12, marginHorizontal: 16, marginTop: 12 }}>
+        <ImageNative
+          resizeMode="cover"
+          fadeDuration={50}
+          borderRadius={6}
+          progressiveRenderingEnabled={true}
+          style={{
+            width: '100%',
+            height: 160,
+            backgroundColor: colors.OFF_WHITE_DARK,
+            borderRadius: 6,
+            alignSelf: 'center',
+          }}
+          source={{
+            uri: bannerImage,
+          }}
+        />
+
+        {/* Below dots - Intentionally commented for future use case - will delete later  */}
+        {/* <View style={{ flexDirection: 'row', alignSelf: 'center', marginTop: 22 }}>
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(() => {
+            return <View style={styles.bannerDots} />;
+          })}
+        </View> */}
+      </View>
+    );
+  };
+
   const renderGlobalSearchNoResults = () => {
     return (
       <View style={{ width: width, marginBottom: 6, padding: 16, backgroundColor: '#fff' }}>
@@ -6172,38 +6443,47 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             <View style={{ width: '100%' }}>
               <View style={styles.viewName}>
                 {renderMenuOptions()}
-
                 {offersListCache?.length > 0 && renderHeadings('Offers For You')}
+
                 {/* Don't delete this*/}
                 {/* {offersListCache.length === 0 && offersListLoading && renderOffersForYouShimmer()} */}
-                {(offersListCache?.length > 0 || !offersListLoading) && renderOffersForYou()}
 
+                {(offersListCache?.length > 0 || !offersListLoading) && renderOffersForYou()}
                 {isReferrerAvailable && renderReferralBanner()}
 
-                {!appointmentLoading && currentAppointments === '0' && myDoctorsCount === 0
-                  ? null
-                  : renderHeadings('My Doctors')}
-                {!appointmentLoading && currentAppointments === '0'
+                {currentAppointments != '0' ||
+                currentAppointments != undefined ||
+                myDoctorsCount > 0 ? (
+                  renderHeadings('My Doctors')
+                ) : (
+                  <Text style={{ paddingTop: 12 }}> </Text>
+                )}
+
+                {currentAppointments === '0'
                   ? null
                   : renderListView('Active Appointments', 'normal')}
                 <View>{renderAllConsultedDoctors()}</View>
 
                 {renderHeadings('Circle Membership and More')}
-                {isCircleMember === '' && circleDataLoading && renderCircleShimmer()}
-                <View>{isCircleMember === 'yes' && !circleDataLoading && renderCircle()}</View>
-                {isCircleMember === 'no' && renderCircleBuyNow()}
+
+                {circleDataLoading ? (
+                  renderCircleBox()
+                ) : (
+                  <View style={{}}>
+                    {isCircleMember === 'yes' && renderCircle()}
+                    {isCircleMember === 'no' && renderCircleBuyNow()}
+                  </View>
+                )}
+
                 {showCirclePlans && renderCircleSubscriptionPlans()}
                 {showCircleActivationcr && renderCircleActivation()}
 
-                {bannerLoading && renderBannerShimmer()}
-                <View>{renderBannersCarousel()}</View>
+                {getHomeBanner()}
 
                 {renderHeadings('Book Doctor Consult')}
                 <View>{renderSecondaryConsultationCta()}</View>
-
                 {renderHeadings('Services For You')}
                 {renderServicesForYouView()}
-
                 {renderHeadings('Apollo Prohealth')}
                 {proActiveAppointments?.length == 0 && <View>{renderProhealthBanner()}</View>}
                 {proActiveAppointments?.length > 0 && (

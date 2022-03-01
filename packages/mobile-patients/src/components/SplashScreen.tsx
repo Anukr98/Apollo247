@@ -106,6 +106,7 @@ import { CleverTapEventName } from '../helpers/CleverTapEvents';
 import analytics from '@react-native-firebase/analytics';
 import appsFlyer from 'react-native-appsflyer';
 import { useReferralProgram } from './ReferralProgramProvider';
+import DeviceInfo from 'react-native-device-info';
 
 (function() {
   /**
@@ -171,12 +172,7 @@ export interface SplashScreenProps extends NavigationScreenProps {}
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { APP_ENV } = AppConfig;
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
-  const {
-    setAllPatients,
-    setMobileAPICalled,
-    validateAndReturnAuthToken,
-    buildApolloClient,
-  } = useAuth();
+  const { setAllPatients, setMobileAPICalled, returnAuthToken, buildApolloClient } = useAuth();
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [appState, setAppState] = useState(AppState.currentState);
   const [takeToConsultRoom, settakeToConsultRoom] = useState<boolean>(false);
@@ -223,6 +219,27 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   }, [selectedAnimationIndex]);
 
   useEffect(() => {
+    // triggered as soon as the application is opened
+    initiate();
+  }, []);
+
+  const initiate = async () => {
+    const authToken = (await returnAuthToken?.()?.catch((error) => {})) || '';
+    if (!authToken) {
+      const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
+      // if authToken is missing and user is in logged in state then we should ask the the user to relogin
+      if (userLoggedIn == 'true') {
+        const params = await getEventParams();
+        postWebEngageEvent(WebEngageEventName.LOGOUT_REQUIRED, params);
+        // we will logout users in future at this point
+      }
+    }
+    AsyncStorage.removeItem('saveTokenDeviceApiCall');
+    handleDeepLink();
+    getDeviceToken();
+    initializeRealTimeUninstall();
+    setCleverTapAppsFlyerCustID();
+
     prefetchUserMetadata();
     DeviceEventEmitter.addListener('accept', (params) => {
       if (getCurrentRoute() !== AppRoutes.ChatRoom) {
@@ -259,37 +276,36 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     } catch (error) {
       CommonBugFender('SplashScreen_App_opend_error', error);
     }
-  }, []);
 
-  useEffect(() => {
-    // clearing it so that save firebase token to DB gets call every first time
-    AsyncStorage.removeItem('saveTokenDeviceApiCall');
-    handleDeepLink();
-    getDeviceToken();
-    initializeRealTimeUninstall();
-    setCleverTapAppsFlyerCustID();
-  }, []);
-
-  useEffect(() => {
     if (isIos()) {
       initializeCallkit();
       handleVoipEventListeners();
     }
-  }, []);
 
-  useEffect(() => {
     preFetchSDK(currentPatient?.id);
     try {
       createHyperServiceObject();
     } catch (error) {
       CommonBugFender('ErrorWhilecreatingHyperServiceObject', error);
     }
-  }, []);
+  };
 
   const initializeRealTimeUninstall = () => {
     CleverTap.profileGetCleverTapID((error, res) => {
       analytics().setUserProperty('ct_objectId', `${res}`);
     });
+  };
+
+  const getEventParams = async () => {
+    const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
+    const phoneNumber = await AsyncStorage.getItem('phoneNumber');
+    const eventParams = {
+      mobileNumber: phoneNumber,
+      OS: Platform?.OS,
+      AppVersion: DeviceInfo.getVersion(),
+      loggedIn: userLoggedIn,
+    };
+    return eventParams;
   };
 
   // Avoid Red screen Error Alerts
@@ -418,6 +434,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     };
     postWebEngageEvent(WebEngageEventName.PATIENT_DECLINED_CALL, eventAttributes);
   };
+  console.warn = (error: any) => {};
 
   const handleDeepLink = () => {
     try {
@@ -553,9 +570,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   const fetchOrderInfo = async (paymentId: string) => {
     try {
-      const authToken: string = await validateAndReturnAuthToken();
-      const apolloClient = buildApolloClient(authToken);
-      const response = await apolloClient.query({
+      const response = await client.query({
         query: GET_ORDER_INFO,
         variables: { order_id: paymentId },
         fetchPolicy: 'no-cache',
@@ -1378,9 +1393,17 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Diagnostic_Show_HC',
       PROD: 'Diagnostic_Show_HC',
     },
+    APOLLO247_API_KEY: {
+      QA: 'APOLLO247_API_KEY',
+      PROD: 'APOLLO247_API_KEY',
+    },
     HOME_CTA_CONFIG: {
       QA: 'QA_HOME_CTA_CONFIG',
       PROD: 'PROD_HOME_CTA_CONFIG',
+    },
+    ACTIVATE_NEW_JWT_TOKEN: {
+      QA: 'ACTIVATE_NEW_JWT_TOKEN_QA',
+      PROD: 'ACTIVATE_NEW_JWT_TOKEN_PROD',
     },
   };
 
@@ -1447,7 +1470,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   const getOffers = async () => {
     setOffersListLoading && setOffersListLoading(true);
-    const authToken: string = await validateAndReturnAuthToken();
+    const authToken: any = await returnAuthToken?.();
     const apolloClient = buildApolloClient(authToken);
     try {
       const res = await apolloClient.query({
@@ -1892,6 +1915,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
 
       setAppConfig('Diagnostics_Show_Health_Credits', 'DIAGNOSTICS_SHOW_HEALTH_CREDITS', (key) =>
+        config.getBoolean(key)
+      );
+
+      setAppConfig('APOLLO247_API_KEY', 'APOLLO247_API_KEY', (key) => config.getString(key));
+      setAppConfig('ACTIVATE_NEW_JWT_TOKEN', 'ACTIVATE_NEW_JWT_TOKEN', (key) =>
         config.getBoolean(key)
       );
 
