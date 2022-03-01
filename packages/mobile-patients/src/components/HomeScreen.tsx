@@ -253,6 +253,8 @@ import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/us
 import { UpdateAppPopup } from '@aph/mobile-patients/src/components/ui/UpdateAppPopup';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import DeviceInfo from 'react-native-device-info';
+import { DIAGNOSTIC_CTA_ITEMS } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
+import { DiagnosticCtaClicked } from '@aph/mobile-patients/src/components/Tests/utils/Events';
 
 const { Vitals } = NativeModules;
 
@@ -1220,7 +1222,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     string | number
   >('' | 0);
   const [proActiveAppointments, setProHealthActiveAppointment] = useState([] as any);
-  const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
+  const { cartItems, setIsDiagnosticCircleSubscription, isDiagnosticCircleSubscription } = useDiagnosticsCart();
   const { APP_ENV } = AppConfig;
   const { setRewardId, setCampaignId, setCampaignName } = useReferralProgram();
   const [isReferrerAvailable, setReferrerAvailable] = useState<boolean>(false);
@@ -2360,6 +2362,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             'Page Name': 'Home Screen',
             Source: DiagnosticHomePageSource.HOMEPAGE_CTA,
           };
+          DiagnosticCtaClicked(
+            currentPatient,
+            isDiagnosticCircleSubscription,
+             DIAGNOSTIC_CTA_ITEMS.MAIN_HOME
+          )
           postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Home Screen');
           postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Home Screen');
           props.navigation.navigate('TESTS', { focusSearch: true, homeScreenAttributes });
@@ -3621,6 +3628,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                       'Page Name': 'Home Screen',
                       Source: DiagnosticHomePageSource.TAB_BAR,
                     };
+                     DiagnosticCtaClicked(
+                      currentPatient,
+                      isDiagnosticCircleSubscription,
+                        DIAGNOSTIC_CTA_ITEMS.BOTTOM_BAR
+                    )
                     postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Menu');
                     postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Menu');
                     CommonLogEvent(AppRoutes.HomeScreen, 'TESTS clicked');
