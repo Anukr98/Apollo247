@@ -1947,6 +1947,7 @@ export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
         itemType
         rate
         gender
+        imageUrl
         itemRemarks
         city
         state
@@ -6692,6 +6693,7 @@ export const GET_DIAGNOSTICS_RECOMMENDATIONS = gql`
         itemId
         itemName
         gender
+        imageUrl
         observations{
           observationName
           mandatoryValue
@@ -7563,6 +7565,7 @@ export const DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS = gql`
         itemId
         itemName
         gender
+        imageUrl
         observations{
           observationName
           mandatoryValue
