@@ -80,10 +80,9 @@ import {
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import OTPInputView from '@twotalltotems/react-native-otp-input'
+import Clipboard from '@react-native-community/clipboard'
 
 const { height, width } = Dimensions.get('window');
-
-
 
 let timer = 120;
 export type ReceivedSmsMessage = {
@@ -101,7 +100,6 @@ export interface OTPVerificationProps
 
 export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [subscriptionId, setSubscriptionId] = useState<EmitterSubscription>();
-  const [isTandCSelected, setTandC] = useState<boolean>(true);
   const [isValidOTP, setIsValidOTP] = useState<boolean>(false);
   const [invalidOtpCount, setInvalidOtpCount] = useState<number>(0);
   const [showErrorMsg, setShowErrorMsg] = useState<boolean>(false);
@@ -124,6 +122,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [editable, setEditable] = useState<boolean>(true)
   const [updatedTimerValue, setUpdatedTimerValue] = useState<number>(0)
   const [newOTPNeeded, setNewOTPNeeded] = useState<boolean>(false)
+  const [otpArray, setOtpArray] = useState(['','','','','',''])
+  const [clipboard, setClipboard] = useState('')
 
   const inputBoxFirst = useRef<TextInput>(null)
   const inputBoxSecond = useRef<TextInput>(null)
@@ -131,7 +131,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const inputBoxFourth = useRef<TextInput>(null)
   const inputBoxFifth = useRef<TextInput>(null)
   const inputBoxSixth = useRef<TextInput>(null)
-  const [otpArray, setOtpArray] = useState(['','','','','',''])
 
   const styles = StyleSheet.create({
     container: {
@@ -331,7 +330,10 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   };
 
   useEffect(() => {
-    const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+    const _didFocusSubscription = props.navigation.addListener('didFocus', async (payload) => {
+      await Clipboard.getString().then((text) => {
+        setClipboard(text)
+      })
       inputBoxFirst?.current?.focus()
       BackHandler.addEventListener('hardwareBackPress', handleBack);
     });
@@ -345,6 +347,20 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       _willBlurSubscription && _willBlurSubscription.remove();
     };
   }, []);
+
+  useEffect(() => {
+    let timer = setInterval(async () => {
+      await Clipboard.getString().then((text) => {
+        if(text !== clipboard) {
+          Keyboard.dismiss()
+          const bits = text.split("")
+          onClickOk(text, true);
+          setOtpArray(bits)
+        }
+      })
+    }, 500)
+    return () => clearInterval(timer)
+  }, [clipboard])
 
   const _removeFromStore = useCallback(async () => {
     try {
@@ -532,7 +548,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     postCleverTapEvent(CleverTapEventName.OTP_VERIFICATION_SUCCESS, cleverTapEventAttributes);
   };
 
-  const onClickOk = (readOtp?: string) => {
+  const onClickOk = (readOtp?: string, loaderHandled: boolean =  false) => {
     CommonLogEvent(AppRoutes.OTPVerification, 'OTPVerification clicked');
     const eventAttributes: WebEngageEvents[WebEngageEventName.OTP_ENTERED] = { value: 'Yes' };
     const phoneNumberFromParams = `+91${props.navigation.getParam('phoneNumber')}`;
@@ -552,7 +568,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       getNetStatus()
         .then(async (status) => {
           if (status) {
-            setshowSpinner(true);
+            !loaderHandled && setshowSpinner(true);
             const { loginId } = props.navigation.state.params!;
 
             verifyOTP(loginId, readOtp || otp)
@@ -1122,6 +1138,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   }
 
   const { phoneNumber } = props.navigation.state.params!;
+
   const descriptionPhoneText = `Now enter the OTP sent to +91 ${phoneNumber} for authentication`;
   return (
     <View style={{ flex: 1 }}>
@@ -1160,7 +1177,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 value={otpArray[index]}
                 onKeyPress={onOtpKeyPres(index)}
                 onChangeText={onOtpChange(index)}
-                keyboardType='numeric'
+                keyboardType='number-pad'
                 maxLength={1}
                 style={styles.input}
                 autoFocus={index === 0}
