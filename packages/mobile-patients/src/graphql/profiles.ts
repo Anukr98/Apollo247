@@ -4731,13 +4731,24 @@ export const CONSULT_ORDER_PAYMENT_DETAILS = gql`
       }
       appointments {
         id
+        orderType
         doctorId
         displayId
         appointmentDateTime
         actualAmount
         status
         appointmentType
-        discountedAmount
+        discountedAmount   
+        subscriptionOrderDetails{
+          _id,
+          status,
+          plan_id
+          group_plan_id
+          transaction_date_time
+          payment_reference
+          sub_plan_id
+          order_id
+        }
         appointmentRefunds {
           refundAmount
           txnTimestamp
