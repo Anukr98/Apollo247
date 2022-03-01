@@ -2466,8 +2466,9 @@ export const InitiateAppsFlyer = (
 
 export const checkUniversalURL = (url: string) => {
   if (
-    url.indexOf(string.common.apollo247UniversalLink) != -1 ||
-    url.indexOf(string.common.apolloPharmacyUniversalLink) != -1
+    (url.indexOf(string.common.apollo247UniversalLink) != -1 ||
+      url.indexOf(string.common.apolloPharmacyUniversalLink) != -1) &&
+    url.indexOf('https://apollo247.onelink.me') != -1
   ) {
     if (url.indexOf('?') != -1) {
       var splitedArray = url.split('?');
