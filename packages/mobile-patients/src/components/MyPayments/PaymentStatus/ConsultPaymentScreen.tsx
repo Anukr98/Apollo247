@@ -151,7 +151,6 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
       orderType,
       subscriptionOrderDetails,
     } = itemDetails;
-    console.log('csk item', JSON.stringify(itemDetails));
     const { refund } = PaymentOrders;
     const refundInfo = refund?.length ? refund : appointmentRefunds;
     const paymentInfo =
@@ -341,59 +340,68 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
       .finally(() => {});
   };
 
-  const downloadInvoice = () => {
-    client
-      .query({
-        query: CONSULT_ORDER_INVOICE,
-        variables: {
-          patientId: patientId,
-          appointmentId: itemDetails?.id,
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((res) => {
-        const { data } = res;
-        const { getOrderInvoice } = data;
-        let dirs = RNFetchBlob.fs.dirs;
-        let fileName: string =
-          'Apollo_Consult_Invoice' + moment().format('MMM_D_YYYY_HH_mm') + '.pdf';
-        const downloadPath =
-          Platform.OS === 'ios'
-            ? (dirs.DocumentDir || dirs.MainBundleDir) +
-              '/' +
-              (fileName || 'Apollo_Consult_Invoice.pdf')
-            : dirs.DownloadDir + '/' + (fileName || 'Apollo_Consult_Invoice.pdf');
-        RNFetchBlob.config({
-          fileCache: true,
-          path: downloadPath,
-          addAndroidDownloads: {
-            title: fileName,
-            useDownloadManager: true,
-            notification: true,
-            path: downloadPath,
-            mime: mimeType(downloadPath),
-            description: 'File downloaded by download manager.',
+  const downloadInvoice = async () => {
+    try {
+      let res: any = {};
+      let data: any = {};
+
+      if (itemDetails?.orderType !== 'SUBSCRIPTION') {
+        res = await client.query({
+          query: CONSULT_ORDER_INVOICE,
+          variables: {
+            patientId: patientId,
+            appointmentId: itemDetails?.id,
           },
-        })
-          .fetch('GET', String(getOrderInvoice), {
-            //some headers ..
-          })
-          .then((res) => {
-            if (Platform.OS === 'android') {
-              Alert.alert('Download Complete');
-            }
-            Platform.OS === 'ios'
-              ? RNFetchBlob.ios.previewDocument(res.path())
-              : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
-          })
-          .catch((err) => {
-            CommonBugFender('ConsultView_downloadInvoice', err);
-          });
+          fetchPolicy: 'no-cache',
+        });
+        data = res?.data;
+      } else {
+        data = {
+          getOrderInvoice: itemDetails?.subscriptionOrderDetails?.payment_reference?.invoice_url,
+        };
+      }
+      const { getOrderInvoice } = data;
+      let dirs = RNFetchBlob.fs.dirs;
+      let fileName: string =
+        'Apollo_Consult_Invoice' + moment().format('MMM_D_YYYY_HH_mm') + '.pdf';
+      const downloadPath =
+        Platform.OS === 'ios'
+          ? (dirs.DocumentDir || dirs.MainBundleDir) +
+            '/' +
+            (fileName || 'Apollo_Consult_Invoice.pdf')
+          : dirs.DownloadDir + '/' + (fileName || 'Apollo_Consult_Invoice.pdf');
+
+      RNFetchBlob.config({
+        fileCache: true,
+        path: downloadPath,
+        addAndroidDownloads: {
+          title: fileName,
+          useDownloadManager: true,
+          notification: true,
+          path: downloadPath,
+          mime: mimeType(downloadPath),
+          description: 'File downloaded by download manager.',
+        },
       })
-      .catch((error) => {
-        renderErrorPopup(`Something went wrong, please try again after sometime`);
-        CommonBugFender('fetchingConsultInvoice', error);
-      });
+        .fetch('GET', String(getOrderInvoice), {
+          //some headers ..
+        })
+        .then((res) => {
+          if (Platform.OS === 'android') {
+            Alert.alert('Download Complete');
+          }
+          Platform.OS === 'ios'
+            ? RNFetchBlob.ios.previewDocument(res.path())
+            : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
+        })
+        .catch((err) => {
+          CommonBugFender('ConsultView_downloadInvoice', err);
+        });
+    } catch (error) {
+      renderErrorPopup(`Something went wrong, please try again after sometime, Error Code: C1`);
+      CommonBugFender('fetchingConsultInvoice', error);
+      console.log('csk inv er', JSON.stringify(error));
+    }
   };
   const renderStatusCard = () => {
     const orderIdText = 'Order ID: ' + String(orderId);
