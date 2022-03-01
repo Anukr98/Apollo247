@@ -2632,6 +2632,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return widgetType?.length > 0 && widgetType?.map((wid: any) => renderWidgetType(wid));
   }
   function onPressSingleBookNow(item: any) {
+    DiagnosticAddToCartEvent(
+      topItemDetails?.[0]?.itemName || item?.itemTitle,
+      item?.itemId,
+      topItemDetails?.[0]?.price || item?.price,
+      item?.discountPrice,
+      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME,
+      item?.itemType,
+      string.common.homePageItem,
+      currentPatient,
+      isDiagnosticCircleSubscription
+    );
     addCartItem?.(item);
     _navigateToPatientsPage();
   }
