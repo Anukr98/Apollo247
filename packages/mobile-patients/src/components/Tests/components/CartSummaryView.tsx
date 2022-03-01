@@ -66,6 +66,7 @@ const {
   GRAY_BGK,
   ORANGE,
   LIGHT_ORANGE_YELLOW,
+  SHERPA_BLUE_LIGHT,
 } = colors;
 
 export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
@@ -750,7 +751,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   packageSlashedPrice: {
-    ...theme.viewStyles.text('SB', isSmallDevice ? 9 : 10, SHERPA_BLUE, 0.6, 16),
+    ...theme.viewStyles.text('SB', isSmallDevice ? 9 : 10, SHERPA_BLUE_LIGHT, 1, 16),
     marginTop: 5,
     marginRight: 6,
   },

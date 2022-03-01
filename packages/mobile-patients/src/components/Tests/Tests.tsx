@@ -3074,7 +3074,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           <Button
             title={nameFormater(string.diagnostics.goToCart, 'upper')}
             onPress={() => _navigateToPatientsPage()}
-            style={{ width: '90%' }}
+            style={{ width: winWidth / 2.3 }}
           />
         </View>
       </View>
@@ -3628,7 +3628,7 @@ const styles = StyleSheet.create({
   },
   itemFirst: {
     flexDirection: 'row',
-    width: '100%',
+    width: '90%',
     marginVertical: 10,
     paddingHorizontal: 10,
     justifyContent: 'space-between',
