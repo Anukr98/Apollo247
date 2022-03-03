@@ -288,8 +288,9 @@ export enum DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE {
   SEARCH_BAR = 'Searchbar',
   BOTTOM_BAR = 'Bottom bar',
   FOOTER = 'Footer',
-  HOME_PAGE_HERO_BUTTOM = 'HP hero button',
-  HOME_PAGE_OFFER_WIDGET = 'offer widget HP',
+  DIRECT = 'Direct',
+  HOME_PAGE_OFFER_WIDGET = 'Offer widget HP',
+  HOME_PAGE_HERO_BUTTON = 'Homepage hero button',
 }
 
 export const diagnosticsDisplayPrice = (item: DiagnosticsCartItem, isCircleMember: boolean) => {

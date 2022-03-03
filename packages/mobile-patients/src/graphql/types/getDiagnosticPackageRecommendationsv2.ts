@@ -3,8 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { DIAGNOSTIC_GROUP_PLAN } from "@aph/mobile-patients/src/helpers/apiCalls";
-import { recommendationInputItem, Gender, DIAGNOSTICS_TYPE, TEST_COLLECTION_TYPE } from "@aph/mobile-patients/src/graphql/types/globalTypes";
+import { recommendationInputItem, Gender, DIAGNOSTICS_GROUPPLAN, DIAGNOSTICS_TYPE, TEST_COLLECTION_TYPE } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getDiagnosticPackageRecommendationsv2
@@ -67,5 +66,5 @@ export interface getDiagnosticPackageRecommendationsv2Variables {
   recommendationInputItems: (recommendationInputItem | null)[];
   cityId: number;
   genderFilters?: (Gender | null)[] | null;
-  groupPlan: DIAGNOSTIC_GROUP_PLAN | any;
+  groupPlan: DIAGNOSTICS_GROUPPLAN;
 }
