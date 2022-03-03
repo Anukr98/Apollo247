@@ -100,6 +100,7 @@ import { NavigationScreenProps, NavigationEvents } from 'react-navigation';
 import {
   CALL_TO_ORDER_CTA_PAGE_ID,
   DiagnosticCTJourneyType,
+  DIAGNOSTICS_TYPE,
   DIAGNOSTIC_ORDER_STATUS,
   REPORT_TAT_SOURCE,
   TEST_COLLECTION_TYPE,
@@ -2648,14 +2649,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
   function renderWidgetItems(widgetType: any) {
     return widgetType?.length > 0 && widgetType?.map((wid: any) => renderWidgetType(wid));
   }
-  function onPressSingleBookNow(item: any) {
+  function onPressSingleBookNow(item: any, topItemData: any) {
     DiagnosticAddToCartEvent(
-      topItemDetails?.[0]?.itemName || item?.itemTitle,
-      item?.itemId,
-      topItemDetails?.[0]?.price || item?.price,
-      item?.discountPrice,
+      item?.name || topItemData?.[0]?.itemTitle,
+      topItemData?.[0]?.itemId || item?.id,
+      item?.price || topItemData?.[0]?.price,
+      item?.price,
       DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME,
-      item?.itemType,
+      item?.inclusions?.length > 1 ? DIAGNOSTICS_TYPE.PACKAGE : DIAGNOSTICS_TYPE.TEST,
       string.common.homePageItem,
       currentPatient,
       isDiagnosticCircleSubscription
@@ -2797,7 +2798,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 title={topItemDetails?.[0]?.ctaText || string.diagnostics.bookNow}
                 style={styles.buttonTop}
                 onPress={() => {
-                  onPressSingleBookNow(singleItemObj);
+                  onPressSingleBookNow(singleItemObj, topItemData);
                 }}
               />
             </View>

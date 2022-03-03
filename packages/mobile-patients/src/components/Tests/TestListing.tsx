@@ -613,7 +613,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
             {!!packageItemsArray && packageItemsArray?.length > 0 && (
               <>
                 <Text style={styles.headingText}>
-                  {nameFormater(deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle, 'upper')}{' '}
+                  {nameFormater(deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle || widgetName, 'upper')}{' '}
                   PACKAGES{' '}
                   {!!getActualPricePackages && getActualPricePackages?.length > 0 && (
                     <Text style={styles.itemCountText}>
@@ -655,7 +655,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
             {!!testItemsArray && testItemsArray?.length > 0 && (
               <>
                 <Text style={styles.headingText}>
-                  {nameFormater(deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle, 'upper')}{' '}
+                  {nameFormater(deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle || widgetName, 'upper')}{' '}
                   TESTS{' '}
                   {!!getActualPriceTests && getActualPriceTests?.length > 0 && (
                     <Text style={styles.itemCountText}>
