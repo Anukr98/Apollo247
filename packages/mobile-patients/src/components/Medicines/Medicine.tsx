@@ -281,6 +281,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     bannerData,
     pharmacyUserType,
     setIsRenew,
+    tabRouteJourney,
+    setTabRouteJourney,
   } = useAppCommonData();
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const {
@@ -2048,6 +2050,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               urlKey: item?.url_key,
               sku: item?.sku,
               movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
+              data: item,
             });
             const availability = getAvailabilityForSearchSuccess(pharmacyPincode || '', item?.sku);
             const discount = getDiscountPercentage(item?.price, item?.special_price);
@@ -2460,10 +2463,31 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const setRouteJourneyFromTabbar = () => {
+    if (!tabRouteJourney) {
+      setTabRouteJourney &&
+        setTabRouteJourney({
+          previousRoute: 'Medicine',
+          currentRoute: 'Medicine',
+        });
+    } else {
+      setTabRouteJourney &&
+        setTabRouteJourney({
+          previousRoute: tabRouteJourney?.currentRoute,
+          currentRoute: 'Medicine',
+        });
+      const eventArributes = {
+        'Page Name': tabRouteJourney?.currentRoute,
+      };
+      postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED, eventArributes);
+    }
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <NavigationEvents
-        onDidFocus={() => {
+        onDidFocus={(payload) => {
+          setRouteJourneyFromTabbar();
           scrollCount.current = 0;
         }}
         onDidBlur={postScrollScreenEvent}

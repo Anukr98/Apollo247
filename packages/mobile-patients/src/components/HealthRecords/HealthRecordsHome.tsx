@@ -90,7 +90,7 @@ import { searchPHRApiWithAuthToken } from '@aph/mobile-patients/src/helpers/apiC
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationEvents, NavigationScreenProps } from 'react-navigation';
 import {
   getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_healthChecks_response,
   getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_labResults_response,
@@ -448,7 +448,12 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [clinicalDocs, setClinicalDocs] = useState<any>([]);
   const client = useApolloClient();
   const { getPatientApiCall } = useAuth();
-  const { phrNotificationData, setPhrNotificationData } = useAppCommonData();
+  const {
+    phrNotificationData,
+    setPhrNotificationData,
+    tabRouteJourney,
+    setTabRouteJourney,
+  } = useAppCommonData();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
   const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
@@ -2043,9 +2048,25 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       />
     );
   };
+  const setRouteJourneyFromTabbar = () => {
+    if (!tabRouteJourney) {
+      setTabRouteJourney &&
+        setTabRouteJourney({
+          previousRoute: 'HEALTH RECORDS',
+          currentRoute: 'HEALTH RECORDS',
+        });
+    } else {
+      setTabRouteJourney &&
+        setTabRouteJourney({
+          previousRoute: tabRouteJourney?.currentRoute,
+          currentRoute: 'HEALTH RECORDS',
+        });
+    }
+  };
 
   return (
     <View style={{ flex: 1 }}>
+      <NavigationEvents onDidFocus={() => setRouteJourneyFromTabbar()} />
       <SafeAreaView style={theme.viewStyles.container}>
         {renderUpdateProfileDetailsPopup()}
         {renderHeader()}

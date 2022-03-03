@@ -1058,7 +1058,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         : `${healthRecordSearchResults?.length} search results for \‘${searchText}\’`;
     return (
       <View style={styles.searchListHeaderViewStyle}>
-        <Text style={styles.searchListHeaderTextStyle}>{search_result_text}</Text>
+        <Text style={styles.searchListHeaderTextStyle}>{search_result_text + 'Found'}</Text>
       </View>
     );
   };

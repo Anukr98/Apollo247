@@ -199,7 +199,7 @@ export const handleOpenURL = (event: any) => {
             routeName: 'Medicine',
           };
         }
-      break;  
+        break;
 
       case 'medicinesearch':
         return {
@@ -433,7 +433,7 @@ export const handleOpenURL = (event: any) => {
 
       case 'category-listing':
         return {
-          routeName :'TestWidgetListing',
+          routeName: 'TestWidgetListing',
           id: linkId ? linkId : undefined
         }
         break;
@@ -561,7 +561,7 @@ export const pushTheView = (
       });
       break;
     case 'DoctorSearch':
-      navigateToView(navigation, AppRoutes.DoctorSearch);
+      navigateToView(navigation, AppRoutes.DoctorSearch, { isFromDeeplink: true });
       break;
 
     case 'MedicineSearchText':
@@ -613,7 +613,7 @@ export const pushTheView = (
       });
       break;
     case 'MyOrders':
-      navigateToView(navigation, AppRoutes.YourOrdersScene, {source: 'deeplink'});
+      navigateToView(navigation, AppRoutes.YourOrdersScene, { source: 'deeplink' });
       break;
     case 'webview':
       navigateToView(navigation, AppRoutes.CommonWebView, { url: id });
@@ -769,14 +769,16 @@ export const pushTheView = (
       break;
     case 'TestWidgetListing':
       navigateToView(navigation, AppRoutes.TestWidgetListing, {
-          movedFrom: 'deeplink',
-          widgetName: id,
-        });
+        movedFrom: 'deeplink',
+        widgetName: id,
+      });
       break;
     case 'ShareReferLink':
       firebaseRemoteConfigForReferrer().then((res) => {
         if (res) {
-          navigateToView(navigation, AppRoutes.ShareReferLink)
+          navigateToView(navigation, AppRoutes.ShareReferLink, {
+            comingFrom: 'deeplink'
+          })
         }
         else {
           const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
@@ -793,16 +795,16 @@ export const pushTheView = (
           const response = data;
           if (response?.success === true && response?.data?.length) {
             !!movedFromBrandPages ? navigation.navigate(AppRoutes.BrandPages, { movedFrom: 'brandPages', brandData: response?.data, categoryName: id }) :
-            navigateToView(navigation, AppRoutes.BrandPages, { movedFrom: 'deeplink', brandData: response?.data, categoryName: id });
+              navigateToView(navigation, AppRoutes.BrandPages, { movedFrom: 'deeplink', brandData: response?.data, categoryName: id });
           } else {
             !!movedFromBrandPages ? navigation.navigate(AppRoutes.MedicineListing, { categoryName: id, movedFrom: 'brandPages' }) :
-            navigateToView(navigation, AppRoutes.MedicineListing, { categoryName: id, movedFrom: 'deeplink' });
+              navigateToView(navigation, AppRoutes.MedicineListing, { categoryName: id, movedFrom: 'deeplink' });
           }
         })
         .catch(({ error }) => {
           CommonBugFender('Deeplink_fetchBrandPageData', error);
           !!movedFromBrandPages ? navigation.navigate(AppRoutes.MedicineListing, { categoryName: id, movedFrom: 'brandPages' }) :
-          navigateToView(navigation, AppRoutes.MedicineListing, { categoryName: id, movedFrom: 'deeplink' });
+            navigateToView(navigation, AppRoutes.MedicineListing, { categoryName: id, movedFrom: 'deeplink' });
         });
       break;
     default:

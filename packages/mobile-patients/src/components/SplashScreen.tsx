@@ -191,7 +191,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const CONST_SPLASH_LOADER = [string.splash.CAPSULE, string.splash.SYRINGE, string.splash.STETHO];
   const [selectedAnimationIndex, setSelectedAnimationIndex] = useState(0);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
-
   const {
     setReferralGlobalData,
     setReferralMainBanner,
@@ -459,7 +458,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             );
           } catch (e) {}
           setBugFenderLog('DEEP_LINK_URL', url);
-          if (url) {
+          if (url && url.indexOf('https://apollo247.onelink.me') != -1) {
             try {
               const data: any = handleOpenURL(url);
               redirectRoute(
@@ -806,6 +805,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         postCleverTapEvent(CleverTapEventName.CUSTOM_UTM_VISITED, {
           channel: 'Organic',
           is_first_launch: isFirstLaunch,
+          'Nav Src': 'Organic',
         });
       }
     } catch (error) {}
@@ -820,6 +820,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               removeNullFromObj({
                 source_url: checkUniversalURL(redirectUrl).source_url,
                 channel: 'Organic',
+                'Nav Src': 'universal URL',
               })
             );
           } else {
@@ -827,11 +828,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               filterAppLaunchSoruceAttributesByKey({
                 ...res?.data,
                 source_url: checkUniversalURL(redirectUrl).source_url,
+                'Nav Src': 'universal URL',
               })
             );
           }
         } else {
-          clevertapEventForAppsflyerDeeplink(filterAppLaunchSoruceAttributesByKey(res?.data));
+          clevertapEventForAppsflyerDeeplink({
+            ...filterAppLaunchSoruceAttributesByKey(res?.data),
+            'Nav Src': 'deeplink',
+          });
         }
         onDeepLinkCanceller();
       } catch (e) {}

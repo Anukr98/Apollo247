@@ -5,7 +5,6 @@ import {
   Text,
   SafeAreaView,
   TouchableOpacity,
-  ActivityIndicator,
   Keyboard,
   BackHandler,
   Dimensions,
@@ -91,7 +90,6 @@ import {
 import AsyncStorage from '@react-native-community/async-storage';
 import { NudgeMessage } from '@aph/mobile-patients/src/components/Medicines/Components/NudgeMessage';
 import {
-  GET_PATIENT_ADDRESS_LIST,
   GET_PRODUCT_SUBSTITUTES,
   SET_DEFAULT_ADDRESS,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -105,10 +103,6 @@ import { FrequentlyBoughtTogether } from '@aph/mobile-patients/src/components/Pr
 import { postPharmacyAddNewAddressCompleted } from '../../helpers/webEngageEventHelpers';
 import { CouponSectionPDP } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/CouponSectionPDP';
 import { CircleBannerPDP } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/CircleBannerPDP';
-import {
-  getPatientAddressList,
-  getPatientAddressListVariables,
-} from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 import { renderPDPComponentsShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import {
@@ -136,6 +130,7 @@ export interface ProductDetailPageProps
     sectionName?: string;
     urlKey?: string;
     navSrcForSearchSuccess?: string;
+    data: any;
   }> {}
 
 type PharmacyTatApiCalled =
@@ -174,17 +169,14 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     serverCartAmount,
     cartLocationDetails,
     cartAddressId,
-    serverCartLoading,
     tatDecidedPercentage,
   } = useShoppingCart();
   const { setUserActionPayload, fetchAddress } = useServerCart();
-  const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const { showAphAlert, hideAphAlert } = useUIElements();
-  const { locationDetails, activeUserSubscriptions } = useAppCommonData();
+  const { activeUserSubscriptions } = useAppCommonData();
 
-  const cartItemsCount = serverCartItems?.length + diagnosticCartItems.length;
   const scrollViewRef = React.useRef<KeyboardAwareScrollView>(null);
 
   const defaultAddress = addresses.find((item) => item.id == cartAddressId);
@@ -197,21 +189,21 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   );
   const [isMedicineError, setIsMedicineError] = useState<boolean>(false);
   const [isInStock, setIsInStock] = useState<boolean>(true);
-  const [deliveryError, setdeliveryError] = useState<string>(_deliveryError || '');
+  const [deliveryError, setDeliveryError] = useState<string>(_deliveryError || '');
   const [apiError, setApiError] = useState<boolean>(false);
   const [substitutes, setSubstitutes] = useState<MedicineProductDetails[]>([]);
   const [showBottomBar, setShowBottomBar] = useState<boolean>(false);
   const [productQuantity, setProductQuantity] = useState<number>(1);
   const [showAddedToCart, setShowAddedToCart] = useState<boolean>(false);
   const [showSubstituteInfo, setShowSubstituteInfo] = useState<boolean>(false);
-  const [showDeliverySpinner, setshowDeliverySpinner] = useState<boolean>(false);
+  const [showDeliverySpinner, setShowDeliverySpinner] = useState<boolean>(false);
 
   const [multiVariantAttributes, setMultiVariantAttributes] = useState([]);
   const [multiVariantProducts, setMultiVariantProducts] = useState([]);
   const [multiVariantSkuInformation, setMultiVariantSkuInformation] = useState<any[]>([]);
 
   const [pincode, setpincode] = useState<string>(pharmacyPincode || '');
-  const [deliveryTime, setdeliveryTime] = useState<string>('');
+  const [deliveryTime, setDeliveryTime] = useState<string>('');
   const [tatEventData, setTatEventData] = useState<PharmacyTatApiCalled>();
   const [isPharma, setIsPharma] = useState<boolean>(false);
   const [userType, setUserType] = useState<string>('');
@@ -231,14 +223,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const selectedAddress = addresses.find((item) => item.id == cartAddressId);
   type addressListType = savePatientAddress_savePatientAddress_patientAddress[];
 
-  let buttonRef = React.useRef<View>(null);
-  let similarProductsRef = React.useRef<View>(null);
-  let substituteProductsRef = React.useRef<View>(null);
-  let alsoBoughtProductsRef = React.useRef<View>(null);
+  const buttonRef = React.useRef<View>(null);
+  const similarProductsRef = React.useRef<View>(null);
+  const substituteProductsRef = React.useRef<View>(null);
+  const alsoBoughtProductsRef = React.useRef<View>(null);
   const windowHeight = Dimensions.get('window').height;
   const [showSimilarProducts, setShowSimilarProducts] = useState<boolean>(false);
   const [showSubstituteProducts, setShowSubstituteProducts] = useState<boolean>(false);
   const [showAlsoBoughtProducts, setShowAlsoBoughtProducts] = useState<boolean>(false);
+  const onPressHardwareBack = () => props.navigation.goBack();
 
   const getItemQuantity = (id: string) => {
     const foundItem = serverCartItems?.find((item) => item.sku == id);
@@ -274,11 +267,24 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     };
     getUserType();
     setProductSubstitutes?.([]);
+    const propsData = props.navigation.getParam('data');
+    getMedicineDetails(pharmacyPincode, axdcCode, propsData?.sku || sku);
+    if (propsData) {
+      const newData = {
+        ...propsData,
+        image: [propsData.image],
+        thumbnail: [propsData.thumbnail],
+      };
+      if (sku !== propsData?.sku) setSku(propsData?.sku);
+      setMedicineData(newData);
+      getBoughtTogetherData(propsData?.sku, newData);
+      getCouponsData(propsData?.sku);
+    }
+
     BackHandler.addEventListener('hardwareBackPress', onPressHardwareBack);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', onPressHardwareBack);
     };
-    setShowSuggestedQuantityNudge(false);
   }, []);
 
   useEffect(() => {
@@ -307,22 +313,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       fetchDeliveryTime(pharmacyPincode, false);
     }
   }, [medicineDetails?.price]);
-
-  const onPressHardwareBack = () => props.navigation.goBack();
-
-  useEffect(() => {
-    const didFocus = props.navigation.addListener('didFocus', (payload) => {
-      setLoading(true);
-      getMedicineDetails();
-    });
-    const didBlur = props.navigation.addListener('didBlur', (payload) => {
-      setLoading(true);
-    });
-    return () => {
-      didFocus && didFocus.remove();
-      didBlur && didBlur.remove();
-    };
-  }, [props.navigation]);
 
   useEffect(() => {
     if (medicineDetails?.sku && (!!deliveryTime || !!deliveryError)) {
@@ -393,12 +383,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       const unServiceableMsg =
         'Sorry! Your Pincode is not serviceable yet. Please try with an alternative pincode.';
       setIsInStock(false);
-      setdeliveryTime('');
-      setdeliveryError(unServiceableMsg);
-      setshowDeliverySpinner(false);
+      setDeliveryTime('');
+      setDeliveryError(unServiceableMsg);
+      setShowDeliverySpinner(false);
     } else {
-      setdeliveryError('');
-      setshowDeliverySpinner(false);
+      setDeliveryError('');
+      setShowDeliverySpinner(false);
     }
   }, [isPharmacyPincodeServiceable]);
 
@@ -425,29 +415,28 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   }, [serverCartItems, currentProductQuantityInCart, currentProductIdInCart]);
 
   const getMedicineDetails = (zipcode?: string, pinAcdxCode?: string, selectedSku?: string) => {
-    setLoading(true);
     if (urlKey || selectedSku) {
-      getMedicineDetailsApiV2(selectedSku || urlKey, pinAcdxCode || axdcCode, pharmacyPincode)
+      getMedicineDetailsApiV2(selectedSku || urlKey || '', pinAcdxCode || axdcCode, pharmacyPincode)
         .then(({ data }) => {
           const productDetails = g(data, 'productdp', '0' as any);
+
           if (productDetails) {
-            setSku(productDetails?.sku);
+            if (sku !== productDetails?.sku) setSku(productDetails?.sku);
             setMedicineData(productDetails);
             getBoughtTogetherData(productDetails?.sku, productDetails);
             getCouponsData(productDetails?.sku);
           } else if (data && data.message) {
             setIsMedicineError(true);
           }
-          setLoading(false);
         })
         .catch((err) => {
           CommonBugFender('ProductDetailsScene_getMedicineDetailsV2Api', err);
           aphConsole.log('ProductDetailsScene err\n', err);
           setApiError(!!err);
-          setLoading(false);
-        });
+        })
+        .finally(() => setLoading(false));
     } else {
-      getMedicineDetailsApi(sku, pinAcdxCode || axdcCode, pharmacyPincode)
+      getMedicineDetailsApi(sku || '', pinAcdxCode || axdcCode, pharmacyPincode)
         .then(({ data }) => {
           const productDetails = g(data, 'productdp', '0' as any);
           if (productDetails) {
@@ -455,14 +444,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           } else if (data && data.message) {
             setIsMedicineError(true);
           }
-          setLoading(false);
         })
         .catch((err) => {
           CommonBugFender('ProductDetailsScene_getMedicineDetailsApi', err);
           aphConsole.log('ProductDetailsScene err\n', err);
           setApiError(!!err);
-          setLoading(false);
-        });
+        })
+        .finally(() => setLoading(false));
     }
   };
 
@@ -501,7 +489,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     }
   };
 
-  const getBoughtTogetherData = (productSku: string, productDetails) => {
+  const getBoughtTogetherData = (productSku: string, productDetails: MedicineProductDetails) => {
     const mainProduct = {
       id: productDetails.id,
       sku: productDetails.sku,
@@ -708,7 +696,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     }
     const pincodeServiceableItemOutOfStockMsg = 'Sorry, this item is out of stock in your area.';
     Keyboard.dismiss();
-    setshowDeliverySpinner(true);
+    setShowDeliverySpinner(true);
 
     // To handle deeplink scenario and
     // If we performed pincode serviceability check already in Medicine Home Screen and the current pincode is same as Pharma pincode
@@ -734,9 +722,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       );
     } catch (error) {
       // in case user entered wrong pincode, not able to get lat lng. showing out of stock to user
-      setdeliveryError(pincodeServiceableItemOutOfStockMsg);
-      setdeliveryTime('');
-      setshowDeliverySpinner(false);
+      setDeliveryError(pincodeServiceableItemOutOfStockMsg);
+      setDeliveryTime('');
+      setShowDeliverySpinner(false);
       setIsInStock(false);
     }
   };
@@ -774,15 +762,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               currentPatient
             );
           }
-          setdeliveryTime(
+          setDeliveryTime(
             moment(deliveryDate, AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT).format(
               AppConfig.Configuration.MED_DELIVERY_DATE_TAT_API_FORMAT
             )
           );
-          setdeliveryError('');
+          setDeliveryError('');
         } else {
-          setdeliveryError(pincodeServiceableItemOutOfStockMsg);
-          setdeliveryTime('');
+          setDeliveryError(pincodeServiceableItemOutOfStockMsg);
+          setDeliveryTime('');
         }
         fireTatApiCalledEvent(
           res.data.response,
@@ -804,11 +792,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           .set('hours', 20)
           .set('minutes', 0)
           .format('DD-MMM-YYYY hh:mm');
-        setdeliveryTime(genericServiceableDate);
-        setdeliveryError('');
+        setDeliveryTime(genericServiceableDate);
+        setDeliveryError('');
       })
       .finally(() => {
-        setshowDeliverySpinner(false);
+        setShowDeliverySpinner(false);
       });
   };
 
@@ -1484,14 +1472,6 @@ const styles = StyleSheet.create({
     width: '75%',
     paddingVertical: 20,
     borderRadius: 10,
-  },
-  stickyBottomComponent: {
-    ...theme.viewStyles.shadowStyle,
-    borderTopWidth: 0.6,
-    borderStyle: 'dashed',
-    position: 'absolute',
-    bottom: 0,
-    justifyContent: 'center',
   },
   bottomCta: {
     ...theme.viewStyles.cardViewStyle,

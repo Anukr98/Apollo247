@@ -72,6 +72,7 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
       });
       if (res) {
         setDoctors(res?.data?.getPatientPastConsultedDoctors);
+        setDoctorsCache(res?.data?.getPatientPastConsultedDoctors || []);
         appGlobalCache.set(
           'pastDoctors',
           JSON.stringify(res?.data?.getPatientPastConsultedDoctors) || JSON.stringify([])
@@ -155,7 +156,7 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
   };
   return (
     <View>
-      {doctorsCache === null ? (
+      {doctorsCache === null || doctorsCache == undefined ? (
         renderConsultedDoctorsShimmer()
       ) : (
         <FlatList

@@ -949,11 +949,12 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   useEffect(() => {
     if (testInfo?.Rate) {
       const itemType = (testInfo?.type! || testDetails?.type)?.toLowerCase();
-      const getSource  = isDeep == 'deeplink'
-      ? 'Deeplink'
-      : movedFrom == AppRoutes.SearchTestScene
-      ? source
-      : testInfo?.source! || testDetails?.source
+      const getSource =
+        isDeep == 'deeplink'
+          ? 'Deeplink'
+          : movedFrom == AppRoutes.SearchTestScene
+          ? source
+          : testInfo?.source! || testDetails?.source;
       DiagnosticDetailsViewed(
         getSource == undefined ? source : getSource,
         itemName,
@@ -975,7 +976,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           : !!widgetTitle
           ? widgetTitle
           : '',
-          section,
+        section
       );
     }
   }, [testInfo]);
@@ -1245,6 +1246,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
   function onPressAddToCart() {
     const { getMandatoryParameterCount, nonInclusionParamters } = skuParameterInclusionLogic();
+    const comingFrom = props.navigation.getParam('comingFrom');
     const specialPrice = testInfo?.specialPrice!;
     const price = testInfo?.Rate!;
     const circlePrice = testInfo?.circlePrice! || testInfo?.circleRate!;
@@ -1265,7 +1267,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       itemId!,
       mrpToDisplay, //mrp
       priceToShow, //actual price
-      section == string.common.homePageItem
+      comingFrom === 'HomeScreen'
+        ? DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.SEARCH_BAR
+        : section == string.common.homePageItem
         ? DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME
         : DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS,
       testInclusions?.length < 2 ? DIAGNOSTICS_ITEM_TYPE.TEST : DIAGNOSTICS_ITEM_TYPE.PACKAGE,
