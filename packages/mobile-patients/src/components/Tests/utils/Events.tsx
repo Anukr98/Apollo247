@@ -1318,3 +1318,20 @@ export async function DiagnosticCancellationRetention(
     postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_RETAIN_CANCELLATION, cleverTapEventAttributes);
   } catch (error) {}
 }
+
+export function DiagnosticHomepageViewedEvent(
+  currentPatient: any,
+  source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE
+) {
+  try {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_HOMEPAGE_VIEWED] = {
+      'Nav src': source,
+      User: `${currentPatient?.firstName} ${currentPatient?.lastName}`,
+      UHID: currentPatient?.uhid,
+      Gender: currentPatient?.gender,
+      'Mobile Number': currentPatient?.mobileNumber,
+      'Customer Id': currentPatient?.id,
+    };
+    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_HOMEPAGE_VIEWED, eventAttributes);
+  } catch (error) {}
+}

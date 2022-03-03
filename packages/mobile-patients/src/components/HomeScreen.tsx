@@ -253,8 +253,11 @@ import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/us
 import { UpdateAppPopup } from '@aph/mobile-patients/src/components/ui/UpdateAppPopup';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import DeviceInfo from 'react-native-device-info';
-import { DIAGNOSTIC_CTA_ITEMS } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
-import { DiagnosticCtaClicked } from '@aph/mobile-patients/src/components/Tests/utils/Events';
+import {
+  DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
+  DIAGNOSTIC_CTA_ITEMS,
+} from '@aph/mobile-patients/src/components/Tests/utils/helpers';
+import { DiagnosticCtaClicked, DiagnosticHomepageViewedEvent } from '@aph/mobile-patients/src/components/Tests/utils/Events';
 
 const { Vitals } = NativeModules;
 
@@ -2384,7 +2387,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           );
           postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Home Screen');
           postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Home Screen');
-          postDiagnosticHomepageViewedEvent('Homepage hero button');
+          postDiagnosticHomepageViewedEvent(
+            DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME_PAGE_HERO_BUTTON
+          );
           props.navigation.navigate('TESTS', { focusSearch: true, homeScreenAttributes });
         });
       },
@@ -2491,17 +2496,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const postDiagnosticHomepageViewedEvent = (
-    source: 'Homepage hero button' | 'Offer widget HP'
+    source:
+      | DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME_PAGE_HERO_BUTTON
+      | DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME_PAGE_OFFER_WIDGET
   ) => {
-    const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_HOMEPAGE_VIEWED] = {
-      'Nav src': source,
-      User: `${currentPatient?.firstName} ${currentPatient?.lastName}`,
-      UHID: currentPatient?.uhid,
-      Gender: currentPatient?.gender,
-      'Mobile Number': currentPatient?.mobileNumber,
-      'Customer Id': currentPatient?.id,
-    };
-    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_HOMEPAGE_VIEWED, eventAttributes);
+    DiagnosticHomepageViewedEvent(currentPatient, source);
   };
 
   const listValues: menuOptions[] = [...listOptions];
@@ -4485,7 +4484,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         const homeScreenAttributes = {
           Source: DiagnosticHomePageSource.BANNER,
         };
-        postDiagnosticHomepageViewedEvent('Offer widget HP');
+        postDiagnosticHomepageViewedEvent(
+          DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME_PAGE_OFFER_WIDGET
+        );
         props.navigation.navigate('TESTS', { homeScreenAttributes });
       } else if (action.cta_action == 'MEMBERSHIP_DETAIL_CIRCLE') {
         props.navigation.navigate('MembershipDetails', {
