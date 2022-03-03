@@ -394,10 +394,9 @@ export async function DiagnosticCtaClicked(
       | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CTA_CLICKED]
       | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_CTA_CLICKED] = {
       ...getPatientAttributes,
-      'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
-      CTA: ctaString,
-    };
-    console.log('eventAttributes :>> DiagnosticCtaClicked', eventAttributes);
+        'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+        'CTA': ctaString
+      }
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION, eventAttributes);
     postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_TEST_DESCRIPTION, eventAttributes);
   } catch (error) {}

@@ -29,6 +29,7 @@ interface RecommedationGroupCardProps {
   priceDiff?: number;
   groupRecommendations?: any;
   onPressArrow: () => void;
+  cartValue: any
 }
 
 export const RecommedationGroupCard: React.FC<RecommedationGroupCardProps> = (props) => {
@@ -47,6 +48,7 @@ export const RecommedationGroupCard: React.FC<RecommedationGroupCardProps> = (pr
     priceDiff,
     groupRecommendations,
     onPressArrow,
+    cartValue
   } = props;
 
   const inclusionNameArray = data?.inclusionData;
@@ -84,8 +86,9 @@ export const RecommedationGroupCard: React.FC<RecommedationGroupCardProps> = (pr
   const {
     isDiagnosticCircleSubscription,
   } = useDiagnosticsCart();
-  const slashedPrice = diagnosticsDisplayPrice(dataObj,isDiagnosticCircleSubscription)?.slashedPrice;
 
+  const slashedPrice = diagnosticsDisplayPrice(dataObj,isDiagnosticCircleSubscription)?.slashedPrice;
+  const priceToShow = diagnosticsDisplayPrice(dataObj, isDiagnosticCircleSubscription)?.priceToShow;
   const newItems = inclusionNameArray?.filter((item: any) => {
     if (!cartItemIds?.includes(item?.itemId)) {
       return item;
@@ -124,15 +127,17 @@ export const RecommedationGroupCard: React.FC<RecommedationGroupCardProps> = (pr
       >
         {!!priceDiff && (
           <Text style={styles.textStyleHeading}>
-            {`Add ${
-              priceDiff > 0
-                ? `${
-                    groupRecommendations?.[0]?.extraInclusionsCount > 1
-                      ? `${groupRecommendations?.[0]?.extraInclusionsCount} more Tests`
-                      : `${groupRecommendations?.[0]?.extraInclusionsCount} more Test`
-                  } @ ₹ ${priceDiff?.toFixed()} Only`
-                : `Add ${groupRecommendations?.[0]?.extraInclusionsCount} more tests @ no extra cost`
-            }`}
+            {!newItemText?.length
+              ? `Add a package @ no extra cost`
+              : `Add ${
+                  priceToShow < cartValue
+                    ? `${groupRecommendations?.[0]?.extraInclusionsCount} more tests @ no extra cost`
+                    : `${
+                        groupRecommendations?.[0]?.extraInclusionsCount > 1
+                          ? `${groupRecommendations?.[0]?.extraInclusionsCount} more Tests`
+                          : `${groupRecommendations?.[0]?.extraInclusionsCount} more Test`
+                      } @ ₹ ${priceDiff?.toFixed()} Only`
+                }`}
           </Text>
         )}
         {showRecommedation ? (
@@ -146,42 +151,42 @@ export const RecommedationGroupCard: React.FC<RecommedationGroupCardProps> = (pr
           <View style={styles.nameContainer}>
             <Text style={styles.cartItemText}>{data?.itemName}</Text>
             {isDiagnosticCircleSubscription ? (
-                <Text style={styles.slashedPriceText}>
-                  {string.common.Rs}
-                  {slashedPrice}
-                </Text>
-              ) : null}
-              <Text style={styles.mainPriceText}>
+              <Text style={styles.slashedPriceText}>
                 {string.common.Rs}
-                {pricesForItem?.price}
+                {slashedPrice}
               </Text>
+            ) : null}
+            <Text style={styles.mainPriceText}>
+              {string.common.Rs}
+              {priceToShow}
+            </Text>
           </View>
-          <Text
-            style={styles.textInclusionsRecom}
-          >{`includes ${totalInclusionCount} Tests`}</Text>
+          <Text style={styles.textInclusionsRecom}>{`includes ${totalInclusionCount} Tests`}</Text>
           <View style={{ marginTop: 10, flexDirection: 'column' }}>
             {existingItems?.map((item: any) => {
               return <View style={styles.inclusionItemView}>{renderItemList(item?.name)}</View>;
             })}
-            <View style={styles.inclusionItemView}>
-              <AcceptGreen style={styles.acceptTick} />
-              <Text
-                style={{
-                  ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1),
-                }}
-              >
-                {' '}
-                Additional Tests:
+            {newItemText?.length ? (
+              <View style={styles.inclusionItemView}>
+                <AcceptGreen style={styles.acceptTick} />
                 <Text
                   style={{
-                    ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 1),
+                    ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1),
                   }}
                 >
                   {' '}
-                  {newItemText}
+                  Additional Tests:
+                  <Text
+                    style={{
+                      ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 1),
+                    }}
+                  >
+                    {' '}
+                    {newItemText}
+                  </Text>
                 </Text>
-              </Text>
-            </View>
+              </View>
+            ) : null}
           </View>
           {showAddButton ? (
             <TouchableOpacity

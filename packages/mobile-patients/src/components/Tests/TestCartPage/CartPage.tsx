@@ -261,21 +261,40 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   var patientCartItemsCopy = JSON.parse(JSON.stringify(isCartPresent));
   const arrayToUse = isModifyFlow ? modifiedPatientCart : patientCartItems;
 
+  const checkCartForRecommendation = () => {
+    setLoading?.(true);
+      const patientId = patientCartItems?.[0]?.patientId; // for group recommandation only
+      const groupItemPresentArr = patientCartItems?.[0]?.cartItems?.filter((item) => {
+        //checking the presence if group recommendation Item in the cart
+        return groupRecommendations?.[0]?.itemId == Number(item?.id);
+      });
+      if (groupItemPresentArr?.length == 1) {
+        _onPressRemoveCartItem(groupItemPresentArr?.[0], [], true);
+        addPatientCartItem?.(patientId, cartItems!);
+      }
+      setLoading?.(false)
+  }
   useEffect(() => {
     triggerCartPageViewed(false, cartItems);
+  }, [])
+  useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setIsFocused(true);
       BackHandler.addEventListener('hardwareBackPress', handleBack);
     });
     const willBlur = props.navigation.addListener('willBlur', (payload) => {
       setIsFocused(false);
+      // to remove group recommendation item from the cart
+      if (payload?.action?.routeName != AppRoutes.AddressSlotSelection) {
+        checkCartForRecommendation()
+      }
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     });
     return () => {
       didFocus && didFocus.remove();
       willBlur && willBlur.remove();
     };
-  }, []);
+  }, [groupRecommendations]);
 
   function triggerAddressSelected(servicable: 'Yes' | 'No') {
     const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
@@ -357,7 +376,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     } else if (isCartPresent?.length == 0) {
       props.navigation.navigate('TESTS', { focusSearch: true });
     } else {
-      props.navigation.goBack();
+        checkCartForRecommendation()
+        props.navigation.goBack();
     }
 
     return true;
@@ -1217,7 +1237,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       return groupRecommendations?.[0]?.itemId == Number(item?.id);
     });
     if (groupItemPresentArr?.length == 1) {
-      _onPressRemoveCartItem(groupItemPresentArr?.[0], []);
+      _onPressRemoveCartItem(groupItemPresentArr?.[0], [],true);
       addPatientCartItem?.(patientId, cartItems!);
     }
     props.navigation.navigate('TESTS', { focusSearch: false });
@@ -1323,7 +1343,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     name: string,
     genderAgeText: string,
     salutation: string,
-    count: number
+    count: number,
+    data: any
   ) => {
     return (
       <View style={styles.patientNameCartItemView}>
@@ -1336,7 +1357,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           {!!genderAgeText && <Text style={styles.patientNameText}>{genderAgeText}</Text>}
         </View>
 
-        {!!count && renderEachPatientCartCount(count)}
+        {!!count && renderEachPatientCartCount(count, data)}
       </View>
     );
   };
@@ -1459,6 +1480,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           showAddButton={true}
           showTestWorth={true}
           priceDiff={priceDiff}
+          cartValue={grandTotal}
           groupRecommendations={groupRecommendations}
           onPressArrow={()=>{
             setOpenRecommedations(!openRecommedations);
@@ -1492,7 +1514,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                         patientName,
                         genderAgeText,
                         patientSalutation,
-                        patientItems?.length
+                        patientItems?.length,
+                        patientItems
                       )
                     : null}
                   {!!patientItems && patientItems?.length > 0 && (
@@ -1594,12 +1617,16 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     addPatientCartItem?.(patientId, allItems!);
   }
 
-  const renderEachPatientCartCount = (count: number) => {
+  const renderEachPatientCartCount = (count: number, data: any) => {
+    let testsCount = 0;
+    data?.map((item: any) => {
+      return (testsCount += item?.parameterCount);
+    });
     return (
       <View style={styles.cartCountView}>
-        <Text style={styles.cartCountText}>{`Cart Value | ${count} ${
+        <Text style={styles.cartCountText}>{`${count} ${
           count == 1 ? 'item' : 'items'
-        }`}</Text>
+        } | ${testsCount} ${testsCount == 1 ? 'test' : 'tests'} included`}</Text>
         <Text style={styles.cartCountText}>{`${string.common.Rs}${grandTotal}`}</Text>
       </View>
     );
@@ -1769,22 +1796,22 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         showCartInclusions={true} //showInclusions
         duplicateArray={filterDuplicateItemsForPatients}
         onPressCard={(item) => _onPressCartItem(item, test)}
-        onPressRemove={(item) => _onPressRemoveCartItem(item, patientItems)}
+        onPressRemove={(item) => _onPressRemoveCartItem(item, patientItems,false)}
         showUndo={groupItemPresentArr?.length == 1}
         onPressUndo={(item) => {
-          _onPressRemoveCartItem(item, patientItems);
+          _onPressRemoveCartItem(item, patientItems,true);
           addPatientCartItem?.(patientId, cartItems!);
         }}
       />
     );
   };
 
-  function _onPressRemoveCartItem(item: any, patientItems: any) {
+  function _onPressRemoveCartItem(item: any, patientItems: any,isUndo:boolean) {
     CommonLogEvent(AppRoutes.CartPage, 'Remove item from cart');
     if (isModifyFlow) {
       removeCartItem?.(item?.id);
     }
-    onRemoveCartItem(item, patientItems?.id);
+    onRemoveCartItem(item, patientItems?.id, isUndo);
   }
 
   function _onPressCartItem(item: any, test: DiagnosticsCartItem) {
