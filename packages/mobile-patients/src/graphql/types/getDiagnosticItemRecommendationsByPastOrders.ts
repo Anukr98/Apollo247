@@ -29,7 +29,7 @@ export interface getDiagnosticItemRecommendationsByPastOrders_getDiagnosticItemR
   itemId: number;
   itemName: string;
   gender: string | null;
-  imageUrl: string;
+  imageUrl: string | null;
   observations: (getDiagnosticItemRecommendationsByPastOrders_getDiagnosticItemRecommendationsByPastOrders_itemsData_observations | null)[] | null;
   diagnosticInclusions: (getDiagnosticItemRecommendationsByPastOrders_getDiagnosticItemRecommendationsByPastOrders_itemsData_diagnosticInclusions | null)[] | null;
 }

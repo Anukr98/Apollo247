@@ -7682,3 +7682,96 @@ export const MEDICINE_HOMEPAGE_API_CALLS = gql`
       }
   }
 `;
+
+
+export const DIAGNOSTIC_HOMEPAGE_API_CALLS = gql`
+  query diagnosticHomepageCalls(
+    $mobile_number: String!
+    $skip: Int!
+    $take: Int!
+    $prescriptionLimit: Int!
+    $cityId: Int!
+    $status: [String!]!
+    ) {
+        getDiagnosticOpenOrdersList(mobileNumber: $mobile_number, skip: $skip, take: $take) {
+          openOrders {
+            id
+            displayId
+            patientId
+            orderStatus
+            slotDateTimeInUTC
+            labReportURL
+            paymentType
+            patientObj {
+              firstName
+              lastName
+            }
+            attributesObj {
+              reportTATMessage
+              reportGenerationTime
+              expectedReportGenerationTime
+            }
+            diagnosticOrderLineItems {
+              itemObj {
+                testPreparationData
+                preTestingRequirement
+              }
+            }
+          }
+        }
+
+        getDiagnosticClosedOrdersList(mobileNumber: $mobile_number, skip: $skip, take: $take) {
+          closedOrders {
+            id
+            displayId
+            patientId
+            orderStatus
+            slotDateTimeInUTC
+            labReportURL
+            paymentType
+            patientObj {
+              firstName
+              lastName
+            }
+            diagnosticOrderLineItems {
+              itemObj {
+                testPreparationData
+                preTestingRequirement
+              }
+            }
+            attributesObj {
+              reportTATMessage
+              reportGenerationTime
+              expectedReportGenerationTime
+            }
+          }
+        }
+      
+        getPatientLatestPrescriptions(mobileNumber: $mobile_number, limit: $prescriptionLimit, cityId: $cityId) {
+          doctorName
+          doctorCredentials
+          patientName
+          prescriptionDateTime
+          numberOfTests
+          orderCount
+          caseSheet {
+            id
+            blobName
+            diagnosticPrescription {
+              itemId
+              itemname
+              gender
+              testInstruction
+            }
+          }
+        }
+          
+      GetSubscriptionsOfUserByStatus(mobile_number: $mobile_number, status: $status) {
+        code
+        success
+        message
+        response
+      }
+    
+  }
+`;

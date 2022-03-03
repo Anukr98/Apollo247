@@ -125,6 +125,7 @@ import {
   diagnosticServiceability,
   fetchPatientAddressList,
   getDiagnosticClosedOrders,
+  getDiagnosticHomePageBatchedApi,
   getDiagnosticOpenOrders,
   getDiagnosticPatientPrescription,
   getDiagnosticPhelboDetails,
@@ -143,7 +144,6 @@ import {
   DIAGNOSTIC_PINCODE_SOURCE_TYPE,
   getPricesForItem,
   getParameterCount,
-  DIAGNOSTIC_CTA_ITEMS,
 } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import Carousel from 'react-native-snap-carousel';
@@ -152,9 +152,9 @@ import {
   DiagnosticAddresssSelected,
   DiagnosticAddToCartEvent,
   DiagnosticBannerClick,
-  DiagnosticCtaClicked,
   DiagnosticHomePageClicked,
   DiagnosticHomePageRecommendationsViewed,
+  DiagnosticHomepageViewedEvent,
   DiagnosticHomePageWidgetClicked,
   DiagnosticLandingPageViewedEvent,
   DiagnosticPrescriptionSubmitted,
@@ -414,25 +414,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
     backend: AsyncStorage,
   });
 
-  const postDiagnosticHomepageViewedEvent = (source: 'Direct' | 'Bottom Bar') => {
-    const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_HOMEPAGE_VIEWED] = {
-      'Nav src': source,
-      'User': `${currentPatient?.firstName} ${currentPatient?.lastName}`,
-      'UHID': currentPatient?.uhid,
-      'Gender': currentPatient?.gender,
-      'Mobile Number': currentPatient?.mobileNumber,
-      'Customer Id': currentPatient?.id
-    }
-    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_HOMEPAGE_VIEWED, eventAttributes)
-  }
+  const postDiagnosticHomepageViewedEvent = (
+    source:
+      | DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DIRECT
+      | DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.BOTTOM_BAR
+  ) => {
+    DiagnosticHomepageViewedEvent(currentPatient, source);
+  };
 
   useEffect(() => {
     fetchNumberSpecificOrderDetails();
-    if (!!currentPatient && !isDiagnosticCircleSubscription) {
-      getUserSubscriptionsByStatus();
-    }
     if (movedFrom && movedFrom === 'deeplink') {
-      postDiagnosticHomepageViewedEvent('Direct')
+      postDiagnosticHomepageViewedEvent(DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DIRECT);
       BackHandler.addEventListener('hardwareBackPress', handleBack);
       return () => {
         BackHandler.removeEventListener('hardwareBackPress', handleBack);
@@ -503,9 +496,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setBannerData && setBannerData([]); // default banners to be empty
-      getUserBanners();
-      if(movedFrom  && movedFrom !== 'deeplink')
-        postDiagnosticHomepageViewedEvent('Bottom Bar')
+      // getUserBanners(); //commented for now , since we don't show circle banners
+      if (movedFrom && movedFrom !== 'deeplink')
+        postDiagnosticHomepageViewedEvent(DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.BOTTOM_BAR);
     });
     const didBlur = props.navigation.addListener('didBlur', (payload) => {});
     return () => {
@@ -552,12 +545,71 @@ export const Tests: React.FC<TestsProps> = (props) => {
   function fetchNumberSpecificOrderDetails() {
     if (currentPatient) {
       fetchUserType();
-      fetchPatientOpenOrders();
-      fetchPatientClosedOrders();
-      fetchPatientPrescriptions();
-      getUserBanners();
+      getBatchedApiResponse(); //this batched api for homepage
+      // getUserBanners(); //commented for now , since we don't show circle banners
       getDataFromCache();
     }
+  }
+
+  //this is used for open orders, closed orders, fetching prescriptions, getUserSubscriptions
+  //if any of the query failes, recalling all the api's again individually.
+  const getBatchedApiResponse = async () => {
+    setPatientOrdersShimmer(true);
+    setLatestPrescriptionShimmer(true);
+    try {
+      const query = {
+        mobile_number: currentPatient?.mobileNumber,
+        skip: 0,
+        take: 3,
+        prescriptionLimit: 3,
+        cityId: AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
+        status: ['active', 'deferred_inactive'],
+      };
+      const res = await getDiagnosticHomePageBatchedApi(apolloClientWithAuth, query);
+      if (res?.data) {
+        const responseData = res?.data;
+        const getOpenOrders = responseData?.getDiagnosticOpenOrdersList?.openOrders;
+        const getClosedOrders = responseData?.getDiagnosticClosedOrdersList?.closedOrders;
+        //open orders
+        if (!!getOpenOrders) {
+          setPatientOpenOrders(getOpenOrders);
+        } else {
+          setPatientOpenOrders([]);
+        }
+        //closed orders
+        if (!!getClosedOrders) {
+          setPatientClosedOrders(getClosedOrders);
+        } else {
+          setPatientClosedOrders([]);
+        }
+        //prescription orders
+        if (responseData?.getPatientLatestPrescriptions?.length > 0) {
+          setLatestPrescription(responseData?.getPatientLatestPrescriptions);
+        } else {
+          setLatestPrescription([]);
+        }
+        //user subscription
+        if (!!responseData?.GetSubscriptionsOfUserByStatus) {
+          const result = responseData?.response;
+          setSubscriptionDetails(result);
+        }
+      } else {
+        recallBatchedApiIndividually();
+      }
+    } catch (error) {
+      recallBatchedApiIndividually();
+      CommonBugFender('DiagnosticHomePage_getBatchedApiResponse', error);
+    } finally {
+      setPatientOrdersShimmer(false);
+      setLatestPrescriptionShimmer(false);
+    }
+  };
+
+  function recallBatchedApiIndividually() {
+    fetchPatientOpenOrders();
+    fetchPatientClosedOrders();
+    fetchPatientPrescriptions();
+    getUserSubscriptionsByStatus();
   }
 
   const getDataFromCache = async () => {
@@ -1196,47 +1248,51 @@ export const Tests: React.FC<TestsProps> = (props) => {
       };
       const res = await getUserSubscriptionStatus(client, query);
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
-      const filterActiveResults = data?.APOLLO?.filter((val: any) => val?.status == 'active');
-      if (data) {
-        const circleData = !!filterActiveResults ? filterActiveResults?.[0] : data?.APOLLO?.[0];
-        if (circleData._id && circleData?.status !== 'disabled') {
-          AsyncStorage.setItem('circleSubscriptionId', circleData._id);
-          setCircleSubscriptionId && setCircleSubscriptionId(circleData._id);
-          setIsCircleSubscription && setIsCircleSubscription(true);
-          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
-          const planValidity = {
-            startDate: circleData?.start_date,
-            endDate: circleData?.end_date,
-            plan_id: circleData?.plan_id,
-            source_identifier: circleData?.source_meta_data?.source_identifier,
-          };
-          setCirclePlanValidity && setCirclePlanValidity(planValidity);
-          setIsRenew && setIsRenew(!!circleData?.renewNow);
-        } else {
-          setCircleSubscriptionId && setCircleSubscriptionId('');
-          setIsCircleSubscription && setIsCircleSubscription(false);
-          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
-          setCirclePlanValidity && setCirclePlanValidity(null);
-        }
-
-        if (data?.HDFC?.[0]._id) {
-          setHdfcSubscriptionId && setHdfcSubscriptionId(data?.HDFC?.[0]._id);
-
-          const planName = data?.HDFC?.[0].name;
-          setHdfcPlanName && setHdfcPlanName(planName);
-
-          if (planName === hdfc_values.PLATINUM_PLAN && data?.HDFC?.[0].status === 'active') {
-            setIsFreeDelivery && setIsFreeDelivery(true);
-          }
-        } else {
-          setHdfcSubscriptionId && setHdfcSubscriptionId('');
-          setHdfcPlanName && setHdfcPlanName('');
-        }
-      }
+      setSubscriptionDetails(data);
     } catch (error) {
       CommonBugFender('Diagnositic_Landing_Page_Tests_GetSubscriptionsOfUserByStatus', error);
     }
   };
+
+  function setSubscriptionDetails(data: any) {
+    const filterActiveResults = data?.APOLLO?.filter((val: any) => val?.status == 'active');
+    if (data) {
+      const circleData = !!filterActiveResults ? filterActiveResults?.[0] : data?.APOLLO?.[0];
+      if (circleData._id && circleData?.status !== 'disabled') {
+        AsyncStorage.setItem('circleSubscriptionId', circleData._id);
+        setCircleSubscriptionId && setCircleSubscriptionId(circleData._id);
+        setIsCircleSubscription && setIsCircleSubscription(true);
+        setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
+        const planValidity = {
+          startDate: circleData?.start_date,
+          endDate: circleData?.end_date,
+          plan_id: circleData?.plan_id,
+          source_identifier: circleData?.source_meta_data?.source_identifier,
+        };
+        setCirclePlanValidity && setCirclePlanValidity(planValidity);
+        setIsRenew && setIsRenew(!!circleData?.renewNow);
+      } else {
+        setCircleSubscriptionId && setCircleSubscriptionId('');
+        setIsCircleSubscription && setIsCircleSubscription(false);
+        setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
+        setCirclePlanValidity && setCirclePlanValidity(null);
+      }
+
+      if (data?.HDFC?.[0]._id) {
+        setHdfcSubscriptionId && setHdfcSubscriptionId(data?.HDFC?.[0]._id);
+
+        const planName = data?.HDFC?.[0].name;
+        setHdfcPlanName && setHdfcPlanName(planName);
+
+        if (planName === hdfc_values.PLATINUM_PLAN && data?.HDFC?.[0].status === 'active') {
+          setIsFreeDelivery && setIsFreeDelivery(true);
+        }
+      } else {
+        setHdfcSubscriptionId && setHdfcSubscriptionId('');
+        setHdfcPlanName && setHdfcPlanName('');
+      }
+    }
+  }
 
   const renderSearchBar = () => {
     const shouldEnableSearchSend = searchText.length > 2;
@@ -2933,9 +2989,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
         recommendationWidget?.[0]?.diagnosticWidgetData?.length,
         pastOrderRecommendations?.length,
         isDiagnosticCircleSubscription
-      )
+      );
     }
-  }, [pastOrderRecommendations])
+  }, [pastOrderRecommendations]);
   const renderPastOrderRecommendations = (drupalRecommendations: any) => {
     const topTenPastRecommendations =
       pastOrderRecommendations?.length > 10
