@@ -6296,7 +6296,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       key === MedicalRecordType.TEST_REPORT
         ? {
             itemId: item?.diagnostic_item_id,
-            source: 'Full search',
+            source: 'Homepage Search',
             comingFrom: AppRoutes.HomeScreen,
             testName: item?.diagnostic_item_name,
           }

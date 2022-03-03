@@ -42,6 +42,7 @@ function createPatientAttributes(currentPatient: any) {
     'Patient Uhid': currentPatient?.uhid,
     'Patient Gender': currentPatient?.gender,
     'Patient Name': `${currentPatient?.firstName} ${currentPatient?.lastName}`,
+    'Patient MobileNumber': currentPatient?.mobileNumber,
     'Patient Age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
     Relation: currentPatient?.relation,
   };
@@ -369,7 +370,7 @@ export async function DiagnosticHomePageRecommendationsViewed(
           return item?.itemName;
         })
       ),
-      drupalCount: drupalCount,
+      drupalCount: !!drupalCount ? drupalCount : 0,
       apiCount: apiCount,
       'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
     };
