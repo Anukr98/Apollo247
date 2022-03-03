@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  inclusionItemView: { paddingHorizontal: 10, paddingBottom: 10, flexDirection: 'row' },
+  inclusionItemView: { paddingHorizontal: 10, paddingBottom: 10, flexDirection: 'row',width: '95%' },
   cartItemText: {
     ...theme.viewStyles.text('SB', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 1, 22),
     width: '75%',
