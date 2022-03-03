@@ -117,6 +117,7 @@ export const RecommedationGroupCard: React.FC<RecommedationGroupCardProps> = (pr
   inclusionNameArray?.map((item:any)=>{
     totalInclusionCount += item?.observations?.length
   })
+  const priceDifference = priceToShow - cartValue
   return (
     <View style={[styles.container, containerStyle]}>
       <TouchableOpacity
@@ -125,7 +126,7 @@ export const RecommedationGroupCard: React.FC<RecommedationGroupCardProps> = (pr
           onPressArrow();
         }}
       >
-        {!!priceDiff && (
+        {!!priceDifference && (
           <Text style={styles.textStyleHeading}>
             {!newItemText?.length
               ? `Add a package @ no extra cost`
@@ -136,7 +137,7 @@ export const RecommedationGroupCard: React.FC<RecommedationGroupCardProps> = (pr
                         groupRecommendations?.[0]?.extraInclusionsCount > 1
                           ? `${groupRecommendations?.[0]?.extraInclusionsCount} more Tests`
                           : `${groupRecommendations?.[0]?.extraInclusionsCount} more Test`
-                      } @ ₹ ${priceDiff?.toFixed()} Only`
+                      } @ ₹ ${Math.abs(Number(priceDifference?.toFixed()))} Only`
                 }`}
           </Text>
         )}

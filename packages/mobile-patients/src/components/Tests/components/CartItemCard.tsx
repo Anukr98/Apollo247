@@ -289,14 +289,19 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
           <Text style={styles.textInclusion}> {`• ${item?.name}`}</Text>
         ))}
         {otherInclusions?.length > 0 && (
-            <><Text style={styles.textInclusion}> {`• Other Tests`}</Text><>
-            {otherInclusions?.map((item) => {
-              <Text style={styles.textOtherInclusion}>
-                {'     '}
-                {`• ${item?.name}`}
-              </Text>;
-            })}
-          </></>
+          <>
+            <Text style={styles.textInclusion}> {`• Other Tests`}</Text>
+            <>
+              {otherInclusions?.map((item) => {
+                return (
+                  <Text style={styles.textOtherInclusion}>
+                    {'     '}
+                    {`• ${item?.name}`}
+                  </Text>
+                );
+              })}
+            </>
+          </>
         )}
       </View>
     );

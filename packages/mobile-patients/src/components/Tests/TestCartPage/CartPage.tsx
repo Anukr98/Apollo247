@@ -275,9 +275,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       setLoading?.(false)
   }
   useEffect(() => {
-    triggerCartPageViewed(false, cartItems);
-  }, [])
-  useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setIsFocused(true);
       BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -1462,6 +1459,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           data={groupRecommendations?.[0]}
           showRecommedation={openRecommedations}
           onPressAdd={() => {
+            const originalIds = cartItems?.map((item)=>{
+              return item?.id
+            })
             DiagnosticAddToCartEvent(
               groupItem?.itemName,
               `${groupItem?.itemId}`,
@@ -1472,7 +1472,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
               'Package Recommendations',
               currentPatient,
               isDiagnosticCircleSubscription,
-              groupItem?.inclusions
+              originalIds
             );
             _onPressProceed(patientId, grpItem)
           }}
