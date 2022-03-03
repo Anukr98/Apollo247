@@ -146,7 +146,16 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
 
   useEffect(() => {
     let source = movedFrom == 'Tests' ? '247 Home' : movedFrom == 'deeplink' ? 'Deeplink' : '';
-    DiagnosticProductListingPageViewed(widgetType, source, widgetName!, title);
+    DiagnosticProductListingPageViewed(
+      !!widgetType
+        ? widgetType
+        : widgetName == string.diagnostics.homepagePastOrderRecommendations
+        ? 'Item'
+        : '',
+      source,
+      widgetName!,
+      title
+    );
     if (!!currentPatient && movedFrom == 'deeplink') {
       getUserSubscriptionsByStatus();
     }
