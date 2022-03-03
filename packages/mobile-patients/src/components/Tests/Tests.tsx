@@ -318,6 +318,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
     pharmacyLocation,
     notificationCount,
     setIsRenew,
+    tabRouteJourney,
+    setTabRouteJourney,
   } = useAppCommonData();
 
   type Address = savePatientAddress_savePatientAddress_patientAddress;
@@ -411,12 +413,25 @@ export const Tests: React.FC<TestsProps> = (props) => {
     backend: AsyncStorage,
   });
 
+  const postDiagnosticHomepageViewedEvent = (source: 'Direct' | 'Bottom Bar') => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_HOMEPAGE_VIEWED] = {
+      'Nav src': source,
+      'User': `${currentPatient?.firstName} ${currentPatient?.lastName}`,
+      'UHID': currentPatient?.uhid,
+      'Gender': currentPatient?.gender,
+      'Mobile Number': currentPatient?.mobileNumber,
+      'Customer Id': currentPatient?.id
+    }
+    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_HOMEPAGE_VIEWED, eventAttributes)
+  }
+
   useEffect(() => {
     fetchNumberSpecificOrderDetails();
     if (!!currentPatient && !isDiagnosticCircleSubscription) {
       getUserSubscriptionsByStatus();
     }
-    if (movedFrom === 'deeplink') {
+    if (movedFrom && movedFrom === 'deeplink') {
+      postDiagnosticHomepageViewedEvent('Direct')
       BackHandler.addEventListener('hardwareBackPress', handleBack);
       return () => {
         BackHandler.removeEventListener('hardwareBackPress', handleBack);
@@ -488,6 +503,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setBannerData && setBannerData([]); // default banners to be empty
       getUserBanners();
+      if(movedFrom  && movedFrom !== 'deeplink')
+        postDiagnosticHomepageViewedEvent('Bottom Bar')
     });
     const didBlur = props.navigation.addListener('didBlur', (payload) => {});
     return () => {
@@ -3457,11 +3474,28 @@ export const Tests: React.FC<TestsProps> = (props) => {
     postCleverTapEvent(CleverTapEventName.SCREEN_SCROLLED, eventAttributes);
   };
 
+  const setRouteJourneyFromTabbar = () => {
+    if (!tabRouteJourney) {
+      setTabRouteJourney &&
+        setTabRouteJourney({
+          previousRoute: 'TESTS',
+          currentRoute: 'TESTS',
+        });
+    } else {
+      setTabRouteJourney &&
+        setTabRouteJourney({
+          previousRoute: tabRouteJourney?.currentRoute,
+          currentRoute: 'TESTS',
+        });
+    }
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <NavigationEvents
         onDidFocus={() => {
           scrollCount.current = 0;
+          setRouteJourneyFromTabbar();
         }}
         onDidBlur={postScrollScreenEvent}
       />

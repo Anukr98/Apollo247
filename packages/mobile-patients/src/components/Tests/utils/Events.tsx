@@ -28,7 +28,10 @@ import {
 import { circleValidity } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
-import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE, DIAGNOSTIC_CTA_ITEMS } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
+import {
+  DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
+  DIAGNOSTIC_CTA_ITEMS,
+} from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientObj } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { AppConfig, AppEnv } from '@aph/mobile-patients/src/strings/AppConfig';
 import { DiagnosticCTJourneyType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -142,6 +145,7 @@ export async function DiagnosticAddToCartEvent(
       'Item Id': String(id),
       'Item Type': itemType,
       'Item Price': String(discountedPrice), //should be the selling price
+      'Nav Src': source,
       Source: source,
       'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
     };
@@ -347,7 +351,7 @@ export async function DiagnosticHomePageRecommendationsViewed(
   currentPatient: any,
   drupalCount: number,
   apiCount: string,
-  isDiagnosticCircleSubscription?: boolean | undefined,
+  isDiagnosticCircleSubscription?: boolean | undefined
 ) {
   try {
     const getPatientAttributes = await createPatientAttributes(currentPatient);
@@ -355,24 +359,34 @@ export async function DiagnosticHomePageRecommendationsViewed(
       | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_HOME_PAGE_RECOMMENDATIONS_VIEWED]
       | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_HOME_PAGE_RECOMMENDATIONS_VIEWED] = {
       ...getPatientAttributes,
-      'Recommendation ItemIds': JSON.stringify(recommendationItems?.map((item)=>{
-        return item?.itemId
-      })),
-      'Recommendation ItemNames': JSON.stringify(recommendationItems?.map((item)=>{
-        return item?.itemName
-      })),
-      'drupalCount': drupalCount,
-      'apiCount': apiCount,
+      'Recommendation ItemIds': JSON.stringify(
+        recommendationItems?.map((item: any) => {
+          return item?.itemId;
+        })
+      ),
+      'Recommendation ItemNames': JSON.stringify(
+        recommendationItems?.map((item: any) => {
+          return item?.itemName;
+        })
+      ),
+      drupalCount: drupalCount,
+      apiCount: apiCount,
       'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
     };
-    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_HOME_PAGE_RECOMMENDATIONS_VIEWED, eventAttributes);
-    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_HOME_PAGE_RECOMMENDATIONS_VIEWED, eventAttributes);
+    postWebEngageEvent(
+      WebEngageEventName.DIAGNOSTIC_HOME_PAGE_RECOMMENDATIONS_VIEWED,
+      eventAttributes
+    );
+    postCleverTapEvent(
+      CleverTapEventName.DIAGNOSTIC_HOME_PAGE_RECOMMENDATIONS_VIEWED,
+      eventAttributes
+    );
   } catch (error) {}
 }
 export async function DiagnosticCtaClicked(
   currentPatient: any,
   isDiagnosticCircleSubscription: boolean | undefined,
-  ctaString: DIAGNOSTIC_CTA_ITEMS,
+  ctaString: DIAGNOSTIC_CTA_ITEMS
 ) {
   try {
     const getPatientAttributes = await createPatientAttributes(currentPatient);
@@ -380,10 +394,10 @@ export async function DiagnosticCtaClicked(
       | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CTA_CLICKED]
       | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_CTA_CLICKED] = {
       ...getPatientAttributes,
-        'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
-        'CTA': ctaString
-      }
-      console.log('eventAttributes :>> DiagnosticCtaClicked', eventAttributes);
+      'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+      CTA: ctaString,
+    };
+    console.log('eventAttributes :>> DiagnosticCtaClicked', eventAttributes);
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION, eventAttributes);
     postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_TEST_DESCRIPTION, eventAttributes);
   } catch (error) {}

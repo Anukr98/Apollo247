@@ -84,10 +84,7 @@ export const CheckReschedulePopup: React.FC<CheckRescheduleProps> = (props) => {
   const isAwaitingReschedule = data?.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE;
   const [networkStatus, setNetworkStatus] = useState<boolean>(false);
 
-  const todayDate = moment
-    .utc(data.appointmentDateTime)
-    .local()
-    .format('YYYY-MM-DD');
+  const todayDate = moment().format('YYYY-MM-DD');
 
   const client = useApolloClient();
 
@@ -202,9 +199,10 @@ export const CheckReschedulePopup: React.FC<CheckRescheduleProps> = (props) => {
       .then(({ data }: any) => {
         setLoading!(false);
         try {
-          data[0] && setNextSlotAvailable(
-            apptType == 'ONLINE' ? data?.[0]?.availableSlot :
-            data?.[0]?.physicalAvailableSlot);
+          data[0] &&
+            setNextSlotAvailable(
+              apptType == 'ONLINE' ? data?.[0]?.availableSlot : data?.[0]?.physicalAvailableSlot
+            );
         } catch (error) {
           CommonBugFender('AppointmentOnlineDetails_fetchNextDoctorAvailableData_try', error);
           setNextSlotAvailable('');

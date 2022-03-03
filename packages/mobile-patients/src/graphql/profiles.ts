@@ -2186,9 +2186,11 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
         medicineOrderAddress {
           addressLine1
           addressLine2
+          landmark
           city
           state
           zipcode
+          name
         }
       }
     }
@@ -2200,7 +2202,7 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
     $mobileNumber: String
     $paginated: Boolean
     $limit: Int
-    $offset: Int,
+    $offset: Int
     $patientId: String
   ) {
     getDiagnosticOrdersListByMobile(
@@ -4745,13 +4747,24 @@ export const CONSULT_ORDER_PAYMENT_DETAILS = gql`
       }
       appointments {
         id
+        orderType
         doctorId
         displayId
         appointmentDateTime
         actualAmount
         status
         appointmentType
-        discountedAmount
+        discountedAmount   
+        subscriptionOrderDetails{
+          _id,
+          status,
+          plan_id
+          group_plan_id
+          transaction_date_time
+          payment_reference
+          sub_plan_id
+          order_id
+        }
         appointmentRefunds {
           refundAmount
           txnTimestamp
@@ -6449,7 +6462,7 @@ export const GET_RESCHEDULE_AND_CANCELLATION_REASONS = gql`
       cancellationReasonsv2 {
         reason
         isDirectCancellation
-        ctaOptions{
+        ctaOptions {
           cta
           multiCtas
           displayText
@@ -6698,7 +6711,7 @@ export const GET_DIAGNOSTICS_RECOMMENDATIONS = gql`
           observationName
           mandatoryValue
         }
-        diagnosticInclusions{
+        diagnosticInclusions {
           itemId
           name
           observations {
@@ -7570,8 +7583,8 @@ export const DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS = gql`
           observationName
           mandatoryValue
         }
-        diagnosticInclusions{
-          observations{
+        diagnosticInclusions {
+          observations {
             observationName
             mandatoryValue
           }

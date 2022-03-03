@@ -100,7 +100,10 @@ import { UIElementsContextProps } from '@aph/mobile-patients/src/components/UIEl
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getLatestMedicineOrder';
-import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetailsWithAddress';
+import {
+  getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails,
+  getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderAddress,
+} from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsWithAreaID';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 import { getDiagnosticsByItemIdCityId, getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
@@ -283,7 +286,9 @@ export const getDoctorShareMessage = (doctorData: any) => {
 };
 
 export const formatAddressWithLandmark = (
-  address: savePatientAddress_savePatientAddress_patientAddress
+  address:
+    | savePatientAddress_savePatientAddress_patientAddress
+    | getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderAddress
 ) => {
   const addrLine1 = removeConsecutiveComma(
     [address?.addressLine1, address?.addressLine2]?.filter((v) => v)?.join(', ')
@@ -308,7 +313,9 @@ export const formatAddressWithLandmark = (
 };
 
 export const getNameFromAddress = (
-  address: savePatientAddress_savePatientAddress_patientAddress
+  address:
+    | savePatientAddress_savePatientAddress_patientAddress
+    | getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderAddress
 ) => {
   return address?.name || '';
 };
@@ -2440,19 +2447,20 @@ export const InitiateAppsFlyer = (
   let isDeepLinked = false;
   onDeepLinkCanceller = appsFlyer.onDeepLink((res) => {
     isDeepLinked = true;
-    if (res.is_deferred) {
+    if (res.isDeferred) {
       getInstallResources();
       const url = handleOpenURL(res?.data?.deep_link_value);
       AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
     }
     try {
-      if (!res.is_deferred) {
+      if (!res.isDeferred) {
         if (redirectUrl && checkUniversalURL(redirectUrl).universal) {
           if (Object.keys(res.data).length < 2) {
             clevertapEventForAppsflyerDeeplink(
               removeNullFromObj({
                 source_url: checkUniversalURL(redirectUrl).source_url,
                 channel: 'Organic',
+                'Nav Src': 'universal URL',
               })
             );
           } else {
@@ -2460,18 +2468,20 @@ export const InitiateAppsFlyer = (
               filterAppLaunchSoruceAttributesByKey({
                 ...res.data,
                 source_url: checkUniversalURL(redirectUrl).source_url,
+                'Nav Src': 'universal URL',
               })
             );
           }
         } else {
-          clevertapEventForAppsflyerDeeplink(filterAppLaunchSoruceAttributesByKey(res.data));
+          const eventAttributes = {
+            ...res.data,
+            'Nav Src': 'deeplink',
+          };
+          clevertapEventForAppsflyerDeeplink(filterAppLaunchSoruceAttributesByKey(eventAttributes));
           const url = handleOpenURL(res.data.deep_link_value);
           AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
           redirectWithOutDeferred(url);
         }
-      }
-      if (res.status == 'success') {
-        clevertapEventForAppsflyerDeeplink(removeNullFromObj(res.data));
       }
     } catch (e) {}
   });
@@ -2481,9 +2491,9 @@ export const InitiateAppsFlyer = (
 };
 
 export const checkUniversalURL = (url: string) => {
-  if (
-    url.indexOf(string.common.apollo247UniversalLink) != -1 ||
-    url.indexOf(string.common.apolloPharmacyUniversalLink) != -1
+  if (!url.includes('https://apollo247.onelink.me') &&
+    (url.indexOf(string.common.apollo247UniversalLink) != -1 ||
+      url.indexOf(string.common.apolloPharmacyUniversalLink) != -1)
   ) {
     if (url.indexOf('?') != -1) {
       var splitedArray = url.split('?');
@@ -2518,7 +2528,11 @@ const setAppReferralData = (data: {
 
 const getInstallResources = () => {
   let installConversation = appsFlyer.onInstallConversionData((res) => {
-    clevertapEventForAppsflyerDeeplink(removeNullFromObj(res.data));
+    clevertapEventForAppsflyerDeeplink({
+      ...removeNullFromObj(filterAppLaunchSoruceAttributesByKey(res.data)),
+      'Nav Src': 'deffered deeplink',
+      is_first_launch: true,
+    });
     installConversation();
   });
 };
@@ -2946,6 +2960,13 @@ export const addPharmaItemToCart = (
         pharmacyCircleAttributes!
       );
     };
+    if (comingFromSearch === true) {
+      cleverTapSearchSuccessEventAttributes?.['Product availability'] = 'Is in stock';
+      postCleverTapEvent(
+        CleverTapEventName.PHARMACY_SEARCH_SUCCESS,
+        cleverTapSearchSuccessEventAttributes
+      );
+    }
     if (!isLocationServeiceable) {
       const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE] = {
         'product name': cartItem.name,
@@ -2957,13 +2978,7 @@ export const addPharmaItemToCart = (
       onComplete && onComplete();
       return;
     }
-    if (comingFromSearch === true) {
-      cleverTapSearchSuccessEventAttributes?.['Product availability'] = 'Is in stock';
-      postCleverTapEvent(
-        CleverTapEventName.PHARMACY_SEARCH_SUCCESS,
-        cleverTapSearchSuccessEventAttributes
-      );
-    }
+
     addToCart();
     onAddedSuccessfully?.();
   } catch (error) {}
@@ -4184,6 +4199,7 @@ export const filterAppLaunchSoruceAttributesByKey = (raw: any) => {
     'is_paid',
     'adgroup',
     'campaign_id',
+    'Nav Src',
   ];
   let filteredObj = removeNullFromObj(raw);
   return Object.keys(filteredObj)

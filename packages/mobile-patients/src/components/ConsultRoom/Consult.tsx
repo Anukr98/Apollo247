@@ -557,7 +557,12 @@ export interface AppointmentFilterObject {
 }
 
 export const Consult: React.FC<ConsultProps> = (props) => {
-  const { allAppointmentApiResponse, setAllAppointmentApiResponse } = useAppCommonData();
+  const {
+    allAppointmentApiResponse,
+    setAllAppointmentApiResponse,
+    tabRouteJourney,
+    setTabRouteJourney,
+  } = useAppCommonData();
 
   const tabs = [{ title: 'Active' }, { title: 'Completed' }, { title: 'Cancelled' }];
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
@@ -1631,6 +1636,22 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     );
   };
 
+  const setRouteJourneyFromTabbar = () => {
+    if (!tabRouteJourney) {
+      setTabRouteJourney &&
+        setTabRouteJourney({
+          previousRoute: 'APPOINTMENTS',
+          currentRoute: 'APPOINTMENTS',
+        });
+    } else {
+      setTabRouteJourney &&
+        setTabRouteJourney({
+          previousRoute: tabRouteJourney?.currentRoute,
+          currentRoute: 'APPOINTMENTS',
+        });
+    }
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <NavigationEvents
@@ -1639,6 +1660,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             setOverlayLoading(true);
             fetchAppointments(true);
           }
+          setRouteJourneyFromTabbar();
         }}
         onDidBlur={(payload) => {
           setCallFetchAppointmentApi(true);

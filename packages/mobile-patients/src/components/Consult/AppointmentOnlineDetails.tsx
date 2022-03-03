@@ -360,10 +360,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
       });
   };
 
-  const todayDate = moment
-    .utc(data.appointmentDateTime)
-    .local()
-    .format('YYYY-MM-DD');
+  const todayDate = moment().format('YYYY-MM-DD');
 
   const fetchNextDoctorAvailableData = () => {
     setshowSpinner(true);
@@ -714,7 +711,6 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
       )
     );
   };
-
 
   const resetReasonForCancelFields = () => {
     setSelectedReason('');

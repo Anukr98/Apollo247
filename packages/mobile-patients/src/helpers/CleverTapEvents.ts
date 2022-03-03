@@ -97,6 +97,7 @@ export enum CleverTapEventName {
   VITAL_QUESTION_ASSESSMENT_STARTED = 'Vital Question Assessment Started',
   CONSULT_GO_TO_CONSULT_ROOM_CLICKED = 'Consult go to consult room clicked',
   CONSULT_DOC_PARTNER_TAB_CLICKED = 'Consult doc partner tab clicked',
+  CONSULT_HOMEPAGE_VIEWED = 'Consult Homepage Viewed',
 
   //DOH events
   CONSULT_DOH_Viewed = 'Consult DOH viewed',
@@ -248,6 +249,7 @@ export enum CleverTapEventName {
   DIAGNOSTIC_PRESCRIPTION_SUBMITTED = 'Diagnostic prescription submitted',
   DIAGNOSTIC_RADIOLOGY_HOME_PAGE = 'Diagnostic Radiology lead gen page viewed',
   DIAGNOSTIC_RADIOLOGY_BOOKING_COMPLETE = 'Diagnostic Radiology Booking completed',
+  DIAGNOSTIC_HOMEPAGE_VIEWED = 'Diagnostic Home page viewed',
   DIAGNOSTIC_RETAIN_CANCELLATION = 'Diagnostic retain cancellation CTA clicked',
   DIAGNOSTIC_CTA_CLICKED = 'Home page diagnostics CTA clicked',
   DIAGNOSTIC_HOME_PAGE_RECOMMENDATIONS_VIEWED = 'Diagnostic home page recommendations viewed',
@@ -303,10 +305,10 @@ export enum CleverTapEventName {
   // Circle Events
   CIRCLE_LANDING_PAGE_VIEWED = 'Circle Landing page viewed',
   CIRCLE_MEMBERSHIP_PAGE_VIEWED = 'Circle membership page viewed',
-  CIRCLE_POP_UP_VIEWED_PLANS_ONLY = 'Circle Pop up viewed (Plans only)',
+  CIRCLE_POP_UP_VIEWED_PLANS_ONLY = 'Circle Pop up viewed',
   CIRCLE_PLAN_TO_CART = 'Circle Plan to Cart',
   CIRCLE_PLAN_REMOVE_FROM_CART = 'Circle Plan Removed from cart',
-  CIRCLE_PAYMENT_PAGE_VIEWED_STANDALONE_CIRCLE_PURCHASE_PAGE = 'Circle payment page viewed (Standalone circle purchase page)',
+  CIRCLE_PAYMENT_PAGE_VIEWED_STANDALONE_CIRCLE_PURCHASE_PAGE = 'Circle payment page viewed',
   CIRCLE_BENIFIT_CLICKED = 'Circle Benefit Clicked',
 
   //HomePage Events
@@ -328,7 +330,7 @@ export enum CleverTapEventName {
   HOMEPAGE_SEARCH_BAR_QUERY_INPUT = 'Homepage Search Bar Query Input',
   SCREEN_SCROLLED = 'Screen Scrolled',
   SEARCH_BAR_CLICKED = 'Search bar clicked',
-  BANNER_CLICKED_VIEWED = 'Banner clicked / Viewed',
+  BANNER_CLICKED_VIEWED = 'Banner clicked',
 
   FAQs_ARTICLES_CLICKED = 'Vaccination FAQs & Articles clicked',
   VACCINATION_CALL_A_DOCTOR_CLICKED = 'Vaccination Call a doctor clicked',
@@ -728,16 +730,16 @@ export interface HomeScreenAttributes {
   Source?: 'Home Screen' | 'Menu' | 'My Account Screen' | 'Search bar';
   'Page Name'?: string;
   'Nav src'?:
-    | 'hero banner'
-    | 'Bottom bar'
-    | 'app launch'
-    | 'homepage bar'
-    | 'Vaccine Widget'
-    | 'Blog Widget'
-    | 'my account'
-    | 'Top bar'
-    | 'Homepage'
-    | 'My Account';
+  | 'hero banner'
+  | 'Bottom bar'
+  | 'app launch'
+  | 'homepage bar'
+  | 'Vaccine Widget'
+  | 'Blog Widget'
+  | 'my account'
+  | 'Top bar'
+  | 'Homepage'
+  | 'My Account';
   'Circle Member'?: boolean;
   'Circle Plan type'?: string;
 }
@@ -898,6 +900,7 @@ export interface DiagnosticAddToCart extends DiagnosticUserInfo {
   'Item Type': DIAGNOSTICS_ITEM_TYPE;
   'Item Price': number | string;
   Source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE;
+  'Nav Src': string;
   'Section name'?: string;
   'Circle user'?: string;
   'Original Item ids'?: any;
@@ -1051,6 +1054,15 @@ export interface CleverTapEvents {
   [CleverTapEventName.CONSULT_DOH_Clicked]: DOHInfo;
 
   // ********** Home Screen Events ********** \\
+
+  [CleverTapEventName.CONSULT_HOMEPAGE_VIEWED]: {
+    'Nav src': string;
+    'User': string;
+    'UHID': string;
+    'Gender': string;
+    'Mobile Number': string;
+    'Customer Id': string;
+  }
 
   [CleverTapEventName.BUY_MEDICINES]: {
     Source: 'Home Screen' | 'Menu';
@@ -1429,18 +1441,18 @@ export interface CleverTapEvents {
     'Discounted price'?: number;
     Quantity: number;
     'Nav src':
-      | 'Pharmacy Home'
-      | 'Pharmacy PDP'
-      | 'Pharmacy List'
-      | 'Pharmacy Partial Search'
-      | 'Pharmacy Full Search'
-      | 'Similar Widget'
-      | 'Pharmacy Cart'
-      | 'Category Tree'
-      | 'PDP All Substitutes'
-      | 'PDP Fast Substitutes'
-      | 'Special Offers'
-      | 'Chronic Upsell Nudge';
+    | 'Pharmacy Home'
+    | 'Pharmacy PDP'
+    | 'Pharmacy List'
+    | 'Pharmacy Partial Search'
+    | 'Pharmacy Full Search'
+    | 'Similar Widget'
+    | 'Pharmacy Cart'
+    | 'Category Tree'
+    | 'PDP All Substitutes'
+    | 'PDP Fast Substitutes'
+    | 'Special Offers'
+    | 'Chronic Upsell Nudge';
     Brand?: string;
     'Brand ID'?: string;
     'Category name'?: string;
@@ -1798,10 +1810,10 @@ export interface CleverTapEvents {
     Source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary';
     'Report generated': 'Yes' | 'No';
     'Action taken':
-      | 'View Report'
-      | 'Download Report PDF'
-      | 'Share on Whatsapp'
-      | 'Copy Link to PDF';
+    | 'View Report'
+    | 'Download Report PDF'
+    | 'Share on Whatsapp'
+    | 'Copy Link to PDF';
     'Circle user'?: string;
   };
   [CleverTapEventName.DIAGNOSTIC_CALL_TO_ORDER_CLICKED]: {
@@ -2439,12 +2451,12 @@ export interface CleverTapEvents {
 
   [CleverTapEventName.ADD_RECORD]: {
     Source:
-      | 'Doctor Consultation'
-      | 'Test Report'
-      | 'Hospitalization'
-      | 'Health Condition'
-      | 'Bill'
-      | 'Insurance'; // List/Profile
+    | 'Doctor Consultation'
+    | 'Test Report'
+    | 'Hospitalization'
+    | 'Health Condition'
+    | 'Bill'
+    | 'Insurance'; // List/Profile
   };
 
   [CleverTapEventName.UPLOAD_PRESCRIPTION]: PatientInfo;
@@ -2933,6 +2945,7 @@ export interface CleverTapEvents {
   };
   [CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED]: {
     'Nav src': 'deeplink' | 'app home';
+    'Page Name': string
   };
   [CleverTapEventName.PHARMACY_PRODUCT_PAGE_VIEWED]: {
     'Nav src': ProductPageViewedSource;
@@ -3009,18 +3022,19 @@ export interface CleverTapEvents {
     Rank: number | string;
     Is_TopDoc?: YesOrNo;
     Source:
-      | 'Deeplink'
-      | 'Doctor Card clicked'
-      | 'Search'
-      | 'My Doctors'
-      | 'Appointment CTA'
-      | 'Direct'
-      | 'Past search clicked';
+    | 'Deeplink'
+    | 'Doctor Card clicked'
+    | 'Search'
+    | 'My Doctors'
+    | 'Appointment CTA'
+    | 'Direct'
+    | 'Past search clicked';
     'Doctor card clicked': YesOrNo;
     DOTH: 'T' | 'F';
     'Doctor tab': 'Apollo Tab' | 'Partner' | 'NA';
     'Search screen': 'Speciality listing' | 'Doctor listing' | 'NA';
     'Appointment CTA': 'Cancelled' | 'Past' | 'Active' | 'Inside consult room' | 'NA';
+    'Nav Src'?: string;
   };
   [CleverTapEventName.CONSULT_SEARCH_SUGGESTIONS]: {
     'Patient Name': string;
@@ -3367,16 +3381,16 @@ export interface CleverTapEvents {
     'CTA Clicked': string;
   };
   [CleverTapEventName.CONSULT_USER_LOCATION]:
-    | consultLocation
-    | {
-        'Patient name': string;
-        'Patient UHID': string;
-        'Patient age': number;
-        'Mobile number': number;
-        'Speciality name': string;
-        Screen: 'Speciality Screen' | 'Doctor list';
-        'Location details': string;
-      };
+  | consultLocation
+  | {
+    'Patient name': string;
+    'Patient UHID': string;
+    'Patient age': number;
+    'Mobile number': number;
+    'Speciality name': string;
+    Screen: 'Speciality Screen' | 'Doctor list';
+    'Location details': string;
+  };
   [CleverTapEventName.USER_CHANGED_LOCATION]: consultLocation;
   [CleverTapEventName.USER_LOGGED_IN_WITH_TRUECALLER]: PatientInfo;
   [CleverTapEventName.TRUECALLER_EVENT_ERRORS]: {

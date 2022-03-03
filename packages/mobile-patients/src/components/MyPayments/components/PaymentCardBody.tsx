@@ -50,17 +50,26 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
         actualAmount,
         discountedAmount,
         appointmentRefunds,
+        orderType,
+        subscriptionOrderDetails,
       } = item;
       const { refund } = PaymentOrders;
       const refundInfo = refund?.length ? refund : appointmentRefunds;
-      const paymentInfo = PaymentOrders?.paymentStatus ? PaymentOrders : appointmentPayments[0];
+      const paymentInfo = subscriptionOrderDetails?.status
+        ? subscriptionOrderDetails
+        : PaymentOrders?.paymentStatus
+        ? PaymentOrders
+        : appointmentPayments[0];
       if (!paymentInfo) {
         status = 'PENDING';
-      } else if (refundInfo.length) {
+      } else if (refundInfo?.length) {
         const { paymentRefId, amountPaid } = paymentInfo;
         refId = paymentRefId;
         price = amountPaid;
         status = REFUND;
+      } else if (orderType === 'SUBSCRIPTION') {
+        status = paymentInfo?.payment_reference?.payment_status || paymentInfo?.status;
+        price = paymentInfo?.payment_reference?.amount_paid;
       } else {
         const { paymentStatus, paymentRefId, amountPaid } = paymentInfo;
         status = paymentStatus;
@@ -87,12 +96,14 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
     }
   };
   const getPaymentStatus = () => {
-    const { SUCCESS, FAILED, REFUND } = PaymentStatusConstants;
+    const { SUCCESS, FAILED, REFUND, ACTIVE } = PaymentStatusConstants;
     const { status } = statusItemValues();
     const { paymentFailed, paymentPending, paymentSuccessful, paymentRefund } = LocalStrings;
     const { SUCCESS_TEXT, PENDING_TEXT, FAILURE_TEXT, REFUND_TEXT } = colors;
     switch (status) {
       case SUCCESS:
+        return { component: <SuccessIcon />, text: paymentSuccessful, textColor: SUCCESS_TEXT };
+      case ACTIVE:
         return { component: <SuccessIcon />, text: paymentSuccessful, textColor: SUCCESS_TEXT };
       case FAILED:
         return { component: <FailedIcon />, text: paymentFailed, textColor: FAILURE_TEXT };
@@ -158,7 +169,7 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
       status: status,
       patientId: patientId,
     };
-    if(paymentFor == 'consult') {
+    if (paymentFor == 'consult') {
       props.navigationProps.navigate(AppRoutes.ConsultPaymentScreen, data);
     } else {
       props.navigationProps.navigate(AppRoutes.PaymentStatusScreen, data);
