@@ -261,8 +261,23 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   var patientCartItemsCopy = JSON.parse(JSON.stringify(isCartPresent));
   const arrayToUse = isModifyFlow ? modifiedPatientCart : patientCartItems;
 
+  const checkCartForRecommendation = () => {
+    setLoading?.(true);
+      const patientId = patientCartItems?.[0]?.patientId; // for group recommandation only
+      const groupItemPresentArr = patientCartItems?.[0]?.cartItems?.filter((item) => {
+        //checking the presence if group recommendation Item in the cart
+        return groupRecommendations?.[0]?.itemId == Number(item?.id);
+      });
+      if (groupItemPresentArr?.length == 1) {
+        _onPressRemoveCartItem(groupItemPresentArr?.[0], [], true);
+        addPatientCartItem?.(patientId, cartItems!);
+      }
+      setLoading?.(false)
+  }
   useEffect(() => {
     triggerCartPageViewed(false, cartItems);
+  }, [])
+  useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setIsFocused(true);
       BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -271,17 +286,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       setIsFocused(false);
       // to remove group recommendation item from the cart
       if (payload?.action?.routeName != AppRoutes.AddressSlotSelection) {
-        setLoading?.(true);
-        const patientId = patientCartItems?.[0]?.patientId; // for group recommandation only
-        const groupItemPresentArr = patientCartItems?.[0]?.cartItems?.filter((item) => {
-          //checking the presence if group recommendation Item in the cart
-          return groupRecommendations?.[0]?.itemId == Number(item?.id);
-        });
-        if (groupItemPresentArr?.length == 1) {
-          _onPressRemoveCartItem(groupItemPresentArr?.[0], [], true);
-          addPatientCartItem?.(patientId, cartItems!);
-        }
-        setLoading?.(false);
+        checkCartForRecommendation()
       }
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     });
@@ -371,17 +376,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     } else if (isCartPresent?.length == 0) {
       props.navigation.navigate('TESTS', { focusSearch: true });
     } else {
-      setLoading?.(true);
-      const patientId = patientCartItems?.[0]?.patientId; // for group recommandation only
-      const groupItemPresentArr = patientCartItems?.[0]?.cartItems?.filter((item) => {
-        //checking the presence if group recommendation Item in the cart
-        return groupRecommendations?.[0]?.itemId == Number(item?.id);
-      });
-      if (groupItemPresentArr?.length == 1) {
-        _onPressRemoveCartItem(groupItemPresentArr?.[0], [], true);
-        addPatientCartItem?.(patientId, cartItems!);
-      }
-      setLoading?.(false)
+        checkCartForRecommendation()
         props.navigation.goBack();
     }
 
