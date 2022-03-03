@@ -231,9 +231,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     /**if modify + cod - then don't call fetch getOrderInternal */
     isModifyCod ? getOrderDetails(modifiedOrderDetails?.id) : fetchOrderDetailsFromPayments();
     isCircleAddedToCart && getUserSubscriptionsByStatus();
-    if (modifiedOrderDetails == null) {
-      postwebEngageCheckoutCompletedEvent();
-    }
+    postwebEngageCheckoutCompletedEvent();
     firePurchaseEvent(
       orderDetails?.orderId,
       orderDetails?.amount,
