@@ -67,6 +67,7 @@ import {
   GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS_V2,
   GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
   DIAGNOSTIC_HOMEPAGE_API_CALLS,
+  DIAGNOSTIC_HOMEPAGE_API_CALLS_2,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -1817,6 +1818,14 @@ export const getUserSubscriptionStatus = (client: ApolloClient<object>, queryVar
 export const getDiagnosticHomePageBatchedApi = (client: ApolloClient<object>, queryVariable: any) =>{
   return client.query<any>({
     query: DIAGNOSTIC_HOMEPAGE_API_CALLS,
+    fetchPolicy: 'no-cache',
+    variables: queryVariable,
+  });
+}
+
+export const getDiagnosticHomePageBatchedApi_2 = (client: ApolloClient<object>, queryVariable: any) =>{
+  return client.query<any>({
+    query: DIAGNOSTIC_HOMEPAGE_API_CALLS_2,
     fetchPolicy: 'no-cache',
     variables: queryVariable,
   });

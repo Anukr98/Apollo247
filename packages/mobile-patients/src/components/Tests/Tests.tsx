@@ -126,6 +126,7 @@ import {
   fetchPatientAddressList,
   getDiagnosticClosedOrders,
   getDiagnosticHomePageBatchedApi,
+  getDiagnosticHomePageBatchedApi_2,
   getDiagnosticOpenOrders,
   getDiagnosticPatientPrescription,
   getDiagnosticPhelboDetails,
@@ -546,24 +547,21 @@ export const Tests: React.FC<TestsProps> = (props) => {
     if (currentPatient) {
       fetchUserType();
       getBatchedApiResponse(); //this batched api for homepage
+      getBatchedApiResponse_2();
       // getUserBanners(); //commented for now , since we don't show circle banners
       getDataFromCache();
     }
   }
 
-  //this is used for open orders, closed orders, fetching prescriptions, getUserSubscriptions
+  //this is used for open orders, closed orders,
   //if any of the query failes, recalling all the api's again individually.
   const getBatchedApiResponse = async () => {
     setPatientOrdersShimmer(true);
-    setLatestPrescriptionShimmer(true);
     try {
       const query = {
         mobile_number: currentPatient?.mobileNumber,
         skip: 0,
         take: 3,
-        prescriptionLimit: 3,
-        cityId: AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
-        status: ['active', 'deferred_inactive'],
       };
       const res = await getDiagnosticHomePageBatchedApi(apolloClientWithAuth, query);
       if (res?.data) {
@@ -582,6 +580,30 @@ export const Tests: React.FC<TestsProps> = (props) => {
         } else {
           setPatientClosedOrders([]);
         }
+      } else {
+        recallBatchedApiIndividually();
+      }
+    } catch (error) {
+      recallBatchedApiIndividually();
+      CommonBugFender('DiagnosticHomePage_getBatchedApiResponse', error);
+    } finally {
+      setPatientOrdersShimmer(false);
+    }
+  };
+
+  //fetching prescriptions, getUserSubscriptions
+  const getBatchedApiResponse_2 = async () => {
+    setLatestPrescriptionShimmer(true);
+    try {
+      const query = {
+        mobile_number: currentPatient?.mobileNumber,
+        prescriptionLimit: 3,
+        cityId: AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
+        status: ['active', 'deferred_inactive'],
+      };
+      const res = await getDiagnosticHomePageBatchedApi_2(apolloClientWithAuth, query);
+      if (res?.data) {
+        const responseData = res?.data;
         //prescription orders
         if (responseData?.getPatientLatestPrescriptions?.length > 0) {
           setLatestPrescription(responseData?.getPatientLatestPrescriptions);
@@ -594,13 +616,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
           setSubscriptionDetails(result);
         }
       } else {
-        recallBatchedApiIndividually();
+        recallBatchedApiIndividually_2();
       }
     } catch (error) {
-      recallBatchedApiIndividually();
-      CommonBugFender('DiagnosticHomePage_getBatchedApiResponse', error);
+      recallBatchedApiIndividually_2();
+      CommonBugFender('DiagnosticHomePage_getBatchedApiResponse_2', error);
     } finally {
-      setPatientOrdersShimmer(false);
       setLatestPrescriptionShimmer(false);
     }
   };
@@ -608,6 +629,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
   function recallBatchedApiIndividually() {
     fetchPatientOpenOrders();
     fetchPatientClosedOrders();
+  }
+
+  function recallBatchedApiIndividually_2() {
     fetchPatientPrescriptions();
     getUserSubscriptionsByStatus();
   }

@@ -7689,89 +7689,98 @@ export const DIAGNOSTIC_HOMEPAGE_API_CALLS = gql`
     $mobile_number: String!
     $skip: Int!
     $take: Int!
+  ) {
+    getDiagnosticOpenOrdersList(mobileNumber: $mobile_number, skip: $skip, take: $take) {
+      openOrders {
+        id
+        displayId
+        patientId
+        orderStatus
+        slotDateTimeInUTC
+        labReportURL
+        paymentType
+        patientObj {
+          firstName
+          lastName
+        }
+        attributesObj {
+          reportTATMessage
+          reportGenerationTime
+          expectedReportGenerationTime
+        }
+        diagnosticOrderLineItems {
+          itemObj {
+            testPreparationData
+            preTestingRequirement
+          }
+        }
+      }
+    }
+
+    getDiagnosticClosedOrdersList(mobileNumber: $mobile_number, skip: $skip, take: $take) {
+      closedOrders {
+        id
+        displayId
+        patientId
+        orderStatus
+        slotDateTimeInUTC
+        labReportURL
+        paymentType
+        patientObj {
+          firstName
+          lastName
+        }
+        diagnosticOrderLineItems {
+          itemObj {
+            testPreparationData
+            preTestingRequirement
+          }
+        }
+        attributesObj {
+          reportTATMessage
+          reportGenerationTime
+          expectedReportGenerationTime
+        }
+      }
+    }
+  }
+`;
+
+export const DIAGNOSTIC_HOMEPAGE_API_CALLS_2 = gql`
+  query diagnosticHomepageCalls_2(
+    $mobile_number: String!
     $prescriptionLimit: Int!
     $cityId: Int!
     $status: [String!]!
+  ) {
+    getPatientLatestPrescriptions(
+      mobileNumber: $mobile_number
+      limit: $prescriptionLimit
+      cityId: $cityId
     ) {
-        getDiagnosticOpenOrdersList(mobileNumber: $mobile_number, skip: $skip, take: $take) {
-          openOrders {
-            id
-            displayId
-            patientId
-            orderStatus
-            slotDateTimeInUTC
-            labReportURL
-            paymentType
-            patientObj {
-              firstName
-              lastName
-            }
-            attributesObj {
-              reportTATMessage
-              reportGenerationTime
-              expectedReportGenerationTime
-            }
-            diagnosticOrderLineItems {
-              itemObj {
-                testPreparationData
-                preTestingRequirement
-              }
-            }
-          }
+      doctorName
+      doctorCredentials
+      patientName
+      prescriptionDateTime
+      numberOfTests
+      orderCount
+      caseSheet {
+        id
+        blobName
+        diagnosticPrescription {
+          itemId
+          itemname
+          gender
+          testInstruction
         }
-
-        getDiagnosticClosedOrdersList(mobileNumber: $mobile_number, skip: $skip, take: $take) {
-          closedOrders {
-            id
-            displayId
-            patientId
-            orderStatus
-            slotDateTimeInUTC
-            labReportURL
-            paymentType
-            patientObj {
-              firstName
-              lastName
-            }
-            diagnosticOrderLineItems {
-              itemObj {
-                testPreparationData
-                preTestingRequirement
-              }
-            }
-            attributesObj {
-              reportTATMessage
-              reportGenerationTime
-              expectedReportGenerationTime
-            }
-          }
-        }
-      
-        getPatientLatestPrescriptions(mobileNumber: $mobile_number, limit: $prescriptionLimit, cityId: $cityId) {
-          doctorName
-          doctorCredentials
-          patientName
-          prescriptionDateTime
-          numberOfTests
-          orderCount
-          caseSheet {
-            id
-            blobName
-            diagnosticPrescription {
-              itemId
-              itemname
-              gender
-              testInstruction
-            }
-          }
-        }
-          
-      GetSubscriptionsOfUserByStatus(mobile_number: $mobile_number, status: $status) {
-        code
-        success
-        message
-        response
       }
-    
+    }
+
+    GetSubscriptionsOfUserByStatus(mobile_number: $mobile_number, status: $status) {
+      code
+      success
+      message
+      response
+    }
   }
 `;

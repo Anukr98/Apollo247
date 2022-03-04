@@ -95,52 +95,13 @@ export interface diagnosticHomepageCalls_getDiagnosticClosedOrdersList {
   closedOrders: (diagnosticHomepageCalls_getDiagnosticClosedOrdersList_closedOrders | null)[] | null;
 }
 
-export interface diagnosticHomepageCalls_getPatientLatestPrescriptions_caseSheet_diagnosticPrescription {
-  __typename: "DiagnosticPrescriptionDiag";
-  itemId: number | null;
-  itemname: string;
-  gender: string | null;
-  testInstruction: string | null;
-}
-
-export interface diagnosticHomepageCalls_getPatientLatestPrescriptions_caseSheet {
-  __typename: "CaseSheetDiag";
-  id: string;
-  blobName: string | null;
-  diagnosticPrescription: (diagnosticHomepageCalls_getPatientLatestPrescriptions_caseSheet_diagnosticPrescription | null)[] | null;
-}
-
-export interface diagnosticHomepageCalls_getPatientLatestPrescriptions {
-  __typename: "PatientPrescriptionsResponse";
-  doctorName: string | null;
-  doctorCredentials: string | null;
-  patientName: string | null;
-  prescriptionDateTime: any | null;
-  numberOfTests: number | null;
-  orderCount: number | null;
-  caseSheet: diagnosticHomepageCalls_getPatientLatestPrescriptions_caseSheet | null;
-}
-
-export interface diagnosticHomepageCalls_GetSubscriptionsOfUserByStatus {
-  __typename: "GetGenericJSONResponse";
-  code: number;
-  success: boolean;
-  message: string | null;
-  response: any | null;
-}
-
 export interface diagnosticHomepageCalls {
   getDiagnosticOpenOrdersList: diagnosticHomepageCalls_getDiagnosticOpenOrdersList;
   getDiagnosticClosedOrdersList: diagnosticHomepageCalls_getDiagnosticClosedOrdersList;
-  getPatientLatestPrescriptions: (diagnosticHomepageCalls_getPatientLatestPrescriptions | null)[] | null;
-  GetSubscriptionsOfUserByStatus: diagnosticHomepageCalls_GetSubscriptionsOfUserByStatus;
 }
 
 export interface diagnosticHomepageCallsVariables {
   mobile_number: string;
   skip: number;
   take: number;
-  prescriptionLimit: number;
-  cityId: number;
-  status: string[];
 }
