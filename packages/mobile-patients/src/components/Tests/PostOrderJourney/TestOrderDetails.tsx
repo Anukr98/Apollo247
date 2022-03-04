@@ -93,7 +93,7 @@ import {
   DiagnosticPhleboCallingClicked,
   DiagnosticTrackOrderViewed,
   DiagnosticViewReportClicked,
-} from '@aph/mobile-patients/src/components/Tests/Events';
+} from '@aph/mobile-patients/src/components/Tests/utils/Events';
 import {
   getHCOrderFormattedTrackingHistory,
   getHCOrderFormattedTrackingHistoryVariables,

@@ -4,7 +4,15 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { isSmallDevice, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { getPricesForItem } from '@aph/mobile-patients/src/utils/commonUtils';
+import { createDiagnosticAddToCartObject, diagnosticsDisplayPrice, getParameterCount, getPricesForItem } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
+import {
+  ArrowDownWhite,
+  ArrowUpWhite,
+  AcceptGreen,
+} from '@aph/mobile-patients/src/components/ui/Icons';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 interface RecommedationGroupCardProps {
   showRecommedation?: boolean;
@@ -17,7 +25,11 @@ interface RecommedationGroupCardProps {
   containerStyle?: any;
   scrollEnabled?: boolean;
   showPrice: number;
-  priceToDisplayOnPopUp?: number
+  priceToDisplayOnPopUp?: number;
+  priceDiff?: number;
+  groupRecommendations?: any;
+  onPressArrow: () => void;
+  cartValue: any
 }
 
 export const RecommedationGroupCard: React.FC<RecommedationGroupCardProps> = (props) => {
@@ -32,9 +44,12 @@ export const RecommedationGroupCard: React.FC<RecommedationGroupCardProps> = (pr
     cartItems,
     patientItems,
     showPrice,
-    priceToDisplayOnPopUp
+    priceToDisplayOnPopUp,
+    priceDiff,
+    groupRecommendations,
+    onPressArrow,
+    cartValue
   } = props;
-  const [isOnPopUp, setIsOnPopUp] = useState<any>(!showAddButton);
 
   const inclusionNameArray = data?.inclusionData;
   const cartItemIds = cartItems?.map((item: { id: any }) => {
@@ -46,42 +61,133 @@ export const RecommedationGroupCard: React.FC<RecommedationGroupCardProps> = (pr
   const getDiagnosticPricingForItem = data?.diagnosticPricing;
   const packageMrpForItem = data?.packageCalculatedMrp!;
   const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
+  const { getMandatoryParameterCount } = getParameterCount(data, 'incObservationData');
+  const inclusions = data?.inclusionData?.map((item: any) => {
+    return item?.incItemId;
+  });
+  const dataObj = createDiagnosticAddToCartObject(
+    data?.itemId,
+    data?.itemTitle,
+    data?.gender,
+    pricesForItem?.price!,
+    pricesForItem?.specialPrice!,
+    pricesForItem?.circlePrice!,
+    pricesForItem?.circleSpecialPrice!,
+    pricesForItem?.discountPrice!,
+    pricesForItem?.discountSpecialPrice!,
+    TEST_COLLECTION_TYPE.HC,
+    pricesForItem?.planToConsider?.groupPlan!,
+    packageMrpForItem,
+    inclusions,
+    AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
+    data?.itemImageUrl,
+    getMandatoryParameterCount
+  );
+  const {
+    isDiagnosticCircleSubscription,
+  } = useDiagnosticsCart();
+
+  const slashedPrice = diagnosticsDisplayPrice(dataObj,isDiagnosticCircleSubscription)?.slashedPrice;
+  const priceToShow = diagnosticsDisplayPrice(dataObj, isDiagnosticCircleSubscription)?.priceToShow;
+  const newItems = inclusionNameArray?.filter((item: any) => {
+    if (!cartItemIds?.includes(item?.itemId)) {
+      return item;
+    }
+  });
+  const newItemNames = newItems?.map((item: any) => {
+    return item?.name;
+  });
+  const newItemText = newItemNames?.join(', ');
+  const renderItemList = (text: string) => {
+    return (
+      <>
+        <AcceptGreen style={styles.acceptTick} />
+        <Text
+          style={{
+            ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 1),
+          }}
+        >
+          {' '}
+          {text}
+        </Text>
+      </>
+    );
+  };
+  let totalInclusionCount = 0;
+  inclusionNameArray?.map((item:any)=>{
+    totalInclusionCount += item?.observations?.length
+  })
+  const priceDifference = priceToShow - cartValue
   return (
-    <>
+    <View style={[styles.container, containerStyle]}>
+      <TouchableOpacity
+        style={styles.recommedationHeaderContainer}
+        onPress={() => {
+          onPressArrow();
+        }}
+      >
+        {!!priceDifference && (
+          <Text style={styles.textStyleHeading}>
+            {!newItemText?.length
+              ? `Add a package @ no extra cost`
+              : `Add ${
+                  priceToShow < cartValue
+                    ? `${groupRecommendations?.[0]?.extraInclusionsCount} more tests @ no extra cost`
+                    : `${
+                        groupRecommendations?.[0]?.extraInclusionsCount > 1
+                          ? `${groupRecommendations?.[0]?.extraInclusionsCount} more Tests`
+                          : `${groupRecommendations?.[0]?.extraInclusionsCount} more Test`
+                      } @ ₹ ${Math.abs(Number(priceDifference?.toFixed()))} Only`
+                }`}
+          </Text>
+        )}
+        {showRecommedation ? (
+          <ArrowUpWhite style={styles.iconStyleArrow} />
+        ) : (
+          <ArrowDownWhite style={styles.iconStyleArrow} />
+        )}
+      </TouchableOpacity>
       {showRecommedation ? (
-        <ScrollView style={[styles.container, containerStyle]}>
+        <View style={styles.subContainer}>
           <View style={styles.nameContainer}>
             <Text style={styles.cartItemText}>{data?.itemName}</Text>
+            {isDiagnosticCircleSubscription ? (
+              <Text style={styles.slashedPriceText}>
+                {string.common.Rs}
+                {slashedPrice}
+              </Text>
+            ) : null}
             <Text style={styles.mainPriceText}>
               {string.common.Rs}
-              {showAddButton ? Math.abs(showPrice)?.toFixed() : priceToDisplayOnPopUp}
+              {priceToShow}
             </Text>
           </View>
-          <Text style={styles.textInclusionsRecom}>
-            Includes{' '}
-            {showTestWorth ? (
-              <Text style={styles.boldTextRecom}>{`Tests worth ${string.common.Rs}${data?.packageCalculatedMrp!}`}</Text>
-            ) : null}
-          </Text>
-          <View>
-            {inclusionNameArray?.map((item: any) => {
-              return (
-                <View style={styles.inclusionItemView}>
+          <Text style={styles.textInclusionsRecom}>{`includes ${totalInclusionCount} Tests`}</Text>
+          <View style={{ marginTop: 10, flexDirection: 'column' }}>
+            {existingItems?.map((item: any) => {
+              return <View style={styles.inclusionItemView}>{renderItemList(item?.name)}</View>;
+            })}
+            {newItemText?.length ? (
+              <View style={styles.inclusionItemView}>
+                <AcceptGreen style={styles.acceptTick} />
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1),
+                  }}
+                >
+                  {' '}
+                  Additional Tests:
                   <Text
                     style={{
-                      ...theme.viewStyles.text(
-                        cartItemIds?.includes(item?.itemId) && isOnPopUp ? 'B' : 'M',
-                        12,
-                        colors.SHERPA_BLUE,
-                        1
-                      ),
+                      ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 1),
                     }}
                   >
-                    {' • '} {item?.name}
+                    {' '}
+                    {newItemText}
                   </Text>
-                </View>
-              );
-            })}
+                </Text>
+              </View>
+            ) : null}
           </View>
           {showAddButton ? (
             <TouchableOpacity
@@ -90,31 +196,40 @@ export const RecommedationGroupCard: React.FC<RecommedationGroupCardProps> = (pr
                 onPressAdd();
               }}
             >
-              <Text style={styles.textButton}>{nameFormater(string.common.add, 'upper')}</Text>
+              <Text style={styles.textButton}>
+                {nameFormater(string.common.selectPackage, 'upper')}
+              </Text>
             </TouchableOpacity>
           ) : null}
-        </ScrollView>
+        </View>
       ) : null}
-    </>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#EBFFFB',
+    backgroundColor: colors.WHITE,
     borderBottomStartRadius: 10,
     borderBottomEndRadius: 10,
     borderWidth: 1,
     borderColor: colors.LIGHT_GRAY,
+    padding: 10,
+    marginTop: -20,
+  },
+  subContainer: {
+    backgroundColor: colors.LIGHT_BLUE_DIAG,
+    borderBottomStartRadius: 10,
+    borderBottomEndRadius: 10,
   },
   nameContainer: {
     padding: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  inclusionItemView: { paddingHorizontal: 10, paddingBottom: 5 },
+  inclusionItemView: { paddingHorizontal: 10, paddingBottom: 10, flexDirection: 'row',width: '95%' },
   cartItemText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 1, 22),
+    ...theme.viewStyles.text('SB', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 1, 22),
     width: '75%',
   },
   inclusionTextStyle: {
@@ -122,30 +237,66 @@ const styles = StyleSheet.create({
   },
   addButton: {
     flex: 1,
-    alignSelf: 'flex-end',
+    alignSelf: 'center',
     backgroundColor: colors.WHITE,
     borderColor: colors.APP_YELLOW,
     borderRadius: 6,
     borderWidth: 1,
     margin: 15,
+    width: '96%',
   },
   textButton: {
     ...theme.viewStyles.text('SB', 14, colors.APP_YELLOW, 1),
     textAlign: 'center',
     paddingHorizontal: 25,
-    paddingVertical: 5,
+    paddingVertical: 8,
   },
   mainPriceText: {
     ...theme.viewStyles.text('SB', isSmallDevice ? 12.5 : 14, theme.colors.SHERPA_BLUE, 1, 16),
     marginTop: 5,
-    width: '20%',
+    width: '15%',
     textAlign: 'center',
   },
+  slashedPriceText: {
+    ...theme.viewStyles.text('SB', isSmallDevice ? 10.5 : 12, theme.colors.SHERPA_BLUE_LIGHT, 1, 16),
+    marginTop: 5,
+    // width: '20%',
+    textAlign: 'center',
+    textDecorationLine:'line-through'
+  },
   textInclusionsRecom: {
-    ...theme.viewStyles.text('R', isSmallDevice ? 13 : 14, colors.SHERPA_BLUE, 1),
-    padding: 10,
+    ...theme.viewStyles.text('SB', isSmallDevice ? 10 : 12, colors.SHERPA_BLUE, 1),
+    padding: 5,
+    backgroundColor: colors.WHITE,
+    marginLeft: 10,
+    width: '40%',
+    textAlign: 'center',
+    borderRadius: 4
   },
   boldTextRecom: {
     ...theme.viewStyles.text('SB', isSmallDevice ? 13 : 14, colors.SHERPA_BLUE, 1),
+  },
+  recommedationHeaderContainer: {
+    flex: 1,
+    backgroundColor: colors.DARK_BLUE_DIAG,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderRadius: 4,
+  },
+  textStyleHeading: {
+    ...theme.viewStyles.text('SB', 14, colors.WHITE, 1),
+    padding: 5,
+  },
+  iconStyleArrow: {
+    width: 20,
+    height: 20,
+  },
+  acceptTick: {
+    width: 20,
+    height: 20,
+    marginRight: 5
   },
 });

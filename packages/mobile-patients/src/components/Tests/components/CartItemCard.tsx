@@ -16,7 +16,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import {
   calculatePackageDiscounts,
   diagnosticsDisplayPrice,
-} from '@aph/mobile-patients/src/utils/commonUtils';
+} from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
 import DiscountPercentage from '@aph/mobile-patients/src/components/Tests/components/DiscountPercentage';
@@ -36,9 +36,9 @@ interface CartItemCardProps {
   onPressCard: (test: any) => void;
   showUndo?: boolean;
   onPressUndo: (test: any) => void;
-  allItemsInCart?: any
-  groupRecommendationItem?: any
-  cartItemIds?: any
+  allItemsInCart?: any;
+  groupRecommendationItem?: any;
+  cartItemIds?: any;
 }
 
 export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
@@ -54,7 +54,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     showUndo,
     allItemsInCart,
     groupRecommendationItem,
-    cartItemIds
+    cartItemIds,
   } = props;
 
   const inclusionItem =
@@ -284,17 +284,25 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
       }
     });
     return (
-      <View>
+      <View style={styles.detailView}>
         {includedInclusions?.map((item) => (
           <Text style={styles.textInclusion}> {`• ${item?.name}`}</Text>
         ))}
-        <Text style={styles.textInclusion}> {`• Other Tests`}</Text>
-        {otherInclusions?.map((item) => (
-          <Text style={styles.textOtherInclusion}>
-            {'     '}
-            {`• ${item?.name}`}
-          </Text>
-        ))}
+        {otherInclusions?.length > 0 && (
+          <>
+            <Text style={styles.textInclusion}> {`• Other Tests`}</Text>
+            <>
+              {otherInclusions?.map((item) => {
+                return (
+                  <Text style={styles.textOtherInclusion}>
+                    {'     '}
+                    {`• ${item?.name}`}
+                  </Text>
+                );
+              })}
+            </>
+          </>
+        )}
       </View>
     );
   };
@@ -324,7 +332,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
 
 const styles = StyleSheet.create({
   packageSlashedPrice: {
-    ...theme.viewStyles.text('SB', isSmallDevice ? 9 : 10, theme.colors.SHERPA_BLUE, 0.6, 14),
+    ...theme.viewStyles.text('SB', isSmallDevice ? 9 : 10, theme.colors.SHERPA_BLUE_LIGHT, 1, 14),
     marginTop: 5,
     marginRight: 6,
   },
@@ -336,6 +344,10 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 1, 22),
   },
   undoText: { ...theme.viewStyles.text('B', 14, colors.APP_YELLOW, 1), paddingBottom: 10 },
+  detailView: {
+    padding:10,
+    marginTop: -25
+  },
   removeTouch: {
     height: isSmallDevice ? 28 : 30,
     width: isSmallDevice ? 28 : 30,
@@ -473,7 +485,8 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   textInclusion: {
-    ...theme.viewStyles.text('SB',12,colors.SHERPA_BLUE,1),padding:5
+    ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1),
+    padding: 5,
   },
-  textOtherInclusion:{...theme.viewStyles.text('R',12,colors.SHERPA_BLUE,1),padding:5}
+  textOtherInclusion: { ...theme.viewStyles.text('R', 12, colors.SHERPA_BLUE, 1), padding: 5 },
 });

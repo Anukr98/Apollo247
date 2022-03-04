@@ -21,12 +21,23 @@ import { Overlay } from 'react-native-elements';
 import {
   AddPatientCircleIcon,
   CrossPopup,
+  InfoIconRed,
   MinusPatientCircleIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { GENDER } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
-const { SHERPA_BLUE, CARD_BG, WHITE, APP_GREEN, CLEAR, TEST_CARD_BUTTOM_BG } = theme.colors;
+const {
+  SHERPA_BLUE,
+  CARD_BG,
+  WHITE,
+  APP_GREEN,
+  CLEAR,
+  TEST_CARD_BUTTOM_BG,
+  LIGHT_GRAY_3,
+  BGK_GRAY,
+} = theme.colors;
 
 interface MultiSelectPatientListOverlayProps {
   onPressAddNewProfile: () => void;
@@ -42,6 +53,7 @@ interface MultiSelectPatientListOverlayProps {
   listToShow?: any;
   source?: string;
   rightTitle?: string | number;
+  gender: GENDER;
 }
 
 export const MultiSelectPatientListOverlay: React.FC<MultiSelectPatientListOverlayProps> = (
@@ -55,10 +67,19 @@ export const MultiSelectPatientListOverlay: React.FC<MultiSelectPatientListOverl
     patientSelected,
     listToShow,
     source,
+    gender,
   } = props;
   const { allCurrentPatients } = useAllCurrentPatients();
   const [selectedPatientArray, setSelectedPatientArray] = useState([] as any);
   const { showAphAlert, hideAphAlert } = useUIElements();
+  const patientList = !!listToShow ? listToShow : allCurrentPatients;
+  const ignoredGenders = [GENDER.ALL, GENDER.OTHER];
+
+  const getPatientSkuGenderMismatch = ignoredGenders?.includes(gender)
+    ? []
+    : !!gender
+    ? patientList?.filter((patient: any) => patient?.gender != gender)
+    : [];
 
   function _onPressPatient(selectedPatient: any) {
     if (!checkPatientAge(selectedPatient)) {
@@ -102,35 +123,50 @@ export const MultiSelectPatientListOverlay: React.FC<MultiSelectPatientListOverl
     setSelectedPatientArray(removeItem);
   }
 
-  const renderPatientListItem = ({ index, item }) => {
+  const renderPatientListItem = ({ index, item }: { index: number; item: any }) => {
     if (props.excludeProfileListIds?.includes(item?.uhid)) {
       return null;
     }
-
     const { patientName, genderAgeText, patientSalutation } = extractPatientDetails(item);
-
+    const isPatientDisabled = !!gender
+      ? gender == GENDER.ALL || gender == GENDER.OTHER
+        ? false
+        : gender != item?.gender
+      : false;
     const showGreenBg = selectedPatientArray?.find((items: any) => items?.id === item?.id);
     const isMinorAge = checkPatientAge(item);
     const minorAgeTextStyle = isMinorAge && { opacity: 0.6 };
+    const disabledPatientTextStyle = isPatientDisabled && { opacity: 0.4 };
     const itemViewStyle = [
       styles.patientItemViewStyle,
       index === 0 && { marginTop: 12 },
-      isMinorAge && { backgroundColor: theme.colors.BGK_GRAY },
+      isMinorAge && { backgroundColor: BGK_GRAY },
+      isPatientDisabled && { backgroundColor: LIGHT_GRAY_3 },
       showGreenBg && { backgroundColor: APP_GREEN },
     ];
     return item?.id === '+ADD MEMBER' ? null : (
       <TouchableOpacity
         activeOpacity={1}
         style={itemViewStyle}
-        onPress={() => (isMinorAge ? null : _onPressPatient(item))}
+        onPress={() => (disabledPatientTextStyle || isMinorAge ? null : _onPressPatient(item))}
       >
         <Text
-          style={[styles.patientNameTextStyle, minorAgeTextStyle, showGreenBg && { color: WHITE }]}
+          style={[
+            styles.patientNameTextStyle,
+            minorAgeTextStyle,
+            disabledPatientTextStyle,
+            showGreenBg && { color: WHITE },
+          ]}
         >
           {patientSalutation} {patientName}
         </Text>
         <Text
-          style={[styles.genderAgeTextStyle, minorAgeTextStyle, showGreenBg && { color: WHITE }]}
+          style={[
+            styles.genderAgeTextStyle,
+            minorAgeTextStyle,
+            disabledPatientTextStyle,
+            showGreenBg && { color: WHITE },
+          ]}
         >
           {genderAgeText}
         </Text>
@@ -143,12 +179,102 @@ export const MultiSelectPatientListOverlay: React.FC<MultiSelectPatientListOverl
     );
   };
 
+  const renderCrossIcon = () => {
+    return (
+      props.showCloseIcon && (
+        <View style={{ alignSelf: 'flex-end' }}>
+          <TouchableOpacity style={styles.crossIconTouch} onPress={props.onCloseIconPress}>
+            <CrossPopup style={styles.crossIconStyle} />
+          </TouchableOpacity>
+        </View>
+      )
+    );
+  };
+
+  const renderTopTitleView = () => {
+    return (
+      <View style={styles.selectPatientNameViewStyle}>
+        {!!props.title && <Text style={styles.selectPatientNameTextStyle}>{props.title}</Text>}
+        {!!props.rightTitle && (
+          <Text style={styles.addMemberText}>
+            {string.common.Rs} {props.rightTitle}
+          </Text>
+        )}
+      </View>
+    );
+  };
+
+  const renderTopViewWithAddMember = () => {
+    return (
+      <View style={styles.selectPatientNameViewStyle}>
+        <Text style={styles.selectPatientNameTextStyle}>
+          {props.title || string.diagnostics.selectPatientNameText}
+        </Text>
+        <Text style={styles.addMemberText} onPress={onPressAddNewProfile}>
+          {string.diagnostics.addMemberText}
+        </Text>
+      </View>
+    );
+  };
+
+  const renderGenderSkuMsg = () => {
+    return (
+      <View style={styles.genderSkuMsgView}>
+        <InfoIconRed style={styles.infoIconStyle} />
+        <Text style={styles.patientOrderTestMsgTextStyle}>
+          {string.diagnostics.skuGenderMessage?.replace('{{gender}}', gender?.toLowerCase())}
+        </Text>
+      </View>
+    );
+  };
+
+  const renderPatientSelectionTitle = () => {
+    return (
+      <Text style={[styles.selectPatientHeading, { marginTop: 24, marginLeft: 16 }]}>
+        {nameFormater(`${string.diagnostics.selectPatientNameText}s`, 'title')}
+      </Text>
+    );
+  };
+
+  const renderPatientList = () => {
+    return (
+      <View style={styles.patientListCardStyle}>
+        <FlatList
+          bounces={false}
+          contentContainerStyle={{ paddingBottom: 20 }}
+          keyExtractor={(_, index) => index.toString()}
+          data={patientList || []}
+          renderItem={renderPatientListItem}
+        />
+      </View>
+    );
+  };
+
+  const renderDoneCTA = () => {
+    return (
+      <Button
+        title={'DONE'}
+        disabled={selectedPatientArray?.length == 0}
+        onPress={() => onPressDone(selectedPatientArray)}
+        style={styles.doneButtonViewStyle}
+      />
+    );
+  };
+
+  const renderBottomSection = () => {
+    return (
+      <View style={styles.topViewContainer}>
+        {renderPatientSelectionTitle()}
+        {renderPatientList()}
+        {renderDoneCTA()}
+      </View>
+    );
+  };
+
   return (
     <Overlay
       isVisible
       onRequestClose={() => (patientSelected?.id ? onPressClose() : onPressAndroidBack())}
-      windowBackgroundColor={'rgba(0, 0, 0, 0.6)'}
-      containerStyle={{ marginBottom: 0 }}
       fullScreen
       transparent
       overlayStyle={styles.phrOverlayStyle}
@@ -160,39 +286,12 @@ export const MultiSelectPatientListOverlay: React.FC<MultiSelectPatientListOverl
         />
         <View style={styles.overlayViewStyle}>
           <SafeAreaView style={styles.overlaySafeAreaViewStyle}>
-            {props.showCloseIcon && (
-              <View style={{ alignSelf: 'flex-end' }}>
-                <TouchableOpacity
-                  style={{ width: 40, height: 40 }}
-                  onPress={props.onCloseIconPress}
-                >
-                  <CrossPopup style={{ width: 28, height: 28 }} />
-                </TouchableOpacity>
-              </View>
-            )}
+            {renderCrossIcon()}
 
             <View style={styles.mainViewStyle}>
-              {!!source && source == AppRoutes.CartPage ? (
-                <View style={styles.selectPatientNameViewStyle}>
-                  {!!props.title && (
-                    <Text style={styles.selectPatientNameTextStyle}>{props.title}</Text>
-                  )}
-                  {!!props.rightTitle && (
-                    <Text style={styles.addMemberText}>
-                      {string.common.Rs} {props.rightTitle}
-                    </Text>
-                  )}
-                </View>
-              ) : (
-                <View style={styles.selectPatientNameViewStyle}>
-                  <Text style={styles.selectPatientNameTextStyle}>
-                    {props.title || string.diagnostics.selectPatientNameText}
-                  </Text>
-                  <Text style={styles.addMemberText} onPress={onPressAddNewProfile}>
-                    {string.diagnostics.addMemberText}
-                  </Text>
-                </View>
-              )}
+              {!!source && source == AppRoutes.CartPage
+                ? renderTopTitleView()
+                : renderTopViewWithAddMember()}
               {!!source && source == AppRoutes.CartPage ? (
                 <Text style={styles.patientOrderTestMsgTextStyle}>{props.subTitle}</Text>
               ) : (
@@ -200,33 +299,10 @@ export const MultiSelectPatientListOverlay: React.FC<MultiSelectPatientListOverl
                   {props.subTitle || string.diagnostics.patientTestOrderMsg}
                 </Text>
               )}
-              <View
-                style={{
-                  backgroundColor: '#F7F8F5',
-                  marginTop: 16,
-                  marginLeft: -16,
-                  marginRight: -16,
-                }}
-              >
-                <Text style={[styles.selectPatientHeading, { marginTop: 24, marginLeft: 16 }]}>
-                  {nameFormater(`${string.diagnostics.selectPatientNameText}s`, 'title')}
-                </Text>
-                <View style={styles.patientListCardStyle}>
-                  <FlatList
-                    bounces={false}
-                    contentContainerStyle={{ paddingBottom: 20 }}
-                    keyExtractor={(_, index) => index.toString()}
-                    data={!!listToShow ? listToShow : allCurrentPatients || []}
-                    renderItem={renderPatientListItem}
-                  />
-                </View>
-                <Button
-                  title={'DONE'}
-                  disabled={selectedPatientArray?.length == 0}
-                  onPress={() => onPressDone(selectedPatientArray)}
-                  style={styles.doneButtonViewStyle}
-                />
-              </View>
+              {!!source && source == AppRoutes.CartPage && getPatientSkuGenderMismatch?.length > 0
+                ? renderGenderSkuMsg()
+                : null}
+              {renderBottomSection()}
             </View>
           </SafeAreaView>
         </View>
@@ -320,4 +396,18 @@ const styles = StyleSheet.create({
     width: 20,
     resizeMode: 'contain',
   },
+  topViewContainer: {
+    backgroundColor: CARD_BG,
+    marginTop: 16,
+    marginLeft: -16,
+    marginRight: -16,
+  },
+  crossIconTouch: { width: 40, height: 40 },
+  crossIconStyle: { width: 28, height: 28 },
+  genderSkuMsgView: {
+    marginVertical: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  infoIconStyle: { height: 18, width: 18, resizeMode: 'contain', marginRight: 5 },
 });

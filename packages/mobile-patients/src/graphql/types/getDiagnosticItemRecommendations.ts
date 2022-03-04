@@ -3,6 +3,8 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
+import { Gender } from "./globalTypes";
+
 // ====================================================
 // GraphQL mutation operation: getDiagnosticItemRecommendations
 // ====================================================
@@ -30,6 +32,8 @@ export interface getDiagnosticItemRecommendations_getDiagnosticItemRecommendatio
   __typename: "AffinityData";
   itemId: number;
   itemName: string;
+  gender: string | null;
+  imageUrl: string | null;
   observations: (getDiagnosticItemRecommendations_getDiagnosticItemRecommendations_itemsData_observations | null)[] | null;
   diagnosticInclusions: (getDiagnosticItemRecommendations_getDiagnosticItemRecommendations_itemsData_diagnosticInclusions | null)[] | null;
 }
@@ -46,4 +50,5 @@ export interface getDiagnosticItemRecommendations {
 export interface getDiagnosticItemRecommendationsVariables {
   itemIds: (number | null)[];
   records?: number | null;
+  genderFilters?: (Gender | null)[] | null;
 }

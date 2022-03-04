@@ -119,7 +119,7 @@ import {
   GenerateTokenforCM,
   notifcationsApi,
   GenrateVitalsToken_CM,
-  GetAllUHIDSForNumber_CM,
+  GetProhealthActiveStatusForUhid_CM,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
 import UserAgent from 'react-native-user-agent';
@@ -253,6 +253,11 @@ import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/us
 import { UpdateAppPopup } from '@aph/mobile-patients/src/components/ui/UpdateAppPopup';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import DeviceInfo from 'react-native-device-info';
+import {
+  DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
+  DIAGNOSTIC_CTA_ITEMS,
+} from '@aph/mobile-patients/src/components/Tests/utils/helpers';
+import { DiagnosticCtaClicked, DiagnosticHomepageViewedEvent } from '@aph/mobile-patients/src/components/Tests/utils/Events';
 
 const { Vitals } = NativeModules;
 
@@ -1229,15 +1234,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     string | number
   >('' | 0);
   const [proActiveAppointments, setProHealthActiveAppointment] = useState([] as any);
-  const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
-  const { APP_ENV } = AppConfig;
   const {
-    refreeReward,
-    setRefreeReward,
-    setRewardId,
-    setCampaignId,
-    setCampaignName,
-  } = useReferralProgram();
+    cartItems,
+    setIsDiagnosticCircleSubscription,
+    isDiagnosticCircleSubscription,
+  } = useDiagnosticsCart();
+  const { APP_ENV } = AppConfig;
+  const { setRewardId, setCampaignId, setCampaignName } = useReferralProgram();
   const [isReferrerAvailable, setReferrerAvailable] = useState<boolean>(false);
   const {
     setHdfcPlanName,
@@ -1259,9 +1262,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     pinCode,
     isPharmacyPincodeServiceable,
     serverCartItems,
-    locationCode,
   } = useShoppingCart();
-  const cartItemsCount = cartItems?.length + serverCartItems?.length;
+  const cartItemsCount = cartItems?.length + serverCartItems?.length! || 0;
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [previousPatient, setPreviousPatient] = useState<any>(currentPatient);
@@ -2378,9 +2380,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             'Page Name': 'Home Screen',
             Source: DiagnosticHomePageSource.HOMEPAGE_CTA,
           };
+          DiagnosticCtaClicked(
+            currentPatient,
+            isDiagnosticCircleSubscription,
+            DIAGNOSTIC_CTA_ITEMS.MAIN_HOME
+          );
           postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Home Screen');
           postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Home Screen');
-          postDiagnosticHomepageViewedEvent('Homepage hero button');
+          postDiagnosticHomepageViewedEvent(
+            DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME_PAGE_HERO_BUTTON
+          );
           props.navigation.navigate('TESTS', { focusSearch: true, homeScreenAttributes });
         });
       },
@@ -2487,17 +2496,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   };
 
   const postDiagnosticHomepageViewedEvent = (
-    source: 'Homepage hero button' | 'Offer widget HP'
+    source:
+      | DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME_PAGE_HERO_BUTTON
+      | DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME_PAGE_OFFER_WIDGET
   ) => {
-    const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_HOMEPAGE_VIEWED] = {
-      'Nav src': source,
-      User: `${currentPatient?.firstName} ${currentPatient?.lastName}`,
-      UHID: currentPatient?.uhid,
-      Gender: currentPatient?.gender,
-      'Mobile Number': currentPatient?.mobileNumber,
-      'Customer Id': currentPatient?.id,
-    };
-    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_HOMEPAGE_VIEWED, eventAttributes);
+    DiagnosticHomepageViewedEvent(currentPatient, source);
   };
 
   const listValues: menuOptions[] = [...listOptions];
@@ -3504,8 +3507,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const checkIsProhealthActive = async (currentPatientDetails: any) => {
     setPreviousPatient(currentPatientDetails);
     const storedUhid: any = await AsyncStorage.getItem('selectUserUHId');
-    const selectedUHID = storedUhid ? storedUhid : g(currentPatient, 'uhid');
-
+    const selectedUHID = storedUhid ? storedUhid : currentPatient?.uhid;
     const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
     const item = JSON.parse(retrievedItem || 'null');
     const callByPrism: any = await AsyncStorage.getItem('callByPrism');
@@ -3531,17 +3533,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
          * caching the api for 24 hrs.
          */
         const getCachedApiResult: any = await getItem('mobileNumber_CM_Result');
-        const getPhoneNumber =
-          patientDetails?.mobileNumber?.length > 10
-            ? patientDetails?.mobileNumber?.slice(patientDetails?.mobileNumber?.length - 10)
-            : patientDetails?.mobileNumber;
+        const getAllPatientUhid = allPatients?.map((patient: any) => patient?.uhid);
+
         if (!!getCachedApiResult && getCachedApiResult?.data) {
           updateSDKOption(getCachedApiResult?.data, selectedUHID, currentPatientDetails);
         } else {
-          const res: any = await GetAllUHIDSForNumber_CM(getPhoneNumber! || '');
-          if (res?.data?.response && res?.data?.errorCode === 0) {
-            let resultData = res?.data?.response?.signUpUserData;
-            if (resultData?.length > 0) {
+          const res: any = await GetProhealthActiveStatusForUhid_CM(getAllPatientUhid);
+          if (res?.data?.response) {
+            let resultData = res?.data?.response;
+            if (!!resultData && resultData?.length > 0) {
               const obj = {
                 data: resultData,
                 expireAt: 1440,
@@ -3670,6 +3670,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                       'Page Name': 'Home Screen',
                       Source: DiagnosticHomePageSource.TAB_BAR,
                     };
+                    DiagnosticCtaClicked(
+                      currentPatient,
+                      isDiagnosticCircleSubscription,
+                      DIAGNOSTIC_CTA_ITEMS.BOTTOM_BAR
+                    );
                     postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Menu');
                     postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Menu');
                     CommonLogEvent(AppRoutes.HomeScreen, 'TESTS clicked');
@@ -4011,17 +4016,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     let arrayList = isProHealthActive ? listValuesForProHealth : listValues;
     return (
       <View style={styles.menuOptionsContainer}>
-        {arrayList.map((item) => {
-          if (item.id > 3) {
+        {arrayList?.map((item) => {
+          if (item?.id > 3) {
             return (
-              <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
+              <TouchableOpacity activeOpacity={1} onPress={item?.onPress}>
                 <View style={styles.bottomCardView}>
-                  <View style={styles.bottomImageView}>{item.image}</View>
+                  <View style={styles.bottomImageView}>{item?.image}</View>
                   <View style={styles.bottomTextView}>
                     <Text
                       style={[theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 20)]}
                     >
-                      {item.title}
+                      {item?.title}
                     </Text>
                   </View>
                   <View style={styles.bottomRightArrowView}>
@@ -4479,7 +4484,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         const homeScreenAttributes = {
           Source: DiagnosticHomePageSource.BANNER,
         };
-        postDiagnosticHomepageViewedEvent('Offer widget HP');
+        postDiagnosticHomepageViewedEvent(
+          DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME_PAGE_OFFER_WIDGET
+        );
         props.navigation.navigate('TESTS', { homeScreenAttributes });
       } else if (action.cta_action == 'MEMBERSHIP_DETAIL_CIRCLE') {
         props.navigation.navigate('MembershipDetails', {
@@ -5500,7 +5507,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   function webViewGoBack() {
     //call the api.
     getPatientApiCall(); //to check if new user is added
-    checkIsProhealthActive(currentPatient); //to show prohealth option
     getActiveProHealthAppointments(currentPatient); //to show the prohealth appointments
   }
 
@@ -6291,7 +6297,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       key === MedicalRecordType.TEST_REPORT
         ? {
             itemId: item?.diagnostic_item_id,
-            source: 'Full search',
+            source: 'Homepage Search',
             comingFrom: AppRoutes.HomeScreen,
             testName: item?.diagnostic_item_name,
           }

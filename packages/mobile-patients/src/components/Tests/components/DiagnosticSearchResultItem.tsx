@@ -2,7 +2,7 @@ import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponent
 import { PackageIcon, TestsCartIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { Dimensions, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import {
   isEmptyObject,
   isSmallDevice,
@@ -10,13 +10,16 @@ import {
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
+  checkSku,
+  DiagnosticItemGenderMapping,
   diagnosticsDisplayPrice,
   getPricesForItem,
-} from '@aph/mobile-patients/src/utils/commonUtils';
+} from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-
+import { InfoMessage } from '@aph/mobile-patients/src/components/Tests/components/InfoMessage';
+const winWidth = Dimensions.get('window').width;
 export interface DiagnosticsSearchResultItemProps {
   onPress: () => void;
   onPressAddToCart: () => void;
@@ -34,6 +37,7 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
   const { data, isCircleSubscribed, searchedString } = props;
   const name = data?.diagnostic_item_name || '';
   const itemType = data?.diagnostic_item_itemType;
+  const skuGender = data?.diagnostic_item_gender;
   const isAddedToCart = !!cartItems?.find(
     (item) => Number(item?.id) == Number(data?.diagnostic_item_id)
   );
@@ -55,6 +59,10 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
   const isAlreadyPartOfOrder =
     getExisitingOrderItems?.length > 0 &&
     getExisitingOrderItems?.find((id: number) => Number(id) == Number(data?.diagnostic_item_id));
+  const patientGender = isModifyOrder && modifiedOrder?.patientObj?.gender;
+  const isItemActive = isModifyOrder
+    ? checkSku(patientGender, DiagnosticItemGenderMapping(data?.diagnostic_item_gender), false)
+    : true;
 
   const renderItemNamePrice = () => {
     const getDiagnosticPricingForItem = data?.diagnostic_item_price;
@@ -168,30 +176,51 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
   const renderItemType = (isTestPackageDetailsUnavailable: boolean) => {
     const hasType = !!itemType && itemType != '';
     const isTest = !!hasType && itemType?.toLowerCase() == 'test';
+    const skuType = data?.diagnostic_inclusions?.length > 1 ? 'package' : 'test';
+
     return (
       <>
         {!!hasType ? (
-          <View
-            style={[
-              styles.iconOrImageContainerStyle,
-              {
-                width: isTest ? 85 : 110,
-                marginTop: isTestPackageDetailsUnavailable ? 8 : isTest ? -4 : 10,
-              },
-            ]}
-          >
-            <View>
-              {isTest ? (
-                <TestsCartIcon style={styles.imageIcon} />
-              ) : (
-                <PackageIcon style={styles.imageIcon} />
-              )}
+          <View style={{ flexDirection: 'row' }}>
+            <View
+              style={[
+                styles.iconOrImageContainerStyle,
+                {
+                  width: isTest ? 85 : 110,
+                  marginTop: isTestPackageDetailsUnavailable ? 8 : isTest ? -4 : 10,
+                },
+              ]}
+            >
+              <View>
+                {isTest ? (
+                  <TestsCartIcon style={styles.imageIcon} />
+                ) : (
+                  <PackageIcon style={styles.imageIcon} />
+                )}
+              </View>
+              <Text style={styles.itemTypeText}>in {nameFormater(itemType + 's', 'default')}</Text>
             </View>
-
-            <Text style={styles.itemTypeText}>in {nameFormater(itemType + 's', 'default')}</Text>
+            {isItemActive ? null : renderInvalidGenderSkuMsg(itemType, false)}
           </View>
-        ) : null}
+        ) : isItemActive ? null : (
+          renderInvalidGenderSkuMsg(skuType, true)
+        )}
       </>
+    );
+  };
+
+  const renderInvalidGenderSkuMsg = (itemType: string, customStyle: boolean) => {
+    const msg = string.diagnostics.skuGenderMessage
+      ?.replace('{{skuType}}', itemType?.toLowerCase())
+      ?.replace('{{gender}}', DiagnosticItemGenderMapping(skuGender)?.toLowerCase());
+    return (
+      <InfoMessage
+        content={msg}
+        textStyle={styles.subHeadingText}
+        iconStyle={styles.infoIconStyle}
+        containerStyle={[customStyle ? styles.genderSkuMsgViewOut : styles.genderSkuMsgView]}
+        isCard={false}
+      />
     );
   };
 
@@ -205,7 +234,9 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
             ? () => {}
             : isAddedToCart
             ? props.onPressRemoveFromCart
-            : props.onPressAddToCart
+            : isItemActive
+            ? props.onPressAddToCart
+            : () => {}
         }
       >
         {isAlreadyPartOfOrder ? (
@@ -217,8 +248,10 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
             <Text style={styles.removeCta}>{string.diagnostics.removeFromCart}</Text>
           </View>
         ) : (
-          <View style={styles.addCtaView}>
-            <Text style={styles.addCta}>{string.diagnostics.addToCart}</Text>
+          <View style={[styles.addCtaView, !isItemActive && { opacity: 0.6 }]}>
+            <Text style={[styles.addCta, !isItemActive && { opacity: 0.6 }]}>
+              {string.diagnostics.addToCart}
+            </Text>
           </View>
         )}
       </TouchableOpacity>
@@ -226,16 +259,18 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
   };
 
   return (
-    <TouchableOpacity
-      activeOpacity={1}
-      style={[styles.containerStyle, props.style]}
-      onPress={props.onPress}
-    >
-      <View style={styles.containerStyle} key={data?.diagnostic_item_id}>
-        <View style={styles.iconAndDetailsContainerStyle}>{renderItemNamePrice()}</View>
-        {props.showSeparator ? <Spearator /> : null}
-      </View>
-    </TouchableOpacity>
+    <>
+      <TouchableOpacity
+        activeOpacity={1}
+        style={[styles.containerStyle, props.style]}
+        onPress={isItemActive ? props.onPress : () => {}}
+      >
+        <View style={styles.containerStyle} key={data?.diagnostic_item_id}>
+          <View style={styles.iconAndDetailsContainerStyle}>{renderItemNamePrice()}</View>
+          {props.showSeparator ? <Spearator /> : null}
+        </View>
+      </TouchableOpacity>
+    </>
   );
 };
 
@@ -305,5 +340,27 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
     padding: 6,
+  },
+  subHeadingText: {
+    width: '95%',
+    ...theme.viewStyles.text('R', 10.5, theme.colors.SHERPA_BLUE, 1, 16),
+  },
+  infoIconStyle: { height: 14, width: 14, resizeMode: 'contain', marginRight: 5 },
+  genderSkuMsgView: {
+    marginVertical: 6,
+    flexDirection: 'row',
+    backgroundColor: 'transparent',
+    marginBottom: -10,
+    marginLeft: 0,
+    width: '99%',
+  },
+  genderSkuMsgViewOut: {
+    marginVertical: 6,
+    flexDirection: 'row',
+    backgroundColor: 'transparent',
+    marginBottom: -10,
+    marginLeft: -10,
+    width: winWidth - 32,
+    marginTop: -6,
   },
 });

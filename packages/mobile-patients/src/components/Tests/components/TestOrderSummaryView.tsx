@@ -30,7 +30,7 @@ import {
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { DiagnosticOrderSummaryViewed } from '@aph/mobile-patients/src/components/Tests/Events';
+import { DiagnosticOrderSummaryViewed } from '@aph/mobile-patients/src/components/Tests/utils/Events';
 import { Down, Up, DownloadOrange, OneApollo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { PassportPaitentOverlay } from '@aph/mobile-patients/src/components/Tests/components/PassportPaitentOverlay';
@@ -166,22 +166,22 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   const discountCirclePrice =
     newCircleArray?.map((item) =>
       item?.packageMrp! > item?.pricingObj?.[0]?.mrp
-        ? item?.packageMrp! - item?.pricingObj?.[0].price!
-        : item?.pricingObj?.[0].mrp! - item?.pricingObj?.[0].price!
+        ? item?.packageMrp! - item?.pricingObj?.[0]?.price!
+        : item?.pricingObj?.[0]?.mrp! - item?.pricingObj?.[0]?.price!
     ) || [];
 
   const discountNormalPrice =
     newAllArray?.map((item) =>
       item?.packageMrp! > item?.pricingObj?.[0]?.mrp
-        ? item?.packageMrp! - item?.pricingObj?.[0].price!
-        : item?.pricingObj?.[0].mrp! - item?.pricingObj?.[0].price!
+        ? item?.packageMrp! - item?.pricingObj?.[0]?.price!
+        : item?.pricingObj?.[0]?.mrp! - item?.pricingObj?.[0]?.price!
     ) || [];
 
   const discountSpecialPrice =
     newSpecialArray?.map((item) =>
       item?.packageMrp! > item?.pricingObj?.[0]?.mrp
-        ? item?.packageMrp! - item?.pricingObj?.[0].price!
-        : item?.pricingObj?.[0].mrp! - item?.pricingObj?.[0].price!
+        ? item?.packageMrp! - item?.pricingObj?.[0]?.price!
+        : item?.pricingObj?.[0]?.mrp! - item?.pricingObj?.[0]?.price!
     ) || [];
 
   let newArr: any[] = [];
@@ -189,7 +189,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
     newArr.push(
       item?.packageMrp! > item?.pricingObj?.[0]?.mrp
         ? item?.packageMrp
-        : item?.pricingObj?.[0].mrp! || 0
+        : item?.pricingObj?.[0]?.mrp! || 0
     )
   );
 
@@ -197,7 +197,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
     newArr.push(
       item?.packageMrp! > item?.pricingObj?.[0]?.mrp
         ? item?.packageMrp!
-        : item?.pricingObj?.[0].mrp! || 0
+        : item?.pricingObj?.[0]?.mrp! || 0
     )
   );
 
@@ -205,7 +205,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
     newArr.push(
       item?.packageMrp! > item?.pricingObj?.[0]?.mrp
         ? item?.packageMrp!
-        : item?.pricingObj?.[0].mrp! || 0
+        : item?.pricingObj?.[0]?.mrp! || 0
     )
   );
 
@@ -323,7 +323,9 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   };
 
   const renderAddress = () => {
-    const addressText = formatAddressForApi(orderDetails?.patientAddressObj! || '');
+    const addressText =
+      !!orderDetails?.patientAddressObj &&
+      formatAddressForApi(orderDetails?.patientAddressObj! || '');
     return (
       <>
         {!!addressText && addressText != '' ? (
@@ -652,7 +654,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   };
 
   const renderPricesCard = () => {
-    const totalSaving = totalCartSaving + totalDiscountSaving;
+    const totalSaving = (totalCartSaving! || 0) + (totalDiscountSaving! || 0);
     const couponDiscount = orderDetails?.couponDiscAmount;
     const toPayPrice =
       showCircleMembershipDetails && !!circleMembershipCharges

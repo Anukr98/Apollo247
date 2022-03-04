@@ -8,7 +8,7 @@ import { PharmaUserStatus } from '@aph/mobile-patients/src/components/AppCommonD
 import { CircleEventSource, PAGE_ID_TYPE } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { ShoppingCartItem } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { DIAGNOSTIC_SLOT_TYPE } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE, DIAGNOSTIC_CTA_ITEMS } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import { DiagnosticsDetailsPageViewedSource } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { saveCart_saveCart_data_medicineOrderCartLineItems } from '@aph/mobile-patients/src/graphql/types/saveCart';
 
@@ -233,7 +233,7 @@ export enum CleverTapEventName {
   PAYMENT_INITIATED = 'Payment Initiated',
   DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic payment initiated',
   DIAGNOSTIC_ORDER_PLACED = 'Diagnostic order placed',
-  DIAGNOSTIC_ORDER_PLACED_QA = 'Diagnostic order placed - qa',
+  DIAGNOSTIC_ORDER_PLACED_QA = 'Diagnostic order placed NEW',
   DIAGNOSTIC_TRACK_ORDER_VIEWED = 'Diagnostic track order viewed',
   DIAGNOSTIC_ORDER_RESCHEDULE = 'Diagnostic order rescheduled',
   DIAGNOSTIC_FEEDBACK_GIVEN = 'Diagnostic feedback submitted',
@@ -251,6 +251,8 @@ export enum CleverTapEventName {
   DIAGNOSTIC_RADIOLOGY_BOOKING_COMPLETE = 'Diagnostic Radiology Booking completed',
   DIAGNOSTIC_HOMEPAGE_VIEWED = 'Diagnostic Home page viewed',
   DIAGNOSTIC_RETAIN_CANCELLATION = 'Diagnostic retain cancellation CTA clicked',
+  DIAGNOSTIC_CTA_CLICKED = 'Home page diagnostics CTA clicked',
+  DIAGNOSTIC_HOME_PAGE_RECOMMENDATIONS_VIEWED = 'Diagnostic home page recommendations viewed',
 
   //Conult Package Purchase Attribite
   CONSULT_PACKAGE_CLICKED = 'Consult Package Clicked',
@@ -898,6 +900,7 @@ export interface DiagnosticAddToCart extends DiagnosticUserInfo {
   'Item Type': DIAGNOSTICS_ITEM_TYPE;
   'Item Price': number | string;
   Source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE;
+  'Nav Src': string;
   'Section name'?: string;
   'Circle user'?: string;
   'Original Item ids'?: any;
@@ -1760,6 +1763,11 @@ export interface CleverTapEvents {
     'Recommendation Shown': string;
     'Recommendation Item ids': any;
     'Cart Value': any;
+    'Package Recommendation Shown'?: 'Yes' | 'No';
+    'Package Recommendation ItemId'?: string | undefined;
+    'Package Recommendation ItemName'?: string | undefined;
+    'Package Recommendation Price'?: number | undefined;
+    'Package Recommendation Extra Tests'?: any
   };
   [CleverTapEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED]: {
     'Slot time': string;
@@ -1861,6 +1869,7 @@ export interface CleverTapEvents {
     Mode: 'Customer' | 'Automated';
     itemIdsInCart: any;
     itemNamesinCart: any;
+    'Source': any
   };
   [CleverTapEventName.DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE]: {
     'Item ID'?: string | number;
@@ -3549,4 +3558,15 @@ export interface CleverTapEvents {
     "Patient Mobile": number;
     City : string;
   }
+  [CleverTapEventName.DIAGNOSTIC_CTA_CLICKED]: {
+    'Circle user'?: string;
+    CTA: DIAGNOSTIC_CTA_ITEMS;
+  };
+  [CleverTapEventName.DIAGNOSTIC_HOME_PAGE_RECOMMENDATIONS_VIEWED]: {
+    'Recommendation ItemIds': string;
+    'Recommendation ItemNames': string;
+    'drupalCount': number | string | undefined;
+    'apiCount': number | string | undefined;
+    'Circle user'?: string
+  };
 }
