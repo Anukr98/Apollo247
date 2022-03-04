@@ -967,7 +967,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         <View style={styles.profileDetailsCardView}>
           <View style={styles.profileDetailsViewStyle}>
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               onPress={() => {
                 setCurrentUpdatePopupId(1);
                 setShowUpdateProfilePopup(true);
@@ -993,7 +993,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             </TouchableOpacity>
             {separatorLineView()}
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               onPress={() => {
                 setCurrentUpdatePopupId(2);
                 setShowUpdateProfilePopup(true);
@@ -1017,7 +1017,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             </TouchableOpacity>
             {separatorLineView()}
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               onPress={() => {
                 setCurrentUpdatePopupId(3);
                 setShowUpdateProfilePopup(true);
@@ -1256,7 +1256,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           (id === 7 || id === 5) && { borderBottomWidth: 0 },
         ]}
         underlayColor={'#FFFFFF'}
-        activeOpacity={1}
         onPress={onPressListItem}
         leftAvatar={renderLeftAvatar()}
         rightAvatar={renderRightElement()}
@@ -1317,6 +1316,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             </Text>
           </View>
           <TouchableOpacity
+            activeOpacity={0.5}
             style={{
               flexDirection: 'row',
               justifyContent: 'space-between',
@@ -1509,6 +1509,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     return (
       <View style={styles.closeIconViewStyle}>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             setPatientHistoryValues();
             setShowUpdateProfilePopup(false);

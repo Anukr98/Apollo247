@@ -113,9 +113,13 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
         overlayStyle={styles.overlayStyle}
       >
         <View style={{ flex: 1 }}>
-          <TouchableOpacity style={{ flex: 1 }} onPress={() => onPressCloseOverlay()}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            style={{ flex: 1 }}
+            onPress={() => onPressCloseOverlay()}
+          >
             <View style={styles.overlayTouch}>
-              <TouchableOpacity>
+              <TouchableOpacity activeOpacity={0.5}>
                 <SafeAreaView style={styles.overlaySafeArea}>
                   <View style={styles.overlayContainer}>
                     <Text style={styles.prepHeading}>SPECIAL PREPARATIONS</Text>
@@ -145,7 +149,7 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
 
   return (
     <TouchableOpacity
-      activeOpacity={1}
+      activeOpacity={0.5}
       style={styles.container}
       key={orderId.toString()}
       onPress={props.onPressBookNow}
@@ -172,7 +176,10 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
           <View style={styles.prepDataContainer}>
             {renderPrepData(testPreparationData?.[0], 1)}
             {!!prepDataLength && prepDataLength > 0 && (
-              <TouchableOpacity onPress={() => setShowPreparationModal(!showPreparationModal)}>
+              <TouchableOpacity
+                activeOpacity={0.5}
+                onPress={() => setShowPreparationModal(!showPreparationModal)}
+              >
                 <Text style={styles.moreText}>+{prepDataLength} more</Text>
               </TouchableOpacity>
             )}
@@ -187,7 +194,7 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
       )}
 
       <View style={styles.buttonView}>
-        <TouchableOpacity onPress={props.onPressBookNow}>
+        <TouchableOpacity activeOpacity={0.5} onPress={props.onPressBookNow}>
           <Text style={styles.bookNowText}>{nameFormater(options, 'upper')}</Text>
         </TouchableOpacity>
       </View>

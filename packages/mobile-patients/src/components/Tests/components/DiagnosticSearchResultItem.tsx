@@ -227,8 +227,8 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
   const renderAddToCartView = (pricesForItem: any) => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={{ marginTop: 4 }}
-        activeOpacity={1}
         onPress={
           isAlreadyPartOfOrder
             ? () => {}
@@ -261,7 +261,7 @@ export const DiagnosticsSearchResultItem: React.FC<DiagnosticsSearchResultItemPr
   return (
     <>
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         style={[styles.containerStyle, props.style]}
         onPress={isItemActive ? props.onPress : () => {}}
       >

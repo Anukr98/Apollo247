@@ -764,7 +764,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         </Text>
         <View style={styles.separatorLineStyle} />
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => onPressDownloadPrescripiton()}
           style={styles.downloadBtnViewStyle}
         >
@@ -1252,7 +1252,11 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                     </>
                   );
               })}
-              <TouchableOpacity style={styles.tatContainer} onPress={orderMedicinesHandler}>
+              <TouchableOpacity
+                activeOpacity={0.5}
+                style={styles.tatContainer}
+                onPress={orderMedicinesHandler}
+              >
                 {tatContent.length ? (
                   <View>
                     {priscTatText()}
@@ -1387,6 +1391,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             )}
             {caseSheetDetails?.diagnosticPrescription?.length && (
               <TouchableOpacity
+                activeOpacity={0.5}
                 style={styles.tatContainer}
                 onPress={() => {
                   postWEGEvent('test');
@@ -1417,7 +1422,11 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     if (caseSheetDetails!.doctorType !== 'JUNIOR' && g(caseSheetDetails, 'blobName')) {
       return (
         <View style={styles.bottomButtonContainer}>
-          <TouchableOpacity style={styles.orderMedicinesButton} onPress={orderMedicinesHandler}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            style={styles.orderMedicinesButton}
+            onPress={orderMedicinesHandler}
+          >
             <Text style={styles.orderMedicineText}>ORDER MEDICINES NOW</Text>
           </TouchableOpacity>
         </View>
@@ -1586,7 +1595,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         pad={0}
         containerStyle={[styles.listItemContainerStyle, { marginTop: marginTop }]}
         underlayColor={'#FFFFFF'}
-        activeOpacity={1}
         leftElement={<View style={styles.blueCirleViewStyle} />}
         rightElement={renderListItemRightComponent()}
       />
@@ -1659,7 +1667,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           >
             <View style={{ height: 60, alignItems: 'flex-end' }}>
               <TouchableOpacity
-                activeOpacity={1}
+                activeOpacity={0.5}
                 style={styles.gotItStyles}
                 onPress={() => {
                   setshowNotExistAlert(false);

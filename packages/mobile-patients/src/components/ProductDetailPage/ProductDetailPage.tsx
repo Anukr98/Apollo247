@@ -916,6 +916,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       >
         {showNudgeMessage && <NudgeMessage nudgeMessage={pharmaPDPNudgeMessage} />}
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             props.navigation.navigate(AppRoutes.ServerCart);
           }}
@@ -1390,6 +1391,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         >
           <View>
             <TouchableOpacity
+              activeOpacity={0.5}
               style={styles.closeButton}
               onPress={() => {
                 setShowSubstituteInfo(false);

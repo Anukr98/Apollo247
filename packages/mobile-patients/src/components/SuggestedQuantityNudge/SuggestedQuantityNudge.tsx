@@ -88,6 +88,7 @@ export const SuggestedQuantityNudge: React.FC<SuggestedQuantityNudgeProps> = (pr
           <View style={styles.bottomSheetContainer}>
             <View style={styles.crossContainer}>
               <TouchableOpacity
+                activeOpacity={0.5}
                 onPress={() => {
                   onPressCloseBottomSheet();
                 }}
@@ -110,6 +111,7 @@ export const SuggestedQuantityNudge: React.FC<SuggestedQuantityNudgeProps> = (pr
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
               <View style={styles.cartContainer}>
                 <TouchableOpacity
+                  activeOpacity={0.5}
                   onPress={() => {
                     decreaseQuantity(selectedQuantity);
                   }}
@@ -124,12 +126,13 @@ export const SuggestedQuantityNudge: React.FC<SuggestedQuantityNudgeProps> = (pr
                     -
                   </Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.buttonStyles}>
+                <TouchableOpacity activeOpacity={0.5} style={styles.buttonStyles}>
                   <Text style={[styles.buttonTextStyles, styles.quantityStyle]}>
                     {selectedQuantity}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
+                  activeOpacity={0.5}
                   onPress={() => {
                     increaseQuantity(selectedQuantity);
                   }}
@@ -147,6 +150,7 @@ export const SuggestedQuantityNudge: React.FC<SuggestedQuantityNudgeProps> = (pr
               </View>
               <View style={styles.addButtonContainer}>
                 <TouchableOpacity
+                  activeOpacity={0.5}
                   onPress={() => {
                     onPressCloseBottomSheet();
                     if (

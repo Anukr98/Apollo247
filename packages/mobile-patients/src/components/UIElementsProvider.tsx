@@ -192,6 +192,7 @@ export const UIElementsProvider: React.FC = (props) => {
   const renderAphAlert = () => {
     const renderOkButton = (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={styles.okButtonStyle}
         onPress={() => {
           if (alertParams.onPressOk) {

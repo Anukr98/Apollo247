@@ -50,7 +50,7 @@ export const DiagnosticsNewSearch: React.FC<DiagnosticsNewSearchProps> = (props)
 
     return (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={
           isAlreadyPartOfOrder
             ? () => {}
@@ -73,7 +73,7 @@ export const DiagnosticsNewSearch: React.FC<DiagnosticsNewSearchProps> = (props)
   return (
     <>
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         style={[styles.containerStyle, props.style]}
         onPress={props.onPress}
       >

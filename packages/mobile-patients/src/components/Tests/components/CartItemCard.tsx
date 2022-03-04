@@ -109,7 +109,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     const promoteDiscount = promoteCircle ? false : discount < specialDiscount;
 
     return (
-      <TouchableOpacity style={{}} onPress={() => _onPressCard(cartItem)}>
+      <TouchableOpacity activeOpacity={0.5} style={{}} onPress={() => _onPressCard(cartItem)}>
         <View
           style={[
             styles.cartItemView,
@@ -252,7 +252,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     return (
       <View style={{ flex: 0.1 }}>
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => props.onPressRemove(cartItem)}
           style={styles.removeTouch}
         >
@@ -265,7 +265,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   const renderUndo = (cartItem: any) => {
     return (
       <View style={{ flex: 0.1 }}>
-        <TouchableOpacity activeOpacity={1} onPress={() => props.onPressUndo(cartItem)}>
+        <TouchableOpacity activeOpacity={0.5} onPress={() => props.onPressUndo(cartItem)}>
           <Text style={styles.undoText}>UNDO</Text>
         </TouchableOpacity>
       </View>
@@ -345,8 +345,8 @@ const styles = StyleSheet.create({
   },
   undoText: { ...theme.viewStyles.text('B', 14, colors.APP_YELLOW, 1), paddingBottom: 10 },
   detailView: {
-    padding:10,
-    marginTop: -25
+    padding: 10,
+    marginTop: -25,
   },
   removeTouch: {
     height: isSmallDevice ? 28 : 30,

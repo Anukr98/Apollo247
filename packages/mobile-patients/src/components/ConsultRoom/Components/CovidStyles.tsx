@@ -29,6 +29,7 @@ const CovidButton = (props: Props) => {
   const iconStyle = [styles.iconStyle, props.iconStyle];
   return (
     <TouchableOpacity
+      activeOpacity={0.5}
       style={[styles.buttonStyle, props.buttonStyle]}
       activeOpacity={0.5}
       onPress={props.onPress}

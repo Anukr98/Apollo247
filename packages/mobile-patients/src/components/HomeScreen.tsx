@@ -257,7 +257,10 @@ import {
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   DIAGNOSTIC_CTA_ITEMS,
 } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
-import { DiagnosticCtaClicked, DiagnosticHomepageViewedEvent } from '@aph/mobile-patients/src/components/Tests/utils/Events';
+import {
+  DiagnosticCtaClicked,
+  DiagnosticHomepageViewedEvent,
+} from '@aph/mobile-patients/src/components/Tests/utils/Events';
 
 const { Vitals } = NativeModules;
 
@@ -1944,7 +1947,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         <View style={{ height: 60, alignItems: 'flex-end' }}>
           {isPhysicalConsultBooked ? (
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               style={styles.bottomAlertTitle}
               onPress={() => {
                 hideAphAlert!();
@@ -1955,7 +1958,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               style={styles.goToConsultRoom}
               onPress={() => {
                 hideAphAlert!();
@@ -3628,7 +3631,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           {tabBarOptions.map((tabBarOptions, i) => (
             <View key={i}>
               <TouchableOpacity
-                activeOpacity={1}
+                activeOpacity={0.5}
                 key={i}
                 onPress={() => {
                   if (i === 0) {
@@ -3919,7 +3922,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           ) {
             if (item?.id === 1) {
               return (
-                <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
+                <TouchableOpacity activeOpacity={0.5} onPress={item.onPress}>
                   <View style={{}}>
                     {renderDeliveryRibbonTag()}
                     <LinearGradientComponent
@@ -3957,7 +3960,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               );
             } else {
               return (
-                <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
+                <TouchableOpacity activeOpacity={0.5} onPress={item.onPress}>
                   <View style={styles.bottom2CardView}>
                     <View style={styles.topCardContentContainerSecondary}>
                       {item.image}
@@ -4019,7 +4022,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         {arrayList?.map((item) => {
           if (item?.id > 3) {
             return (
-              <TouchableOpacity activeOpacity={1} onPress={item?.onPress}>
+              <TouchableOpacity activeOpacity={0.5} onPress={item?.onPress}>
                 <View style={styles.bottomCardView}>
                   <View style={styles.bottomImageView}>{item?.image}</View>
                   <View style={styles.bottomTextView}>
@@ -4086,7 +4089,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     let offerDesignTemplate = getTemplateStyle(item?.template_name);
     return (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={() => {
           postOfferCardClickEvent(
             item,
@@ -4177,6 +4180,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               </View>
 
               <TouchableOpacity
+                activeOpacity={0.5}
                 style={styles.offersCardCTA}
                 onPress={() =>
                   textForNotch !== 'Offer Expired' && onOfferCtaPressed(item, index + 1)
@@ -4219,7 +4223,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     return (
       <View style={styles.menuOptionsContainer}>
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => {
             postOfferCardClickEvent(
               item,
@@ -4342,7 +4346,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const circleCashbackOffersComponent = () => {
     return (
       <View style={styles.menuOptionsContainer}>
-        <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+        <TouchableOpacity activeOpacity={0.5} onPress={() => {}}>
           <LinearGradientComponent
             colors={['#FDFBF7', '#F5D5CE']}
             style={[styles.bottom2CardView, { width: width - 32 }]}
@@ -4564,7 +4568,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     return (
       <View style={styles.circleCardsContainer}>
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => {
             !darktheme ? navigateCTAActions(item?.action, item?.url) : null;
             const membershipState = darktheme
@@ -4958,7 +4962,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     title: string
   ) => {
     return (
-      <TouchableOpacity activeOpacity={0.5} onPress={onButtonClick} style={styles.covidToucahble}>
+      <TouchableOpacity
+        activeOpacity={0.5}
+        activeOpacity={0.5}
+        onPress={onButtonClick}
+        style={styles.covidToucahble}
+      >
         <View style={styles.covidIconView}>{buttonIcon}</View>
         <View style={styles.covidTitleView}>
           <Text style={{ ...theme.viewStyles.text('M', 14, theme.colors.WHITE) }}>{title}</Text>
@@ -5361,18 +5370,18 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         }}
       >
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <TouchableOpacity activeOpacity={1} onPress={cleverTapEventForHomeIconClick}>
+          <TouchableOpacity activeOpacity={0.5} onPress={cleverTapEventForHomeIconClick}>
             <ApolloLogo style={{ width: 57, height: 37 }} resizeMode="contain" />
           </TouchableOpacity>
           {renderProfileDrop()}
         </View>
         <View style={{ flexDirection: 'row' }}>
-          <TouchableOpacity activeOpacity={1} onPress={onPressCart}>
+          <TouchableOpacity activeOpacity={0.5} onPress={onPressCart}>
             <CartIcon />
             {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
           </TouchableOpacity>
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             onPress={() => {
               postVaccineWidgetEvents(CleverTapEventName.NOTIFICATION_CENTER_CLICKED, 'Top bar');
               postHomeWEGEvent(WebEngageEventName.NOTIFICATION_ICON);
@@ -5390,7 +5399,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const renderProhealthBanner = () => {
     return (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={() => _navigateProHealth()}
         style={styles.proHealthBannerTouch}
       >
@@ -5543,7 +5552,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const renderSecondaryConsultationCta = () => (
     <View style={styles.menuOptionsContainer}>
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={() => {
           postHomeFireBaseEvent(FirebaseEventName.FIND_A_DOCTOR, 'Home Screen');
           postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT);
@@ -5581,6 +5590,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       </TouchableOpacity>
 
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={() => {
           postHomeFireBaseEvent(FirebaseEventName.FIND_A_DOCTOR, 'Home Screen');
           postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT);
@@ -5649,7 +5659,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         )}
         {displayAskApolloNumber && (
           <View style={styles.horizontalEnd}>
-            <TouchableOpacity onPress={callAskApolloNumber} style={styles.horizontalView}>
+            <TouchableOpacity
+              activeOpacity={0.5}
+              onPress={callAskApolloNumber}
+              style={styles.horizontalView}
+            >
               <CallIcon style={styles.callLogo} />
               <Text style={styles.askApolloNumber}>
                 {AppConfig.Configuration.Ask_Apollo_Number}
@@ -5914,7 +5928,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               onChangeText={(value) => onSearchTextChange(value)}
             />
             {isSearchFocus && searchText?.length >= 1 ? (
-              <TouchableOpacity onPress={() => setSearchText('')}>
+              <TouchableOpacity activeOpacity={0.5} onPress={() => setSearchText('')}>
                 <RemoveIconGrey style={{ width: 20, height: 20 }} />
               </TouchableOpacity>
             ) : null}
@@ -6100,6 +6114,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     const listitems = recentGlobalSearchList.map((item: any) => {
       return (
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             postHomeCleverTapEvent(
               CleverTapEventName.RECENT_SEARCH_CLICKED_UNDER_SEARCH_BAR,
@@ -6322,7 +6337,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       key === MedicalRecordType.CONSULTATION && item?.__typename == 'Specialty' ? false : true;
 
     return (
-      <TouchableOpacity onPress={() => onClickSearchItem(key, pdp, nav_props)}>
+      <TouchableOpacity activeOpacity={0.5} onPress={() => onClickSearchItem(key, pdp, nav_props)}>
         <View style={{ marginBottom: 6 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
             <View style={styles.searchItemIcon}>
@@ -6519,6 +6534,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             <View style={{ height: 20, alignItems: 'flex-end' }} />
           </BottomPopUp>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               CommonLogEvent(AppRoutes.HomeScreen, 'ConsultRoom_BottomPopUp clicked');
               AsyncStorage.setItem('gotIt', 'true');

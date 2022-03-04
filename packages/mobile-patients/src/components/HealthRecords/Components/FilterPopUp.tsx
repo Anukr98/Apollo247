@@ -135,6 +135,7 @@ export const FilterPopUp: React.FC<FilterPopUpProps> = (props) => {
     return (
       <View style={{ justifyContent: 'space-around', height: 70 }}>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             setDigitalize(!digitalize);
           }}
@@ -151,6 +152,7 @@ export const FilterPopUp: React.FC<FilterPopUpProps> = (props) => {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             setNonDigitalize(!nonDigitalize);
           }}
@@ -199,6 +201,7 @@ export const FilterPopUp: React.FC<FilterPopUpProps> = (props) => {
     return (
       <View style={{ justifyContent: 'space-around', marginTop: 30 }}>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             setCheckPrescription(!checkPrescription);
             setCheckTestReport(false);
@@ -219,6 +222,7 @@ export const FilterPopUp: React.FC<FilterPopUpProps> = (props) => {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             setCheckTestReport(!checkTestReport);
             setCheckPrescription(false);
@@ -239,6 +243,7 @@ export const FilterPopUp: React.FC<FilterPopUpProps> = (props) => {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             setCheckHospitalization(!checkHospitalization);
             setCheckPrescription(false);
@@ -259,6 +264,7 @@ export const FilterPopUp: React.FC<FilterPopUpProps> = (props) => {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             setCheckBills(!checkBills);
             setCheckPrescription(false);
@@ -282,6 +288,7 @@ export const FilterPopUp: React.FC<FilterPopUpProps> = (props) => {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             setCheckInsurance(!checkInsurance);
             setCheckPrescription(false);
@@ -321,6 +328,7 @@ export const FilterPopUp: React.FC<FilterPopUpProps> = (props) => {
         <View style={styles.filterTitle}>
           <Text style={styles.headerView}>{'Filters'}</Text>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               clearAllFilter();
             }}
@@ -337,7 +345,8 @@ export const FilterPopUp: React.FC<FilterPopUpProps> = (props) => {
               flexDirection: 'column',
             }}
           >
-            {/* <TouchableOpacity
+            {/*  <TouchableOpacity 
+        activeOpacity={0.5}
               onPress={() => {
                 showSelectCategory(true);
                 showSelectType(false);
@@ -361,6 +370,7 @@ export const FilterPopUp: React.FC<FilterPopUpProps> = (props) => {
             </TouchableOpacity> */}
 
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 showSelectCategory(false);
                 showSelectType(true);
@@ -382,7 +392,8 @@ export const FilterPopUp: React.FC<FilterPopUpProps> = (props) => {
                 {'Type of Document'}
               </Text>
             </TouchableOpacity>
-            {/* <TouchableOpacity
+            {/*  <TouchableOpacity 
+        activeOpacity={0.5}
               onPress={() => {
                 showSelectCategory(false);
                 setSource(true);
@@ -432,12 +443,14 @@ export const FilterPopUp: React.FC<FilterPopUpProps> = (props) => {
                 {renderFilterItems()}
                 <View style={styles.stickyBottomComponentStyle}>
                   <TouchableOpacity
+                    activeOpacity={0.5}
                     style={{ marginBottom: 20 }}
                     onPress={() => props.onClickClose()}
                   >
                     <Text style={styles.commonBtnView}>{'CANCEL'}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
+                    activeOpacity={0.5}
                     style={{ marginBottom: 20 }}
                     onPress={() => {
                       onClickApplyFilter();

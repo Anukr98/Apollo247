@@ -105,7 +105,11 @@ export const LabTestsInfo: React.FC<LabTestsInfoProps> = (props) => {
                   </Text>
                   {!!isNewlyModified ? renderNewTag() : null}
                   {remainingItems > 0 && (
-                    <TouchableOpacity onPress={() => _onPressMore(order)} style={{ marginLeft: 2 }}>
+                    <TouchableOpacity
+                      activeOpacity={0.5}
+                      onPress={() => _onPressMore(order)}
+                      style={{ marginLeft: 2 }}
+                    >
                       <Text style={styles.moreText}>+ {remainingItems} MORE</Text>
                     </TouchableOpacity>
                   )}
@@ -129,7 +133,11 @@ export const LabTestsInfo: React.FC<LabTestsInfoProps> = (props) => {
               <Text style={[styles.testName]}>{nameFormater(items?.itemName, 'default')}</Text>
               {!!isNewlyModified ? renderNewTag() : null}
               {lineItems?.length - 1 == index && (
-                <TouchableOpacity onPress={() => _onPressLess(item)} style={{ marginLeft: 2 }}>
+                <TouchableOpacity
+                  activeOpacity={0.5}
+                  onPress={() => _onPressLess(item)}
+                  style={{ marginLeft: 2 }}
+                >
                   <Text style={styles.moreText}> LESS</Text>
                 </TouchableOpacity>
               )}

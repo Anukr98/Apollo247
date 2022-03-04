@@ -649,6 +649,7 @@ export const CowinRegistrationScreen: React.FC<CowinRegistrationScreenProps> = (
               REF ID : {beneficiaryReferenceId}
             </Text>
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 setShowOTPVerifiedAlert(false);
                 props.navigation.goBack();
@@ -728,7 +729,7 @@ export const CowinRegistrationScreen: React.FC<CowinRegistrationScreenProps> = (
 
           {
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               onPress={
                 showResentTimer
                   ? () => {}

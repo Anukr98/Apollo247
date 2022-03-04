@@ -477,6 +477,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           ]}
         >
           <TouchableOpacity
+            activeOpacity={0.5}
             style={[styles.previousItemInnerContainer]}
             onPress={() =>
               title === string.diagnostics.previousCharges
@@ -811,6 +812,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
               : string.diagnostics.addOrEditPassportText}
           </Text>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               setShowPassportModal(true);
             }}
@@ -861,6 +863,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   const renderInvoiceDownload = () => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={styles.downloadInvoice}
         onPress={() => props.onPressDownloadInvoice()}
       >

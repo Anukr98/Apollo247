@@ -34,6 +34,7 @@ export const CircleBenefitCouponDialog: React.FC<CircleBenefitCouponDialogProps>
           <View style={styles.headerContainer}>
             <Text style={styles.textHeader}>Free Consult </Text>
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => props.onDismiss()}
               style={{
                 height: 12,

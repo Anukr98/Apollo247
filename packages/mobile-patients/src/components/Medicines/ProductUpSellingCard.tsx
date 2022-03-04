@@ -134,7 +134,7 @@ export const ProductUpSellingCard: React.FC<Props> = ({
   );
 
   return (
-    <TouchableOpacity activeOpacity={1} style={[styles.card, containerStyle]} onPress={onPress}>
+    <TouchableOpacity activeOpacity={0.5} style={[styles.card, containerStyle]} onPress={onPress}>
       {renderImageAndTitle()}
       <Divider style={styles.divider} />
       {renderPriceAndAddToCartButton()}

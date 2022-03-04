@@ -153,7 +153,7 @@ export const LocationSearchPopup: React.FC<LocationSearchPopupProps> = (props) =
 
   return (
     <TouchableOpacity
-      activeOpacity={1}
+      activeOpacity={0.5}
       style={styles.containerStyle}
       onPress={() => {
         props.onClose && props.onClose();

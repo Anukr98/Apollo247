@@ -41,20 +41,29 @@ export const RescheduleCancelPopup: React.FC<RescheduleCancelProps> = (props) =>
   return (
     <View style={[styles.container, { top: statusBarHeight() + 15 }]}>
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={() => {
           closeModal();
         }}
       >
         <View style={styles.cancelMainView}>
           <View style={styles.cancelPopupView}>
-            <TouchableOpacity disabled={btnDisable} onPress={() => onPressRescheduleAppointment()}>
+            <TouchableOpacity
+              activeOpacity={0.5}
+              disabled={btnDisable}
+              onPress={() => onPressRescheduleAppointment()}
+            >
               <View style={styles.reschdeuleView}>
                 <Text style={[styles.cancelText, { color: btnTextColor }]}>
                   Reschedule Appointment
                 </Text>
               </View>
             </TouchableOpacity>
-            <TouchableOpacity disabled={btnDisable} onPress={() => onPressCancelAppointment()}>
+            <TouchableOpacity
+              activeOpacity={0.5}
+              disabled={btnDisable}
+              onPress={() => onPressCancelAppointment()}
+            >
               <View style={[styles.cancelViewStyles, { marginTop: 0 }]}>
                 <Text style={[styles.cancelText, { color: btnTextColor }]}>Cancel Appointment</Text>
                 {appointmentInfoText ? (

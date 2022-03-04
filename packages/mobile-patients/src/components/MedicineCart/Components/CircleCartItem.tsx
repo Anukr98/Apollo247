@@ -68,6 +68,7 @@ export const CircleCartItem: React.FC<CircleCartItemProps> = (props) => {
           </View>
           <View>
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 fireCirclePlanRemovedEvent(props?.currentPatient);
                 const circleSource = 'Cart(Pharma)';

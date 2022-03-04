@@ -56,7 +56,7 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
         }}
       >
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => {
             props.calendarType == CALENDAR_TYPE.WEEK
               ? weekViewRef.current && weekViewRef.current.getPreviousWeek()
@@ -83,7 +83,7 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
             <>
               {props.calendarType == CALENDAR_TYPE.WEEK ? (
                 <TouchableOpacity
-                  activeOpacity={1}
+                  activeOpacity={0.5}
                   onPress={() => {
                     setCalendarDate(props.date);
                     props.onCalendarTypeChanged && props.onCalendarTypeChanged(CALENDAR_TYPE.MONTH);
@@ -93,7 +93,7 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
                 </TouchableOpacity>
               ) : (
                 <TouchableOpacity
-                  activeOpacity={1}
+                  activeOpacity={0.5}
                   onPress={() => {
                     setCalendarDate(props.date);
                     props.onCalendarTypeChanged && props.onCalendarTypeChanged(CALENDAR_TYPE.WEEK);
@@ -106,7 +106,7 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
           )}
         </View>
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => {
             props.calendarType == CALENDAR_TYPE.WEEK
               ? weekViewRef.current && weekViewRef.current.getNextWeek()
@@ -224,7 +224,7 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
         };
     return (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={() => {
           if (!disabledCheck) {
             props.onPressDate(dayDate);

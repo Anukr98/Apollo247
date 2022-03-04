@@ -313,6 +313,7 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
           }}
         >
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => props.setdisplayoverlay(false)}
             style={{
               marginTop: Platform.OS === 'ios' ? 38 : 14,

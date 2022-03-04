@@ -37,7 +37,7 @@ const MyOrdersScreen: FC<MyOrdersScreenProps> = (props) => {
   const renderHeaderRightComponent = () => {
     return showHelpCTA ? (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         style={{ paddingLeft: 10 }}
         onPress={() => {
           onPressHelp();

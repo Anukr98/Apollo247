@@ -43,7 +43,7 @@ export const SavedCard: React.FC<SavedCardProps> = (props) => {
           <Text style={styles.name}>{cardInfo?.name_on_card || 'User'}</Text>
         </View>
         {!onAlert && (
-          <TouchableOpacity onPress={() => onPressDeleteCard?.()}>
+          <TouchableOpacity activeOpacity={0.5} onPress={() => onPressDeleteCard?.()}>
             <DeleteBlack />
           </TouchableOpacity>
         )}

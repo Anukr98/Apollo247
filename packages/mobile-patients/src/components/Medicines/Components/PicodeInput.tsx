@@ -17,7 +17,7 @@ export const PincodeInput: React.FC<PincodeInputProps> = (props) => {
   const renderHeader = () => {
     return (
       <View style={styles.header}>
-        <TouchableOpacity onPress={onPressBack}>
+        <TouchableOpacity activeOpacity={0.5} onPress={onPressBack}>
           <BackArrow />
         </TouchableOpacity>
         <Text style={styles.headerText}>Enter a pincode</Text>

@@ -101,6 +101,7 @@ export const DealsByBrandsSection: React.FC<DealsByBrandsProps> = (props) => {
     return (
       <View style={styles.categoryContainer}>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={id === selectedBrandID ? styles.selectedBrandStyles : {}}
           onPress={() =>
             discountPresent
@@ -147,7 +148,10 @@ export const DealsByBrandsSection: React.FC<DealsByBrandsProps> = (props) => {
     return (
       <View style={styles.hotSellersContainer}>
         <View style={styles.hotSellersBoxStyles}>
-          <TouchableOpacity onPress={() => onPressProduct(item?.url_key, item?.sku, movedFrom)}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            onPress={() => onPressProduct(item?.url_key, item?.sku, movedFrom)}
+          >
             {
               <View style={styles.squareContainer}>
                 {loading ? (
@@ -204,7 +208,11 @@ export const DealsByBrandsSection: React.FC<DealsByBrandsProps> = (props) => {
     const quantity = getItemQuantity(item.sku);
     return !quantity ? (
       <View style={{ paddingBottom: 10, paddingTop: 5 }}>
-        <TouchableOpacity style={styles.cartButtonStyle} onPress={() => onAddCartItem(item)}>
+        <TouchableOpacity
+          activeOpacity={0.5}
+          style={styles.cartButtonStyle}
+          onPress={() => onAddCartItem(item)}
+        >
           <Text style={styles.cartButtonTextStyle}>Add to Cart</Text>
         </TouchableOpacity>
       </View>

@@ -254,6 +254,7 @@ export const VaccineSiteDateSelector: React.FC<VaccineSiteDateSelectorProps> = (
 
             {availabilityInfo.availableState == AVAILABILTY.UNSELECTED ? (
               <TouchableOpacity
+                activeOpacity={0.5}
                 style={styles.siteRadioContainer}
                 onPress={() => {
                   let stripDataClone = [...dateStripList];
@@ -282,6 +283,7 @@ export const VaccineSiteDateSelector: React.FC<VaccineSiteDateSelectorProps> = (
 
             {availabilityInfo.availableState == AVAILABILTY.SELECTED ? (
               <TouchableOpacity
+                activeOpacity={0.5}
                 style={styles.siteRadioContainer}
                 onPress={() => {
                   availabilityInfo.availableState = AVAILABILTY.UNSELECTED;
@@ -313,6 +315,7 @@ export const VaccineSiteDateSelector: React.FC<VaccineSiteDateSelectorProps> = (
     return props.showFilterStrip ? (
       <View style={{ marginVertical: 16, flexDirection: 'row' }}>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={{ flexDirection: 'row' }}
           onPress={() => {
             props.onRetailChanged(false);
@@ -329,6 +332,7 @@ export const VaccineSiteDateSelector: React.FC<VaccineSiteDateSelectorProps> = (
         </TouchableOpacity>
 
         <TouchableOpacity
+          activeOpacity={0.5}
           style={{ flexDirection: 'row', marginLeft: 12 }}
           onPress={() => {
             props.onRetailChanged(true);
@@ -364,6 +368,7 @@ export const VaccineSiteDateSelector: React.FC<VaccineSiteDateSelectorProps> = (
             }}
           >
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 if (currentStripIndex < 3) {
                   setCurrentStripIndex(0);
@@ -395,6 +400,7 @@ export const VaccineSiteDateSelector: React.FC<VaccineSiteDateSelectorProps> = (
             />
           </View>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               if (currentStripIndex > dateStripList.length - 3) {
                 setCurrentStripIndex(dateStripList.length - 1);

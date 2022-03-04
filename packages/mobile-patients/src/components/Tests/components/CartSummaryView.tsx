@@ -477,7 +477,7 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
 
     return (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={() =>
           isAddedToCart ? onPressRemoveFromCart(selectedItem) : onPressAddToCart(selectedItem)
         }
@@ -505,7 +505,11 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
           </Text>
           <Text style={styles.perPersonText}>{string.diagnosticsCartPage.pricePerPerson}</Text>
         </View>
-        <TouchableOpacity onPress={() => _onPressShowLess()} style={styles.rowStyle}>
+        <TouchableOpacity
+          activeOpacity={0.5}
+          onPress={() => _onPressShowLess()}
+          style={styles.rowStyle}
+        >
           <Text style={styles.showLessText}>Show Less</Text>
           <BlackArrowDown style={styles.viewDetailsUpIcon} />
         </TouchableOpacity>
@@ -658,6 +662,7 @@ export const CartPageSummary: React.FC<CartPageSummaryProps> = (props) => {
 
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={[
           { marginLeft: 16 },
           source == 'recommendations' && styles.recommendationsOuterView,

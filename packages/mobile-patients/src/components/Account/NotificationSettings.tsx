@@ -223,11 +223,11 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = (props)
               <View style={styles.viewRowStyle}>
                 <Text style={styles.textStyle}>{item.title}</Text>
                 {item.value ? (
-                  <TouchableOpacity onPress={() => item.setValue(!item.value)}>
+                  <TouchableOpacity activeOpacity={0.5} onPress={() => item.setValue(!item.value)}>
                     <ToggleOn />
                   </TouchableOpacity>
                 ) : (
-                  <TouchableOpacity onPress={() => item.setValue(!item.value)}>
+                  <TouchableOpacity activeOpacity={0.5} onPress={() => item.setValue(!item.value)}>
                     <ToggleOff />
                   </TouchableOpacity>
                 )}

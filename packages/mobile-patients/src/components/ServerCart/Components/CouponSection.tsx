@@ -21,7 +21,11 @@ export const CouponSection: React.FC<CouponSectionProps> = (props) => {
   const renderApplyCoupon = () => {
     return (
       <View>
-        <TouchableOpacity style={styles.applyCoupon} onPress={onPressApplyCoupon}>
+        <TouchableOpacity
+          activeOpacity={0.5}
+          style={styles.applyCoupon}
+          onPress={onPressApplyCoupon}
+        >
           <View style={styles.rowStyle}>
             <CouponIcon style={{ alignSelf: 'flex-start' }} />
             <View>
@@ -57,7 +61,11 @@ export const CouponSection: React.FC<CouponSectionProps> = (props) => {
   const renderCouponApplied = () => {
     const couponDiscount = serverCartAmount?.couponSavings || 0;
     return (
-      <TouchableOpacity style={styles.couponApplied} onPress={onPressApplyCoupon}>
+      <TouchableOpacity
+        activeOpacity={0.5}
+        style={styles.couponApplied}
+        onPress={onPressApplyCoupon}
+      >
         <View style={styles.rowStyle}>
           <CouponIcon style={{ marginVertical: 10 }} />
           <View style={styles.couponMessageContainer}>
@@ -69,7 +77,7 @@ export const CouponSection: React.FC<CouponSectionProps> = (props) => {
             {renderCouponMsg()}
           </View>
         </View>
-        <TouchableOpacity style={{ marginTop: 10 }} onPress={onPressRemove}>
+        <TouchableOpacity activeOpacity={0.5} style={{ marginTop: 10 }} onPress={onPressRemove}>
           <Cross />
         </TouchableOpacity>
       </TouchableOpacity>

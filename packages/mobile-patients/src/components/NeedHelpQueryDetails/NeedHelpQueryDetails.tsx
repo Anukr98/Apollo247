@@ -761,6 +761,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
 
         <View style={styles.flatListContainer}>
           <TouchableOpacity
+            activeOpacity={0.5}
             style={styles.titleView}
             onPress={() => {
               setSelectedQueryId(navigation.state.params?.queryIdLevel2 || '');
@@ -956,6 +957,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           <View style={styles.flatListContainer2}>
             <Text style={styles.flatListItem}>{showMessage(true)}</Text>
             <TouchableOpacity
+              activeOpacity={0.5}
               style={styles.trackStyle}
               onPress={() => {
                 navigation.navigate(AppRoutes.OrderDetailsScene, {
@@ -968,6 +970,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           </View>
           <View style={styles.flatListContainer2}>
             <TouchableOpacity
+              activeOpacity={0.5}
               style={{ flexDirection: 'row', justifyContent: 'space-between' }}
               onPress={() => {
                 setRaiseOrderDelayQuery(true);
@@ -985,6 +988,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           <View style={styles.flatListContainer2}>
             <Text style={styles.flatListItem}>{showMessage(false)}</Text>
             <TouchableOpacity
+              activeOpacity={0.5}
               style={styles.trackStyle}
               onPress={() => {
                 navigation.navigate(AppRoutes.OrderDetailsScene, {
@@ -1012,6 +1016,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         </View>
         <View style={styles.flatListContainer2}>
           <TouchableOpacity
+            activeOpacity={0.5}
             style={{ flexDirection: 'row', justifyContent: 'space-between' }}
             onPress={() => {
               setDiagnosticTATQuery(!diagnosticTATQuery);

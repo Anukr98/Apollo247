@@ -31,6 +31,7 @@ export const ConsultPatientSelector: React.FC<ConsultPatientSelectorProps> = (pr
     const isSelected = selectedPatient?.id == item.id;
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={() => setSelectedPatient(item)}
         style={isSelected ? styles.selectedPatientRow : styles.patientRow}
       >
@@ -68,12 +69,14 @@ export const ConsultPatientSelector: React.FC<ConsultPatientSelectorProps> = (pr
       onDismiss={() => {}}
     >
       <TouchableOpacity
+        activeOpacity={0.5}
         style={styles.parentOverlay}
         onPress={() => {
           props.onOutboundClicked();
         }}
       >
         <TouchableOpacity
+          activeOpacity={0.5}
           style={{ alignSelf: 'flex-end' }}
           onPress={() => {
             props.onCloseClicked();

@@ -294,7 +294,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
             }}
           >
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               onPress={() => {
                 props.navigation.navigate(
                   diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.ServerCart
@@ -404,7 +404,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     const enableSearchEnterBtn = searchText.length > 2;
     const rigthIconView = (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         style={{
           opacity: enableSearchEnterBtn ? 1 : 0.4,
         }}
@@ -853,7 +853,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     return (
       (medicineList.length || searchSate == 'load' || isNoResultsFound) && (
         <View style={overlayStyle}>
-          <TouchableOpacity activeOpacity={1} style={overlayStyle} onPress={resetSearchState} />
+          <TouchableOpacity activeOpacity={0.5} style={overlayStyle} onPress={resetSearchState} />
         </View>
       )
     );

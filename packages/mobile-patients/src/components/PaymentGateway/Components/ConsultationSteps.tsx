@@ -67,7 +67,7 @@ export const ConsultationSteps: React.FC<ConsultationStepsProps> = (props) => {
 
   const renderViewinPdf = () => {
     return (
-      <TouchableOpacity onPress={showPdf} style={styles.pdfView}>
+      <TouchableOpacity activeOpacity={0.5} onPress={showPdf} style={styles.pdfView}>
         <Pdf style={styles.pdfIcon} />
         <Text style={theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE)}>
           {string.consultPayment.viewGuideline}

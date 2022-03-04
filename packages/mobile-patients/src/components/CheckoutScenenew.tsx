@@ -1217,7 +1217,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     return (
       <View style={careStyle.careSavingsContainer}>
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => {
             setShowCareDetails(!showCareDetails);
           }}
@@ -1296,6 +1296,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         </Text>
         <View style={{ ...styles.border }}></View>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             if (isOneApolloSelected) {
               setisOneApolloSelected(false);
@@ -1368,6 +1369,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           showsHorizontalScrollIndicator={false}
           renderItem={({ item }) => (
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 if (!HCorder) {
                   setCashOnDelivery(false);
@@ -1440,6 +1442,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               showsHorizontalScrollIndicator={false}
               renderItem={({ item }) => (
                 <TouchableOpacity
+                  activeOpacity={0.5}
                   onPress={() => {
                     setCashOnDelivery(false);
                     validateCouponAndInitiateOrder(item?.paymentMode, item?.bankCode, false, false);
@@ -1478,6 +1481,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           </View>
           <View style={{ flex: 0.35, flexDirection: 'row' }}>
             <TouchableOpacity
+              activeOpacity={0.5}
               style={{
                 flex: 0.3,
                 justifyContent: 'center',

@@ -148,9 +148,9 @@ const styles = StyleSheet.create({
     marginLeft: 3,
   },
   tickIcon: {
-    height: 8, 
-    width: 8, 
-    marginEnd: 4
+    height: 8,
+    width: 8,
+    marginEnd: 4,
   },
 });
 
@@ -210,13 +210,16 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
             style={[
               styles.carePrice,
               {
-                textDecorationLine: showCircleSubscribed &&
-                (!cashbackEnabled || !isOnlineSelected) ? 'line-through' : 'none',
+                textDecorationLine:
+                  showCircleSubscribed && (!cashbackEnabled || !isOnlineSelected)
+                    ? 'line-through'
+                    : 'none',
                 ...theme.viewStyles.text(
                   'M',
                   15,
-                  showCircleSubscribed && (!cashbackEnabled || !isOnlineSelected) ?
-                   theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
+                  showCircleSubscribed && (!cashbackEnabled || !isOnlineSelected)
+                    ? theme.colors.BORDER_BOTTOM_COLOR
+                    : theme.colors.LIGHT_BLUE
                 ),
               },
             ]}
@@ -227,15 +230,23 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
             )}
           </Text>
           <View style={styles.rowContainer}>
-            {showCircleSubscribed ? !isOnlineSelected ? (
-              <CircleLogo style={styles.careLogo} /> 
-            ) : cashbackEnabled ? <Tick style={styles.tickIcon} /> : 
-            <CircleLogo style={styles.careLogo} /> : null}
+            {showCircleSubscribed ? (
+              !isOnlineSelected ? (
+                <CircleLogo style={styles.careLogo} />
+              ) : cashbackEnabled ? (
+                <Tick style={styles.tickIcon} />
+              ) : (
+                <CircleLogo style={styles.careLogo} />
+              )
+            ) : null}
             {/* {showCircleSubscribed ? <CircleLogo style={styles.careLogo} /> : null} */}
             <Text style={styles.careDiscountedPrice}>
-            {cashbackEnabled && isOnlineSelected ? `Upto ${cashbackAmount} HC` :
-              string.common.Rs + convertNumberToDecimal(
-              isOnlineSelected ? onlineConsultSlashedPrice : physicalConsultSlashedPrice)}
+              {cashbackEnabled && isOnlineSelected
+                ? `Upto ${cashbackAmount} HC`
+                : string.common.Rs +
+                  convertNumberToDecimal(
+                    isOnlineSelected ? onlineConsultSlashedPrice : physicalConsultSlashedPrice
+                  )}
             </Text>
           </View>
         </View>
@@ -287,7 +298,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
           </View>
           {!showCircleSubscribed && showCirclePricing ? (
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               onPress={() => openCircleWebView()}
               style={[
                 styles.row,
@@ -309,25 +320,27 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
               <InfoBlue style={styles.infoIcon} />
             </TouchableOpacity>
           ) : null}
-          {showCircleSubscribed && isOnlineSelected && cashbackEnabled &&
-            <View style={[
-              styles.row,
-              {
-                marginTop:
-                  heading === string.consultType.online.heading
-                    ? isTomorrow
-                      ? -16
-                      : -22
-                    : isTomorrow
-                    ? -23
-                    : -29,
-              },
-            ]}>
+          {showCircleSubscribed && isOnlineSelected && cashbackEnabled && (
+            <View
+              style={[
+                styles.row,
+                {
+                  marginTop:
+                    heading === string.consultType.online.heading
+                      ? isTomorrow
+                        ? -16
+                        : -22
+                      : isTomorrow
+                      ? -23
+                      : -29,
+                },
+              ]}
+            >
               <Text style={styles.smallRightAlignText}>as a</Text>
               <CircleLogo style={styles.careLogo} />
               <Text style={[styles.smallRightAlignText, { marginLeft: 0 }]}>members</Text>
             </View>
-          }
+          )}
         </View>
 
         <View style={styles.stepsMainContainer}>

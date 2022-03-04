@@ -33,7 +33,7 @@ import Permissions from 'react-native-permissions';
 import {
   PhrCameraIcon,
   DeleteIconWhite,
-  WhiteTickIcon
+  WhiteTickIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
 
@@ -76,7 +76,7 @@ export const PrescriptionCamera: React.FC<PrescriptionCameraProps> = (props) => 
   useEffect(() => {
     setLoading?.(false);
     setPhotoBase64(responseData?.[0]?.base64);
-    clickPhoto()
+    clickPhoto();
   }, []);
 
   const client = useApolloClient();
@@ -92,12 +92,17 @@ export const PrescriptionCamera: React.FC<PrescriptionCameraProps> = (props) => 
     return (
       !!photoBase64 && (
         <View style={styles.cameraActionContainer}>
-          <TouchableOpacity style={styles.cameraActionButton} onPress={() => removeClickedPhoto()}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            style={styles.cameraActionButton}
+            onPress={() => removeClickedPhoto()}
+          >
             <DeleteIconWhite style={styles.deleteIcon} />
           </TouchableOpacity>
           <TouchableOpacity
+            activeOpacity={0.5}
             style={styles.cameraActionButton}
-            onPress={ () => {
+            onPress={() => {
               props.navigation.navigate(AppRoutes.SubmittedPrescription, {
                 type: 'Camera',
                 phyPrescriptionsProp: [...phyPrescriptionUploaded, ...imageClickData],
@@ -112,7 +117,7 @@ export const PrescriptionCamera: React.FC<PrescriptionCameraProps> = (props) => 
       )
     );
   };
-  
+
   const clickPhoto = async () => {
     try {
       const options = { quality: 0.5, base64: true, pauseAfterCapture: true };
@@ -155,7 +160,6 @@ export const PrescriptionCamera: React.FC<PrescriptionCameraProps> = (props) => 
     </View>
   );
 };
-
 
 const styles = StyleSheet.create({
   cameraView: {

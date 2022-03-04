@@ -15,6 +15,7 @@ export const WhatsappRedirectionBanner = () => {
   return (
     <View style={styles.container}>
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={() => {
           Linking.openURL(`https://api.whatsapp.com/send/?text=${message}&phone=91${phoneNumber}`);
         }}

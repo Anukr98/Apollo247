@@ -13,7 +13,7 @@ export const ClinicalDocumentScreen: React.FC<ClinicalDocumentScreenProps> = (pr
 
   const renderProfileImage = () => {
     return (
-      <TouchableOpacity activeOpacity={1} onPress={() => props.navigation.goBack()}>
+      <TouchableOpacity activeOpacity={0.5} onPress={() => props.navigation.goBack()}>
         {currentPatient?.photoUrl?.match(
           /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/
         ) ? (

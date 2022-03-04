@@ -152,6 +152,7 @@ const UserNameWith: React.FC<{
           </View>
           {!editName ? (
             <TouchableOpacity
+              activeOpacity={0.5}
               hitSlop={{ top: 10, left: 10, bottom: 10, right: 10 }}
               onPress={() => {
                 setEditName(true);
@@ -165,6 +166,7 @@ const UserNameWith: React.FC<{
                 <ActivityIndicator />
               ) : (
                 <TouchableOpacity
+                  activeOpacity={0.5}
                   onPress={() => {
                     Keyboard.dismiss();
                     validateUserDetails('userName');

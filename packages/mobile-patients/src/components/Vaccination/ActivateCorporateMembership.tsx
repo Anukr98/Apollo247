@@ -217,7 +217,7 @@ export const ActivateCorporateMembership: React.FC<ActivateCorporateMembershipPr
   const rightIcon = () => {
     return isOTPSent ? (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={() => {
           setOTPSent(false);
         }}
@@ -242,6 +242,7 @@ export const ActivateCorporateMembership: React.FC<ActivateCorporateMembershipPr
       <Text style={styles.otpSentToMail}>OTP will be sent to this email id</Text>
       {!isOTPSent ? (
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             if (isSatisfyingEmailRegex(email)) {
               setEmail(email);
@@ -272,6 +273,7 @@ export const ActivateCorporateMembership: React.FC<ActivateCorporateMembershipPr
           maxLength={6}
         />
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             if (isOtpValid(otp)) {
               verifyCorporateEmailOTPAndSubscribe(otp);

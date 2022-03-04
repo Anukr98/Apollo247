@@ -303,6 +303,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = (props) => {
   const renderCurrentLocationView = () => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={styles.currentLocationContainer}
         onPress={onPressCurrentLocation}
         disabled={isCurrentLocationDisable}
@@ -357,7 +358,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = (props) => {
 
   const renderLocationView = (item: any, index: number | string, locationSuggestion: any) => {
     return (
-      <TouchableOpacity activeOpacity={1} onPress={() => onPressLocation(item)}>
+      <TouchableOpacity activeOpacity={0.5} onPress={() => onPressLocation(item)}>
         <View style={styles.locationRowOuterContainer}>
           {/**height: screenHeight/12.5 */}
           <View style={styles.locationRowInnerContainer}>

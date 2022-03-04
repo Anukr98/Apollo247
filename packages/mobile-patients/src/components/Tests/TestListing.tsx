@@ -405,7 +405,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
             inclusionData: _widget?.inclusionData || _diagItems?.inclusions,
             inclusions: _widget?.diagnosticInclusions,
             observations: _widget?.observations,
-            imageUrl: _widget?.imageUrl
+            imageUrl: _widget?.imageUrl,
           });
         }
       });
@@ -558,6 +558,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   const renderLoadAll = (source?: string, length?: number) => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={styles.loadAllView}
         onPress={() => {
           if (source == 'packages' && length) {
@@ -622,7 +623,10 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
             {!!packageItemsArray && packageItemsArray?.length > 0 && (
               <>
                 <Text style={styles.headingText}>
-                  {nameFormater(deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle || widgetName, 'upper')}{' '}
+                  {nameFormater(
+                    deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle || widgetName,
+                    'upper'
+                  )}{' '}
                   PACKAGES{' '}
                   {!!getActualPricePackages && getActualPricePackages?.length > 0 && (
                     <Text style={styles.itemCountText}>
@@ -664,7 +668,10 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
             {!!testItemsArray && testItemsArray?.length > 0 && (
               <>
                 <Text style={styles.headingText}>
-                  {nameFormater(deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle || widgetName, 'upper')}{' '}
+                  {nameFormater(
+                    deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle || widgetName,
+                    'upper'
+                  )}{' '}
                   TESTS{' '}
                   {!!getActualPriceTests && getActualPriceTests?.length > 0 && (
                     <Text style={styles.itemCountText}>

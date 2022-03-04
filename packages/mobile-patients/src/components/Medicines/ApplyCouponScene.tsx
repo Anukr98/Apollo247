@@ -271,7 +271,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
         !couponError && (
           <View style={{ opacity: isEnableApplyBtn ? 1 : 0.5 }}>
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               disabled={!isEnableApplyBtn}
               onPress={() => applyCoupon(couponText, cartItems)}
             >
@@ -337,7 +337,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
   const renderRadioButtonList = () => {
     return couponList.map((coupon, i) => (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         style={styles.radioButtonContainer}
         key={i}
         onPress={() => {

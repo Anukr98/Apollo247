@@ -26,7 +26,7 @@ export const PhysicalPrescriptionCard: React.FC<PhysicalPrescriptionCardProps> =
   const { arrayLength, i, item, onRemove, showTick } = props;
   return (
     <View key={i} style={{}}>
-      <TouchableOpacity activeOpacity={1} key={i} onPress={() => {}}>
+      <TouchableOpacity activeOpacity={0.5} key={i} onPress={() => {}}>
         <View
           style={{
             ...styles.card,
@@ -63,7 +63,7 @@ export const PhysicalPrescriptionCard: React.FC<PhysicalPrescriptionCardProps> =
             />
           )}
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             style={{
               width: 40,
               paddingHorizontal: 8,

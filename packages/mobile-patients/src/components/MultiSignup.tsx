@@ -411,6 +411,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
         </View>
         <View style={styles.stickyButtonContainer}>
           <TouchableOpacity
+            activeOpacity={0.5}
             style={styles.addProfileBtnContainer}
             onPress={() => {
               AsyncStorage.setItem('preApolloUser', 'true');
@@ -532,6 +533,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const renderUserItem = (item: any, index: number) => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={() => setUserSelected(item.id)}
         style={[
           styles.itemMainContainer,

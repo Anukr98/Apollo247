@@ -448,7 +448,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           }}
         >
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             onPress={() => {
               props.setdisplayoverlay(false);
             }}

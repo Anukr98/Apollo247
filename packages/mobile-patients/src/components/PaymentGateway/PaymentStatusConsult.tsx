@@ -377,6 +377,7 @@ export const PaymentStatusConsult: React.FC<PaymentStatusConsultProps> = (props)
             <View style={styles.locationSubView}>
               <Text style={styles.currentLocationText}>Current Location</Text>
               <TouchableOpacity
+                activeOpacity={0.5}
                 onPress={() => {
                   setShowLocationPopup(false);
                   // locationWebEngageEvent(undefined, 'Manual entry');

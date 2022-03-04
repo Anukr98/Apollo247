@@ -72,6 +72,7 @@ export const UPIPayments: React.FC<UPIPaymentsProps> = (props) => {
     const outageStatus = item?.item?.outage_list?.[0]?.outage_status;
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={{
           ...styles.AppCont,
           marginLeft: marginLeft,
@@ -113,7 +114,7 @@ export const UPIPayments: React.FC<UPIPaymentsProps> = (props) => {
   const renderMoreApps = () => {
     return upiApps?.length > 3 ? (
       <View style={{ ...styles.AppCont, marginLeft: (newWidth - 256) * 0.33 }}>
-        <TouchableOpacity style={styles.imageCont} onPress={onPressMoreApps}>
+        <TouchableOpacity activeOpacity={0.5} style={styles.imageCont} onPress={onPressMoreApps}>
           <BlackArrowUp style={{ width: 15, height: 7, transform: [{ rotate: '90deg' }] }} />
         </TouchableOpacity>
         <Text style={styles.App}>More Apps</Text>
@@ -123,7 +124,7 @@ export const UPIPayments: React.FC<UPIPaymentsProps> = (props) => {
 
   const renderUPICollect = () => {
     return (
-      <TouchableOpacity style={styles.upiCont} onPress={onPressUpiCollect}>
+      <TouchableOpacity activeOpacity={0.5} style={styles.upiCont} onPress={onPressUpiCollect}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <UPI style={styles.icon} />
           <Text style={styles.UPIHeader}>Pay with UPI ID</Text>

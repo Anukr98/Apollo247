@@ -146,7 +146,7 @@ export const MultiSelectPatientListOverlay: React.FC<MultiSelectPatientListOverl
     ];
     return item?.id === '+ADD MEMBER' ? null : (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         style={itemViewStyle}
         onPress={() => (disabledPatientTextStyle || isMinorAge ? null : _onPressPatient(item))}
       >
@@ -183,7 +183,11 @@ export const MultiSelectPatientListOverlay: React.FC<MultiSelectPatientListOverl
     return (
       props.showCloseIcon && (
         <View style={{ alignSelf: 'flex-end' }}>
-          <TouchableOpacity style={styles.crossIconTouch} onPress={props.onCloseIconPress}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            style={styles.crossIconTouch}
+            onPress={props.onCloseIconPress}
+          >
             <CrossPopup style={styles.crossIconStyle} />
           </TouchableOpacity>
         </View>
@@ -281,6 +285,7 @@ export const MultiSelectPatientListOverlay: React.FC<MultiSelectPatientListOverl
     >
       <View style={{ flex: 1 }}>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={{ flex: 1 }}
           onPress={() => (patientSelected?.id ? onPressClose() : {})}
         />

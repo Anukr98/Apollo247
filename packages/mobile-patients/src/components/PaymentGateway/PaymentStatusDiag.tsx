@@ -479,6 +479,7 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
     return (
       <View style={styles.orderSummaryView}>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={styles.orderSummaryTouch}
           onPress={() => navigateToOrderDetails(true, orderDetails?.orderId!)}
         >

@@ -43,6 +43,7 @@ export const FaqComponent: React.FC<FaqComponentProps> = (props) => {
     const isLastFaq = faqContent.length === index + 1;
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={[
           styles.faq,
           {
@@ -84,7 +85,7 @@ export const FaqComponent: React.FC<FaqComponentProps> = (props) => {
     <View style={styles.cardStyle}>
       <View style={styles.flexRow}>
         <Text style={styles.subHeading}>FAQs</Text>
-        <TouchableOpacity onPress={() => returnFaqs(true)}>
+        <TouchableOpacity activeOpacity={0.5} onPress={() => returnFaqs(true)}>
           <Text style={styles.subHeading}>Expand all</Text>
         </TouchableOpacity>
       </View>

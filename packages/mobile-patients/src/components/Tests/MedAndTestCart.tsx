@@ -94,7 +94,7 @@ export const MedAndTestCart: React.FC<MedAndTestCartProps> = (props) => {
         {arrayTest.map((serviceTitle, i) => (
           <View key={i} style={{}}>
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               key={i}
               onPress={() => {
                 props.navigation.navigate(i == 0 ? AppRoutes.ServerCart : AppRoutes.AddPatients, {

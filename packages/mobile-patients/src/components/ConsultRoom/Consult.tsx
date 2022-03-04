@@ -987,7 +987,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           >
             {cancelConsulations ? null : (
               <TouchableOpacity
-                activeOpacity={1}
+                activeOpacity={0.5}
                 style={styles.viewDetailContainer}
                 onPress={() => {
                   onPressPastAppointmentViewDetails();
@@ -1007,7 +1007,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               </TouchableOpacity>
             )}
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               style={styles.bookAgainView}
               onPress={() => {
                 setAppoinmentItem(item);
@@ -1168,8 +1168,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           >
             {isPrescAvailable && (
               <TouchableOpacity
+                activeOpacity={0.5}
                 style={styles.prescriptionView}
-                activeOpacity={1}
                 onPress={() => onViewPrescriptionClick(item)}
               >
                 <Text style={{ ...styles.prepareForConsult, color: theme.colors.APP_YELLOW }}>
@@ -1178,8 +1178,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               </TouchableOpacity>
             )}
             <TouchableOpacity
+              activeOpacity={0.5}
               style={styles.textConsultView}
-              activeOpacity={1}
               onPress={onPressTextConsult}
             >
               <Text style={{ ...styles.prepareForConsult, color: theme.colors.APP_YELLOW }}>
@@ -1195,7 +1195,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       return (
         <View style={styles.completedConsultViewStyle}>
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             onPress={() => {
               setAppoinmentItem(item);
 
@@ -1228,7 +1228,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             onPress={() => {
               CommonLogEvent(AppRoutes.Consult, 'Prepare for Consult clicked');
               props.navigation.navigate(AppRoutes.DoctorDetails, {
@@ -1298,7 +1298,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         return (
           <View style={styles.viewDetailBtn}>
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               style={styles.bookAgainView}
               onPress={() => {
                 props.navigation.navigate(AppRoutes.AppointmentDetailsPhysical, {
@@ -1322,7 +1322,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             <Text style={styles.fillVitalsForConsult}>{getConsultationSubTexts()}</Text>
             <View style={styles.consultStartedView}>
               <TouchableOpacity
-                activeOpacity={1}
+                activeOpacity={0.5}
                 style={styles.consultStartedBtn}
                 onPress={() => onPressActiveUpcomingButtons(textItem)}
               >
@@ -1357,8 +1357,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             </Text>
           </View>
           <TouchableOpacity
+            activeOpacity={0.5}
             style={styles.anotherSlotBtn}
-            activeOpacity={1}
             onPress={onPressPickAnotherSlot}
           >
             <Text style={styles.prepareForConsult}>PICK ANOTHER SLOT</Text>
@@ -1390,11 +1390,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
     return (
       <View>
-        <TouchableOpacity
-          activeOpacity={1}
-          style={styles.doctorView}
-          onPress={onPressDoctorCardClick}
-        >
+        <TouchableOpacity style={styles.doctorView} onPress={onPressDoctorCardClick}>
           <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
             <View style={{ flexDirection: 'row' }}>
               <Text
@@ -1502,6 +1498,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     } else if (totalApptCount && allAppointments.length != totalApptCount) {
       return (
         <TouchableOpacity
+          activeOpacity={0.5}
           style={styles.prevApptView}
           onPress={() => {
             setLoading(true);
@@ -1522,7 +1519,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     if (id) {
       return (
         <View style={styles.listHeader}>
-          <TouchableOpacity onPress={() => selectPatient('ALL')} style={styles.patientNameView}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            onPress={() => selectPatient('ALL')}
+            style={styles.patientNameView}
+          >
             <Text style={styles.patientNameText}>{firstName + ' ' + lastName}</Text>
             <Close style={styles.crossIcon} />
           </TouchableOpacity>
@@ -1616,7 +1617,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     return (
       <View style={styles.patientHeaderView}>
         <Text style={styles.allApptText}>All Appointments</Text>
-        <TouchableOpacity onPress={() => setShowFilter(true)}>
+        <TouchableOpacity activeOpacity={0.5} onPress={() => setShowFilter(true)}>
           <Text style={styles.selectPatientText}>Select Patient</Text>
         </TouchableOpacity>
       </View>
@@ -1688,6 +1689,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
+              activeOpacity={0.5}
               style={styles.gotItStyles}
               onPress={() => {
                 CommonLogEvent(AppRoutes.Consult, 'Consult Bootom PopUp clicked');
@@ -1775,6 +1777,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             </View>
             <View style={{ height: 60, alignItems: 'flex-end' }}>
               <TouchableOpacity
+                activeOpacity={0.5}
                 style={styles.gotItStyles}
                 onPress={() => {
                   setTransferfollowup(false);
@@ -1863,6 +1866,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             </View>
             <View style={{ height: 60, alignItems: 'flex-end' }}>
               <TouchableOpacity
+                activeOpacity={0.5}
                 style={styles.gotItStyles}
                 onPress={() => {
                   setFollowupDone(false);

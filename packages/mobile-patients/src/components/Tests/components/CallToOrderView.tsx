@@ -88,6 +88,7 @@ export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
       <View style={[styles.container, containerStyle]}>
         {!slideCallToOrder ? (
           <TouchableOpacity
+            activeOpacity={0.5}
             style={[
               styles.fullView,
               {
@@ -115,6 +116,7 @@ export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
+            activeOpacity={0.5}
             style={[
               styles.smallView,
               {
@@ -132,7 +134,7 @@ export const CallToOrderView: React.FC<CallToOrderViewProps> = (props) => {
         )}
         <View style={styles.blueCrossView}>
           {!slideCallToOrder ? (
-            <TouchableOpacity onPress={onPressCross}>
+            <TouchableOpacity activeOpacity={0.5} onPress={onPressCross}>
               <BlueCross style={styles.blueCrossIcon} />
             </TouchableOpacity>
           ) : null}

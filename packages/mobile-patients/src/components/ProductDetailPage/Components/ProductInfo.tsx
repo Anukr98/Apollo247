@@ -85,7 +85,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
 
   const renderShowMore = () => {
     return (
-      <TouchableOpacity onPress={() => setShowAllContent(!showAllContent)}>
+      <TouchableOpacity activeOpacity={0.5} onPress={() => setShowAllContent(!showAllContent)}>
         <Text style={styles.showMoreText}>{showAllContent ? `SHOW LESS` : `SHOW MORE`}</Text>
       </TouchableOpacity>
     );

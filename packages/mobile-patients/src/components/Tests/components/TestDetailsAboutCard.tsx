@@ -76,8 +76,8 @@ export const TestDetailsAboutCard: React.FC<TestDetailsAboutCardProps> = (props)
         </View>
         {!readMore && renderSkuSpecificDetails()}
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => props.onPressReadMore()}
-          activeOpacity={1}
           style={styles.readMoreTouch}
         >
           <Text style={styles.readMoreText}>

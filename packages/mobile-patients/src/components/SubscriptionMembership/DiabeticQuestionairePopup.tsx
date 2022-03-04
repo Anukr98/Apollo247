@@ -148,7 +148,7 @@ export const DiabeticQuestionairePopup: React.FC<DiabeticQuestionairePopupProps>
     return (
       <View style={{ width: '50%', marginTop: 10 }}>
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => onPressRadioButton(item, index)}
           style={{ flexDirection: 'row' }}
         >
@@ -193,6 +193,7 @@ export const DiabeticQuestionairePopup: React.FC<DiabeticQuestionairePopupProps>
               <Text style={styles.headingText}>{props.heading}</Text>
             </View>
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 props.onClose();
               }}

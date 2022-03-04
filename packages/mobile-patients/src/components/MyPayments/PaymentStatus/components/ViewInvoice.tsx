@@ -120,10 +120,14 @@ const ViewInvoice: FC<ViewInvoiceProps> = (props) => {
   return status === SUCCESS && paymentFor === 'consult' ? (
     <View>
       <View style={styles.viewInvoice}>
-        <TouchableOpacity onPress={() => downloadInvoice()} style={styles.mainContainer}>
+        <TouchableOpacity
+          activeOpacity={0.5}
+          onPress={() => downloadInvoice()}
+          style={styles.mainContainer}
+        >
           {textComponent('VIEW INVOICE', undefined, theme.colors.APP_YELLOW, false)}
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => setshowEmailInput(!showEmailInput)}>
+        <TouchableOpacity activeOpacity={0.5} onPress={() => setshowEmailInput(!showEmailInput)}>
           {textComponent(
             'EMAIL INVOICE',
             undefined,

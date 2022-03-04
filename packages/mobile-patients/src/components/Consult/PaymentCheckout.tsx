@@ -442,7 +442,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       for (let couponObj of couponList) {
         const { coupon } = couponObj || {};
         const couponStatus: any = await validateCoupon(coupon, true);
-       
+
         if (couponStatus?.applied) break;
       }
       setLoading && setLoading(false);
@@ -563,6 +563,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       {patientProfiles?.map((item: any, index: any, array: any) =>
         item.firstName !== '+ADD MEMBER' ? (
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               setLoading && setLoading(true);
               onSelectedProfile(item);

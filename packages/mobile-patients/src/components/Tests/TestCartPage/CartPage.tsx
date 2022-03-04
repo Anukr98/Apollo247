@@ -263,17 +263,17 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 
   const checkCartForRecommendation = () => {
     setLoading?.(true);
-      const patientId = patientCartItems?.[0]?.patientId; // for group recommandation only
-      const groupItemPresentArr = patientCartItems?.[0]?.cartItems?.filter((item) => {
-        //checking the presence if group recommendation Item in the cart
-        return groupRecommendations?.[0]?.itemId == Number(item?.id);
-      });
-      if (groupItemPresentArr?.length == 1) {
-        _onPressRemoveCartItem(groupItemPresentArr?.[0], [], true);
-        addPatientCartItem?.(patientId, cartItems!);
-      }
-      setLoading?.(false)
-  }
+    const patientId = patientCartItems?.[0]?.patientId; // for group recommandation only
+    const groupItemPresentArr = patientCartItems?.[0]?.cartItems?.filter((item) => {
+      //checking the presence if group recommendation Item in the cart
+      return groupRecommendations?.[0]?.itemId == Number(item?.id);
+    });
+    if (groupItemPresentArr?.length == 1) {
+      _onPressRemoveCartItem(groupItemPresentArr?.[0], [], true);
+      addPatientCartItem?.(patientId, cartItems!);
+    }
+    setLoading?.(false);
+  };
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setIsFocused(true);
@@ -283,7 +283,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       setIsFocused(false);
       // to remove group recommendation item from the cart
       if (payload?.action?.routeName != AppRoutes.AddressSlotSelection) {
-        checkCartForRecommendation()
+        checkCartForRecommendation();
       }
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     });
@@ -373,8 +373,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     } else if (isCartPresent?.length == 0) {
       props.navigation.navigate('TESTS', { focusSearch: true });
     } else {
-        checkCartForRecommendation()
-        props.navigation.goBack();
+      checkCartForRecommendation();
+      props.navigation.goBack();
     }
 
     return true;
@@ -1234,7 +1234,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       return groupRecommendations?.[0]?.itemId == Number(item?.id);
     });
     if (groupItemPresentArr?.length == 1) {
-      _onPressRemoveCartItem(groupItemPresentArr?.[0], [],true);
+      _onPressRemoveCartItem(groupItemPresentArr?.[0], [], true);
       addPatientCartItem?.(patientId, cartItems!);
     }
     props.navigation.navigate('TESTS', { focusSearch: false });
@@ -1281,7 +1281,11 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     );
   };
 
-  const onRemoveCartItem = ({ id, name }: DiagnosticsCartItem, patientId: string, isUndo: boolean) => {
+  const onRemoveCartItem = (
+    { id, name }: DiagnosticsCartItem,
+    patientId: string,
+    isUndo: boolean
+  ) => {
     // check if patient cartItems has the removed item. If it does, then don't remove it from the overall.
     const getSelectedItemInCart = checkIsItemRemovedFromAll(patientCartItems, id);
     removePatientCartItem?.(patientId, id);
@@ -1459,9 +1463,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           data={groupRecommendations?.[0]}
           showRecommedation={openRecommedations}
           onPressAdd={() => {
-            const originalIds = cartItems?.map((item)=>{
-              return item?.id
-            })
+            const originalIds = cartItems?.map((item) => {
+              return item?.id;
+            });
             DiagnosticAddToCartEvent(
               groupItem?.itemName,
               `${groupItem?.itemId}`,
@@ -1474,7 +1478,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
               isDiagnosticCircleSubscription,
               originalIds
             );
-            _onPressProceed(patientId, grpItem)
+            _onPressProceed(patientId, grpItem);
           }}
           showPrice={Number(priceDiff?.toFixed())}
           showAddButton={true}
@@ -1482,7 +1486,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           priceDiff={priceDiff}
           cartValue={grandTotal}
           groupRecommendations={groupRecommendations}
-          onPressArrow={()=>{
+          onPressArrow={() => {
             setOpenRecommedations(!openRecommedations);
           }}
         />
@@ -1557,6 +1561,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     return (
       <View style={[styles.previousView, { paddingBottom: showAllPreviousItems ? 16 : 12 }]}>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => setShowAllPreviousItems(!showAllPreviousItems)}
           style={styles.previousContainerTouch}
         >
@@ -1610,7 +1615,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       </View>
     );
   };
-
 
   function _onPressProceed(patientId: string, addToCartData: DiagnosticsCartItem) {
     const allItems = [addToCartData];
@@ -1796,17 +1800,17 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         showCartInclusions={true} //showInclusions
         duplicateArray={filterDuplicateItemsForPatients}
         onPressCard={(item) => _onPressCartItem(item, test)}
-        onPressRemove={(item) => _onPressRemoveCartItem(item, patientItems,false)}
+        onPressRemove={(item) => _onPressRemoveCartItem(item, patientItems, false)}
         showUndo={groupItemPresentArr?.length == 1}
         onPressUndo={(item) => {
-          _onPressRemoveCartItem(item, patientItems,true);
+          _onPressRemoveCartItem(item, patientItems, true);
           addPatientCartItem?.(patientId, cartItems!);
         }}
       />
     );
   };
 
-  function _onPressRemoveCartItem(item: any, patientItems: any,isUndo:boolean) {
+  function _onPressRemoveCartItem(item: any, patientItems: any, isUndo: boolean) {
     CommonLogEvent(AppRoutes.CartPage, 'Remove item from cart');
     if (isModifyFlow) {
       removeCartItem?.(item?.id);

@@ -276,6 +276,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
   const renderPermissionContainer = () => (
     <View style={styles.permissionContainer}>
       <TouchableOpacity
+        activeOpacity={0.5}
         style={{ marginTop: height / 4 }}
         onPress={() => {
           Permissions.request('camera')
@@ -307,10 +308,15 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
     return (
       !!photoBase64 && (
         <View style={styles.cameraActionContainer}>
-          <TouchableOpacity style={styles.cameraActionButton} onPress={() => removeClickedPhoto()}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            style={styles.cameraActionButton}
+            onPress={() => removeClickedPhoto()}
+          >
             <DeleteIconWhite style={styles.deleteIcon} />
           </TouchableOpacity>
           <TouchableOpacity
+            activeOpacity={0.5}
             style={styles.cameraActionButton}
             onPress={() => {
               removeClickedPhoto();
@@ -373,6 +379,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           <View style={styles.cameraDisableButton} />
         ) : (
           <TouchableOpacity
+            activeOpacity={0.5}
             disabled={!isCameraAccessGranted}
             activeOpacity={0.3}
             onPress={clickPhoto}
@@ -384,6 +391,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
         <View style={styles.flexRow}>
           <View style={{ alignItems: 'center' }}>
             <TouchableOpacity
+              activeOpacity={0.5}
               style={styles.iconContainer}
               activeOpacity={0.3}
               onPress={() => {
@@ -397,6 +405,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           </View>
           <View style={{ alignItems: 'center' }}>
             <TouchableOpacity
+              activeOpacity={0.5}
               style={styles.iconContainer}
               activeOpacity={0.3}
               onPress={() => {
@@ -429,6 +438,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           </Text>
         </View>
         <TouchableOpacity
+          activeOpacity={0.5}
           activeOpacity={0.5}
           onPress={() => {
             props.navigation.navigate(AppRoutes.SamplePrescription);

@@ -57,7 +57,7 @@ export const VaccineTypeChooser: React.FC<VaccineTypeChooserProps> = (props) => 
     <Menu
       ref={menuRef}
       button={
-        <TouchableOpacity activeOpacity={1} onPress={showMenu}>
+        <TouchableOpacity activeOpacity={0.5} onPress={showMenu}>
           {props.children}
         </TouchableOpacity>
       }
@@ -67,6 +67,7 @@ export const VaccineTypeChooser: React.FC<VaccineTypeChooserProps> = (props) => 
       }}
     >
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={() => {
           props.onVaccineTypeChoosed?.('');
           hideMenu();
@@ -77,6 +78,7 @@ export const VaccineTypeChooser: React.FC<VaccineTypeChooserProps> = (props) => 
 
       {props.vaccineTypeList.map((vaccineType, index) => (
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             props.onVaccineTypeChoosed?.(vaccineType);
             hideMenu();

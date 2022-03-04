@@ -16,7 +16,7 @@ export const Bank: React.FC<BankProps> = (props) => {
   const renderSelectedBank = () => {
     return (
       <View style={styles.container}>
-        <TouchableOpacity style={styles.subCont}>
+        <TouchableOpacity activeOpacity={0.5} style={styles.subCont}>
           <Text style={{ ...styles.bankName, color: '#FCB716' }}>{bank?.payment_method_name}</Text>
           <YellowTickIcon />
         </TouchableOpacity>
@@ -29,6 +29,7 @@ export const Bank: React.FC<BankProps> = (props) => {
     return (
       <View style={styles.container}>
         <TouchableOpacity
+          activeOpacity={0.5}
           disabled={outageStatus == 'DOWN' ? true : false}
           style={{ ...styles.subCont, opacity: outageStatus == 'DOWN' ? 0.5 : 1 }}
           onPress={() => onPressBank(bank)}

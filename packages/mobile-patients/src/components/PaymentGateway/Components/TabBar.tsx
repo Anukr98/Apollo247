@@ -14,10 +14,10 @@ export const TabBar: React.FC<TabBarProps> = (props) => {
   const renderButtons = () => {
     return (
       <View style={styles.subCont}>
-        <TouchableOpacity onPress={onPressGoToHome}>
+        <TouchableOpacity activeOpacity={0.5} onPress={onPressGoToHome}>
           <Text style={styles.goToHome}>GO TO HOME</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={onPressGoToMyOrders}>
+        <TouchableOpacity activeOpacity={0.5} onPress={onPressGoToMyOrders}>
           <Text style={styles.goToOrders}>
             {!!isConsult ? 'GO TO CONSULT ROOM' : 'GO TO MY ORDERS'}
           </Text>

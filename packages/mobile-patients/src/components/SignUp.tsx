@@ -254,15 +254,15 @@ const SignUp: React.FC<SignUpProps> = (props) => {
   };
 
   const handleBack = async () => {
-    await AsyncStorage.getItem('phoneNumber').then(async phoneNumber => {
+    await AsyncStorage.getItem('phoneNumber').then(async (phoneNumber) => {
       await AsyncStorage.clear().then(async () => {
         await AsyncStorage.setItem('phoneNumber', `${phoneNumber}`).then(() => {
-          props.navigation.navigate(AppRoutes.Login)
-          return true
-        })
-      })
-    })
-    return true
+          props.navigation.navigate(AppRoutes.Login);
+          return true;
+        });
+      });
+    });
+    return true;
   };
 
   useEffect(() => {
@@ -705,7 +705,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
     return (
       <View style={styles.stickyHeaderMainContainer}>
         <View style={styles.topViewContainer}>
-          <TouchableOpacity style={{ flex: 0.37 }} onPress={handleBack}>
+          <TouchableOpacity activeOpacity={0.5} style={{ flex: 0.37 }} onPress={handleBack}>
             <BackArrow />
           </TouchableOpacity>
           <View style={{ flex: 0.63 }}>
@@ -745,7 +745,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
           }}
         />
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           style={styles.datePickerContainer}
           onPress={() => {
             CommonLogEvent(AppRoutes.SignUp, 'Date picker display');
@@ -794,6 +794,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
         <View style={styles.selectGenderContainer}>
           {GenderOptions.map((option) => (
             <TouchableOpacity
+              activeOpacity={0.5}
               style={[
                 styles.genderButtonContainer,
                 {
@@ -1025,6 +1026,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
     return (
       <StickyBottomComponent position={false}>
         <TouchableOpacity
+          activeOpacity={0.5}
           disabled={!firstName || !lastName || !date || !relation}
           style={[
             styles.stickySubmitButton,

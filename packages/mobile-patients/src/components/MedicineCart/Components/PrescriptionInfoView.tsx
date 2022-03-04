@@ -33,7 +33,7 @@ export const PrescriptionInfoView: React.FC<Props> = ({
         <Text style={styles.rowText}>{description}</Text>
       </View>
       {showUploadButton ? (
-        <TouchableOpacity onPress={onPressUpload}>
+        <TouchableOpacity activeOpacity={0.5} onPress={onPressUpload}>
           <Text style={styles.question}>{question}</Text>
           <Text style={styles.button}>{button}</Text>
         </TouchableOpacity>

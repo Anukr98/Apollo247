@@ -81,7 +81,7 @@ export const ProductNameImage: React.FC<ProductNameImageProps> = (props) => {
   const renderSliderItem = ({ item }) => {
     return (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={() => {
           if (images?.length) {
             props.navigation.navigate(AppRoutes.ImageSliderScreen, {

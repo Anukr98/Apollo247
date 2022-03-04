@@ -286,7 +286,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
 
   const renderHeaderRightComponent = () => {
     return (
-      <TouchableOpacity activeOpacity={1} style={{ paddingLeft: 10 }} onPress={onPressHelp}>
+      <TouchableOpacity activeOpacity={0.5} style={{ paddingLeft: 10 }} onPress={onPressHelp}>
         <Text style={styles.helpTextStyle}>{string.help.toUpperCase()}</Text>
       </TouchableOpacity>
     );

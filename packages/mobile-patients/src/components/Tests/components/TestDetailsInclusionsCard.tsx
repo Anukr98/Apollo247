@@ -62,6 +62,7 @@ export const TestDetailsInclusionsCard: React.FC<TestDetailsInclusionsCardProps>
           return (
             <>
               <TouchableOpacity
+                activeOpacity={0.5}
                 onPress={() => (isParameterPresent ? props.onPressInclusion(item, index) : null)}
                 style={{ marginBottom: '1.5%' }}
               >

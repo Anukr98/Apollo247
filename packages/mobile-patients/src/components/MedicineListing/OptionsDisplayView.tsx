@@ -39,6 +39,7 @@ export const OptionsDisplayView: React.FC<Props> = ({
 
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={onPress}
         style={[styles.itemContainer, { width: `${width}%` }, containerStyle]}
         {...itemContainerProps}

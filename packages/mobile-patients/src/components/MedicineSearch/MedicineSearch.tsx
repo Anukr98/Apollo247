@@ -204,8 +204,8 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
   const renderCartIcon = () => (
     <View>
       <TouchableOpacity
+        activeOpacity={0.5}
         style={{ alignItems: 'flex-end' }}
-        activeOpacity={1}
         onPress={() =>
           navigation.navigate(
             diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.ServerCart

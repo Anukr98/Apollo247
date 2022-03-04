@@ -459,6 +459,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
         rightComponent={
           props.navigation.getParam('KeyName') == 'Update' ? (
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 setDeleteProfile(true);
               }}
@@ -735,6 +736,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
             </View>
             {!editName ? (
               <TouchableOpacity
+                activeOpacity={0.5}
                 onPress={() => {
                   setEditName(true);
                 }}
@@ -744,6 +746,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
             ) : (
               <View style={styles.userSave}>
                 <TouchableOpacity
+                  activeOpacity={0.5}
                   style={{ width: '100%' }}
                   onPress={() => {
                     validateUserDetails('userName');
@@ -797,6 +800,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
             </View>
             {!editNumber ? (
               <TouchableOpacity
+                activeOpacity={0.5}
                 onPress={() => {
                   setEditNumber(true);
                 }}
@@ -806,6 +810,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
             ) : (
               <View style={styles.userSave}>
                 <TouchableOpacity
+                  activeOpacity={0.5}
                   style={{ width: '100%' }}
                   onPress={() => {
                     validateUserDetails('userNumber');
@@ -960,14 +965,14 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
     return (
       <View style={styles.deleteButtonView}>
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => {
             setDeleteProfile(false);
           }}
         >
           <View style={styles.deleteInnerView}>
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               onPress={() => {
                 //deleteUserProfile();
                 setshowSpinner(true);

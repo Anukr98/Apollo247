@@ -74,6 +74,7 @@ export const NetBankingPopup: React.FC<NetBankingProps> = (props) => {
     const outageStatus = item?.outage_list?.[0]?.outage_status;
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={{ ...styles.topBankCont, opacity: outageStatus == 'DOWN' ? 0.5 : 1 }}
         disabled={outageStatus == 'DOWN' ? true : false}
         onPress={() => onPressBank(item?.payment_method_code)}
@@ -113,6 +114,7 @@ export const NetBankingPopup: React.FC<NetBankingProps> = (props) => {
     const outageStatus = item?.outage_list?.[0]?.outage_status;
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={() => onPressBank(item?.payment_method_code)}
         style={{
           ...styles.otherBankCont,

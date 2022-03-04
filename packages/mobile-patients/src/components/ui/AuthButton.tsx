@@ -13,7 +13,7 @@ interface AuthButtonProps {
 export const AuthButton: React.FC<AuthButtonProps> = (props) => {
   const { onPress, style, btnTitleStyle, icon } = props;
   return (
-    <TouchableOpacity style={[styles.button, style]} onPress={onPress}>
+    <TouchableOpacity activeOpacity={0.5} style={[styles.button, style]} onPress={onPress}>
       {icon ? icon : <Truecaller />}
       <Text style={[styles.btnText, btnTitleStyle]}>One Tap Login with Truecaller</Text>
     </TouchableOpacity>

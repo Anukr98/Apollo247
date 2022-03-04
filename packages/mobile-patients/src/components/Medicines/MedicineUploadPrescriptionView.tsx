@@ -158,7 +158,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
   ) => {
     return (
       <View key={i} style={{}}>
-        <TouchableOpacity activeOpacity={1} key={i} onPress={() => {}}>
+        <TouchableOpacity activeOpacity={0.5} key={i} onPress={() => {}}>
           <View
             style={{
               ...theme.viewStyles.cardViewStyle,
@@ -209,7 +209,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
               />
             </View>
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               style={{
                 width: 40,
                 paddingHorizontal: 8,
@@ -346,7 +346,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
           For Store Pickup Only
         </Text>
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           style={{ marginTop: 9, flexDirection: 'row' }}
           onPress={() => {
             postShowPrescriptionAtStoreSelected({ value: !showPrescriptionAtStore });
@@ -391,7 +391,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
               }}
             >
               <TouchableOpacity
-                activeOpacity={1}
+                activeOpacity={0.5}
                 onPress={() => {
                   const eventAttributes: WebEngageEvents[WebEngageEventName.CART_UPLOAD_PRESCRIPTION_CLICKED] = {
                     'Customer ID': g(currentPatient, 'id'),

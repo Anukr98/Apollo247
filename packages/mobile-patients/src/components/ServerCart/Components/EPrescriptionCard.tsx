@@ -145,6 +145,7 @@ export const EPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
               )}
               {!isDisabled && !showTick && (
                 <TouchableOpacity
+                  activeOpacity={0.5}
                   onPress={() => {
                     actionType == 'removal' ? onRemove!() : onSelect!(!!!isSelected);
                   }}

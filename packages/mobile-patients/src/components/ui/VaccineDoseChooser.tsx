@@ -58,7 +58,7 @@ export const VaccineDoseChooser: React.FC<VaccineDoseChooserProps> = (props) => 
     <Menu
       ref={menuRef}
       button={
-        <TouchableOpacity activeOpacity={1} onPress={showMenu}>
+        <TouchableOpacity activeOpacity={0.5} onPress={showMenu}>
           {props.children}
         </TouchableOpacity>
       }
@@ -68,6 +68,7 @@ export const VaccineDoseChooser: React.FC<VaccineDoseChooserProps> = (props) => 
       }}
     >
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={() => {
           props.onDoseChoosed?.('');
           hideMenu();
@@ -77,6 +78,7 @@ export const VaccineDoseChooser: React.FC<VaccineDoseChooserProps> = (props) => 
       </TouchableOpacity>
 
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={() => {
           props.onDoseChoosed?.(string.vaccineBooking.title_dose_1);
           hideMenu();
@@ -86,6 +88,7 @@ export const VaccineDoseChooser: React.FC<VaccineDoseChooserProps> = (props) => 
       </TouchableOpacity>
 
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={() => {
           props.onDoseChoosed?.(string.vaccineBooking.title_dose_2);
           hideMenu();
@@ -96,6 +99,7 @@ export const VaccineDoseChooser: React.FC<VaccineDoseChooserProps> = (props) => 
 
       {AppConfig.Configuration.Vacc_Show_Booster && props.patientAge >= 60 ? (
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             props.onDoseChoosed?.(string.vaccineBooking.title_dose_booster);
             hideMenu();

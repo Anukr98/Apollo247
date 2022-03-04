@@ -641,6 +641,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
               : string.diagnostics.addOrEditPassportText}
           </Text>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               setShowPassportModal(true);
             }}
@@ -724,7 +725,11 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
                   </Text>
                   {!!isNewlyModified ? renderNewTag() : null}
                   {remainingItems > 0 && (
-                    <TouchableOpacity onPress={() => _onPressMore(order)} style={{ marginLeft: 2 }}>
+                    <TouchableOpacity
+                      activeOpacity={0.5}
+                      onPress={() => _onPressMore(order)}
+                      style={{ marginLeft: 2 }}
+                    >
                       <Text style={styles.moreText}>+ {remainingItems} MORE</Text>
                     </TouchableOpacity>
                   )}
@@ -776,7 +781,11 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
               <Text style={[styles.testName]}>{nameFormater(items?.itemName, 'default')}</Text>
               {!!isNewlyModified ? renderNewTag() : null}
               {lineItems?.length - 1 == index && (
-                <TouchableOpacity onPress={() => _onPressLess(item)} style={{ marginLeft: 2 }}>
+                <TouchableOpacity
+                  activeOpacity={0.5}
+                  onPress={() => _onPressLess(item)}
+                  style={{ marginLeft: 2 }}
+                >
                   <Text style={styles.moreText}> LESS</Text>
                 </TouchableOpacity>
               )}
@@ -790,6 +799,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     return (
       <View style={styles.orderSummaryView}>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={styles.orderSummaryTouch}
           onPress={() => navigateToOrderDetails(true, orderDetails?.orderId!)}
         >
@@ -839,6 +849,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
           </View>
         </View>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => _navigateToCircleBenefits()}
           style={styles.viewAllBenefitsTouch}
         >

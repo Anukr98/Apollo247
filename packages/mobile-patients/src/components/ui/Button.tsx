@@ -61,7 +61,7 @@ export interface ButtonProps {
 export const Button: React.FC<ButtonProps> = (props) => {
   return (
     <TouchableOpacity
-      activeOpacity={1}
+      activeOpacity={0.5}
       style={[
         styles.containerStyles,
         props.style,

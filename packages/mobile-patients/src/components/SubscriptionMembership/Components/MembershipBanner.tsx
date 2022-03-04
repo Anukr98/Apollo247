@@ -45,7 +45,11 @@ export const MembershipBanner: React.FC<MembershipBannerProps> = (props) => {
               <Text style={theme.viewStyles.text('M', 15, '#02475B', 1, 25, 0.35)}>
                 Renew and continue to save more!
               </Text>
-              <TouchableOpacity style={styles.renewButton} onPress={onRenewClick}>
+              <TouchableOpacity
+                activeOpacity={0.5}
+                style={styles.renewButton}
+                onPress={onRenewClick}
+              >
                 <Text style={styles.renewText}>Renew Now</Text>
               </TouchableOpacity>
             </View>

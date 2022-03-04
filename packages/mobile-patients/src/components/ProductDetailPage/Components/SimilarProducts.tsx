@@ -27,6 +27,7 @@ export const SimilarProducts: React.FC<SimilarProductsProps> = (props) => {
         <Text style={styles.heading}>{heading}</Text>
         {isSubstituteProducts && (
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               setShowSubstituteInfo && setShowSubstituteInfo(true);
             }}

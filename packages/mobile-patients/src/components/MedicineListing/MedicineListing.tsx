@@ -635,6 +635,7 @@ export const MedicineListing: React.FC<Props> = (props) => {
     ) : (
       !isLoadingMore && products.length < productsTotal && (
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => onEndReached()}
           style={{ ...styles.btnStyle, marginTop: 20 }}
         >

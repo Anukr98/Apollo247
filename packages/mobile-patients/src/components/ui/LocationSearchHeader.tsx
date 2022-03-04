@@ -36,7 +36,7 @@ export const LocationSearchHeader: React.FC<LocationSearchHeaderProps> = (props)
     <View style={styles.locationOnContainerStyle}>
       {!locationDetails ? (
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => {
             getNetStatus()
               .then((status) => {
@@ -59,7 +59,7 @@ export const LocationSearchHeader: React.FC<LocationSearchHeaderProps> = (props)
       ) : (
         <View>
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             onPress={props.onLocationProcess}
             style={styles.locationOffContainerStyle}
           >

@@ -323,7 +323,7 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
             ]}
           >
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               disabled={!isEnableApplyBtn}
               onPress={() => {
                 _onPressApplyCoupon(couponText, false);
@@ -383,6 +383,7 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
           <Text style={styles.couponCodeText}>{item?.coupon}</Text>
         </View>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => _onPressApplyCoupon(item?.coupon, true)}
           disabled={isDisabled}
         >

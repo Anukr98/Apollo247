@@ -4,7 +4,12 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { isSmallDevice, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { createDiagnosticAddToCartObject, diagnosticsDisplayPrice, getParameterCount, getPricesForItem } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
+import {
+  createDiagnosticAddToCartObject,
+  diagnosticsDisplayPrice,
+  getParameterCount,
+  getPricesForItem,
+} from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import {
   ArrowDownWhite,
   ArrowUpWhite,
@@ -29,7 +34,7 @@ interface RecommedationGroupCardProps {
   priceDiff?: number;
   groupRecommendations?: any;
   onPressArrow: () => void;
-  cartValue: any
+  cartValue: any;
 }
 
 export const RecommedationGroupCard: React.FC<RecommedationGroupCardProps> = (props) => {
@@ -48,7 +53,7 @@ export const RecommedationGroupCard: React.FC<RecommedationGroupCardProps> = (pr
     priceDiff,
     groupRecommendations,
     onPressArrow,
-    cartValue
+    cartValue,
   } = props;
 
   const inclusionNameArray = data?.inclusionData;
@@ -83,11 +88,10 @@ export const RecommedationGroupCard: React.FC<RecommedationGroupCardProps> = (pr
     data?.itemImageUrl,
     getMandatoryParameterCount
   );
-  const {
-    isDiagnosticCircleSubscription,
-  } = useDiagnosticsCart();
+  const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
 
-  const slashedPrice = diagnosticsDisplayPrice(dataObj,isDiagnosticCircleSubscription)?.slashedPrice;
+  const slashedPrice = diagnosticsDisplayPrice(dataObj, isDiagnosticCircleSubscription)
+    ?.slashedPrice;
   const priceToShow = diagnosticsDisplayPrice(dataObj, isDiagnosticCircleSubscription)?.priceToShow;
   const newItems = inclusionNameArray?.filter((item: any) => {
     if (!cartItemIds?.includes(item?.itemId)) {
@@ -114,13 +118,14 @@ export const RecommedationGroupCard: React.FC<RecommedationGroupCardProps> = (pr
     );
   };
   let totalInclusionCount = 0;
-  inclusionNameArray?.map((item:any)=>{
-    totalInclusionCount += item?.observations?.length
-  })
-  const priceDifference = priceToShow - cartValue
+  inclusionNameArray?.map((item: any) => {
+    totalInclusionCount += item?.observations?.length;
+  });
+  const priceDifference = priceToShow - cartValue;
   return (
     <View style={[styles.container, containerStyle]}>
       <TouchableOpacity
+        activeOpacity={0.5}
         style={styles.recommedationHeaderContainer}
         onPress={() => {
           onPressArrow();
@@ -191,6 +196,7 @@ export const RecommedationGroupCard: React.FC<RecommedationGroupCardProps> = (pr
           </View>
           {showAddButton ? (
             <TouchableOpacity
+              activeOpacity={0.5}
               style={styles.addButton}
               onPress={() => {
                 onPressAdd();
@@ -227,7 +233,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  inclusionItemView: { paddingHorizontal: 10, paddingBottom: 10, flexDirection: 'row',width: '95%' },
+  inclusionItemView: {
+    paddingHorizontal: 10,
+    paddingBottom: 10,
+    flexDirection: 'row',
+    width: '95%',
+  },
   cartItemText: {
     ...theme.viewStyles.text('SB', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 1, 22),
     width: '75%',
@@ -258,11 +269,17 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   slashedPriceText: {
-    ...theme.viewStyles.text('SB', isSmallDevice ? 10.5 : 12, theme.colors.SHERPA_BLUE_LIGHT, 1, 16),
+    ...theme.viewStyles.text(
+      'SB',
+      isSmallDevice ? 10.5 : 12,
+      theme.colors.SHERPA_BLUE_LIGHT,
+      1,
+      16
+    ),
     marginTop: 5,
     // width: '20%',
     textAlign: 'center',
-    textDecorationLine:'line-through'
+    textDecorationLine: 'line-through',
   },
   textInclusionsRecom: {
     ...theme.viewStyles.text('SB', isSmallDevice ? 10 : 12, colors.SHERPA_BLUE, 1),
@@ -271,7 +288,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     width: '40%',
     textAlign: 'center',
-    borderRadius: 4
+    borderRadius: 4,
   },
   boldTextRecom: {
     ...theme.viewStyles.text('SB', isSmallDevice ? 13 : 14, colors.SHERPA_BLUE, 1),
@@ -297,6 +314,6 @@ const styles = StyleSheet.create({
   acceptTick: {
     width: 20,
     height: 20,
-    marginRight: 5
+    marginRight: 5,
   },
 });

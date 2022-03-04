@@ -63,7 +63,11 @@ export const AccessLocation: React.FC<AccessLocationProps> = (props) => {
   };
   const renderCurrentLocationAccess = () => {
     return (
-      <TouchableOpacity style={styles.buttonContainer} onPress={onPressCurrentLocaiton}>
+      <TouchableOpacity
+        activeOpacity={0.5}
+        style={styles.buttonContainer}
+        onPress={onPressCurrentLocaiton}
+      >
         <GpsIcon />
         <Text style={styles.currentLocation}>{string.accessLocationPopUp.currentLocationText}</Text>
       </TouchableOpacity>
@@ -73,6 +77,7 @@ export const AccessLocation: React.FC<AccessLocationProps> = (props) => {
   const renderDeliveryPincode = () => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={{ ...styles.buttonContainer, marginTop: 7 }}
         onPress={onPressPincode}
       >
@@ -117,7 +122,7 @@ export const AccessLocation: React.FC<AccessLocationProps> = (props) => {
           height: sortAddresses(addresses).length ? undefined : 75,
         }}
       >
-        <TouchableOpacity style={{}} onPress={onPressAddAddress}>
+        <TouchableOpacity activeOpacity={0.5} style={{}} onPress={onPressAddAddress}>
           <Text style={styles.addAddress}>Add</Text>
           <Text style={styles.addAddress}>new address...</Text>
         </TouchableOpacity>
@@ -129,7 +134,7 @@ export const AccessLocation: React.FC<AccessLocationProps> = (props) => {
     return (
       <View style={{ marginVertical: '3%' }}>
         <View style={styles.horizontalLine} />
-        <TouchableOpacity style={{ width: '60%' }} onPress={onPressAddAddress}>
+        <TouchableOpacity activeOpacity={0.5} style={{ width: '60%' }} onPress={onPressAddAddress}>
           <View style={{ flexDirection: 'row' }}>
             <AddIconBlue style={styles.addAddressIcon} />
             <Text style={styles.addressHeader}>{string.accessLocationPopUp.addNewAddressText}</Text>

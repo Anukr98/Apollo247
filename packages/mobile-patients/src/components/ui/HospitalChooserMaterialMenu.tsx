@@ -194,6 +194,7 @@ export const HospitalChooserMaterialMenu: React.FC<HospitalChooserMaterialMenuPr
       return (
         <>
           <TouchableOpacity
+            activeOpacity={0.5}
             key={i}
             style={styles.hospitalItemContainer}
             onPress={() => {
@@ -214,6 +215,7 @@ export const HospitalChooserMaterialMenu: React.FC<HospitalChooserMaterialMenuPr
     return (
       <View style={styles.siteFilterContainer}>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             setPayBySelfChecked(false);
             if (isCorporateChecked == false) {
@@ -224,7 +226,6 @@ export const HospitalChooserMaterialMenu: React.FC<HospitalChooserMaterialMenuPr
               filterByCorporate(false);
             }
           }}
-          activeOpacity={1}
           style={styles.checkboxViewStyle}
         >
           {isCorporateChecked ? (
@@ -235,6 +236,7 @@ export const HospitalChooserMaterialMenu: React.FC<HospitalChooserMaterialMenuPr
           <Text style={styles.checkboxTextStyle}>Corporate Sponsored </Text>
         </TouchableOpacity>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             setCorporatChecked(false);
             if (isPayBySelfChecked == false) {
@@ -245,7 +247,6 @@ export const HospitalChooserMaterialMenu: React.FC<HospitalChooserMaterialMenuPr
               filterByPayBySelf(false);
             }
           }}
-          activeOpacity={1}
           style={[styles.checkboxViewStyle, { marginLeft: 15 }]}
         >
           {isPayBySelfChecked ? (
@@ -275,7 +276,7 @@ export const HospitalChooserMaterialMenu: React.FC<HospitalChooserMaterialMenuPr
     <Menu
       ref={menuRef}
       button={
-        <TouchableOpacity activeOpacity={1} onPress={showMenu}>
+        <TouchableOpacity activeOpacity={0.5} onPress={showMenu}>
           {props.children}
         </TouchableOpacity>
       }

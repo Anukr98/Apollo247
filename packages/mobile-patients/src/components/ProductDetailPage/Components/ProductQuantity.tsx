@@ -107,6 +107,7 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
       return (
         <View>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               isInStock ? onAddToCart() : onNotifyMeClick();
             }}

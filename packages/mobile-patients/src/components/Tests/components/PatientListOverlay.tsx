@@ -118,7 +118,7 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
     ];
     return item?.id === '+ADD MEMBER' ? null : (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         style={itemViewStyle}
         onPress={() => {
           removeAllSwitchRestrictions
@@ -216,7 +216,11 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
         <Text style={[styles.errorMsgTxt, { width: '92%' }]}>
           {string.diagnostics.patientSwitchError}
         </Text>
-        <TouchableOpacity onPress={props.onCloseError} style={styles.closeIconTouch}>
+        <TouchableOpacity
+          activeOpacity={0.5}
+          onPress={props.onCloseError}
+          style={styles.closeIconTouch}
+        >
           <Text style={styles.errorMsgCross}>X</Text>
         </TouchableOpacity>
       </View>
@@ -251,6 +255,7 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
     >
       <View style={{ flex: 1 }}>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={{ flex: 1 }}
           onPress={() => (patientSelected?.id ? onPressClose() : {})}
         />
@@ -261,6 +266,7 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
               : props.showCloseIcon && (
                   <View style={{ alignSelf: 'flex-end' }}>
                     <TouchableOpacity
+                      activeOpacity={0.5}
                       style={{ width: 40, height: 40 }}
                       onPress={props.onCloseIconPress}
                     >

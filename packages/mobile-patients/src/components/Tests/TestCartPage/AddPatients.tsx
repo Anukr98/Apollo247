@@ -708,7 +708,11 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
         <Text style={styles.patientHeadingText}>
           {nameFormater(string.diagnosticsCartPage.patientHeading, 'title')}
         </Text>
-        <TouchableOpacity onPress={() => _onPressAddPatients()} style={{ width: 120 }}>
+        <TouchableOpacity
+          activeOpacity={0.5}
+          onPress={() => _onPressAddPatients()}
+          style={{ width: 120 }}
+        >
           <View style={[styles.flexRow, { justifyContent: 'flex-end' }]}>
             <PlusIconWhite style={styles.addIconStyle} />
             <Text style={styles.addMemberText}>
@@ -912,6 +916,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
       .replace('{{gender}}', test?.gender?.toLowerCase());
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={() =>
           skuPatientGender ? _onPressSelectTest(test, index, selectedPatientDetails) : null
         }
@@ -1012,7 +1017,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
         ]}
       >
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           style={itemViewStyle}
           onPress={() => (disablePatientForSkuGender ? {} : _onPressPatient(item, index))}
         >

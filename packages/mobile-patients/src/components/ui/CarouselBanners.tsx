@@ -252,7 +252,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
 
     return (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={() =>
           handleOnBannerClick(
             cta_action?.type,
@@ -319,6 +319,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     if (btnTxt || btnSubTxt) {
       return (
         <TouchableOpacity
+          activeOpacity={0.5}
           style={styles.upgradeBtnView}
           onPress={() =>
             handleOnBannerClick(

@@ -58,6 +58,7 @@ export const ConsultPackageTnc: React.FC<ConsultPackageTnCProps> = (props) => {
 
       {isTncCollapsed ? (
         <TouchableOpacity
+          activeOpacity={0.5}
           style={styles.tncAccordianIcon}
           onPress={() => {
             setTncCollapsed(!isTncCollapsed);
@@ -67,6 +68,7 @@ export const ConsultPackageTnc: React.FC<ConsultPackageTnCProps> = (props) => {
         </TouchableOpacity>
       ) : (
         <TouchableOpacity
+          activeOpacity={0.5}
           style={styles.tncAccordianIcon}
           onPress={() => {
             setTncCollapsed(!isTncCollapsed);

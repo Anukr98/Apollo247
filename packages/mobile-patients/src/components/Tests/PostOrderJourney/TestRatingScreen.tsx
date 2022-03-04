@@ -194,12 +194,12 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
           <Text style={styles.textStyleHeading}>{string.orders.ratingDetailHeader}</Text>
           <View style={styles.startContainer}>
             {ratedStarsArray.map((item, index) => (
-              <TouchableOpacity onPress={() => onStarRatingChange(item)}>
+              <TouchableOpacity activeOpacity={0.5} onPress={() => onStarRatingChange(item)}>
                 <StarFillGreen style={styles.startStyle} />
               </TouchableOpacity>
             ))}
             {unRatedStarsArray.map((item, index) => (
-              <TouchableOpacity onPress={() => onStarRatingChange(item)}>
+              <TouchableOpacity activeOpacity={0.5} onPress={() => onStarRatingChange(item)}>
                 <StarEmptyGreen style={styles.startStyle} />
               </TouchableOpacity>
             ))}
@@ -211,6 +211,7 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
           <View style={styles.reasonList}>
             {reasonList?.map((item) => (
               <TouchableOpacity
+                activeOpacity={0.5}
                 style={[
                   styles.reasonTitleContainer,
                   { backgroundColor: activeReason == item?.title ? colors.APP_GREEN : 'white' },

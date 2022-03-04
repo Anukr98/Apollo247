@@ -176,7 +176,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
 
       return (
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => onPress(getItem, packageMrpForItem, pricesForItem)}
           key={item?.item?.itemId}
         >

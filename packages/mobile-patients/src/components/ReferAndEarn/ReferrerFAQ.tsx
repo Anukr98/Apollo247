@@ -23,6 +23,7 @@ export const RefererFAQ: React.FC<RefererFAQProps> = (props) => {
     return (
       <View style={styles.faqItemContainer}>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             setOpenIndex(openIndexId == item.id ? 0 : item.id);
           }}

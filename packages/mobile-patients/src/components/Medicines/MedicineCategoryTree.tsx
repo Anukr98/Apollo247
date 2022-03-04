@@ -45,7 +45,9 @@ export const MedicineCategoryTree: React.FC<Props> = ({
       onPressCategory(item, [...categoryTree.reverse(), item]);
     };
     const rightIcon = (
-      <TouchableOpacity onPress={onPress}>{Child?.length ? <ArrowRight /> : null}</TouchableOpacity>
+      <TouchableOpacity activeOpacity={0.5} onPress={onPress}>
+        {Child?.length ? <ArrowRight /> : null}
+      </TouchableOpacity>
     );
     const leftIcon = (
       <Image
@@ -84,7 +86,7 @@ export const MedicineCategoryTree: React.FC<Props> = ({
         containerStyle={[styles.listItemContainer, { marginLeft: -30 }]}
         pad={5}
         leftIcon={
-          <TouchableOpacity onPress={onPress}>
+          <TouchableOpacity activeOpacity={0.5} onPress={onPress}>
             {categoryLevel1 ? <ArrowLeft /> : <ShopByCategoryIcon />}
           </TouchableOpacity>
         }

@@ -115,7 +115,7 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
 
   const renderUploadMore = () => {
     return (
-      <TouchableOpacity onPress={onPressUploadMore}>
+      <TouchableOpacity activeOpacity={0.5} onPress={onPressUploadMore}>
         <Text style={styles.upload}>UPLOAD MORE</Text>
       </TouchableOpacity>
     );

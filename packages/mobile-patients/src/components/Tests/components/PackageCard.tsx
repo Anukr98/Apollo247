@@ -173,7 +173,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
 
       return (
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => onPress(getItem, packageMrpForItem, pricesForItem)}
           key={getItem?.itemId.toString()}
           style={[

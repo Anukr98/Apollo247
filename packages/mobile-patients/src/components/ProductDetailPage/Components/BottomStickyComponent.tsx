@@ -50,6 +50,7 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
     return (
       <View>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             isInStock ? onAddToCart() : onNotifyMeClick();
           }}

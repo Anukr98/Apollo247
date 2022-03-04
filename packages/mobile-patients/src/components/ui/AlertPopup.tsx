@@ -20,7 +20,7 @@ export const AlertPopup: React.FC<AlertPopupProps> = (props) => {
   const renderCloseIcon = () => {
     return (
       <View style={styles.closeIcon}>
-        <TouchableOpacity onPress={() => props.onDismiss()}>
+        <TouchableOpacity activeOpacity={0.5} onPress={() => props.onDismiss()}>
           <CrossPopup style={{ marginRight: 1, width: 28, height: 28 }} />
         </TouchableOpacity>
       </View>

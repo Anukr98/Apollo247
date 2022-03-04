@@ -61,6 +61,7 @@ export const PhleboCallPopup: React.FC<PhleboCallPopupProps> = (props) => {
   const renderGoBack = () => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={styles.proceedToCancelTouch}
         onPress={() => {
           onPressBack();
@@ -103,7 +104,7 @@ export const PhleboCallPopup: React.FC<PhleboCallPopupProps> = (props) => {
       overlayStyle={styles.phrOverlayStyle}
     >
       <View style={{ flex: 1 }}>
-        <TouchableOpacity style={{ flex: 1 }} onPress={() => onPressBack()} />
+        <TouchableOpacity activeOpacity={0.5} style={{ flex: 1 }} onPress={() => onPressBack()} />
         <View style={styles.overlayViewStyle}>
           <SafeAreaView style={styles.overlaySafeAreaViewStyle}>
             <View style={styles.mainContainer}>

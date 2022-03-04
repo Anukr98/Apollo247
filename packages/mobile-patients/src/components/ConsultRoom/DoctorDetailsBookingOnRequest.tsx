@@ -666,7 +666,7 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
               <View style={styles.doctorNameViewStyle}>
                 <Text style={styles.doctorNameStyles}>{doctorDetails?.displayName}</Text>
                 <TouchableOpacity
-                  activeOpacity={1}
+                  activeOpacity={0.5}
                   onPress={() => onClickDoctorShare()}
                   style={styles.shareViewStyle}
                 >

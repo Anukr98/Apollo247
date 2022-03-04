@@ -165,6 +165,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
     if (!addressChangeLoading && (isSellOnline || location)) {
       return (
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             showPincodePopup(false);
           }}

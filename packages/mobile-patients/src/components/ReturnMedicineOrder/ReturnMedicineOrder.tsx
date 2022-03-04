@@ -99,6 +99,7 @@ export const ReturnMedicineOrder: React.FC<Props> = ({ navigation }) => {
     return (
       <View style={styles.closeIconViewStyle}>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             setShowReturnPopup(false);
           }}
@@ -276,7 +277,7 @@ export const ReturnMedicineOrder: React.FC<Props> = ({ navigation }) => {
   const renderUploadButton = () => {
     return (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         style={styles.uploadButtonStyle}
         onPress={() => setUploadVisible(true)}
       >
@@ -303,7 +304,11 @@ export const ReturnMedicineOrder: React.FC<Props> = ({ navigation }) => {
     };
     return (
       <View style={[styles.addMoreImageViewStyle, { marginRight: 5 }]}>
-        <TouchableOpacity onPress={onPressRemoveIcon} style={styles.imageRemoveViewStyle}>
+        <TouchableOpacity
+          activeOpacity={0.5}
+          onPress={onPressRemoveIcon}
+          style={styles.imageRemoveViewStyle}
+        >
           <CrossYellow style={styles.crossYellow} />
         </TouchableOpacity>
         <View style={styles.imageViewStyle}>

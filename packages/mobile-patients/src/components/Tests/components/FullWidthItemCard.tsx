@@ -191,7 +191,7 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
       const changeStyle = !isCircleSubscribed && hasSlashedPrice && hasCirclePrice;
       return (
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => onPress(getItem, packageMrpForItem, pricesForItem)}
           key={item?.item?.itemId}
         >
@@ -269,7 +269,7 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
 
   const renderSkuName = (name: string, getItem: any) => {
     return (
-      <View style={{ minHeight: 40,width:'95%' }}>
+      <View style={{ minHeight: 40, width: '95%' }}>
         <Text style={[styles.itemNameText]} numberOfLines={2}>
           {name}
         </Text>

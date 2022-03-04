@@ -78,6 +78,7 @@ export const UserConstentPopup: React.FC<UserConstentPopupProps> = (props) => {
               <Text style={styles.headingText}>{props.heading}</Text>
             </View>
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 props.onClose();
               }}

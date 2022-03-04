@@ -1002,7 +1002,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
         !noAdditionalDiscount &&
         billingDetails ? (
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             style={{
               flexDirection: 'row',
               justifyContent: 'center',

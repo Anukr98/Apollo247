@@ -19,6 +19,7 @@ export const WidgetCard: React.FC<WidgetCardProps> = (props) => {
     : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_ICON;
   return (
     <TouchableOpacity
+      activeOpacity={0.5}
       style={styles.container}
       onPress={() => {
         onPressWidget();

@@ -133,7 +133,7 @@ export const RenderPdf: React.FC<RenderPdfProps> = (props) => {
             }}
           >
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               onPress={() => downloadPDF()}
               style={{
                 backgroundColor: 'white',
@@ -147,7 +147,7 @@ export const RenderPdf: React.FC<RenderPdfProps> = (props) => {
               <Download />
             </TouchableOpacity>
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               onPress={() => {
                 setDisplayPdf && setDisplayPdf();
               }}

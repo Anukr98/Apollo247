@@ -127,9 +127,9 @@ const styles = StyleSheet.create({
   },
   patientView: {
     backgroundColor: theme.colors.WHITE,
-    borderRadius: 8, 
-    paddingHorizontal: 8, 
-    paddingVertical: 12, 
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 12,
     marginTop: 10,
     shadowColor: 'rgba(0,0,0,0.2)',
     shadowOffset: { width: 0, height: 2 },
@@ -139,9 +139,9 @@ const styles = StyleSheet.create({
   },
   patientSelectedView: {
     backgroundColor: theme.colors.APP_GREEN,
-    borderRadius: 8, 
-    paddingHorizontal: 8, 
-    paddingVertical: 12, 
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 12,
     marginTop: 10,
     shadowColor: 'rgba(0,0,0,0.2)',
     shadowOffset: { width: 0, height: 2 },
@@ -150,13 +150,13 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   patientText: {
-    ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE)
+    ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE),
   },
   patientSelectedText: {
-    ...theme.viewStyles.text('M', 14, theme.colors.WHITE)
+    ...theme.viewStyles.text('M', 14, theme.colors.WHITE),
   },
   addPatientText: {
-    ...theme.viewStyles.text('M', 14, theme.colors.APP_YELLOW)
+    ...theme.viewStyles.text('M', 14, theme.colors.APP_YELLOW),
   },
 });
 
@@ -168,53 +168,49 @@ interface AppointmentFilterSceneProps {
 }
 
 export const AppointmentFilterScene: React.FC<AppointmentFilterSceneProps> = (props) => {
-  const {
-    selectedPatient,
-    selectPatient,
-    dismissModal,
-  } = props;
+  const { selectedPatient, selectPatient, dismissModal } = props;
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
-  
-  const [menuItems, setMenuItems] = useState([
-    { id: '0', name: 'Patient Name' },
-  ]);
+
+  const [menuItems, setMenuItems] = useState([{ id: '0', name: 'Patient Name' }]);
   const [patient, setPatient] = useState<any>(selectedPatient);
-  
+
   const renderPatientName = (item?: any) => {
     let isSelected = item?.id === patient?.id;
-    if(item == 'ALL') {
+    if (item == 'ALL') {
       isSelected = item == patient;
-    } 
-    
-    const {firstName, lastName} = item || {};
+    }
+
+    const { firstName, lastName } = item || {};
     return (
       <TouchableOpacity
-        onPress={() => setPatient(item || 'ALL')} 
-        style={isSelected ? styles.patientSelectedView : styles.patientView}>
+        activeOpacity={0.5}
+        onPress={() => setPatient(item || 'ALL')}
+        style={isSelected ? styles.patientSelectedView : styles.patientView}
+      >
         <Text style={isSelected ? styles.patientSelectedText : styles.patientText}>
           {firstName ? firstName + ' ' + lastName : 'All Patients'}
         </Text>
       </TouchableOpacity>
-    )
-  }
-  
+    );
+  };
+
   const renderAddPatient = () => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={() => {
           props.navigation.navigate(AppRoutes.EditProfile, {
             isEdit: false,
             screenName: string.consult,
             mobileNumber: currentPatient && currentPatient!.mobileNumber,
           });
-        }} 
-        style={{...styles.patientView, marginBottom: 20 }}>
-        <Text style={styles.addPatientText}>
-          {'Add Patient'}
-        </Text>
+        }}
+        style={{ ...styles.patientView, marginBottom: 20 }}
+      >
+        <Text style={styles.addPatientText}>{'Add Patient'}</Text>
       </TouchableOpacity>
-    )
-  }
+    );
+  };
 
   // this holds the keys of the menuItems for the view to know which category is currently being rendered.
   const filtersCard = () => {
@@ -223,13 +219,8 @@ export const AppointmentFilterScene: React.FC<AppointmentFilterSceneProps> = (pr
         <View style={styles.menuColumn}>
           {menuItems.map((item, index) => {
             return (
-              <View
-                key={item.id}
-                style={[styles.menuItem, styles.selectedMenuItem]}
-              >
-                <Text style={styles.menuItemText}>
-                  {item.name}
-                </Text>
+              <View key={item.id} style={[styles.menuItem, styles.selectedMenuItem]}>
+                <Text style={styles.menuItemText}>{item.name}</Text>
               </View>
             );
           })}
@@ -237,11 +228,10 @@ export const AppointmentFilterScene: React.FC<AppointmentFilterSceneProps> = (pr
             style={{ display: 'flex', backgroundColor: theme.colors.CARD_BG, height: '100%' }}
           />
         </View>
-        <ScrollView 
-          style={styles.settingsColumn}>
+        <ScrollView style={styles.settingsColumn}>
           {renderPatientName('ALL')}
-          {allCurrentPatients.map((item: any) =>
-            item?.id != '+ADD MEMBER' && renderPatientName(item)
+          {allCurrentPatients.map(
+            (item: any) => item?.id != '+ADD MEMBER' && renderPatientName(item)
           )}
           {renderAddPatient()}
         </ScrollView>
@@ -260,7 +250,7 @@ export const AppointmentFilterScene: React.FC<AppointmentFilterSceneProps> = (pr
         title="FILTERS"
         rightComponent={
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             onPress={() => {
               setPatient(null);
             }}
@@ -282,7 +272,7 @@ export const AppointmentFilterScene: React.FC<AppointmentFilterSceneProps> = (pr
           title={'APPLY FILTERS'}
           style={{ flex: 1, marginHorizontal: 40, marginTop: 15 }}
           onPress={() => {
-            patient && selectPatient(patient)
+            patient && selectPatient(patient);
             dismissModal();
           }}
           disabled={!patient}

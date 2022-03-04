@@ -352,6 +352,7 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
   const renderLoadMore = () => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={styles.loadMoreView}
         onPress={() => {
           setCurrentOffset(currentOffset + 1);

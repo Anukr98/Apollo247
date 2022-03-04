@@ -503,7 +503,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       item?.prescriptionImageUrl?.toLowerCase()?.endsWith('.pdf');
     return (
       <View key={i} style={{}}>
-        <TouchableOpacity activeOpacity={1} key={i}>
+        <TouchableOpacity activeOpacity={0.5} key={i}>
           <View
             style={{
               ...theme.viewStyles.cardViewStyle,
@@ -556,7 +556,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
               />
             </View>
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               style={{
                 width: 40,
                 paddingHorizontal: 8,
@@ -746,6 +746,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           }}
         >
           <TouchableOpacity
+            activeOpacity={0.5}
             style={[
               {
                 display: 'flex',
@@ -786,6 +787,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
             )}
           </TouchableOpacity>
           <TouchableOpacity
+            activeOpacity={0.5}
             style={[
               {
                 padding: 10,

@@ -51,7 +51,7 @@ export const WhatsAppStatus: React.FC<WhatsAppStatusProps> = (props) => {
   return (
     <View style={[styles.headerView, style]}>
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={() => {
           props.onPress();
         }}

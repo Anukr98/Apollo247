@@ -68,6 +68,7 @@ export const OrderCancelComponent: React.FC<OrderCancelComponentProps> = (props)
     return (
       <View style={styles.contentContainerStyle}>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             setShowReasons(!showReasons);
           }}
@@ -95,6 +96,7 @@ export const OrderCancelComponent: React.FC<OrderCancelComponentProps> = (props)
               .sort((a, b) => a?.sortOrder > b?.sortOrder)
               .map((item) => (
                 <TouchableOpacity
+                  activeOpacity={0.5}
                   onPress={() => {
                     setSelectedReason(item?.bucketName!);
                     setSelectedReasonBucket([item]);
@@ -137,6 +139,7 @@ export const OrderCancelComponent: React.FC<OrderCancelComponentProps> = (props)
               </View>
             </View>
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 setShowSubReasons(!showSubReasons);
               }}
@@ -163,6 +166,7 @@ export const OrderCancelComponent: React.FC<OrderCancelComponentProps> = (props)
                 {selectedReasonBucket?.[0]?.reasons &&
                   selectedReasonBucket?.[0]?.reasons.map((item, i) => (
                     <TouchableOpacity
+                      activeOpacity={0.5}
                       onPress={() => {
                         setSelectedSubReason(item?.description);
                         setIsSubReasonSelected(true);
@@ -282,7 +286,7 @@ export const OrderCancelComponent: React.FC<OrderCancelComponentProps> = (props)
         <View style={styles.container}>
           <View style={{ justifyContent: 'flex-end', flex: 1 }}>
             <View style={styles.bottomSheetStyle}>
-              <TouchableOpacity onPress={() => {}}>
+              <TouchableOpacity activeOpacity={0.5} onPress={() => {}}>
                 {content()}
                 {bottomButton()}
               </TouchableOpacity>

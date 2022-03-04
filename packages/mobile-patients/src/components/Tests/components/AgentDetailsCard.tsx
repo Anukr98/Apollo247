@@ -81,6 +81,7 @@ export const AgentDetailsCard: React.FC<AgentDetailsCardProps> = (props) => {
             {phoneNumber ? (
               <View style={{ opacity: isCallingEnabled ? 1 : 0.5 }}>
                 <TouchableOpacity
+                  activeOpacity={0.5}
                   style={styles.callContainer}
                   onPress={() => {
                     isCallingEnabled ? props.onPressCallOption(name, phoneNumber) : {};
@@ -185,6 +186,7 @@ export const AgentDetailsCard: React.FC<AgentDetailsCardProps> = (props) => {
             </View>
             {phleboTrackLink ? (
               <TouchableOpacity
+                activeOpacity={0.5}
                 onPress={() => {
                   try {
                     Linking.canOpenURL(phleboTrackLink).then((supported) => {

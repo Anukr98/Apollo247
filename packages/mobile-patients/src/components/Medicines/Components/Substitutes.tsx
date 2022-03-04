@@ -71,6 +71,7 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
 
   const renderHeading = () => (
     <TouchableOpacity
+      activeOpacity={0.5}
       onPress={() => {
         if (isProductInStock) {
           setShowSubstitues(!showSubstitues);
@@ -101,6 +102,7 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
             Substitutes are products with same molecular composition
           </Text>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               setShowSubstituteInfo && setShowSubstituteInfo(true);
             }}
@@ -136,7 +138,7 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
 
   const renderAddToCartView = (item: any) => {
     return (
-      <TouchableOpacity activeOpacity={1} onPress={() => onPressAddToCart(item, true)}>
+      <TouchableOpacity activeOpacity={0.5} onPress={() => onPressAddToCart(item, true)}>
         <Text style={theme.viewStyles.text('SB', 12, '#fc9916', 1, 24, 0)}>{'ADD TO CART'}</Text>
       </TouchableOpacity>
     );
@@ -258,6 +260,7 @@ export const Substitutes: React.FC<SubstitutesProps> = (props) => {
         parseInt(tatDuration?.[0]) <= AppConfig.Configuration.EXPRESS_MAXIMUM_HOURS;
       return (
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             props.navigation.push(AppRoutes.ProductDetailPage, {
               urlKey: substitute?.url_key,

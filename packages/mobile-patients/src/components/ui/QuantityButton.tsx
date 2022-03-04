@@ -11,7 +11,7 @@ export interface QuantityButtonProps {
 
 export const QuantityButton: React.FC<QuantityButtonProps> = (props) => {
   return (
-    <TouchableOpacity activeOpacity={1} onPress={props.onPress}>
+    <TouchableOpacity activeOpacity={0.5} onPress={props.onPress}>
       <View
         style={[
           {

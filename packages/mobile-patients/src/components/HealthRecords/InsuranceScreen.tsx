@@ -352,7 +352,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
         </Text>
         <View style={styles.searchBarMainView}>
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             onPress={() => {
               setShowSearchBar(true);
               setSearchInputFocus(true);

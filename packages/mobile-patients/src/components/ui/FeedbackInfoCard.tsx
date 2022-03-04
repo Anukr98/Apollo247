@@ -57,7 +57,7 @@ export interface FeedbackInfoCardProps {
 export const FeedbackInfoCard: React.FC<FeedbackInfoCardProps> = (props) => {
   const { title, description, photoUrl, imageComponent } = props;
   return (
-    <TouchableOpacity activeOpacity={1} style={[styles.container, props.style]}>
+    <TouchableOpacity activeOpacity={0.5} style={[styles.container, props.style]}>
       <View style={{ flexDirection: 'row' }}>
         <View style={styles.ImageContainer}>
           {photoUrl ? (

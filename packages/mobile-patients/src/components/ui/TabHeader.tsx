@@ -93,7 +93,7 @@ export const TabHeader: React.FC<TabHeaderProps> = (props) => {
       ]}
     >
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={() => {
           navigateToHome(props.navigation);
           cleverTapEventForHomeIconClick();
@@ -108,7 +108,7 @@ export const TabHeader: React.FC<TabHeaderProps> = (props) => {
           />
         )}
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => props.navigation.navigate(AppRoutes.MedAndTestCart)}
         >
           <CartIcon style={{}} />

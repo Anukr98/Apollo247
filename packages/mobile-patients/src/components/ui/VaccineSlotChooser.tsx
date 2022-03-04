@@ -97,7 +97,7 @@ export const VaccineSlotChooser: React.FC<VaccineSlotChooserProps> = (props) => 
     <Menu
       ref={menuRef}
       button={
-        <TouchableOpacity activeOpacity={1} onPress={showMenu}>
+        <TouchableOpacity activeOpacity={0.5} onPress={showMenu}>
           {props.children}
         </TouchableOpacity>
       }
@@ -107,6 +107,7 @@ export const VaccineSlotChooser: React.FC<VaccineSlotChooserProps> = (props) => 
       }}
     >
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={() => {
           props.onVaccineSlotChoosed?.('');
           hideMenu();
@@ -121,6 +122,7 @@ export const VaccineSlotChooser: React.FC<VaccineSlotChooserProps> = (props) => 
         {props.vaccineSlotList.map((vaccineSlot, index) => (
           <View style={{}}>
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 var endDateTime = moment(vaccineSlot.end_date_time);
                 var nowTime = moment(new Date());

@@ -1099,7 +1099,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             {defaultPlanPurchasePrice}
           </Text>
         </View>
-        <TouchableOpacity onPress={() => _onPressRemovePlan()} style={styles.removeTouch}>
+        <TouchableOpacity
+          activeOpacity={0.5}
+          onPress={() => _onPressRemovePlan()}
+          style={styles.removeTouch}
+        >
           <Text style={styles.removeText}>REMOVE</Text>
         </TouchableOpacity>
       </View>
@@ -1251,6 +1255,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             {defaultPlanPurchasePrice}
           </Text>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               _onTogglePlans();
             }}
@@ -1308,6 +1313,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           ]}
         >
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => setShowAllPreviousItems(!showAllPreviousItems)}
             style={styles.previousContainerTouch}
           >
@@ -1399,7 +1405,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             {title}
           </Text>
           {showCouponView && !!touchView && touchView && !!!coupon && !coupon?.valid && (
-            <TouchableOpacity onPress={() => _navigateToCoupons()} style={styles.applyCouponTouch}>
+            <TouchableOpacity
+              activeOpacity={0.5}
+              onPress={() => _navigateToCoupons()}
+              style={styles.applyCouponTouch}
+            >
               <Text style={styles.couponText}>
                 {nameFormater(string.diagnosticsCoupons.applyCoupon, 'upper')}
               </Text>
@@ -1592,7 +1602,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
               </Text>
             </View>
           </View>
-          <TouchableOpacity onPress={() => _removeAppliedCoupon()} style={styles.crossIconTouch}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            onPress={() => _removeAppliedCoupon()}
+            style={styles.crossIconTouch}
+          >
             <Text style={styles.crossIconText}>X </Text>
           </TouchableOpacity>
         </View>
@@ -1606,6 +1620,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const renderOffersCouponsView = () => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={() => _navigateToCoupons()}
         style={[styles.couponViewTouch, styles.flexRow]}
       >

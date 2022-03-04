@@ -136,7 +136,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
   const renderEditView = () => {
     return (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={props.onPressEditPatient}
         style={styles.editIconTouch}
       >
@@ -148,7 +148,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
   const renderAddTestView = () => {
     return (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={props.onPressAddTest}
         style={styles.addTestTouch}
       >
@@ -351,13 +351,13 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
         ]}
       >
         {!!props.showRescheduleCancel && props.showRescheduleCancel && !props.isHelp ? (
-          <TouchableOpacity activeOpacity={1} onPress={props.onPressReschedule}>
+          <TouchableOpacity activeOpacity={0.5} onPress={props.onPressReschedule}>
             <Text style={[styles.yellowText, { fontSize: screenWidth > 380 ? 14 : 13 }]}>
               RESCHEDULE | CANCEL
             </Text>
           </TouchableOpacity>
         ) : null}
-        <TouchableOpacity activeOpacity={1} onPress={props.onPressViewDetails}>
+        <TouchableOpacity activeOpacity={0.5} onPress={props.onPressViewDetails}>
           <Text style={[styles.yellowText, { fontSize: screenWidth > 380 ? 14 : 13 }]}>
             {props.isHelp ? `HELP` : `VIEW DETAILS`}
           </Text>
@@ -425,6 +425,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
           <View style={styles.startContainerN}>
             {starCount.map((item) => (
               <TouchableOpacity
+                activeOpacity={0.5}
                 onPress={() => {
                   props.onPressRatingStar(item);
                 }}
@@ -510,7 +511,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
 
   return (
     <TouchableOpacity
-      activeOpacity={1}
+      activeOpacity={0.5}
       onPress={props.onPressCard}
       style={[styles.containerStyle, props.style]}
       key={props?.orderId}

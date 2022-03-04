@@ -1485,6 +1485,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const renderHorizontalItem = (item: any) => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={styles.horizontalItemTouch}
         onPress={() => onPressHorizontalIcon(item)}
       >

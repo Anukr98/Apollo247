@@ -42,6 +42,7 @@ export const Cards: React.FC<CardsProps> = (props) => {
   const renderNewCard = () => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={styles.newCardCont}
         onPress={() => {
           onPressNewCard();

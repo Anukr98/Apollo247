@@ -210,7 +210,7 @@ export const FloatingLabelInputComponent: React.FC<FloatingLabelInputComponentPr
         </View>
       )}
       {props.noInput ? null : !!!props.editable ? (
-        <TouchableOpacity activeOpacity={1} onPress={props.onPressNonEditableTextInput}>
+        <TouchableOpacity activeOpacity={0.5} onPress={props.onPressNonEditableTextInput}>
           {props.showDrPrefix ? renderDrPrefixTextInput(renderTextInput()) : renderTextInput()}
         </TouchableOpacity>
       ) : props.showDrPrefix ? (

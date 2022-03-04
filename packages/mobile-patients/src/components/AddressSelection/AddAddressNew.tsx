@@ -596,7 +596,11 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
   const renderCurrentLocation = () => {
     return (
       <View style={styles.currentLocationView}>
-        <TouchableOpacity onPress={showCurrentLocation} style={{ height: '100%', width: '100%' }}>
+        <TouchableOpacity
+          activeOpacity={0.5}
+          onPress={showCurrentLocation}
+          style={{ height: '100%', width: '100%' }}
+        >
           <Image source={icon_gps} style={styles.currentLocationIcon} />
         </TouchableOpacity>
       </View>

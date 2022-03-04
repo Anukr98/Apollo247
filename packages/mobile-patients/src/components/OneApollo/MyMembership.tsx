@@ -364,6 +364,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
       {renderHealthCreditRedemption()}
       {membershipType !== 'Platinum' && renderMembershipUpgrades()}
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={() => {
           Linking.openURL('https://www.oneapollo.com/');
         }}

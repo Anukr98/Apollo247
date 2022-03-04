@@ -39,6 +39,7 @@ export const BottomButton: React.FC<BottomButtonProps> = (props) => {
     <StickyBottomComponent style={[styles.stickyBottomComponent]}>
       <View style={[styles.innerContainer]}>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={props.onButtonPress}
           activeOpacity={0.7}
           style={styles.buttonCta}

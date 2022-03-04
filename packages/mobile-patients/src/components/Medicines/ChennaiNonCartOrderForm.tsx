@@ -95,8 +95,8 @@ export const ChennaiNonCartOrderForm: React.FC<ChennaiNonCartOrderFormProps> = (
           inputStyle={styles.inputStyle}
         />
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => setEmailIdCheckbox(!emailIdCheckbox)}
-          activeOpacity={1}
           style={styles.checkboxViewStyle}
         >
           {emailIdCheckbox ? <CheckedIcon /> : <CheckUnselectedIcon />}
@@ -108,8 +108,8 @@ export const ChennaiNonCartOrderForm: React.FC<ChennaiNonCartOrderFormProps> = (
         </TouchableOpacity>
         <Spearator style={styles.separatorStyle} />
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => setAgreementCheckbox(!agreementCheckbox)}
-          activeOpacity={1}
           style={[styles.checkboxViewStyle, { marginTop: 0 }]}
         >
           {agreementCheckbox ? <CheckedIcon /> : <CheckUnselectedIcon />}

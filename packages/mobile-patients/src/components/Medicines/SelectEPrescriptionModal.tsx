@@ -677,6 +677,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
         />
         {healthRecordIndex < (combination?.length || 0) && (
           <TouchableOpacity
+            activeOpacity={0.5}
             style={styles.loadMoreButton}
             activeOpacity={0.4}
             onPress={() => {
@@ -710,6 +711,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
         )}
         <View style={styles.selectButtonContainer}>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               if (!selected) setSelectedHealthRecord([...selectedHealthRecord, imageIndex]);
               setTimeout(() => {
@@ -722,6 +724,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
             <Text style={styles.selectText}>{selected ? `SELECTED` : `SELECT`}</Text>
           </TouchableOpacity>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               setShowPreview(false);
             }}

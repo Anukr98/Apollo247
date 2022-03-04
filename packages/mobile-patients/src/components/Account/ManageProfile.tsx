@@ -286,7 +286,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
           </View>
         )}
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           key={index}
           onPress={() => {
             props.navigation.navigate(AppRoutes.EditProfile, {
@@ -340,7 +340,10 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                 )}
               </View>
               {isPrimaryUHID && (
-                <TouchableOpacity onPress={() => setShowSecondaryUHIDs(!showSecondaryUhids)}>
+                <TouchableOpacity
+                  activeOpacity={0.5}
+                  onPress={() => setShowSecondaryUHIDs(!showSecondaryUhids)}
+                >
                   <PrimaryUHIDIconBlue
                     style={{
                       resizeMode: 'contain',
@@ -504,7 +507,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
               Create your primary UHID by selecting any one of your own profile from below.
             </Text>
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               style={styles.readMoreBanner}
               onPress={() => {
                 props.navigation.navigate(AppRoutes.ReadMoreLinkUHID);
@@ -684,6 +687,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
         <BottomPopUp title="Network Error!" description={'Please try again later.'}>
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
+              activeOpacity={0.5}
               style={{
                 height: 60,
                 paddingRight: 25,

@@ -61,7 +61,7 @@ export const SelectEprescriptionCard: React.FC<SelectEprescriptionCardProps> = (
 
   return (
     <TouchableOpacity
-      activeOpacity={1}
+      activeOpacity={0.5}
       onLongPress={onLongPressCard}
       onPress={onPressCard}
       style={styles.healthRecord}

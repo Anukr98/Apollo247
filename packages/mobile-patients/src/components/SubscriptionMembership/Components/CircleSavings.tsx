@@ -202,6 +202,7 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
               INSTANT discount on Virtual Consultations
             </Text>
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 props.navigation.navigate(AppRoutes.DoctorSearch);
               }}
@@ -223,6 +224,7 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
               Upto 15% cashback on all Pharmacy products
             </Text>
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 props.navigation.navigate('MEDICINES');
               }}

@@ -179,6 +179,7 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
   const borderRadiusValue = status === 'TXN_REFUND' ? 0 : 10;
   return (
     <TouchableOpacity
+      activeOpacity={0.5}
       style={{
         ...styles.mainContainer,
         borderTopRightRadius: borderRadiusValue,

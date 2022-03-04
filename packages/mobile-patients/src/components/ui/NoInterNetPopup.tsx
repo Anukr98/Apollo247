@@ -28,7 +28,7 @@ export const NoInterNetPopup: React.FC<NoInterNetPopupProps> = (props) => {
     >
       <View style={{ height: 60, alignItems: 'flex-end' }}>
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           style={styles.gotItStyles}
           onPress={() => {
             props.onClickClose();

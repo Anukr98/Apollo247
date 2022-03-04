@@ -1322,7 +1322,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const shouldEnableSearchSend = searchText.length > 2;
     const rigthIconView = (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         style={{
           opacity: shouldEnableSearchSend ? 1 : 0.4,
           marginRight: 5,
@@ -1340,6 +1340,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={() => {
           props.navigation.navigate(AppRoutes.SearchTestScene, {
             searchText: searchText,
@@ -1549,6 +1550,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       <View style={{ paddingLeft: 15, marginTop: 3.5 }}>
         {hasLocation ? (
           <TouchableOpacity
+            activeOpacity={0.5}
             style={{
               marginTop: -7.5,
             }}
@@ -1592,9 +1594,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
         </Text>
         <View style={styles.rowCenter}>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => _onPressLocateMe()}
             style={styles.locateMeTouch}
-            activeOpacity={1}
           >
             <Text style={styles.locateMeText}>{nameFormater('Locate Me', 'upper')}</Text>
           </TouchableOpacity>
@@ -1624,6 +1626,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const renderNonServiceableToolTip = (isNoLocation: boolean) => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={() =>
           isNoLocation ? setShowNoLocationPopUp(false) : setUnserviceablePopup(false)
         }
@@ -1815,7 +1818,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       }
     };
     return (
-      <TouchableOpacity activeOpacity={1} onPress={handleOnPress}>
+      <TouchableOpacity activeOpacity={0.5} onPress={handleOnPress}>
         <ImageNative
           resizeMode="stretch"
           style={{ width: '100%', minHeight: imgHeight }}
@@ -2006,7 +2009,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const handleOnPress = () => {};
     return (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={handleOnPress}
         key={index.toString()}
         style={{
@@ -2058,8 +2061,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
             </View>
             <View>
               <TouchableOpacity
+                activeOpacity={0.5}
                 onPress={() => hideAphAlert!()}
-                activeOpacity={1}
                 style={{ backgroundColor: 'transparent' }}
               >
                 <Remove style={styles.removeIconStyle} />
@@ -2386,6 +2389,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <View style={styles.precriptionMiniContainer}>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={styles.precriptionContainerMiniUpload}
           onPress={() => _onPressUpload()}
         >
@@ -2400,6 +2404,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <View style={styles.precriptionMiniContainer}>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={styles.precriptionContainerMiniUpload}
           onPress={() => {
             postMyOrdersClicked('Diagnostics', currentPatient);
@@ -2838,6 +2843,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       <>
         {!!topItemData?.itemTitle && !!pricesForItem?.price ? (
           <TouchableOpacity
+            activeOpacity={0.5}
             style={styles.singleItemContainer}
             onPress={() => _navigateToDetailsPage(topItemData, 'singleItemCard')}
           >
@@ -2917,7 +2923,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const recommendationWidget = getRanking('0'); //this position will always be 0th.
     return (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={() => {
           if (diagnosticResults?.length == 0 && !searchText) return;
           setSearchText('');
@@ -3111,7 +3117,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const renderCartSummary = () => {
     return (
       <View style={styles.cartSummaryOverlay}>
-        <TouchableOpacity onPress={() => onPressShowLess()} style={{ flex: 1 }} />
+        <TouchableOpacity
+          activeOpacity={0.5}
+          onPress={() => onPressShowLess()}
+          style={{ flex: 1 }}
+        />
         <CartPageSummary
           containerStyle={styles.cartSummaryContainer}
           _onPressShowLess={() => onPressShowLess()}
@@ -3162,7 +3172,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
               {summaryRecommendationCount > 1 ? 'Recommendations' : 'Recommendation'}
             </Text>
           ) : (
-            <TouchableOpacity onPress={() => _openCartSummary()} style={styles.viewDetailsTouch}>
+            <TouchableOpacity
+              activeOpacity={0.5}
+              onPress={() => _openCartSummary()}
+              style={styles.viewDetailsTouch}
+            >
               <Text style={styles.viewDetailsText}>View Details</Text>
               <ArrowUpGreen style={styles.viewDetailsUpIcon} />
             </TouchableOpacity>
@@ -3181,7 +3195,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const renderDiagnosticHeader = () => {
     const renderIcon = () => (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={() => {
           navigateToHome(props.navigation);
           cleverTapEventForHomeIconClick();
@@ -3207,8 +3221,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const renderCartIcon = () => (
       <View style={{ flex: 1 }}>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={styles.cartIconTouch}
-          activeOpacity={1}
           onPress={() => _navigateToPatientsPage()}
         >
           <CartIcon />
@@ -3220,7 +3234,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const renderNotificationIcon = () => {
       return (
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => {
             props.navigation.navigate(AppRoutes.NotificationScreen);
           }}
@@ -3301,6 +3315,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_ICON;
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={styles.gridPart}
         onPress={() => {
           DiagnosticHomePageWidgetClicked(
@@ -3424,6 +3439,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           return (
             <>
               <TouchableOpacity
+                activeOpacity={0.5}
                 onPress={() => {
                   if (item.title == 'Choose from Gallery') {
                     setIsPrescriptionGallery(true);
@@ -3462,6 +3478,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           return (
             <>
               <TouchableOpacity
+                activeOpacity={0.5}
                 style={[
                   styles.areaStyles,
                   {
@@ -3599,6 +3616,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             >
               <View style={styles.modalMainView}>
                 <TouchableOpacity
+                  activeOpacity={0.5}
                   style={styles.closeContainer}
                   onPress={() => {
                     if (isPrescriptionGallery) {

@@ -96,6 +96,7 @@ export const Wallets: React.FC<WalletsProps> = (props) => {
     return (
       <View>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={{
             ...styles.subCont,
             borderBottomWidth: item?.index == wallets.length - 1 ? 0 : 1,

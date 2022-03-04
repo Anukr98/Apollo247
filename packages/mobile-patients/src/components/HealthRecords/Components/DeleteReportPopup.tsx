@@ -18,7 +18,7 @@ export const DeleteReportPopup: React.FC<DeleteReportPopupProps> = (props) => {
   const renderCloseIcon = () => {
     return (
       <View style={styles.closeIconViewStyle}>
-        <TouchableOpacity onPress={onPressClose}>
+        <TouchableOpacity activeOpacity={0.5} onPress={onPressClose}>
           <CrossPopup style={styles.crossIconStyle} />
         </TouchableOpacity>
       </View>

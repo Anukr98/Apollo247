@@ -245,7 +245,11 @@ export const ClinicalDocumentPreview: React.FC<ClinicalDocumentPreviewProps> = (
     return (
       <View style={[styles.addMoreImageViewStyle, { marginRight: 15 }]}>
         <View style={styles.imageViewStyle}>
-          <TouchableOpacity onPress={deleteImage} style={styles.removeIconViewStyle}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            onPress={deleteImage}
+            style={styles.removeIconViewStyle}
+          >
             <GreenCross style={{ width: 18, height: 18 }} />
           </TouchableOpacity>
           {fileType === 'pdf' || fileType === 'application/pdf' ? (
@@ -441,6 +445,7 @@ export const ClinicalDocumentPreview: React.FC<ClinicalDocumentPreviewProps> = (
           </View>
           <View style={styles.bottonButtonContainer}>
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 onPressReviewPhotoSave();
               }}
@@ -545,7 +550,7 @@ export const ClinicalDocumentPreview: React.FC<ClinicalDocumentPreviewProps> = (
 
   const headerRightComponent = () => {
     return (
-      <TouchableOpacity activeOpacity={1} onPress={onPressCloseReview}>
+      <TouchableOpacity activeOpacity={0.5} onPress={onPressCloseReview}>
         <Remove />
       </TouchableOpacity>
     );

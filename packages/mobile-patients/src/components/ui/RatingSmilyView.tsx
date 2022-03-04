@@ -75,6 +75,7 @@ export const RatingSmilyView: React.FC<RatingSmilyViewProps> = (props) => {
         return (
           <View>
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 onStatusChange(cardName);
               }}

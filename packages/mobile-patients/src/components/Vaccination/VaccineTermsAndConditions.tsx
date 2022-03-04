@@ -132,6 +132,7 @@ export const VaccineTermsAndConditions: React.FC<VaccineTermsAndConditionsProps>
   const renderCheckBox = () => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={{ alignSelf: 'center' }}
         onPress={() => {
           setIsChecked(!isChecked);

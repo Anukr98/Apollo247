@@ -171,7 +171,7 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
 
   const renderMainBanner = (imgData: object) => {
     return (
-      <TouchableOpacity activeOpacity={1}>
+      <TouchableOpacity activeOpacity={0.5}>
         <Image
           style={{
             width: win.width,
@@ -228,7 +228,7 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
   const renderOtherBanner = (imgUrl: string, item, imageData: object) => {
     return (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={() => {
           handleOnPressBanner(item?.brandRedirectionUrl);
         }}
@@ -262,6 +262,7 @@ export const BrandPages: React.FC<BrandPagesProps> = (props) => {
         }
       >
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             onPressMenuItem(item, index);
           }}

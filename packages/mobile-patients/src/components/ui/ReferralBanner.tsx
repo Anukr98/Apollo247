@@ -49,6 +49,7 @@ export const ReferralBanner: React.FC<ReferralBannerProps> = (props) => {
 
   return (
     <TouchableOpacity
+      activeOpacity={0.5}
       style={styles.referEarnMainContainer}
       onPress={() => {
         const eventArributes = {

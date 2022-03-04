@@ -430,7 +430,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         rightComponent={
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               onPress={() => {
                 CommonLogEvent(AppRoutes.SearchTestScene, 'Navigate to your cart');
                 isModify
@@ -546,7 +546,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           />
           {!!searchText && searchText?.length > 0 && (
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               style={styles.crossIconTouch}
               onPress={() => {
                 setSearchText('');

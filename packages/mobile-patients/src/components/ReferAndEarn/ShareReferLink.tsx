@@ -278,10 +278,11 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
               <View style={styles.referSharereferViaHRLineRight} />
             </View>
             <View style={styles.referSharebtnContainer}>
-              <TouchableOpacity onPress={() => onWhatsAppShare()}>
+              <TouchableOpacity activeOpacity={0.5} onPress={() => onWhatsAppShare()}>
                 <WhatsAppIconReferral style={styles.whatsIconImage} />
               </TouchableOpacity>
               <TouchableOpacity
+                activeOpacity={0.5}
                 onPress={() => {
                   copyLinkToShare();
                 }}
@@ -346,6 +347,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
         </View>
         <View style={styles.howWorklinkMainContainer}>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               const eventArributes = {
                 ...getReferEarnCommonAttributes(),
@@ -364,6 +366,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               const eventArributes = {
                 ...getReferEarnCommonAttributes(),
@@ -392,6 +395,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
   const renderCheckRewardsContainer = () => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={() => {
           const eventArributes = {
             ...getReferEarnCommonAttributes(),
@@ -422,7 +426,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
           {string.referAndEarn.ExpireON} {refreeReward.expirationData}
         </Text>
         <View style={styles.initialHCreedemContainer}>
-          <TouchableOpacity onPress={() => navigation.navigate('MEDICINES')}>
+          <TouchableOpacity activeOpacity={0.5} onPress={() => navigation.navigate('MEDICINES')}>
             <Text style={styles.initialHCreedemContainerText}>
               {validateStringNotToUndefined(shareReferrerLinkData?.redeemNow)}
             </Text>

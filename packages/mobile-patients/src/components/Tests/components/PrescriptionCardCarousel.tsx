@@ -27,7 +27,7 @@ export const PrescriptionCardCarousel: React.FC<PrescriptionCardCarouselProps> =
     const prescribedDateTime = moment(item?.prescriptionDateTime)?.format('DD MMM, YYYY , hh:mm a');
     const patientName = item?.patientName;
     return (
-      <TouchableOpacity activeOpacity={1} onPress={() => {}} style={[{ width: winWidth }]}>
+      <TouchableOpacity activeOpacity={0.5} onPress={() => {}} style={[{ width: winWidth }]}>
         <PrescriptionCard
           key={index?.toString()}
           heading1={`${prescribedText?.length} Tests Prescribed by`}

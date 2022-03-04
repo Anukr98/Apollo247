@@ -511,7 +511,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
             {renderSpecialities()}
           </View>
         </View>
-        <TouchableOpacity onPress={() => navigateToDoctorProfile()}>
+        <TouchableOpacity activeOpacity={0.5} onPress={() => navigateToDoctorProfile()}>
           <Text style={styles.viewProfile}>View Profile</Text>
         </TouchableOpacity>
       </View>
@@ -648,6 +648,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
         : theme.colors.SEARCH_UNDERLINE_COLOR;
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         key={index}
         style={[
           styles.dateView,
@@ -766,7 +767,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     return (
       <View style={styles.sharePHRContainer}>
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => {
             setSharePHR(!sharePHR);
           }}
@@ -1026,6 +1027,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
           )}
           {item?.time?.length > 0 && firstSelectedSlot !== item?.label && !loadTotalSlots ? (
             <TouchableOpacity
+              activeOpacity={0.5}
               style={styles.viewBtn}
               onPress={() => {
                 const attributes = {

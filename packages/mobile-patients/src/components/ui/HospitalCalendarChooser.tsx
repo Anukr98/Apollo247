@@ -198,6 +198,7 @@ export const HospitalCalendarChooser: React.FC<HospitalCalendarChooserProps> = (
   const renderMonthDayItem = (monthDay: any, index: number) => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={
           index == selectedDateIndex
             ? styles.monthDayContainer_Selected
@@ -259,6 +260,7 @@ export const HospitalCalendarChooser: React.FC<HospitalCalendarChooserProps> = (
 
           <View style={styles.calendarArrowContainer}>
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 if (currentWeekStartIndex < 7) {
                   setCurrentWeekStartIndex(0);
@@ -273,6 +275,7 @@ export const HospitalCalendarChooser: React.FC<HospitalCalendarChooserProps> = (
             </TouchableOpacity>
 
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 if (currentWeekStartIndex >= 21) {
                   setCurrentWeekStartIndex(21);
