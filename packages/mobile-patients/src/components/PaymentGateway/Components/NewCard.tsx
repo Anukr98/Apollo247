@@ -300,7 +300,7 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
       >
         <TextInput
           ref={(ref: any) => (expiryRef.current = ref)}
-          style={{ ...styles.containerStyle2, height: 35 }}
+          style={{ ...styles.containerStyle2, flex: 1, height: 35 }}
           value={validity}
           onChangeText={(text) => updateValidity(text)}
           keyboardType={'numeric'}
@@ -308,7 +308,7 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
           placeholder={'Exp Date (MM/YY)'}
           onFocus={() => setFocussed('expiry')}
         />
-        <View style={{ height: 16 }}>{isExpired && renderExpired()}</View>
+        <View style={{ height: 16, paddingRight: 4 }}>{isExpired && renderExpired()}</View>
       </View>
     );
   };
