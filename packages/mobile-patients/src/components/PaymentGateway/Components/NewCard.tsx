@@ -3,7 +3,10 @@ import { StyleSheet, Text, View, Image, TouchableOpacity, Platform, TextInput } 
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { CardInfo } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+import {
+  CardInfo,
+  CardFingetprintInfo,
+} from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import cardValidator from '@aph/mobile-patients/node_modules/@juspay/simple-card-validator/dist/validator';
 import {
   AddNewCard,
@@ -25,6 +28,7 @@ export interface NewCardProps {
   offers: any;
   fetchOffers: (paymentInfo?: any) => void;
   amount: number;
+  customerInfo: any;
 }
 
 export const NewCard: React.FC<NewCardProps> = (props) => {
@@ -36,6 +40,7 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
     offers,
     fetchOffers,
     amount,
+    customerInfo,
   } = props;
   const [cardNumber, setCardNumber] = useState<string>('');
   const [name, setName] = useState<string>('');
@@ -55,20 +60,18 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
   const [isCardSupported, setIsCardSupported] = useState<boolean>(true);
   const [outageStatus, setOutageStatus] = useState<string>('UP');
   const [focussed, setFocussed] = useState<string>('');
+  const [cardFingerPrint, setCardFingerPrint] = useState<string>('');
   const nameRef = useRef<any>(null);
   const cvvRef = useRef<any>(null);
   const expiryRef = useRef<any>(null);
-  const bestOffer = getBestOffer(offers, cardbin?.id);
+  const bestOffer = getBestOffer(offers, cardFingerPrint);
   let ExpYear = validity.slice(3);
   const isExpired = ExpYear?.length == 2 && Number(ExpYear) < new Date().getFullYear() % 100;
   useEffect(() => {
     isCardValid && cardNumber?.replace(/\-/g, '')?.length >= 6
       ? checkIsCardSupported()
       : setIsCardSupported(true);
-    (cardNumber?.replace(/\-/g, '')?.length == 6 ||
-      cardNumber?.replace(/\-/g, '')?.length == 12 ||
-      cardNumber?.replace(/\-/g, '')?.length >= 14) &&
-      getOffers();
+    cardInfo?.cardNumber?.length == cardDetails?.max_length && getOffers();
   }, [cardbin]);
 
   const getOutageStatus = () => {
@@ -79,19 +82,28 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
     return outageStatus?.outage_status;
   };
 
-  const getOffers = () => {
-    const paymentInfo = [
-      {
-        payment_method_type: 'CARD',
-        payment_method: cardbin?.brand,
-        payment_method_reference: cardbin?.id,
-        card_alias: cardbin?.id,
-        card_bin: cardbin?.id,
-        card_type: cardbin?.type,
-        bank_code: cardbin?.juspay_bank_code,
-      },
-    ];
-    fetchOffers(paymentInfo);
+  const getOffers = async () => {
+    const cardNo = cardInfo?.cardNumber;
+    try {
+      const res = await CardFingetprintInfo(
+        cardNo,
+        customerInfo?.clientAuthToken,
+        customerInfo?.customerId
+      );
+      setCardFingerPrint(res?.data?.card_fingerprint);
+      const paymentInfo = [
+        {
+          payment_method_type: 'CARD',
+          payment_method: cardbin?.brand,
+          payment_method_reference: res?.data?.card_fingerprint,
+          card_alias: res?.data?.card_fingerprint,
+          card_bin: cardbin?.id,
+          card_type: cardbin?.type,
+          bank_code: cardbin?.juspay_bank_code,
+        },
+      ];
+      fetchOffers(paymentInfo);
+    } catch (error) {}
   };
 
   const fetchCardInfo = async (text: any) => {
@@ -148,6 +160,8 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
     fetchCardInfo(text);
     if (newlength == getMaxLength()) {
       nameRef?.current?.focus();
+    } else {
+      setCardFingerPrint('');
     }
   }
 
