@@ -1027,6 +1027,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
             offers={offersList}
             fetchOffers={fetchOffers}
             amount={amount}
+            customerInfo={{ clientAuthToken: clientAuthToken, customerId: customerId }}
           />
         );
     }
