@@ -606,7 +606,7 @@ export enum CleverTapEventName {
   //Upload Prescription
   PHARMACY_PRESCRIPTION_UPLOADED = 'Pharmacy Prescription Uploaded',
   // Custom UTM Events
-  CUSTOM_UTM_VISITED = 'App launch source',
+  CUSTOM_UTM_VISITED = 'App Launch Source New',
   // Referrer Events
   REFER_EARN_CTA_CLICKED = 'Refer & Earn CTA Clicked',
   REFERRAL_CHECK_REWARDS_CLICKED = 'Referral Check Rewards Clicked',
