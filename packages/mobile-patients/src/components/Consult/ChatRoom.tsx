@@ -3613,12 +3613,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         includeUUIDs: true,
       })
       .then((response: HereNowResponse) => {
-        const data: any = response.channels[appointmentData.id].occupants;
+        
+        //Error prone
+        // const data: any = response.channels[appointmentData.id].occupants;
 
-        const occupancyDoctor = data.filter((obj: any) => {
-          return obj.uuid === 'DOCTOR' || obj.uuid.indexOf('DOCTOR_') > -1;
-        });
+        //Not required anymore
+        // const data: any = response.channels[channel.current].occupants;
+        // const occupancyDoctor = data.filter((obj: any) => {
+        //   return obj.uuid === 'DOCTOR' || obj.uuid.indexOf('DOCTOR_') > -1;
+        // });
+
         InsertMessageToDoctor(message);
+
       })
       .catch((error) => {
         CommonBugFender('ChatRoom_PUBNUB_PRESENCE', error);
