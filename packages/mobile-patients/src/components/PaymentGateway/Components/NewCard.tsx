@@ -62,6 +62,9 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
   let ExpYear = validity.slice(3);
   const isExpired = ExpYear?.length == 2 && Number(ExpYear) < new Date().getFullYear() % 100;
   useEffect(() => {
+    setisCardValid(true);
+  }, []);
+  useEffect(() => {
     isCardValid && cardNumber?.replace(/\-/g, '')?.length >= 6
       ? checkIsCardSupported()
       : setIsCardSupported(true);
