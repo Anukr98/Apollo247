@@ -4,7 +4,7 @@
  */
 
 import React, { FC, useState } from 'react';
-import { StyleSheet, View, FlatList } from 'react-native';
+import { StyleSheet, View, FlatList, Platform } from 'react-native';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import PaymentHistoryCard from './PaymentHistoryCard';
 import NoPaymentsScreen from './NoPaymentsScreen';
@@ -16,6 +16,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { g } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 interface meta {
   total: number;
@@ -73,6 +74,15 @@ const PaymentsList: FC<IProps> = (props) => {
       client
         .query({
           query: CONSULT_ORDER_PAYMENT_DETAILS,
+          context: {
+            headers: {
+              'x-app-OS': Platform.OS,
+              'x-app-version':
+                Platform.OS === 'ios'
+                  ? AppConfig.Configuration.iOS_Version
+                  : AppConfig.Configuration.Android_Version,
+            },
+          },
           variables: {
             patientId: patientId,
             pageNo: pageNo + 1,

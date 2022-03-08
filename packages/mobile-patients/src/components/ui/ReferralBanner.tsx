@@ -88,12 +88,7 @@ export const ReferralBanner: React.FC<ReferralBannerProps> = (props) => {
           </Text>
         </View>
         <View style={styles.referEarnearnBtn}>
-          <ArrowRight
-            style={{
-              width: 35,
-              height: 35,
-            }}
-          />
+          <ArrowRight />
         </View>
       </View>
     </TouchableOpacity>
@@ -107,7 +102,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  referEarnearnBtn: {},
+  referEarnearnBtn: {
+    marginLeft: 'auto',
+    position: 'absolute',
+    top: 0,
+    right: -90,
+  },
 
   referEarnrupees: {
     fontSize: 19,
