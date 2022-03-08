@@ -12,6 +12,7 @@ import {
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
+import HTML from 'react-native-render-html';
 
 export interface FAQComponentProps {
   data?: any;
@@ -75,13 +76,37 @@ export const FAQComponent: React.FC<FAQComponentProps> = (props) => {
           {!!(previousIndex != -1 && index === previousIndex) ? (
             <></>
           ) : activeIndex === index ? (
-            <Text style={props.answerStyle}>
-              {props.data
-                ? props.source == 'diagnostics'
-                  ? decodeURIComponent(value?.faqAnswer)?.trim()
-                  : value?.faqAnswer
-                : value?.answer}
-            </Text>
+            props?.data ? (
+              props.source == 'diagnostics' ? (
+                <Text style={props.answerStyle}>decodeURIComponent(value?.faqAnswer)?.trim()</Text>
+              ) : (
+                <HTML
+                  html={value?.faqAnswer || ''}
+                  baseFontStyle={styles.faqAnswer}
+                  ignoredStyles={[
+                    'line-height',
+                    'margin-bottom',
+                    'color',
+                    'text-align',
+                    'font-size',
+                    'font-family',
+                  ]}
+                />
+              )
+            ) : (
+              <HTML
+                html={value?.answer || ''}
+                baseFontStyle={styles.faqAnswer}
+                ignoredStyles={[
+                  'line-height',
+                  'margin-bottom',
+                  'color',
+                  'text-align',
+                  'font-size',
+                  'font-family',
+                ]}
+              />
+            )
           ) : (
             <></>
           )}
