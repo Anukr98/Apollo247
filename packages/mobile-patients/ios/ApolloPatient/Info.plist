@@ -142,10 +142,10 @@
 		<string>SimpleLineIcons.ttf</string>
 		<string>Zocial.ttf</string>
 		<string>OpenSans-SemiBold.ttf</string>
-        <string>OpenSans-Regular.ttf</string>
-        <string>OpenSans-ExtraBold.ttf</string>
-        <string>OpenSans-Light.ttf</string>
-        <string>OpenSans-Bold.ttf</string>
+		<string>OpenSans-Regular.ttf</string>
+		<string>OpenSans-ExtraBold.ttf</string>
+		<string>OpenSans-Light.ttf</string>
+		<string>OpenSans-Bold.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>
