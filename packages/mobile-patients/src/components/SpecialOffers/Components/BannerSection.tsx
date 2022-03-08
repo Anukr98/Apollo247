@@ -63,7 +63,7 @@ export const BannerSection: React.FC<BannerSectionProps> = (props) => {
     const imageUrl = productsThumbnailUrl(item.image) + '?imwidth=' + Math.floor(winWidth);
 
     return (
-      <TouchableOpacity activeOpacity={1} onPress={handleOnPress}>
+      <TouchableOpacity activeOpacity={0.5} onPress={handleOnPress}>
         <ImageNative
           resizeMode="stretch"
           style={{ width: '100%', minHeight: imgHeight }}

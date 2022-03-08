@@ -402,6 +402,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         rightComponent={
           props.navigation.getParam('KeyName') == 'Update' ? (
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 setDeleteProfile(true);
               }}
@@ -689,6 +690,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           </View>
           {!editProfile ? (
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 setEditProfile(true);
               }}
@@ -698,6 +700,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           ) : (
             <View style={styles.userSave}>
               <TouchableOpacity
+                activeOpacity={0.5}
                 style={{ width: '100%' }}
                 onPress={() => {
                   validateUserDetails('userdetails');
@@ -857,7 +860,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         }}
       >
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => {
             setDeleteProfile(false);
           }}
@@ -871,7 +874,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
             }}
           >
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               onPress={() => {
                 //deleteUserProfile();
                 setshowSpinner(true);

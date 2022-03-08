@@ -58,6 +58,7 @@ export const PrecautionWarnings: React.FC<PrecautionWarningsProps> = (props) => 
       <View>
         <Text style={styles.subHeading}>Drug Warning</Text>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             if (numberOfLines != maxLines) {
               setMaxLines(numberOfLines);

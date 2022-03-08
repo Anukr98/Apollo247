@@ -66,6 +66,8 @@ import {
   GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
   GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS_V2,
   GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+  DIAGNOSTIC_HOMEPAGE_API_CALLS,
+  DIAGNOSTIC_HOMEPAGE_API_CALLS_2,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -131,6 +133,7 @@ import {
   DiagnosticsBookingSource,
   REPORT_TAT_SOURCE,
   recommendationInputItem,
+  Gender,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { insertMessageVariables } from '@aph/mobile-patients/src/graphql/types/insertMessage';
 import {
@@ -1504,16 +1507,18 @@ export const saveJusPaySDKresponse = (client: ApolloClient<object>, payload: any
 export const getDiagnosticCartRecommendations = (
   client: ApolloClient<object>,
   itemIds: any,
-  numOfRecords: number
+  numOfRecords: number,
+  genderFilter?: [Gender]
 ) => {
-  return client.query<getDiagnosticItemRecommendations, getDiagnosticItemRecommendationsVariables>({
-    query: GET_DIAGNOSTICS_RECOMMENDATIONS,
+  return client.mutate<getDiagnosticItemRecommendations, getDiagnosticItemRecommendationsVariables>({
+    mutation: GET_DIAGNOSTICS_RECOMMENDATIONS,
     context: {
       sourceHeaders,
     },
     variables: {
       itemIds: itemIds,
       records: numOfRecords,
+      genderFilters: genderFilter
     },
     fetchPolicy: 'no-cache',
   });
@@ -1630,7 +1635,8 @@ export const getOffersList = (
 export const getDiagnosticsPackageRecommendations = (
   client: ApolloClient<object>,
   itemId: number,
-  cityId: number
+  cityId: number,
+  genderFilter?: [Gender]
 ) => {
   return client.query<
     getDiagnosticPackageRecommendations,
@@ -1643,6 +1649,7 @@ export const getDiagnosticsPackageRecommendations = (
     variables: {
       itemId: itemId,
       cityId: cityId,
+      genderFilters: genderFilter
     },
     fetchPolicy: 'no-cache',
   });
@@ -1652,6 +1659,8 @@ export const getDiagnosticsPackageRecommendationsv2 = (
   client: ApolloClient<object>,
   recommendationInputItems: recommendationInputItem[],
   cityId: number,
+  genderFilter?: [Gender],
+  groupPlan?: string
 ) => {
   return client.query<getDiagnosticPackageRecommendationsv2, getDiagnosticPackageRecommendationsv2Variables>({
     query: GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS_V2,
@@ -1661,6 +1670,8 @@ export const getDiagnosticsPackageRecommendationsv2 = (
     variables: {
       recommendationInputItems: recommendationInputItems,
       cityId: cityId,
+      genderFilters: genderFilter,
+      groupPlan: groupPlan
     },
     fetchPolicy: 'no-cache',
   });
@@ -1782,7 +1793,7 @@ export const getDiagnosticReasons = (client: ApolloClient<object>, orderTime: st
   });
 };
 
-export const getDiagnosticWidgetPricing = (client: ApolloClient<object>, cityId: string | number, listOfId: []) => {
+export const getDiagnosticWidgetPricing = (client: ApolloClient<object>, cityId: string | number, listOfId: [] | number[]) => {
   return client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
     query: GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
     context: {
@@ -1799,6 +1810,22 @@ export const getDiagnosticWidgetPricing = (client: ApolloClient<object>, cityId:
 export const getUserSubscriptionStatus = (client: ApolloClient<object>, queryVariable: GetSubscriptionsOfUserByStatusVariables) =>{
   return client.query<GetSubscriptionsOfUserByStatus>({
     query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+    fetchPolicy: 'no-cache',
+    variables: queryVariable,
+  });
+}
+
+export const getDiagnosticHomePageBatchedApi = (client: ApolloClient<object>, queryVariable: any) =>{
+  return client.query<any>({
+    query: DIAGNOSTIC_HOMEPAGE_API_CALLS,
+    fetchPolicy: 'no-cache',
+    variables: queryVariable,
+  });
+}
+
+export const getDiagnosticHomePageBatchedApi_2 = (client: ApolloClient<object>, queryVariable: any) =>{
+  return client.query<any>({
+    query: DIAGNOSTIC_HOMEPAGE_API_CALLS_2,
     fetchPolicy: 'no-cache',
     variables: queryVariable,
   });

@@ -36,7 +36,7 @@ export const SelectedAddress: React.FC<SelectedAddressProps> = (props) => {
           </View>
         </View>
         {!!showChangeAddress && (
-          <TouchableOpacity onPress={onPressChange}>
+          <TouchableOpacity activeOpacity={0.5} onPress={onPressChange}>
             <Text style={styles.change}>CHANGE</Text>
           </TouchableOpacity>
         )}

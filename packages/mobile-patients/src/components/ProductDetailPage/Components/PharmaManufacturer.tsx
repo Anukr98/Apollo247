@@ -23,6 +23,7 @@ export const PharmaManufacturer: React.FC<PharmaManufacturerProps> = (props) => 
       )}
       {!!composition && !!isPharma && (
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             onCompositionClick ? onCompositionClick() : null;
           }}

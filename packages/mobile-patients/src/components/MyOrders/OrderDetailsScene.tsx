@@ -1738,7 +1738,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     return (
       <View style={styles.chatView}>
         <Text style={styles.queryText}>In case of any issues/queries:</Text>
-        <TouchableOpacity onPress={() => onPressHelp()}>
+        <TouchableOpacity activeOpacity={0.5} onPress={() => onPressHelp()}>
           <Text style={styles.goToHelp}>{string.orders.go_to_help}</Text>
         </TouchableOpacity>
       </View>
@@ -1818,7 +1818,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             ]}
           >
             {showAlertStore && (
-              <TouchableOpacity onPress={() => alertTheStore()}>
+              <TouchableOpacity activeOpacity={0.5} onPress={() => alertTheStore()}>
                 <Text
                   style={{
                     color: theme.colors.APP_YELLOW,
@@ -1829,7 +1829,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 </Text>
               </TouchableOpacity>
             )}
-            <TouchableOpacity onPress={() => Linking.openURL(`tel:${storePhoneNumber}`)}>
+            <TouchableOpacity
+              activeOpacity={0.5}
+              onPress={() => Linking.openURL(`tel:${storePhoneNumber}`)}
+            >
               <Text
                 style={{
                   color: theme.colors.APP_YELLOW,
@@ -2230,7 +2233,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               headingTextStyle={{ fontSize: 14 }}
             />
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               onPress={async () => {
                 try {
                   setLoading!(true);

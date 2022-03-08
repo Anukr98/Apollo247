@@ -21,7 +21,10 @@ export const LinkedWallet: React.FC<LinkedWalletProps> = (props) => {
         )}
         <View style={styles.walletCont}>
           <Text style={styles.walletName}>{wallet?.wallet}</Text>
-          <TouchableOpacity onPress={() => onPressDelink(wallet?.id, wallet?.wallet)}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            onPress={() => onPressDelink(wallet?.id, wallet?.wallet)}
+          >
             <Text style={styles.payNow}>DE-LINK ACCOUNT</Text>
           </TouchableOpacity>
         </View>

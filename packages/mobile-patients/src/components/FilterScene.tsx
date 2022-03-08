@@ -190,6 +190,7 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
 
   const renderItem = (item: any, id: number) => (
     <TouchableOpacity
+      activeOpacity={0.5}
       onPress={() => {
         let selectedData = [...data][id]['selectedOptions'] || [];
         const dataCopy = [...data];
@@ -204,7 +205,6 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
         };
         setData(dataCopy);
       }}
-      activeOpacity={1}
       style={styles.checkboxViewStyle}
     >
       {[...data][id]['selectedOptions'].includes(item) ? <CheckedIcon /> : <CheckUnselectedIcon />}
@@ -360,6 +360,7 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
                   <Text style={styles.availabilityTextStyle}>Availability</Text>
                 </View>
                 <TouchableOpacity
+                  activeOpacity={0.5}
                   onPress={() => {
                     setshowCalander(false);
                   }}
@@ -473,8 +474,8 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
             )}
           {label === 'Availability' ? (
             <TouchableOpacity
+              activeOpacity={0.5}
               style={{ position: 'absolute', right: 10, top: 15 }}
-              activeOpacity={1}
               onPress={() => {
                 setshowCalander(!showCalander);
                 const selectedData: string[] = [];
@@ -522,6 +523,7 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
           {menuItems.map((item, index) => {
             return (
               <TouchableOpacity
+                activeOpacity={0.5}
                 key={item.id}
                 onPress={() => setSelectedItem(item.id)}
                 style={[styles.menuItem, item.id === selectedItem ? styles.selectedMenuItem : null]}
@@ -578,7 +580,7 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
         title="FILTERS"
         rightComponent={
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             onPress={() => {
               const filterData = data.map((obj) => {
                 if (obj) obj.selectedOptions = [];

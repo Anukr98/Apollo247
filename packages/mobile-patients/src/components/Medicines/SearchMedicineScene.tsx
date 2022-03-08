@@ -471,7 +471,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         rightComponent={
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               onPress={() => {
                 CommonLogEvent(AppRoutes.SearchMedicineScene, 'Navigate to your cart');
                 props.navigation.navigate(
@@ -514,7 +514,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     const enableSearchEnterBtn = searchText.length > 2;
     const rigthIconView = (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         style={{
           opacity: enableSearchEnterBtn ? 1 : 0.4,
         }}
@@ -571,7 +571,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   ) => {
     return (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         key={pastSeacrh.typeId!}
         style={[styles.pastSearchItemStyle, containerStyle]}
         onPress={() => {
@@ -1127,7 +1127,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     return (
       ((!!searchSate && medicineList.length) || searchSate == 'load' || isNoResultsFound) && (
         <View style={overlayStyle}>
-          <TouchableOpacity activeOpacity={1} style={overlayStyle} onPress={closeOverlay} />
+          <TouchableOpacity activeOpacity={0.5} style={overlayStyle} onPress={closeOverlay} />
         </View>
       )
     );

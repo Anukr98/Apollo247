@@ -583,9 +583,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           </View>
           <View style={styles.seperatorLine} />
           <TouchableOpacity
+            activeOpacity={0.5}
             style={{ flex: 1 }}
             onPress={() => openCircleWebView()}
-            activeOpacity={1}
           >
             <Text style={styles.circleDoctorFeeText3}>
               {cashbackEnabled ? string.common.circleCashback : string.common.circleDiscount}
@@ -719,7 +719,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     return (
       <View style={styles.centerRow}>
         {isOnline && isPhysical ? (
-        <>
+          <>
             <Text style={styles.availabilityText}>{getButtonTitle(onlineSlot)}</Text>
             <Text style={styles.availabilityText}>{getButtonTitle(physicalSlot, true)}</Text>
           </>
@@ -842,6 +842,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     return (
       <View style={styles.bottomBtnView}>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={styles.bottomRightBtn}
           onPress={() => onPressConsultConfigCTA(ConsultMode.ONLINE)}
         >
@@ -853,6 +854,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           </View>
         </TouchableOpacity>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={styles.bottomLeftBtn}
           onPress={() => onPressConsultConfigCTA(ConsultMode.PHYSICAL)}
         >
@@ -871,6 +873,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     return (
       <View style={styles.bottomBtnView}>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={[
             styles.bottomLeftBtn,
             {
@@ -906,7 +909,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           <View>
             {!props?.rowData?.allowBookingRequest && (
               <TouchableOpacity
-                activeOpacity={1}
+                activeOpacity={0.5}
                 style={[styles.doctorPartnerBottomBtn, props.buttonStyle]}
                 onPress={() => {
                   onPressConsultConfigCTA();
@@ -979,7 +982,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const renderShareProfile = () => {
     return (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={() => props.onPressShare && props.onPressShare(rowData)}
         style={{ paddingLeft: 5 }}
       >
@@ -1048,8 +1051,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     const languages = rowData?.languages;
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         key={rowData?.id}
-        activeOpacity={1}
         style={[
           styles.doctorView,
           {

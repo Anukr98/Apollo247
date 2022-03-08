@@ -28,6 +28,8 @@ export interface getDiagnosticItemRecommendationsByPastOrders_getDiagnosticItemR
   __typename: "AffinityData";
   itemId: number;
   itemName: string;
+  gender: string | null;
+  imageUrl: string | null;
   observations: (getDiagnosticItemRecommendationsByPastOrders_getDiagnosticItemRecommendationsByPastOrders_itemsData_observations | null)[] | null;
   diagnosticInclusions: (getDiagnosticItemRecommendationsByPastOrders_getDiagnosticItemRecommendationsByPastOrders_itemsData_diagnosticInclusions | null)[] | null;
 }

@@ -171,7 +171,7 @@ export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
     return (
       <View style={{ opacity: pinCode.length == 6 ? 1 : 0.5 }}>
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           disabled={pinCode.length != 6}
           onPress={() => {
             _setStores([]);

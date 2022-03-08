@@ -85,7 +85,7 @@ import {
   DiagnosticAddTestClicked,
   DiagnosticRescheduleOrder,
   DiagnosticCancellationRetention,
-} from '@aph/mobile-patients/src/components/Tests/Events';
+} from '@aph/mobile-patients/src/components/Tests/utils/Events';
 import { OrderTestCard } from '@aph/mobile-patients/src/components/Tests/components/OrderTestCard';
 import {
   diagnosticCancelOrder,
@@ -117,6 +117,7 @@ import { PatientListOverlay } from '@aph/mobile-patients/src/components/Tests/co
 import { getDiagnosticOrdersListByParentOrderID_getDiagnosticOrdersListByParentOrderID_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByParentOrderID';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 import { PhleboCallPopup } from '@aph/mobile-patients/src/components/Tests/components/PhleboCallPopup';
+import { checkPatientWithSkuGender } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 
 type orderList = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList;
 
@@ -559,7 +560,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         ({
           itemId: Number(item?.itemId),
           price: item?.price,
-          mrp: populateMrp(item), //check this
+          mrp: populateMrp(item),
           groupPlan: item?.groupPlan,
         } as DiagnosticLineItem)
     );
@@ -695,6 +696,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       <View style={styles.filterContainer}>
         <Text style={styles.textPaitent}>Patient Name : </Text>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={styles.activeFilterView}
           onPress={() => {
             setShowPatientsOverlay(true);
@@ -949,7 +951,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         overlayStyle={styles.overlayStyle}
       >
         <View style={{ flex: 1 }}>
-          <TouchableOpacity style={{ flex: 1 }} onPress={() => onPressCloseOverlay()} />
+          <TouchableOpacity
+            activeOpacity={0.5}
+            style={{ flex: 1 }}
+            onPress={() => onPressCloseOverlay()}
+          />
           <SafeAreaView style={[styles.overlaySafeArea, styles.overlayTouch]}>
             <View
               style={[
@@ -1009,7 +1015,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const renderList = (item: any, index: number, count: number) => {
     return (
-      <TouchableOpacity onPress={() => {}} style={{}}>
+      <TouchableOpacity activeOpacity={0.5} onPress={() => {}} style={{}}>
         {renderPatientTestView(item, count, index)}
       </TouchableOpacity>
     );
@@ -1055,7 +1061,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                 <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
                 <Text style={styles.testName}>{nameFormater(lineItems?.itemName, 'title')}</Text>
                 {remainingItems > 0 && index == 1 && (
-                  <TouchableOpacity onPress={() => _onPressMore(displayId)} style={{}}>
+                  <TouchableOpacity
+                    activeOpacity={0.5}
+                    onPress={() => _onPressMore(displayId)}
+                    style={{}}
+                  >
                     <Text style={styles.moreText}>+ {remainingItems} MORE</Text>
                   </TouchableOpacity>
                 )}
@@ -1088,7 +1098,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
         <Text style={styles.testName}>{nameFormater(lineItems?.itemName, 'title')}</Text>
         {index === totalLineItems?.length - 1 && (
-          <TouchableOpacity onPress={() => _onPressLess(displayId)} style={{}}>
+          <TouchableOpacity activeOpacity={0.5} onPress={() => _onPressLess(displayId)} style={{}}>
             <Text style={styles.moreText}>SHOW LESS</Text>
           </TouchableOpacity>
         )}
@@ -1107,6 +1117,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             return (
               <View style={{ flex: 1 }}>
                 <TouchableOpacity
+                  activeOpacity={0.5}
                   onPress={() => setSelectRescheduleReason(item)}
                   style={styles.reasonsTouch}
                 >
@@ -1183,6 +1194,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                 return (
                   <View style={{ flex: 1 }}>
                     <TouchableOpacity
+                      activeOpacity={0.5}
                       onPress={() => _onPressCancelReason(item, isMultiCTA)}
                       style={[
                         styles.reasonsTouch,
@@ -1311,7 +1323,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       <FlatList
         data={ctaArray}
         numColumns={ctaColumn}
-        renderItem={({ item, index }) => renderView(item, index)}
+        renderItem={({ item, index }: { item: string; index: number }) => renderView(item, index)}
       />
     );
   };
@@ -1323,6 +1335,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const renderView = (item: string, index: number) => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={() => _selectOption(item)}
         style={[
           styles.ctaTouch,
@@ -1367,6 +1380,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     return (
       <View style={styles.buttonView}>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={styles.cancelCTATouch}
           disabled={
             selectCancelReason == string.diagnostics.reasonForCancel_TestOrder.otherReasons
@@ -1392,6 +1406,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         </View>
         <View style={styles.promoButtonContainer}>
           <TouchableOpacity
+            activeOpacity={0.5}
             style={styles.proceedToCancelTouch}
             onPress={() => {
               _onPressProceedToCancel();
@@ -1431,7 +1446,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       <View>
         <Text style={styles.overlayHeadingText}>{string.diagnostics.whatWudLikeText}</Text>
         {enable_cancelellation_policy ? renderCancelationPolicy() : null}
-        <TouchableOpacity onPress={() => _onPressReschduleOption()} style={styles.optionsTouch}>
+        <TouchableOpacity
+          activeOpacity={0.5}
+          onPress={() => _onPressReschduleOption()}
+          style={styles.optionsTouch}
+        >
           <View>
             <View style={styles.rowStyle}>
               <Text style={styles.optionText}>{string.diagnostics.rescheduleBookingText}</Text>
@@ -1460,7 +1479,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             )}
           </View>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => _onPressCancelOption()} style={styles.optionsTouch}>
+        <TouchableOpacity
+          activeOpacity={0.5}
+          onPress={() => _onPressCancelOption()}
+          style={styles.optionsTouch}
+        >
           <View>
             <View style={styles.rowStyle}>
               <Text style={styles.optionText}>{string.diagnostics.cancelBookingText}</Text>
@@ -1752,7 +1775,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           !!order?.patientObj?.gender
             ? order?.patientObj?.gender === Gender.MALE
               ? 'Mr.'
-              : 'Ms.'
+              : order?.patientObj?.gender === Gender.FEMALE
+              ? 'Ms.'
+              : ''
             : ''
         }
         patientDetails={!!order?.patientObj ? order?.patientObj : null}
@@ -1994,6 +2019,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const renderLoadMore = () => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={styles.loadMoreView}
         onPress={() => {
           setCurrentOffset(currentOffset + 1);
@@ -2079,6 +2105,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     const isSelected = selectedPatientId == item?.id;
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={() => {
           setSelectedPatient(item?.firstName == null ? '' : item?.firstName);
           setSelectedPatientId(item?.id);
@@ -2122,7 +2149,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         overlayStyle={styles.overlayStyle}
       >
         <SafeAreaView style={{ flex: 1 }}>
-          <TouchableOpacity style={{ flex: 1 }} onPress={() => _onPressClosePatientOverlay()}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            style={{ flex: 1 }}
+            onPress={() => _onPressClosePatientOverlay()}
+          >
             <View style={styles.modalMainView}>
               <View style={styles.paitentModalView}>
                 <Text style={styles.textHeadingModal}>Select Patient Name</Text>
@@ -2239,11 +2270,29 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   }
 
+  function _onPressAddNewProfile() {
+    setShowPatientListOverlay(false);
+    props.navigation.navigate(AppRoutes.EditProfile, {
+      isEdit: false,
+      isPoptype: true,
+      mobileNumber: currentPatient?.mobileNumber,
+      onNewProfileAdded: onNewProfileAdded,
+      onPressBackButton: _onPressBackButton,
+    });
+  }
+
   const renderPatientsListOverlay = () => {
     const orderPatient = allCurrentPatients?.find(
       (item: any) => item?.id === selectedOrder?.patientId
     );
     const updatePatientCheck = updatePatientSwitchChecks(selectedOrder!);
+    const skuItem = selectedOrder?.diagnosticOrderLineItems!;
+    const removeAllOther = checkPatientWithSkuGender(skuItem)?.removeAllOther;
+    const getPatientDisableValue = allCurrentPatients?.map(
+      (patient: any) => checkPatientWithSkuGender(skuItem, patient)?.nonValidPatient
+    );
+    const checkIsPatientDisableWithSku =
+      !!getPatientDisableValue && getPatientDisableValue?.find((value: boolean) => value == true);
     return (
       <PatientListOverlay
         showCloseIcon={true}
@@ -2252,16 +2301,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         onPressDone={(_selectedPatient: any) => {
           _onPressDoneSwitchUhid(_selectedPatient, updatePatientCheck);
         }}
-        onPressAddNewProfile={() => {
-          setShowPatientListOverlay(false);
-          props.navigation.navigate(AppRoutes.EditProfile, {
-            isEdit: false,
-            isPoptype: true,
-            mobileNumber: currentPatient?.mobileNumber,
-            onNewProfileAdded: onNewProfileAdded,
-            onPressBackButton: _onPressBackButton,
-          });
-        }}
+        onPressAddNewProfile={() => _onPressAddNewProfile()}
         patientSelected={orderPatient}
         onPressAndroidBack={() => {
           setShowPatientListOverlay(false);
@@ -2275,6 +2315,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         onCloseError={() => setSwitchPatientResponse('')}
         refetchResult={() => _afterSuccess()}
         removeAllSwitchRestrictions={updatePatientCheck}
+        skuItem={skuItem!}
+        showGenderSkuMsg={!!checkIsPatientDisableWithSku}
+        skuGender={
+          !!removeAllOther && removeAllOther?.length > 0
+            ? removeAllOther?.[0]
+            : selectedOrder?.patientObj?.gender?.toLowerCase()
+        }
       />
     );
   };
@@ -2289,7 +2336,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const renderHeaderRightComponent = () => {
     return (
-      <TouchableOpacity activeOpacity={1} style={{ paddingLeft: 10 }} onPress={onPressHelp}>
+      <TouchableOpacity activeOpacity={0.5} style={{ paddingLeft: 10 }} onPress={onPressHelp}>
         <Text style={styles.helpTextStyle}>{string.help.toUpperCase()}</Text>
       </TouchableOpacity>
     );

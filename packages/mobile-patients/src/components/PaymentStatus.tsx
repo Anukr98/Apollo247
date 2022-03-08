@@ -413,7 +413,11 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
         </View>
         <View style={{ flex: 0.29, justifyContent: 'flex-start', alignItems: 'center' }}>
           {textComponent('Payment Ref. Number - ', undefined, theme.colors.SHADE_GREY, false)}
-          <TouchableOpacity style={styles.refStyles} onPress={() => copyToClipboard(refNumberText)}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            style={styles.refStyles}
+            onPress={() => copyToClipboard(refNumberText)}
+          >
             {textComponent(refNumberText, undefined, theme.colors.SHADE_GREY, false)}
             <Copy style={styles.iconStyle} />
           </TouchableOpacity>
@@ -509,7 +513,11 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
 
   const renderButton = () => {
     return (
-      <TouchableOpacity style={styles.buttonStyle} onPress={() => handleButton()}>
+      <TouchableOpacity
+        activeOpacity={0.5}
+        style={styles.buttonStyle}
+        onPress={() => handleButton()}
+      >
         <Text style={{ ...theme.viewStyles.text('SB', 13, '#ffffff', 1, 24) }}>
           {getButtonText()}
         </Text>
@@ -538,7 +546,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   const renderRetryPayment = () => {
     return (
       <View style={styles.retryPayment}>
-        <TouchableOpacity onPress={() => handleButton()}>
+        <TouchableOpacity activeOpacity={0.5} onPress={() => handleButton()}>
           <Text style={styles.clickText}>Click here</Text>
         </TouchableOpacity>
         <Text style={styles.retryText}>{' to retry your payment'}</Text>

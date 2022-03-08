@@ -38,7 +38,7 @@ export const LocationOnHeader: React.FC<LocationOnHeaderProps> = (props) => {
   const renderLocationOnHeader = () => {
     return (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={() => {
           props.postSelectLocation && props.postSelectLocation();
           props.navigation.navigate(AppRoutes.SelectLocation, {

@@ -49,6 +49,7 @@ export const SubstituteItemsCard: React.FC<SubstituteItemsCardProps> = (props) =
         </View>
         <View>
           <TouchableOpacity
+            activeOpacity={0.5}
             style={[substituteStyles.buttonAgreeStyle, substituteStyles.buttonStyle]}
             onPress={() => {
               const params: updateMedicineOrderSubstitutionVariables = {
@@ -66,6 +67,7 @@ export const SubstituteItemsCard: React.FC<SubstituteItemsCardProps> = (props) =
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
+            activeOpacity={0.5}
             style={[substituteStyles.buttonNotAgreeStyle, substituteStyles.buttonStyle]}
             onPress={() => {
               const params: updateMedicineOrderSubstitutionVariables = {

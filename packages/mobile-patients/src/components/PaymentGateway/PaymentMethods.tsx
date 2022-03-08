@@ -51,7 +51,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { TxnFailed } from '@aph/mobile-patients/src/components/PaymentGateway/Components/TxnFailed';
 import { InvalidOffer } from '@aph/mobile-patients/src/components/PaymentGateway/Components/InvalidOffer';
-import { AppConfig, ELIGIBLE_HC_VERTICALS } from '@aph/mobile-patients/src/strings/AppConfig';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
   VerifyVPA,
   one_apollo_store_code,
@@ -60,7 +60,7 @@ import { verifyVPA, verifyVPAVariables } from '@aph/mobile-patients/src/graphql/
 import {
   DiagnosticUserPaymentAborted,
   DiagnosticPaymentPageViewed,
-} from '@aph/mobile-patients/src/components/Tests/Events';
+} from '@aph/mobile-patients/src/components/Tests/utils/Events';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { SecureTags } from '@aph/mobile-patients/src/components/PaymentGateway/Components/SecureTag';
 import { useFetchHealthCredits } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useFetchHealthCredits';

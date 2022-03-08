@@ -12,7 +12,7 @@ export const SymptomTrackerCard: React.FC<SymptomTrackerProps> = (props) => {
   const { onPressTrack, style } = props;
 
   return (
-    <TouchableOpacity style={[styles.container, style]} onPress={onPressTrack}>
+    <TouchableOpacity activeOpacity={0.5} style={[styles.container, style]} onPress={onPressTrack}>
       <SympTrackerIcon style={styles.symptomIcon} />
       <View style={{ flex: 1 }}>
         <Text style={styles.whichSpecialityTxt}>Not sure about which speciality to choose?</Text>

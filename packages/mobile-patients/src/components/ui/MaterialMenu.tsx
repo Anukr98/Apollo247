@@ -133,7 +133,7 @@ export const MaterialMenu: React.FC<MaterialMenuProps> = (props) => {
     <Menu
       ref={menuRef}
       button={
-        <TouchableOpacity activeOpacity={1} onPress={showMenu}>
+        <TouchableOpacity activeOpacity={0.5} onPress={showMenu}>
           {props.children}
         </TouchableOpacity>
       }
@@ -150,6 +150,7 @@ export const MaterialMenu: React.FC<MaterialMenuProps> = (props) => {
           props.showProfilePic ? (
             item?.value === '+add Member' ? null : (
               <TouchableOpacity
+                activeOpacity={0.5}
                 key={item.key}
                 onPress={() => {
                   hideMenu();

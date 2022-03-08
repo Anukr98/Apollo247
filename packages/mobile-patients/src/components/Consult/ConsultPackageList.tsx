@@ -140,6 +140,7 @@ export const ConsultPackageList: React.FC<ConsultPackageListProps> = (props) => 
   const renderPackageListItem = (packageItem: any, index: any) => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={styles.packageItemCardContainer}
         onPress={() => {
           openPackageDetail(packageItem);

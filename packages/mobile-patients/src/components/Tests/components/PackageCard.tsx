@@ -18,18 +18,20 @@ import {
   nameFormater,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import {
-  convertNumberToDecimal,
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
+  DIAGNOSTIC_ITEM_GENDER,
   getPricesForItem,
-} from '@aph/mobile-patients/src/utils/commonUtils';
+  createDiagnosticAddToCartObject,
+} from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
 import {
   DiagnosticHomePageWidgetClicked,
   DiagnosticAddToCartEvent,
-} from '@aph/mobile-patients/src/components/Tests/Events';
+} from '@aph/mobile-patients/src/components/Tests/utils/Events';
 import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -85,6 +87,10 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
   let actualItemsToShow = diagnosticWidgetData?.length > 0 && diagnosticWidgetData;
   const { currentPatient } = useAllCurrentPatients();
   const { isDiagnosticCircleSubscription } = useDiagnosticsCart();
+  const isFromRecommendendation =
+    sourceScreen == AppRoutes.TestListing &&
+    props.widgetHeading?.toLowerCase() ==
+      string.diagnostics.homepagePastOrderRecommendations?.toLowerCase();
 
   function getCount(array: any) {
     return array?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
@@ -102,69 +108,72 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     }
   }
 
+  function inclusionParameterLogic(getItem: any) {
+    const inclusions = isFromRecommendendation
+      ? getItem?.inclusions! || getItem?.inclusionData
+      : getItem?.inclusionData;
+    var getMandatoryParamter = [] as any;
+
+    if (sourceScreen == AppRoutes.TestDetails || isFromRecommendendation) {
+      getMandatoryParamter =
+        !!inclusions &&
+        inclusions?.length > 0 &&
+        inclusions?.map((inclusion: any) =>
+          getMandatoryParamterResults(
+            isFromRecommendendation
+              ? !!inclusion?.observations
+                ? inclusion?.observations
+                : inclusion?.incObservationData
+              : inclusion?.observations,
+            inclusion
+          )
+        );
+    } else {
+      getMandatoryParamter =
+        !!inclusions &&
+        inclusions?.length > 0 &&
+        inclusions?.map((inclusion: any) =>
+          getMandatoryParamterResults(inclusion?.incObservationData, inclusion)
+        );
+    }
+
+    const getMandatoryParameterCount = !!getMandatoryParamter && getCount(getMandatoryParamter);
+    const getParamterData =
+      !!getMandatoryParamter && getMandatoryParamter?.length > 0 && getMandatoryParamter?.flat(1);
+    const dataToShow = getMandatoryParameterCount > 0 ? getParamterData : inclusions;
+    const nonInclusionTests =
+      !!inclusions && inclusions?.length > 0
+        ? inclusions?.filter((inclusion: any) => inclusion?.incObservationData?.length == 0)
+        : [];
+
+    return {
+      inclusions,
+      dataToShow,
+      getMandatoryParameterCount,
+    };
+  }
+
   const renderItemCard = useCallback(
     (item: any) => {
       const getItem = item?.item;
       const getDiagnosticPricingForItem = getItem?.diagnosticPricing;
-
-      // if (getDiagnosticPricingForItem == undefined || getDiagnosticPricingForItem == null) {
-      //   return null;
-      // }
       const packageMrpForItem = getItem?.packageCalculatedMrp!;
       const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
       if (props.isPriceAvailable && !pricesForItem?.itemActive) {
         return null;
       }
 
-      const imageUrl = getItem?.itemImageUrl;
+      const imageUrl = getItem?.itemImageUrl || getItem?.imageUrl;
       const name = getItem?.itemTitle;
-      const isFromRecommendendation =
-        sourceScreen == AppRoutes.TestListing &&
-        props.widgetHeading?.toLowerCase() ==
-          string.diagnostics.homepagePastOrderRecommendations?.toLowerCase();
-      const inclusions = isFromRecommendendation
-        ? getItem?.inclusions! || getItem?.inclusionData
-        : getItem?.inclusionData;
+
       const numberOfParametersToShow = isDiagnosticCircleSubscription ? 3 : 2;
-      var getMandatoryParamter = [] as any;
-
-      if (sourceScreen == AppRoutes.TestDetails || isFromRecommendendation) {
-        getMandatoryParamter =
-          !!inclusions &&
-          inclusions?.length > 0 &&
-          inclusions?.map((inclusion: any) =>
-            getMandatoryParamterResults(
-              isFromRecommendendation
-                ? !!inclusion?.observations
-                  ? inclusion?.observations
-                  : inclusion?.incObservationData
-                : inclusion?.observations,
-              inclusion
-            )
-          );
-      } else {
-        getMandatoryParamter =
-          !!inclusions &&
-          inclusions?.length > 0 &&
-          inclusions?.map((inclusion: any) =>
-            getMandatoryParamterResults(inclusion?.incObservationData, inclusion)
-          );
-      }
-
-      const getMandatoryParameterCount = !!getMandatoryParamter && getCount(getMandatoryParamter);
-
-      const getParamterData =
-        !!getMandatoryParamter && getMandatoryParamter?.length > 0 && getMandatoryParamter?.flat(1);
-
-      const dataToShow = getMandatoryParameterCount > 0 ? getParamterData : inclusions;
-      const nonInclusionTests =
-        !!inclusions && inclusions?.length > 0
-          ? inclusions?.filter((inclusion: any) => inclusion?.incObservationData?.length == 0)
-          : [];
+      const { dataToShow, getMandatoryParameterCount, inclusions } = inclusionParameterLogic(
+        getItem
+      );
 
       return (
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => onPress(getItem, packageMrpForItem, pricesForItem)}
           key={getItem?.itemId.toString()}
           style={[
@@ -469,6 +478,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
   };
 
   function onPressAddToCart(item: any, pricesForItem: any, packageCalculatedMrp: number) {
+    const { getMandatoryParameterCount } = inclusionParameterLogic(item);
     const specialPrice = pricesForItem?.specialPrice!;
     const price = pricesForItem?.price!;
     const circlePrice = pricesForItem?.circlePrice!;
@@ -504,23 +514,24 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
       isDiagnosticCircleSubscription
     );
 
-    const addedItems = {
-      id: `${item?.itemId}`,
-      mou: 1,
-      name: item?.itemTitle!,
-      price: price,
-      specialPrice: specialPrice! | price,
-      circlePrice: circlePrice,
-      circleSpecialPrice: circleSpecialPrice,
-      discountPrice: discountPrice,
-      discountSpecialPrice: discountSpecialPrice,
-      thumbnail: item?.itemImageUrl,
-      collectionMethod: TEST_COLLECTION_TYPE.HC,
-      groupPlan: planToConsider?.groupPlan,
-      packageMrp: packageCalculatedMrp,
-      inclusions: item?.inclusionData == null ? [Number(item?.itemId)] : inclusions,
-      isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
-    };
+    const addedItems = createDiagnosticAddToCartObject(
+      Number(item?.itemId),
+      item?.itemTitle!,
+      item?.gender! || DIAGNOSTIC_ITEM_GENDER.B,
+      price,
+      specialPrice! | price,
+      circlePrice,
+      circleSpecialPrice,
+      discountPrice,
+      discountSpecialPrice,
+      TEST_COLLECTION_TYPE.HC,
+      planToConsider?.groupPlan,
+      item?.inclusionData == null ? [Number(item?.itemId)] : inclusions,
+      packageCalculatedMrp,
+      AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
+      item?.itemImageUrl,
+      getMandatoryParameterCount
+    );
 
     addCartItem?.(addedItems);
     isModifyFlow &&

@@ -23,6 +23,7 @@ export const ChatWithUs: React.FC<ChatWithUsProps> = (props) => {
   return (
     <View style={styles.chatWithUsView}>
       <TouchableOpacity
+        activeOpacity={0.5}
         style={styles.chatWithUsTouch}
         onPress={() => {
           Linking.canOpenURL(whatsappScheme)

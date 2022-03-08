@@ -168,6 +168,7 @@ export const MultiVariant: React.FC<MultiVariantProps> = (props) => {
                 return (
                   <View style={{ paddingBottom: 5 }}>
                     <TouchableOpacity
+                      activeOpacity={0.5}
                       style={[
                         styles.option,
                         {

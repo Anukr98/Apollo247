@@ -99,7 +99,7 @@ export const CircleBottomContainer: React.FC<CircleBottomContainerProps> = (prop
 
   const renderUpgradeToCircle = () => (
     <View style={circleStyles.upgradeContainer}>
-      <TouchableOpacity activeOpacity={1} onPress={onPressUpgradeTo} style={circleStyles.upgrade}>
+      <TouchableOpacity activeOpacity={0.5} onPress={onPressUpgradeTo} style={circleStyles.upgrade}>
         <View style={circleStyles.upgradeTo}>
           <Text style={theme.viewStyles.text('M', 13, '#FCB716')}>UPGRADE TO</Text>
           <CircleLogo style={circleStyles.circleLogo} />
@@ -123,6 +123,7 @@ export const CircleBottomContainer: React.FC<CircleBottomContainerProps> = (prop
     !props.serverCartLoading ? (
       <View style={circleStyles.cartButtonContainer}>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={[
             circleStyles.cartButton,
             !!cartSubscriptionDetails?.subscriptionApplied ? circleStyles.cartButtonCircle : {},

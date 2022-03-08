@@ -76,6 +76,7 @@ export const EarnedPoints: React.FC<EarnedPointsProps> = (props) => {
             {validateStringNotToUndefined(congratulationPageData?.willBeCreditSoon)}
           </Text>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               const eventArributes = {
                 ...getReferEarnCommonAttributes(),
@@ -97,6 +98,7 @@ export const EarnedPoints: React.FC<EarnedPointsProps> = (props) => {
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
+            activeOpacity={0.5}
             style={styles.earnPointreedemBtn}
             onPress={() => {
               navigation.navigate('MEDICINES');

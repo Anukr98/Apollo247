@@ -38,6 +38,7 @@ export const FAQComponent: React.FC<FAQComponentProps> = (props) => {
       return (
         <View>
           <TouchableOpacity
+            activeOpacity={0.5}
             style={styles.questionContainer}
             activeOpacity={0.7}
             onPress={() => {

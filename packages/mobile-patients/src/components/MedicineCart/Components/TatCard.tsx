@@ -21,6 +21,7 @@ export const TatCard: React.FC<TatCardProps> = (props) => {
 
   const renderChangeAddressButton = () => (
     <TouchableOpacity
+      activeOpacity={0.5}
       style={{ flexDirection: 'row', alignItems: 'center' }}
       onPress={() => onPressChangeAddress()}
     >

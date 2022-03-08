@@ -52,7 +52,11 @@ export const Offers: React.FC<offersProps> = (props) => {
 
   const renderShowMore = () => {
     return offers?.length > 1 ? (
-      <TouchableOpacity style={styles.showMoreCont} onPress={() => setShowMore(!showMore)}>
+      <TouchableOpacity
+        activeOpacity={0.5}
+        style={styles.showMoreCont}
+        onPress={() => setShowMore(!showMore)}
+      >
         <Text style={styles.showMore}>{showMore ? 'SHOW LESS' : 'SHOW MORE'}</Text>
         <DownOrange
           style={{ ...styles.downArrow, transform: [{ rotate: showMore ? '180deg' : '0deg' }] }}

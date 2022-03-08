@@ -124,7 +124,7 @@ export const ResultTestReportsPopUp: React.FC<ResultTestReportsPopUpProps> = (pr
   const renderCloseIcon = () => {
     return (
       <View style={styles.closeIcon}>
-        <TouchableOpacity onPress={() => props.onClickClose()}>
+        <TouchableOpacity activeOpacity={0.5} onPress={() => props.onClickClose()}>
           <CrossPopup style={{ marginRight: 1, width: 30, height: 30 }} />
         </TouchableOpacity>
       </View>

@@ -4,6 +4,7 @@ import DeviceInfo from 'react-native-device-info';
 import {
   CALL_TO_ORDER_CTA_PAGE_ID,
   DIAGNOSTIC_ORDER_STATUS,
+  GENDER,
   REFUND_STATUSES,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { Platform } from 'react-native';
@@ -323,6 +324,21 @@ const appStaticVariables = {
   DIAGNOSTICS_SHOW_UPLOAD_PRESCRIPTION_SECTION: true,
   DIAGNOSTICS_HOME_SINGLE_ITEM: {
     id: '2446',
+  },
+  DIAGNOSTICS_HOME_TOP_ITEM_DETAILS: {
+    topItemDetails: [
+      {
+        cityId: 216,
+        itemId: 2499,
+        itemName: '',
+        ctaText: '',
+        price: 1999,
+        textLine1: '',
+        textLine2: '',
+        textLine3: '',
+        isCardVisible: false,
+      },
+    ],
   },
   DIAGNOSTICS_HOME_PAGE_BANNER_HEIGHT: 160,
   DIAGNOSTICS_PHLEBO_CALL_NUMBER: '08046807674',
@@ -1709,18 +1725,6 @@ export const DIANOSTIC_BANNER_VISIBLE_ARRAY = [
   DiagnosticBannerVisible.Both,
 ];
 
-export const TestsNewFeedbackData = {
-  options: [
-    'Wrong Report recieved',
-    'Delayed Report generation',
-    'Did not get the required time slot',
-    'Inappropriate behaviour of diagnostics staff',
-    'Insufficient communication to customer',
-    'Difficulty in finding the test while booking order',
-    'Others (Please specify)',
-  ],
-};
-
 export const TestsFeedBackData = {
   POOR: {
     question: 'What went wrong?',
@@ -1986,6 +1990,10 @@ const Specialities: SpecialitiesType = {
   'Vascular Surgery': ['Vascular Surgeon', 'Vascular Surgeons'],
   Gynaecology: ['Gynaecologist', 'Gynaecologists'],
 };
+
+export const BOTH_GENDER_ARRAY = [GENDER.ALL?.toLowerCase(), GENDER.OTHER?.toLowerCase()];
+export const GENDER_ARRAY = [GENDER.MALE?.toLowerCase(), GENDER.FEMALE?.toLowerCase()];
+
 
 export const AppConfig = {
   APP_ENV,

@@ -33,7 +33,10 @@ export const DealsByCategorySection: React.FC<DealsByCategoryProps> = (props) =>
     return (
       <View style={styles.categoryContainer}>
         <View style={styles.categoryBoxStyles}>
-          <TouchableOpacity onPress={() => onPressImage(item?.category_id, item?.title)}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            onPress={() => onPressImage(item?.category_id, item?.title)}
+          >
             <View style={styles.circleShape}>
               <ImageNative
                 source={{ uri: imgUrl }}

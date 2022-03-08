@@ -350,7 +350,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
         <Text style={{ ...theme.viewStyles.text('SB', 23, '#02475B', 1, 30) }}>{'Bills'}</Text>
         <View style={styles.searchBarMainView}>
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             onPress={() => {
               setShowSearchBar(true);
               setSearchInputFocus(true);

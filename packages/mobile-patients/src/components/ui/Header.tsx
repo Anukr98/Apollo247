@@ -94,14 +94,14 @@ export const Header: React.FC<HeaderProps> = (props) => {
     <View style={[styles.container, props.container]}>
       <View style={{ flexGrow: 1, alignItems: 'flex-start', justifyContent: 'center' }}>
         {props.leftText ? (
-          <TouchableOpacity activeOpacity={1} onPress={props.leftText.onPress} style={{}}>
+          <TouchableOpacity activeOpacity={0.5} onPress={props.leftText.onPress} style={{}}>
             <Text style={styles.titleTextStyle} numberOfLines={1}>
               {props.leftText.title}
             </Text>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             onPress={props.onPressLeftIcon}
             style={{
               height: 35,

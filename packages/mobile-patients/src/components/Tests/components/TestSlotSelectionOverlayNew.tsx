@@ -369,6 +369,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
         <View style={styles.dayPhaseContainer}>
           {dayPhaseArray?.map((item, index) => (
             <TouchableOpacity
+              activeOpacity={0.5}
               style={[
                 styles.dayPhaseStyle,
                 {
@@ -443,6 +444,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
 
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         key={index?.toString()}
         onPress={() => _onPressSlot(item, slotValue)}
         style={[
@@ -502,6 +504,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
           <View style={styles.dateArrayContainer}>
             {newDateArray?.map((item, index) => (
               <TouchableOpacity
+                activeOpacity={0.5}
                 key={index.toString()}
                 onPress={() => {
                   let newdate = moment(item?.timestamp)
@@ -588,6 +591,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
       <>
         {showInOverlay ? (
           <TouchableOpacity
+            activeOpacity={0.5}
             style={styles.closeContainer}
             onPress={() => {
               props.onClose();

@@ -105,7 +105,11 @@ export const PreferredPayments: React.FC<PreferredPaymentsProps> = (props) => {
     const bestOffer = !outageStatus ? wallet?.offers?.[0] : null;
     return !!wallet ? (
       <View>
-        <TouchableOpacity style={styles.subCont} onPress={() => setApayselected(!Apayselected)}>
+        <TouchableOpacity
+          activeOpacity={0.5}
+          style={styles.subCont}
+          onPress={() => setApayselected(!Apayselected)}
+        >
           <View style={styles.wallet}>
             <WalletIcon
               imageUrl={wallet?.payment_method_name == 'Amazon Pay' ? Apay : wallet?.image_url}
@@ -175,6 +179,7 @@ export const PreferredPayments: React.FC<PreferredPaymentsProps> = (props) => {
     return (
       <View>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={styles.subCont}
           disabled={outageStatus == 'DOWN' ? true : false}
           onPress={() => {

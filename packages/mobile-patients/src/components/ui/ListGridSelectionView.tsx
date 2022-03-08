@@ -22,6 +22,7 @@ export const ListGridSelectionView: React.FC<Props> = ({
     <View style={styles.filterAndListViewStyle}>
       <View style={styles.listViewMainStyle}>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={onPressListView}
           style={[styles.listViewIconViewStyle, isListView && { backgroundColor: COLOR }]}
         >
@@ -32,6 +33,7 @@ export const ListGridSelectionView: React.FC<Props> = ({
           )}
         </TouchableOpacity>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={onPressGridView}
           style={[styles.gridViewIconViewStyle, , !isListView && { backgroundColor: COLOR }]}
         >

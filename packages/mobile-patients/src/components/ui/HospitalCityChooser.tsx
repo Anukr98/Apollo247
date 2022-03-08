@@ -141,6 +141,7 @@ export const HospitalCityChooser: React.FC<HospitalCityChooserProps> = (props) =
     return cityList.map(function(item, i) {
       return (
         <TouchableOpacity
+          activeOpacity={0.5}
           key={i}
           style={styles.hospitalItemContainer}
           onPress={() => {
@@ -168,7 +169,7 @@ export const HospitalCityChooser: React.FC<HospitalCityChooserProps> = (props) =
     <Menu
       ref={menuRef}
       button={
-        <TouchableOpacity activeOpacity={1} onPress={showMenu}>
+        <TouchableOpacity activeOpacity={0.5} onPress={showMenu}>
           {props.children}
         </TouchableOpacity>
       }

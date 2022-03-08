@@ -279,7 +279,11 @@ export const CowinProfileSelection: React.FC<CowinProfileSelectionProps> = (prop
           { backgroundColor: isSelected ? '#00B38E' : '#F0F0F0' },
         ]}
       >
-        <TouchableOpacity onPress={() => handleSelection(item)} style={styles.renderBtnContainer}>
+        <TouchableOpacity
+          activeOpacity={0.5}
+          onPress={() => handleSelection(item)}
+          style={styles.renderBtnContainer}
+        >
           <Text style={[styles.handleSelectionBtn, { color: isSelected ? 'white' : '#01475B' }]}>
             {item.name}
           </Text>

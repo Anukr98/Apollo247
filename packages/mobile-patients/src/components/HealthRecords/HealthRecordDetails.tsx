@@ -952,7 +952,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
             const file_Url = item?.file_Url || '';
             return file_name && file_name.toLowerCase().endsWith('.pdf') ? (
               <TouchableOpacity
-                activeOpacity={1}
+                activeOpacity={0.5}
                 style={styles.imageViewStyle}
                 onPress={() => {
                   setShowPDF(true);
@@ -964,7 +964,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
               </TouchableOpacity>
             ) : (
               <TouchableOpacity
-                activeOpacity={1}
+                activeOpacity={0.5}
                 onPress={() => {
                   props.navigation.navigate(AppRoutes.ImageSliderScreen, {
                     images: [file_Url],

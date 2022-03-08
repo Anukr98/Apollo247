@@ -1097,6 +1097,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const renderOneTapPackage = () => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={styles.oneTapContainer}
         onPress={() => {
           props.navigation.navigate(AppRoutes.ConsultPackageDetail, {
@@ -1470,7 +1471,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
     return (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={() => {
           CommonLogEvent(AppRoutes.DoctorSearch, item.name);
           if (isOnlineConsultMode || locationDetails) {
@@ -1659,6 +1660,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             />
             {searchText.length > 2 && !showAllSearchedSymptomsData && SpecialitiesList?.length > 2 && (
               <TouchableOpacity
+                activeOpacity={0.5}
                 onPress={() => {
                   setShowAllSearchedSymptomsData(true);
                   const result = (
@@ -1773,7 +1775,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         <Mutation<saveSearch> mutation={SAVE_SEARCH}>
           {(mutate, { loading, data, error }) => (
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               onPress={() => {
                 if (locationDetails || isOnlineConsultMode) {
                   CommonLogEvent(AppRoutes.DoctorSearch, rowData?.name);
@@ -2148,6 +2150,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             />
             {showViewAllDoctors && (
               <TouchableOpacity
+                activeOpacity={0.5}
                 onPress={() => {
                   setShowAllSearchedDoctorData(true);
                   const result = (
@@ -2206,6 +2209,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             />
             {!showAllSearchedProcedures && procedures?.length > 2 && (
               <TouchableOpacity
+                activeOpacity={0.5}
                 onPress={() => {
                   setShowAllSearchedProcedures(true);
                   const result = (
@@ -2246,6 +2250,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             />
             {!showAllSearchedSymptoms && symptoms?.length > 2 && (
               <TouchableOpacity
+                activeOpacity={0.5}
                 onPress={() => {
                   setShowAllSearchedSymptoms(true);
                   const result = (
@@ -2366,6 +2371,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         >
           {packages?.map((pkg: any) => (
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 props.navigation.navigate(AppRoutes.ConsultPackageDetail, {
                   planId: pkg?.PackageIdentifier,
@@ -2416,6 +2422,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const renderMySpecialtyPackage = (pkg: any) => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={styles.mySpecialtyPackageContainer}
         onPress={() => {
           props.navigation.navigate(AppRoutes.ConsultPackagePostPurchase, {

@@ -49,7 +49,7 @@ export const StoreDriveWayPickupView: React.FC<StoreDriveWayPickupViewProps> = (
   );
 
   return (
-    <TouchableOpacity style={styles.touchContainerView} activeOpacity={1} onPress={props.onPress}>
+    <TouchableOpacity activeOpacity={0.5} style={styles.touchContainerView} onPress={props.onPress}>
       <View style={styles.containerView}>
         {renderRow1()}
         {renderRow2()}

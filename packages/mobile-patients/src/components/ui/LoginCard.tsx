@@ -97,7 +97,7 @@ export const LoginCard: React.FC<CardProps> = (props) => {
         <View>{props.children}</View>
         <View style={styles.rowAbsoluteView}>
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             style={[styles.buttonStyle, props.buttonStyle]}
             onPress={props.disableButton ? () => {} : props.onClickButton}
           >

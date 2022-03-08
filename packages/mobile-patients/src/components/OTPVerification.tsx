@@ -44,7 +44,7 @@ import {
   View,
   AppState,
   AppStateStatus,
-  TextInput
+  TextInput,
 } from 'react-native';
 import { timeDifferenceInDays } from '@aph/mobile-patients/src/utils/dateUtil';
 import firebaseAuth from '@react-native-firebase/auth';
@@ -79,8 +79,8 @@ import {
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import OTPInputView from '@twotalltotems/react-native-otp-input'
-import Clipboard from '@react-native-community/clipboard'
+import OTPInputView from '@twotalltotems/react-native-otp-input';
+import Clipboard from '@react-native-community/clipboard';
 
 const { height, width } = Dimensions.get('window');
 
@@ -115,27 +115,27 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [openFillerView, setOpenFillerView] = useState<boolean>(false);
   const [disableOtpOnCallCta, setDisableOtpOnCallCta] = useState<boolean>(false);
   const [showOtpOnCallCta, setShowOtpOnCallCta] = useState<boolean>(false);
-  const [resendOtpSection, setResendOtpSection] = useState<boolean>(false)
-  const [otpStatus, setOtpStatus] = useState<string>(string.login.otp_sent_to)
-  const [isBlocked, setIsBlocked] = useState<boolean>(false)
-  const [coolOff, setCoolOff] = useState<number>(10)
-  const [editable, setEditable] = useState<boolean>(true)
-  const [updatedTimerValue, setUpdatedTimerValue] = useState<number>(0)
-  const [newOTPNeeded, setNewOTPNeeded] = useState<boolean>(false)
-  const [otpArray, setOtpArray] = useState(['','','','','',''])
-  const [clipboard, setClipboard] = useState('')
+  const [resendOtpSection, setResendOtpSection] = useState<boolean>(false);
+  const [otpStatus, setOtpStatus] = useState<string>(string.login.otp_sent_to);
+  const [isBlocked, setIsBlocked] = useState<boolean>(false);
+  const [coolOff, setCoolOff] = useState<number>(10);
+  const [editable, setEditable] = useState<boolean>(true);
+  const [updatedTimerValue, setUpdatedTimerValue] = useState<number>(0);
+  const [newOTPNeeded, setNewOTPNeeded] = useState<boolean>(false);
+  const [otpArray, setOtpArray] = useState(['', '', '', '', '', '']);
+  const [clipboard, setClipboard] = useState('');
 
-  const inputBoxFirst = useRef<TextInput>(null)
-  const inputBoxSecond = useRef<TextInput>(null)
-  const inputBoxThird = useRef<TextInput>(null)
-  const inputBoxFourth = useRef<TextInput>(null)
-  const inputBoxFifth = useRef<TextInput>(null)
-  const inputBoxSixth = useRef<TextInput>(null)
+  const inputBoxFirst = useRef<TextInput>(null);
+  const inputBoxSecond = useRef<TextInput>(null);
+  const inputBoxThird = useRef<TextInput>(null);
+  const inputBoxFourth = useRef<TextInput>(null);
+  const inputBoxFifth = useRef<TextInput>(null);
+  const inputBoxSixth = useRef<TextInput>(null);
 
   const styles = StyleSheet.create({
     container: {
       ...theme.viewStyles.container,
-      backgroundColor: colors.WHITE
+      backgroundColor: colors.WHITE,
     },
     inputView: {
       flexDirection: 'row',
@@ -225,7 +225,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       shadowColor: colors.WHITE,
       shadowOffset: { width: 0, height: 0 },
       shadowRadius: 0,
-      shadowOpacity: 0
+      shadowOpacity: 0,
     },
     otpOnCallIcon: {
       resizeMode: 'contain',
@@ -237,7 +237,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     otpOnCallText: {
       ...theme.viewStyles.text('B', 14, '#FFFFFF', 1, 25, 0.35),
       textAlign: 'center',
-      color: '#FCB716'
+      color: '#FCB716',
     },
     horizontalLine: {
       borderBottomColor: 'black',
@@ -261,51 +261,62 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       borderWidth: 1,
       borderColor: colors.LIGHT_BLUE,
       borderRadius: 4,
-      color: colors.LIGHT_BLUE
+      color: colors.LIGHT_BLUE,
     },
     otpTitle: {
-      ...theme.viewStyles.text('B', 18, colors.LIGHT_BLUE, 1)
+      ...theme.viewStyles.text('B', 18, colors.LIGHT_BLUE, 1),
     },
     otpDescription: {
       ...theme.viewStyles.text('R', 14, colors.SLATE_GRAY, 1),
-      textAlign: 'center'
+      textAlign: 'center',
     },
     otpStatus: {
       ...theme.viewStyles.text(
         'M',
-        otpStatus === (string.login.otp_sent_to || string.login.otp_resent_on_sms || string.login.otp_resent_on_call) ? 14 : 12,
-        (otpStatus === string.login.otp_sent_to || otpStatus === string.login.auto_verfying_otp) ? colors.LIGHT_BLUE : (otpStatus === string.login.otp_resent_on_sms || otpStatus === string.login.otp_resent_on_call || otpStatus === string.login.try_otp_again) ? colors.GREEN : theme.colors.INPUT_FAILURE_TEXT
-      )
+        otpStatus ===
+          (string.login.otp_sent_to ||
+            string.login.otp_resent_on_sms ||
+            string.login.otp_resent_on_call)
+          ? 14
+          : 12,
+        otpStatus === string.login.otp_sent_to || otpStatus === string.login.auto_verfying_otp
+          ? colors.LIGHT_BLUE
+          : otpStatus === string.login.otp_resent_on_sms ||
+            otpStatus === string.login.otp_resent_on_call ||
+            otpStatus === string.login.try_otp_again
+          ? colors.GREEN
+          : theme.colors.INPUT_FAILURE_TEXT
+      ),
     },
     topViewContainer: {
       alignItems: 'center',
       paddingTop: 10,
       flexDirection: 'row',
-      paddingLeft: 10
+      paddingLeft: 10,
     },
     mainContainer: {
       width: '90%',
-      alignSelf: 'center'
+      alignSelf: 'center',
     },
     otpOnCall: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      width: '100%'
+      width: '100%',
     },
     input: {
       height: 40,
       width: 40,
       borderWidth: 1,
       borderRadius: 10,
-      textAlign: 'center'
+      textAlign: 'center',
     },
     pinsContainer: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-evenly',
       marginTop: 15,
-      marginBottom: 10
-    }
+      marginBottom: 10,
+    },
   });
 
   const {
@@ -325,16 +336,16 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const handleBack = async () => {
     setOpenFillerView(false);
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    props.navigation.replace('Login')
+    props.navigation.replace('Login');
     return true;
   };
 
   useEffect(() => {
     const _didFocusSubscription = props.navigation.addListener('didFocus', async (payload) => {
       await Clipboard.getString().then((text) => {
-        setClipboard(text)
-      })
-      inputBoxFirst?.current?.focus()
+        setClipboard(text);
+      });
+      inputBoxFirst?.current?.focus();
       BackHandler.addEventListener('hardwareBackPress', handleBack);
     });
 
@@ -351,16 +362,16 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   useEffect(() => {
     let timer = setInterval(async () => {
       await Clipboard.getString().then((text) => {
-        if(text !== clipboard) {
-          Keyboard.dismiss()
-          const bits = text.split("")
+        if (text !== clipboard) {
+          Keyboard.dismiss();
+          const bits = text.split('');
           onClickOk(text, true);
-          setOtpArray(bits)
+          setOtpArray(bits);
         }
-      })
-    }, 500)
-    return () => clearInterval(timer)
-  }, [clipboard])
+      });
+    }, 500);
+    return () => clearInterval(timer);
+  }, [clipboard]);
 
   const _removeFromStore = useCallback(async () => {
     try {
@@ -521,17 +532,17 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   });
 
   useEffect(() => {
-    if(isBlocked && coolOff>0) {
+    if (isBlocked && coolOff > 0) {
       let timer = setTimeout(() => {
-        clearInterval(timer)
-        setCoolOff(coolOff - 1)
-      },1000)
+        clearInterval(timer);
+        setCoolOff(coolOff - 1);
+      }, 1000);
     }
-    if(coolOff === 0 && updatedTimerValue === 0) {
-      setNewOTPNeeded(false)
-      setEditable(true)
+    if (coolOff === 0 && updatedTimerValue === 0) {
+      setNewOTPNeeded(false);
+      setEditable(true);
     }
-  },[coolOff, updatedTimerValue])
+  }, [coolOff, updatedTimerValue]);
 
   const postOtpSuccessEvent = () => {
     const phoneNumberFromParams = `+91${props.navigation.getParam('phoneNumber')}`;
@@ -548,7 +559,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     postCleverTapEvent(CleverTapEventName.OTP_VERIFICATION_SUCCESS, cleverTapEventAttributes);
   };
 
-  const onClickOk = (readOtp?: string, loaderHandled: boolean =  false) => {
+  const onClickOk = (readOtp?: string, loaderHandled: boolean = false) => {
     CommonLogEvent(AppRoutes.OTPVerification, 'OTPVerification clicked');
     const eventAttributes: WebEngageEvents[WebEngageEventName.OTP_ENTERED] = { value: 'Yes' };
     const phoneNumberFromParams = `+91${props.navigation.getParam('phoneNumber')}`;
@@ -590,16 +601,19 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                     });
                 } else {
                   try {
-                    if(data?.isBlocked) {
-                      setOtpStatus(string.login.max_attempts_reached)
-                      setIsBlocked(true)
-                      setCoolOff(coolOff-1)
-                      setEditable(false)
-                      setNewOTPNeeded(true)
-                    }
-                    else {
-                      setOtpStatus(`Incorrect OTP. You have ${2 - invalidOtpCount} more ${invalidOtpCount == 1? 'try' : 'tries'}.`)
-                      setInvalidOtpCount(invalidOtpCount + 1)
+                    if (data?.isBlocked) {
+                      setOtpStatus(string.login.max_attempts_reached);
+                      setIsBlocked(true);
+                      setCoolOff(coolOff - 1);
+                      setEditable(false);
+                      setNewOTPNeeded(true);
+                    } else {
+                      setOtpStatus(
+                        `Incorrect OTP. You have ${2 - invalidOtpCount} more ${
+                          invalidOtpCount == 1 ? 'try' : 'tries'
+                        }.`
+                      );
+                      setInvalidOtpCount(invalidOtpCount + 1);
                     }
                     setshowErrorBottomLine(true);
                     setOnOtpClick(false);
@@ -800,12 +814,12 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             if (event.message) {
               const messageOTP = event.message.match(/[0-9]{6}/g);
               if (messageOTP) {
-                setOtpStatus(string.login.auto_verfying_otp)
+                setOtpStatus(string.login.auto_verfying_otp);
                 isOtpValid(messageOTP[0]);
                 onClickOk(messageOTP[0]);
-                const bits = messageOTP[0].split("")
-                setOtpArray(bits)
-                inputBoxSixth.current?.focus()
+                const bits = messageOTP[0].split('');
+                setOtpArray(bits);
+                inputBoxSixth.current?.focus();
               }
             }
             SmsRetriever.removeSmsListener();
@@ -818,8 +832,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   useEffect(() => {
     getDeviceToken();
     AppState.addEventListener('change', _handleAppStateChange);
-    if(Platform.OS === 'android')
-      smsListenerAndroid();
+    if (Platform.OS === 'android') smsListenerAndroid();
     return () => {
       if (Platform.OS === 'android') {
         SmsRetriever.removeSmsListener();
@@ -915,7 +928,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     setIsValidOTP(true);
     clearInterval(intervalId);
     _removeFromStore();
-    setResendOtpSection(true)
+    setResendOtpSection(true);
   };
 
   const onStopResendTimer = () => {
@@ -936,16 +949,16 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const onClickResend = () => {
     try {
-      setInvalidOtpCount(0)
-      setEditable(true)
-      setCoolOff(10)
-      setIsBlocked(false)
-      setNewOTPNeeded(false)
+      setInvalidOtpCount(0);
+      setEditable(true);
+      setCoolOff(10);
+      setIsBlocked(false);
+      setNewOTPNeeded(false);
       CommonLogEvent(AppRoutes.OTPVerification, 'Resend Otp clicked');
       getNetStatus()
         .then((status) => {
           if (status) {
-            setResendOtpSection(false)
+            setResendOtpSection(false);
             setIsresent(true);
             setOtp('');
             Keyboard.dismiss();
@@ -955,11 +968,11 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             resendOTP('+91' + phoneNumber, loginId)
               .then((resendResult: any) => {
                 props.navigation.setParams({ loginId: resendResult.loginId });
-                setOtpStatus(string.login.otp_resent_on_sms)
+                setOtpStatus(string.login.otp_resent_on_sms);
                 CommonBugFender('OTP_RESEND_SUCCESS', resendResult as Error);
                 setShowResentTimer(true);
                 setTimeout(() => {
-                  setOtpStatus(string.login.auto_verfying_otp)
+                  setOtpStatus(string.login.auto_verfying_otp);
                 }, 1500);
               })
               .catch((error: Error) => {
@@ -979,17 +992,17 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const onGetOtpOnCall = () => {
     try {
-      setInvalidOtpCount(0)
-      setEditable(true)
-      setCoolOff(10)
-      setIsBlocked(false)
-      setNewOTPNeeded(false)
+      setInvalidOtpCount(0);
+      setEditable(true);
+      setCoolOff(10);
+      setIsBlocked(false);
+      setNewOTPNeeded(false);
       setDisableOtpOnCallCta(true);
       CommonLogEvent(AppRoutes.OTPVerification, 'Get OTP On Call Clicked');
       getNetStatus()
         .then((status) => {
           if (status) {
-            setResendOtpSection(false)
+            setResendOtpSection(false);
             setOtp('');
             Keyboard.dismiss();
             const { phoneNumber } = props.navigation.state.params!;
@@ -1006,7 +1019,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 };
                 postWebEngageEvent(WebEngageEventName.OTP_ON_CALL_CLICK, eventAttributes);
                 if (otpOnCallResult?.status) {
-                  setOtpStatus(string.login.otp_resent_on_call)
+                  setOtpStatus(string.login.otp_resent_on_call);
                   CommonBugFender('GET_OTP_ON_CALL_SUCCESS', otpOnCallResult);
                   setBugFenderLog('GET_OTP_ON_CALL_SUCCESS', otpOnCallResult);
                   props.navigation.setParams({ loginId: otpOnCallResult?.loginId });
@@ -1055,87 +1068,70 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const renderOtpOnCall = () => (
     <View style={styles.otpOnCallContainer}>
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={onGetOtpOnCall}
         activeOpacity={0.5}
-        style={[
-          styles.otpOnCallButton,
-        ]}
+        style={[styles.otpOnCallButton]}
       >
-        <Text
-          style={[
-            styles.otpOnCallText,
-          ]}
-        >
-          {string.login.resend_on_call}
-        </Text>
+        <Text style={[styles.otpOnCallText]}>{string.login.resend_on_call}</Text>
       </TouchableOpacity>
     </View>
   );
 
   const refCallBack = (textInputRef: any) => (node: any) => {
-    textInputRef.current = node
-  }
+    textInputRef.current = node;
+  };
 
   const onOtpKeyPres = (index: number) => {
-    return ({ nativeEvent: {key: value}}) => {
-      if(value === 'Backspace' && otpArray[index] === '') {
-        if(index == 1) {
-          inputBoxFirst?.current?.focus()
-        }
-        else if(index === 2) {
-          inputBoxSecond?.current?.focus()
-        }
-        else if(index === 3) {
-          inputBoxThird?.current?.focus()
-        }
-        else if(index === 4) {
-          inputBoxFourth?.current?.focus()
-        }
-        else if(index === 5) {
-          inputBoxFifth.current?.focus()
+    return ({ nativeEvent: { key: value } }) => {
+      if (value === 'Backspace' && otpArray[index] === '') {
+        if (index == 1) {
+          inputBoxFirst?.current?.focus();
+        } else if (index === 2) {
+          inputBoxSecond?.current?.focus();
+        } else if (index === 3) {
+          inputBoxThird?.current?.focus();
+        } else if (index === 4) {
+          inputBoxFourth?.current?.focus();
+        } else if (index === 5) {
+          inputBoxFifth.current?.focus();
         }
 
-        if(Platform.OS === 'android' && index > 0) {
-          const otpArrayCopy = otpArray.concat()
-          otpArrayCopy[index-1] = ''
-          setOtpArray(otpArrayCopy)
+        if (Platform.OS === 'android' && index > 0) {
+          const otpArrayCopy = otpArray.concat();
+          otpArrayCopy[index - 1] = '';
+          setOtpArray(otpArrayCopy);
         }
       }
-    }
-  }
+    };
+  };
 
   const onOtpChange = (index: number) => {
     return (value: string) => {
-      if(isNaN(Number(value)))
-        return
-      const otpArrayCopy = otpArray.concat()
-      otpArrayCopy[index] = value
-      setOtpArray(otpArrayCopy)
+      if (isNaN(Number(value))) return;
+      const otpArrayCopy = otpArray.concat();
+      otpArrayCopy[index] = value;
+      setOtpArray(otpArrayCopy);
 
-      if(value !== '') {
-        if(index === 0) {
-          inputBoxSecond?.current?.focus()
-        }
-        else if(index === 1) {
-          inputBoxThird?.current?.focus()
-        }
-        else if(index === 2) {
-          inputBoxFourth?.current?.focus()
-        }
-        else if(index === 3) {
-          inputBoxFifth?.current?.focus()
-        }
-        else if(index === 4) {
-          inputBoxSixth?.current?.focus()
-        }
-        else if(index === 5) {
-          let otp = otpArray.join("")
-          otp = `${otp}${value}`
-          onClickOk(otp)
+      if (value !== '') {
+        if (index === 0) {
+          inputBoxSecond?.current?.focus();
+        } else if (index === 1) {
+          inputBoxThird?.current?.focus();
+        } else if (index === 2) {
+          inputBoxFourth?.current?.focus();
+        } else if (index === 3) {
+          inputBoxFifth?.current?.focus();
+        } else if (index === 4) {
+          inputBoxSixth?.current?.focus();
+        } else if (index === 5) {
+          let otp = otpArray.join('');
+          otp = `${otp}${value}`;
+          onClickOk(otp);
         }
       }
-    }
-  }
+    };
+  };
 
   const { phoneNumber } = props.navigation.state.params!;
 
@@ -1144,18 +1140,15 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
         <View style={styles.topViewContainer}>
-          <TouchableOpacity
-            style={{ flex: .4 }}
-            onPress={handleBack}
-          >
+          <TouchableOpacity activeOpacity={0.5} style={{ flex: 0.4 }} onPress={handleBack}>
             <BackArrow />
           </TouchableOpacity>
-          <View style={{ flex: .6, }}>
+          <View style={{ flex: 0.6 }}>
             <ApolloLogo style={{ width: 55, height: 47 }} resizeMode="contain" />
           </View>
         </View>
         <View style={styles.mainContainer}>
-          <View style={{ marginTop: "10%", alignItems: 'center' }}>
+          <View style={{ marginTop: '10%', alignItems: 'center' }}>
             <Text style={styles.otpTitle}>{string.login.otp_title}</Text>
             <View style={{ marginTop: '3%' }}>
               <Text style={styles.otpDescription}>{string.login.otp_placeholder}</Text>
@@ -1171,58 +1164,60 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               inputBoxThird,
               inputBoxFourth,
               inputBoxFifth,
-              inputBoxSixth
+              inputBoxSixth,
             ].map((ref, index) => (
               <TextInput
                 value={otpArray[index]}
                 onKeyPress={onOtpKeyPres(index)}
                 onChangeText={onOtpChange(index)}
-                keyboardType='number-pad'
+                keyboardType="number-pad"
                 maxLength={1}
                 style={styles.input}
                 autoFocus={index === 0}
                 ref={refCallBack(ref)}
                 key={index}
                 onSubmitEditing={() => {
-                  if(index === 5) {
-                    onClickOk(otpArray.join(""))
-                  }
-                  else Keyboard.dismiss()
+                  if (index === 5) {
+                    onClickOk(otpArray.join(''));
+                  } else Keyboard.dismiss();
                 }}
               />
             ))}
           </View>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            {
-              !resendOtpSection ? (
-                <>
-                  <Text style={theme.viewStyles.text('M', 14, colors.LIGHT_BLUE, 1)}>Resend the OTP in</Text>
-                  <CountDownTimer
-                    timer={remainingTime}
-                    style={theme.viewStyles.text('M', 12, colors.LIGHT_BLUE, 1)}
-                    onStopTimer={onStopTimer}
-                    showSeconds
-                    returnUpdatedValue={updated => setUpdatedTimerValue(updated)}
-                  />
-                </>
-              ) : (
-                <View style={{ width: '100%' }}>
-                  <Text style={theme.viewStyles.text('M', 15, colors.LIGHT_BLUE, 1)}>{string.login.otp_not_received}</Text>
-                  <View style={styles.otpOnCall}>
-                    {renderOtpOnCall()}
-                    <View style={styles.otpOnCallContainer}>
-                      <TouchableOpacity
-                        style={styles.otpOnCallButton}
-                        onPress={onClickResend}
-                        activeOpacity={.5}
-                      >
-                        <Text style={styles.otpOnCallText}>{string.login.resend_on_sms}</Text>
-                      </TouchableOpacity>
-                    </View>
+            {!resendOtpSection ? (
+              <>
+                <Text style={theme.viewStyles.text('M', 14, colors.LIGHT_BLUE, 1)}>
+                  Resend the OTP in
+                </Text>
+                <CountDownTimer
+                  timer={remainingTime}
+                  style={theme.viewStyles.text('M', 12, colors.LIGHT_BLUE, 1)}
+                  onStopTimer={onStopTimer}
+                  showSeconds
+                  returnUpdatedValue={(updated) => setUpdatedTimerValue(updated)}
+                />
+              </>
+            ) : (
+              <View style={{ width: '100%' }}>
+                <Text style={theme.viewStyles.text('M', 15, colors.LIGHT_BLUE, 1)}>
+                  {string.login.otp_not_received}
+                </Text>
+                <View style={styles.otpOnCall}>
+                  {renderOtpOnCall()}
+                  <View style={styles.otpOnCallContainer}>
+                    <TouchableOpacity
+                      activeOpacity={0.5}
+                      style={styles.otpOnCallButton}
+                      onPress={onClickResend}
+                      activeOpacity={0.5}
+                    >
+                      <Text style={styles.otpOnCallText}>{string.login.resend_on_sms}</Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
-              )
-            }
+              </View>
+            )}
           </View>
         </View>
         {openFillerView && <FetchingDetails />}
@@ -1250,7 +1245,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               }}
             >
               <TouchableOpacity
-                activeOpacity={1}
+                activeOpacity={0.5}
                 style={styles.gotItStyles}
                 onPress={() => {
                   setErrorpopup(false);

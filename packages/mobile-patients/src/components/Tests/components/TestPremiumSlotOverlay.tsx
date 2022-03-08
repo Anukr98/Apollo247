@@ -23,6 +23,7 @@ export const TestPremiumSlotOverlay: React.FC<TestPremiumSlotOverlayProps> = (pr
     return (
       <View style={styles.buttonView}>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             onGoBack();
           }}
@@ -49,7 +50,7 @@ export const TestPremiumSlotOverlay: React.FC<TestPremiumSlotOverlayProps> = (pr
       transparent
       overlayStyle={styles.phrOverlayStyle}
     >
-      <TouchableOpacity style={{ flex: 1 }} onPress={() => {}}>
+      <TouchableOpacity activeOpacity={0.5} style={{ flex: 1 }} onPress={() => {}}>
         <SafeAreaView style={[styles.overlaySafeArea, styles.overlayTouch]}>
           <View style={styles.overlayContainer}>
             <Text style={styles.headingStyle}>{props.heading}</Text>

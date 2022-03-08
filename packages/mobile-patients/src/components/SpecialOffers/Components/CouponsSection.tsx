@@ -117,7 +117,7 @@ export const CouponsSection = (props: { offersdata: SpecialOffersCouponsData[] }
                 )}
               </View>
               <View style={styles.couponAndKnowMoreContainer}>
-                <TouchableOpacity onPress={() => updateKnowMore(index)}>
+                <TouchableOpacity activeOpacity={0.5} onPress={() => updateKnowMore(index)}>
                   <View style={{ flexDirection: 'row', paddingRight: 12 }}>
                     <Text style={[styles.bottomHeaderStyle, { alignSelf: 'flex-start' }]}>
                       {item?.knowMoreOption ? `Know Less ` : `Know More `}
@@ -130,7 +130,10 @@ export const CouponsSection = (props: { offersdata: SpecialOffersCouponsData[] }
                   </View>
                 </TouchableOpacity>
                 {couponCodePresent && (
-                  <TouchableOpacity onPress={() => copyToClipboard(item?.couponCode)}>
+                  <TouchableOpacity
+                    activeOpacity={0.5}
+                    onPress={() => copyToClipboard(item?.couponCode)}
+                  >
                     <View style={{ flexDirection: 'row', paddingRight: 12 }}>
                       <Text style={[styles.bottomHeaderStyle, { alignSelf: 'flex-end' }]}>
                         {'Copy Code'}
@@ -156,6 +159,7 @@ export const CouponsSection = (props: { offersdata: SpecialOffersCouponsData[] }
               <HTML html={filterHtmlContent(item.knowMore)} baseFontStyle={styles.htmlContent} />
             </View>
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 setShowPopup(true);
                 setPopupText(item.terms);
@@ -175,6 +179,7 @@ export const CouponsSection = (props: { offersdata: SpecialOffersCouponsData[] }
     return (
       <View style={styles.buttonContainerStyle}>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             visibleOffers < couponOffersData?.length
               ? setVisibleOffers(couponOffersData?.length)
@@ -211,6 +216,7 @@ export const CouponsSection = (props: { offersdata: SpecialOffersCouponsData[] }
       >
         <View>
           <TouchableOpacity
+            activeOpacity={0.5}
             style={styles.closeButton}
             onPress={() => {
               setShowPopup(false);

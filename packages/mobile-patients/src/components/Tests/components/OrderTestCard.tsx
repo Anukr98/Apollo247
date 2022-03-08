@@ -135,26 +135,24 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
 
   const renderEditView = () => {
     return (
-      <View style={styles.editIconView}>
-        <TouchableOpacity
-          activeOpacity={1}
-          onPress={props.onPressEditPatient}
-          style={styles.editIconTouch}
-        >
-          <EditProfile style={styles.editIcon} />
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity
+        activeOpacity={0.5}
+        onPress={props.onPressEditPatient}
+        style={styles.editIconTouch}
+      >
+        <EditProfile style={styles.editIcon} />
+      </TouchableOpacity>
     );
   };
 
   const renderAddTestView = () => {
     return (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={props.onPressAddTest}
         style={styles.addTestTouch}
       >
-        <Text style={styles.yellowText}>ADD MORE TEST</Text>
+        <Text style={styles.yellowText}>ADD TEST</Text>
       </TouchableOpacity>
     );
   };
@@ -353,13 +351,13 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
         ]}
       >
         {!!props.showRescheduleCancel && props.showRescheduleCancel && !props.isHelp ? (
-          <TouchableOpacity activeOpacity={1} onPress={props.onPressReschedule}>
+          <TouchableOpacity activeOpacity={0.5} onPress={props.onPressReschedule}>
             <Text style={[styles.yellowText, { fontSize: screenWidth > 380 ? 14 : 13 }]}>
               RESCHEDULE | CANCEL
             </Text>
           </TouchableOpacity>
         ) : null}
-        <TouchableOpacity activeOpacity={1} onPress={props.onPressViewDetails}>
+        <TouchableOpacity activeOpacity={0.5} onPress={props.onPressViewDetails}>
           <Text style={[styles.yellowText, { fontSize: screenWidth > 380 ? 14 : 13 }]}>
             {props.isHelp ? `HELP` : `VIEW DETAILS`}
           </Text>
@@ -427,6 +425,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
           <View style={styles.startContainerN}>
             {starCount.map((item) => (
               <TouchableOpacity
+                activeOpacity={0.5}
                 onPress={() => {
                   props.onPressRatingStar(item);
                 }}
@@ -512,7 +511,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
 
   return (
     <TouchableOpacity
-      activeOpacity={1}
+      activeOpacity={0.5}
       onPress={props.onPressCard}
       style={[styles.containerStyle, props.style]}
       key={props?.orderId}
@@ -714,16 +713,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 4,
   },
-  editIconView: {
-    justifyContent: 'center',
-    marginHorizontal: 3,
-    marginRight: 6,
-  },
   editIconTouch: {
-    width: 20,
-    height: 20,
+    width: 40,
+    height: 40,
+    marginRight: 6,
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 3000,
   },
   editIcon: { height: 16, width: 16, resizeMode: 'contain' },
 });

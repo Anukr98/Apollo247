@@ -467,6 +467,7 @@ export const ClinicalDocumentListing: React.FC<ClinicalDocumentListingProps> = (
     return (
       <View style={{ right: 4 }}>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             setShowFilterPopUp(true);
           }}
@@ -485,7 +486,7 @@ export const ClinicalDocumentListing: React.FC<ClinicalDocumentListingProps> = (
         </Text>
         <View style={styles.searchBarMainView}>
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             onPress={() => {
               setShowSearchBar(true);
               setSearchInputFocus(true);
@@ -518,6 +519,7 @@ export const ClinicalDocumentListing: React.FC<ClinicalDocumentListingProps> = (
                 const momentFormat = moment(dateFormat).format('DD MMM');
                 return mainItem?.fileInfoList?.length > 0 ? (
                   <TouchableOpacity
+                    activeOpacity={0.5}
                     style={styles.imageContainer}
                     onPress={() => {
                       const dateFormat = new Date(Number(mainItem?.createddate));
@@ -541,8 +543,8 @@ export const ClinicalDocumentListing: React.FC<ClinicalDocumentListingProps> = (
                         comingFromListing: true,
                         selectedID: mainItem?.id,
                         documentType: mainItem?.fileType,
-                        isDigitized: mainItem?.documentStatus==='DIGITIZED',
-                        fileTypeId: mainItem?.fileTypeId
+                        isDigitized: mainItem?.documentStatus === 'DIGITIZED',
+                        fileTypeId: mainItem?.fileTypeId,
                       });
                     }}
                   >

@@ -14,6 +14,7 @@ export const TermsAndConditions: React.FC<TermsAndConditionsProps> = (props) => 
   return (
     <View style={[styles.cardStyle, styles.tncContainer]}>
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={() => {
           setIsTnCVisible(!isTnCVisible);
         }}

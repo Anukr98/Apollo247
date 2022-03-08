@@ -169,7 +169,7 @@ export const ServerCartTatBottomContainer: React.FC<ServerCartTatBottomContainer
     return (
       <View style={styles.minCartContainer}>
         <Text style={styles.minCartMsg}>{`Add items worth ₹${toAdd} more to place an order`}</Text>
-        <TouchableOpacity onPress={onPressAddMoreMedicines}>
+        <TouchableOpacity activeOpacity={0.5} onPress={onPressAddMoreMedicines}>
           <Text style={styles.addMoreText}>ADD MORE</Text>
         </TouchableOpacity>
       </View>

@@ -40,6 +40,7 @@ export const CredPay: React.FC<CredPayProps> = (props) => {
   const renderCred = () => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={styles.ChildComponent}
         disabled={paymentMethod?.outage_status == 'DOWN' ? true : false}
         onPress={() => onPressPayNow(paymentMethod?.payment_method_code)}

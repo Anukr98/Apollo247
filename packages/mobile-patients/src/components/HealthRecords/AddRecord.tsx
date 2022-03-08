@@ -1987,7 +1987,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     return (
       <View style={[styles.addMoreImageViewStyle, { marginRight: 5 }]}>
         <View style={styles.imageViewStyle}>
-          <TouchableOpacity onPress={deleteImage} style={styles.removeIconViewStyle}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            onPress={deleteImage}
+            style={styles.removeIconViewStyle}
+          >
             {selectedRecord?.isClinicalDocument ? null : (
               <PhrRemoveBlueIcon style={{ width: 16, height: 16 }} />
             )}
@@ -2025,7 +2029,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       return (
         <View style={styles.addMoreImageViewStyle}>
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             onPress={onPressAddPage}
             style={{ height: 72, width: 72, backgroundColor: id === 1 ? '#FFFFFF' : '#979797' }}
           >
@@ -2085,7 +2089,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     const renderRightElement = () => {
       return (
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => {
             onPressEditDate?.();
             if (inputRef?.current) {
@@ -2309,7 +2313,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
     const rightElement = () => {
       return (
-        <TouchableOpacity activeOpacity={1} onPress={onPressAddRecordParameter}>
+        <TouchableOpacity activeOpacity={0.5} onPress={onPressAddRecordParameter}>
           <PhrAddTestDetailsIcon style={{ width: 24, height: 24 }} />
         </TouchableOpacity>
       );
@@ -2323,7 +2327,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
     const rightElementParameter = (i: number) => {
       return (
-        <TouchableOpacity activeOpacity={1} onPress={() => onPressRemoveRecordParameter(i)}>
+        <TouchableOpacity activeOpacity={0.5} onPress={() => onPressRemoveRecordParameter(i)}>
           <PhrRemoveTestDetailsIcon style={{ width: 20, height: 20 }} />
         </TouchableOpacity>
       );
@@ -2710,7 +2714,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     const rightElement = () => {
       return (
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => setShowAllergyDetails(!showAllergyDetails)}
         >
           {showAllergyDetails ? (
@@ -2882,7 +2886,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     const rightElement = () => {
       return (
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => setShowHealthRestrictionDetails(!showHealthRestrictionDetails)}
         >
           {showHealthRestrictionDetails ? (
@@ -3037,7 +3041,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     const rightElement = () => {
       return (
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => setShowMedicalConditionDetails(!showMedicalConditionDetails)}
         >
           {showMedicalConditionDetails ? (
@@ -3190,7 +3194,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     const rightElement = () => {
       return (
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => setShowMedicationDetails(!showMedicationDetails)}
         >
           {showMedicationDetails ? (
@@ -3298,6 +3302,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             {renderListItem('Dosage Level', false)}
             <View style={styles.morningViewStyle}>
               <TouchableOpacity
+                activeOpacity={0.5}
                 onPress={() => setIsMorningChecked(!isMorningChecked)}
                 style={{ flexDirection: 'row', flex: 1 }}
               >
@@ -3309,6 +3314,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 <Text style={styles.morningTextStyle}>{'Morning'}</Text>
               </TouchableOpacity>
               <TouchableOpacity
+                activeOpacity={0.5}
                 onPress={() => setIsNoonChecked(!isNoonChecked)}
                 style={{ flexDirection: 'row', flex: 1 }}
               >
@@ -3320,6 +3326,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 <Text style={styles.morningTextStyle}>{'Noon'}</Text>
               </TouchableOpacity>
               <TouchableOpacity
+                activeOpacity={0.5}
                 onPress={() => setIsEveningChecked(!isEveningChecked)}
                 style={{ flexDirection: 'row', flex: 1 }}
               >
@@ -3357,7 +3364,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     const rightElement = () => {
       return (
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => setShowFamilyHistoryDetails(!showFamilyHistoryDetails)}
         >
           {showFamilyHistoryDetails ? (
@@ -3474,6 +3481,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     return (
       <View style={styles.allergyViewStyle}>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => setAllergyCheckbox(!allergyCheckbox)}
           style={{ flexDirection: 'row', flex: 1 }}
         >
@@ -3485,6 +3493,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           <Text style={styles.morningTextStyle}>{'Yes'}</Text>
         </TouchableOpacity>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => setAllergyCheckbox(!allergyCheckbox)}
           style={{ flexDirection: 'row', flex: 1 }}
         >
@@ -3503,6 +3512,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     return (
       <View style={styles.allergyViewStyle}>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => setMedicationCheckbox(!medicationCheckbox)}
           style={{ flexDirection: 'row', flex: 1 }}
         >
@@ -3514,6 +3524,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           <Text style={styles.morningTextStyle}>{'Yes'}</Text>
         </TouchableOpacity>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => setMedicationCheckbox(!medicationCheckbox)}
           style={{ flexDirection: 'row', flex: 1 }}
         >
@@ -3532,6 +3543,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     return (
       <View style={styles.allergyViewStyle}>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => setHealthRestrictionCheckbox(!healthRestrictionCheckbox)}
           style={{ flexDirection: 'row', flex: 1 }}
         >
@@ -3543,6 +3555,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           <Text style={styles.morningTextStyle}>{'Yes'}</Text>
         </TouchableOpacity>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => setHealthRestrictionCheckbox(!healthRestrictionCheckbox)}
           style={{ flexDirection: 'row', flex: 1 }}
         >
@@ -3561,6 +3574,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     return (
       <View style={styles.allergyViewStyle}>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => setMedicalConditionCheckbox(!medicalConditionCheckbox)}
           style={{ flexDirection: 'row', flex: 1 }}
         >
@@ -3572,6 +3586,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           <Text style={styles.morningTextStyle}>{'Yes'}</Text>
         </TouchableOpacity>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => setMedicalConditionCheckbox(!medicalConditionCheckbox)}
           style={{ flexDirection: 'row', flex: 1 }}
         >
@@ -3590,6 +3605,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     return (
       <View style={styles.allergyViewStyle}>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => setFamilyHistoryCheckbox(!familyHistoryCheckbox)}
           style={{ flexDirection: 'row', flex: 1 }}
         >
@@ -3601,6 +3617,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           <Text style={styles.morningTextStyle}>{'Yes'}</Text>
         </TouchableOpacity>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => setFamilyHistoryCheckbox(!familyHistoryCheckbox)}
           style={{ flexDirection: 'row', flex: 1 }}
         >
@@ -3989,7 +4006,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
   const headerRightComponent = () => {
     return (
-      <TouchableOpacity activeOpacity={1} onPress={onPressCloseReview}>
+      <TouchableOpacity activeOpacity={0.5} onPress={onPressCloseReview}>
         <Remove />
       </TouchableOpacity>
     );
@@ -4051,7 +4068,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               style={styles.gotItStyles}
               onPress={() => {
                 setshowPopUp(false);

@@ -59,7 +59,7 @@ export const CirclePurchase: React.FC<CirclePurchaseProps> = (props) => {
 
   const renderViewDetails = () => {
     return (
-      <TouchableOpacity onPress={onPressBenefits}>
+      <TouchableOpacity activeOpacity={0.5} onPress={onPressBenefits}>
         <Text style={styles.benefits}>VIEW ALL BENEFITS</Text>
       </TouchableOpacity>
     );

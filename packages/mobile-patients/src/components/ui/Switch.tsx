@@ -12,7 +12,7 @@ export const Switch: React.FC<SwitchProps> = (props) => {
   const [toggleOn, setToggleOn] = useState<boolean>(value || false);
   return (
     <TouchableOpacity
-      activeOpacity={1}
+      activeOpacity={0.5}
       onPress={() => {
         onChange && onChange(!toggleOn);
         setToggleOn(!toggleOn);

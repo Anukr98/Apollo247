@@ -77,6 +77,7 @@ export const TestViewReportOverlay: React.FC<TestViewReportOverlayProps> = (prop
     >
       <View>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={styles.closeContainer}
           onPress={() => {
             props.onClose();
@@ -88,6 +89,7 @@ export const TestViewReportOverlay: React.FC<TestViewReportOverlayProps> = (prop
           <View style={styles.reportModalOptionsView}>
             {viewReportItemsArray.map((item) => (
               <TouchableOpacity
+                activeOpacity={0.5}
                 onPress={async () => {
                   if (item?.title == string.Report.view || item?.title == string.Report.download) {
                     props.onPressViewReport();

@@ -244,6 +244,7 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
     ) : (
       <View style={styles.buttonsContainer}>
         <TouchableOpacity
+          activeOpacity={0.5}
           disabled={disableButton}
           style={styles.cancelButton}
           onPress={props.onClose}
@@ -251,6 +252,7 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
           <Text style={theme.viewStyles.text('B', 13, '#FC9916', 1, 20, 0.35)}>CANCEL</Text>
         </TouchableOpacity>
         <TouchableOpacity
+          activeOpacity={0.5}
           disabled={disableButton}
           style={styles.connectButton}
           onPress={() => fireExotelApi()}

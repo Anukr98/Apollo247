@@ -18,11 +18,13 @@ import {
 import { Image } from 'react-native-elements';
 import { isEmptyObject, isSmallDevice } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import {
-  convertNumberToDecimal,
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
+  DIAGNOSTIC_ITEM_GENDER,
   getPricesForItem,
-} from '@aph/mobile-patients/src/utils/commonUtils';
+  createDiagnosticAddToCartObject,
+} from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -30,7 +32,7 @@ import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests
 import {
   DiagnosticHomePageWidgetClicked,
   DiagnosticAddToCartEvent,
-} from '@aph/mobile-patients/src/components/Tests/Events';
+} from '@aph/mobile-patients/src/components/Tests/utils/Events';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -110,7 +112,11 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
     const getMandatoryParamter =
       !!inclusions && inclusions?.length > 0
         ? inclusions?.map((inclusion: any) =>
-            getMandatoryParamterResults(inclusion?.incObservationData)
+            getMandatoryParamterResults(
+              sourceScreen == AppRoutes.TestDetails
+                ? inclusion?.observations
+                : inclusion?.incObservationData
+            )
           )
         : [];
 
@@ -163,7 +169,7 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
         return null;
       }
 
-      const imageUrl = getItem?.itemImageUrl;
+      const imageUrl = getItem?.itemImageUrl || getItem?.imageUrl;
       const name = getItem?.itemTitle || getItem?.itemName;
       const {
         priceToShow,
@@ -185,7 +191,7 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
       const changeStyle = !isCircleSubscribed && hasSlashedPrice && hasCirclePrice;
       return (
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => onPress(getItem, packageMrpForItem, pricesForItem)}
           key={item?.item?.itemId}
         >
@@ -245,6 +251,7 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
   };
 
   const renderIconView = (imageUrl: string | any) => {
+    const resizedImageUrl = !!imageUrl && imageUrl != '' && imageUrl + '?imwidth=' + 40;
     return (
       <View style={styles.imageView}>
         {imageUrl == '' ? (
@@ -252,7 +259,7 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
         ) : (
           <Image
             placeholderStyle={styles.imagePlaceholderStyle}
-            source={{ uri: imageUrl }}
+            source={{ uri: resizedImageUrl || imageUrl }}
             style={styles.imageStyle}
           />
         )}
@@ -262,7 +269,7 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
 
   const renderSkuName = (name: string, getItem: any) => {
     return (
-      <View style={{ minHeight: 40 }}>
+      <View style={{ minHeight: 40, width: '95%' }}>
         <Text style={[styles.itemNameText]} numberOfLines={2}>
           {name}
         </Text>
@@ -349,15 +356,6 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
     ) : (
       renderItemPriceShimmer()
     );
-  };
-
-  const renderFallBackHeight = () => {
-    return !isCircleSubscribed ? <View style={{ height: 18 }} /> : null;
-  };
-
-  //38 for circle
-  const renderSlashedPriceFallBackHeight = () => {
-    return <View style={{ height: 23 }} />;
   };
 
   function calculatePriceToShow(pricesForItem: any, packageMrpForItem: any) {
@@ -510,6 +508,7 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
   };
 
   function onPressAddToCart(item: any, pricesForItem: any, packageCalculatedMrp: number) {
+    const { countToShow } = inclusionParameterLogic(item);
     const specialPrice = pricesForItem?.specialPrice!;
     const price = pricesForItem?.price!;
     const circlePrice = pricesForItem?.circlePrice!;
@@ -552,23 +551,25 @@ const FullWidthItemCard: React.FC<FullWidthItemCardProps> = (props) => {
       originalItemIds
     );
 
-    const addedItems = {
-      id: `${item?.itemId}`,
-      mou: 1,
-      name: item?.itemTitle! || item?.itemName,
-      price: price,
-      specialPrice: specialPrice! | price,
-      circlePrice: circlePrice,
-      circleSpecialPrice: circleSpecialPrice,
-      discountPrice: discountPrice,
-      discountSpecialPrice: discountSpecialPrice,
-      thumbnail: item?.itemImageUrl,
-      collectionMethod: TEST_COLLECTION_TYPE.HC,
-      groupPlan: planToConsider?.groupPlan,
-      packageMrp: packageCalculatedMrp,
-      inclusions: item?.inclusionData == null ? [Number(item?.itemId)] : inclusions,
-      isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
-    };
+    const addedItems = createDiagnosticAddToCartObject(
+      Number(item?.itemId),
+      item?.itemTitle! || item?.itemName,
+      item?.gender! || DIAGNOSTIC_ITEM_GENDER.B,
+      price,
+      specialPrice! | price,
+      circlePrice,
+      circleSpecialPrice,
+      discountPrice,
+      discountSpecialPrice,
+      TEST_COLLECTION_TYPE.HC,
+      planToConsider?.groupPlan,
+      packageCalculatedMrp,
+      item?.inclusionData == null ? [Number(item?.itemId)] : inclusions,
+      AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
+      item?.itemImageUrl,
+      countToShow
+    );
+
     if (sourceScreen === AppRoutes.CartPage) {
       onPressAddToCartFromCart?.(item, addedItems);
     } else {
@@ -789,8 +790,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
     marginRight: 10,
     alignItems: 'flex-start',
-    marginTop: 16,
-    marginBottom: 16,
+    marginTop: 8,
+    marginBottom: 8,
   },
   imagePlaceholderStyle: { backgroundColor: colors.CARD_BG, opacity: 0.5, borderRadius: 5 },
   imageStyle: { height: 25, width: 25, resizeMode: 'contain' },

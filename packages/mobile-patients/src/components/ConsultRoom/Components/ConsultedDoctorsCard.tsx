@@ -89,6 +89,7 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
   const renderDoctorsCard = (item: any, index: number) => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         key={index}
         style={[
           styles.container,

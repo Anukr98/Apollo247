@@ -596,6 +596,7 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
     }
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={() => {
           showCancelationAlert();
         }}
@@ -652,6 +653,7 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
 
           {showBookingConfirmedStatus() ? (
             <TouchableOpacity
+              activeOpacity={0.5}
               style={styles.qrCodeLinkContainer}
               onPress={() => {
                 try {
@@ -745,7 +747,7 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
           conatinerstyles={styles.phoneInputContainer}
         />
 
-        <TouchableOpacity activeOpacity={1} onPress={() => {}} style={styles.resendContainer}>
+        <TouchableOpacity activeOpacity={0.5} onPress={() => {}} style={styles.resendContainer}>
           <Text style={styles.yellowCTA}>SEND</Text>
         </TouchableOpacity>
 
@@ -903,7 +905,7 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
         <Text style={styles.errorInfo}>Display ID :{displayId} </Text>
 
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => {
             props.navigation.goBack();
           }}
@@ -1179,6 +1181,7 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
   const renderGeneratePDFCTA = () => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={styles.generatePDFContainer}
         onPress={() => {
           if (showBookingConfirmedStatus() == false) {

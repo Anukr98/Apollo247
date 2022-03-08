@@ -294,6 +294,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
         }}
       >
         <TouchableOpacity
+          activeOpacity={0.5}
           style={[
             styles.closeButton,
             pixelRatio <= 2 ? { top: 160, right: 30 } : { top: '31%', right: 50 },
@@ -464,7 +465,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
           </View>
         )}
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           key={index}
           onPress={() => {
             if (action === 'link' && (isPrimaryUHID || isSecondaryUHID)) {
@@ -613,7 +614,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
                 )}
               </View>
               {isPrimaryUHID && action !== 'firstlink' && (
-                <TouchableOpacity>
+                <TouchableOpacity activeOpacity={0.5}>
                   <PrimaryUHIDIconBlue
                     style={{
                       resizeMode: 'contain',
@@ -892,6 +893,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
         <BottomPopUp title="Network Error!" description={'Please try again later.'}>
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
+              activeOpacity={0.5}
               style={{
                 height: 60,
                 paddingRight: 25,

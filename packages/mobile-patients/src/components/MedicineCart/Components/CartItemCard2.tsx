@@ -162,7 +162,7 @@ export const CartItemCard2: React.FC<CartItemCard2Props> = (props) => {
 
   const renderDelete = () => {
     return (
-      <TouchableOpacity onPress={onPressDelete} style={styles.delete}>
+      <TouchableOpacity activeOpacity={0.5} onPress={onPressDelete} style={styles.delete}>
         {itemAvailable ? (
           (!item?.isFreeCouponProduct || item?.quantity > 1) && <DeleteIcon />
         ) : (

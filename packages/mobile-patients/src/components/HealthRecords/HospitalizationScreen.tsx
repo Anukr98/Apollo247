@@ -324,7 +324,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
         </Text>
         <View style={styles.searchBarMainView}>
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             onPress={() => {
               setShowSearchBar(true);
               setSearchInputFocus(true);

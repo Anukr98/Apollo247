@@ -157,7 +157,7 @@ export const TestPdfRender: React.FC<TestPdfRenderProps> = (props) => {
           <View style={styles.pdfView}>
             <View style={styles.downloadContainerView}>
               <TouchableOpacity
-                activeOpacity={1}
+                activeOpacity={0.5}
                 onPress={() => {
                   _onPressViewReport(order);
                 }}
@@ -167,7 +167,7 @@ export const TestPdfRender: React.FC<TestPdfRenderProps> = (props) => {
                 <Text style={styles.textStyles}>Download</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                activeOpacity={1}
+                activeOpacity={0.5}
                 onPress={() => {
                   shareReport();
                 }}

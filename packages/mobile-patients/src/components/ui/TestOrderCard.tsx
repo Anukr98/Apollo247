@@ -397,7 +397,7 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
                   },
                 ]}
               >
-                <TouchableOpacity activeOpacity={1} onPress={props.onPressCancel}>
+                <TouchableOpacity activeOpacity={0.5} onPress={props.onPressCancel}>
                   <View style={{ flex: 0.4 }}>
                     <Text style={styles.rightButtonText}>CANCEL</Text>
                   </View>
@@ -405,14 +405,14 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
                 {props.status == DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL ? null : (
                   <>
                     <View style={styles.separatorLine}></View>
-                    <TouchableOpacity activeOpacity={1} onPress={props.onPressReschedule}>
+                    <TouchableOpacity activeOpacity={0.5} onPress={props.onPressReschedule}>
                       <View style={{ flex: 0.5 }}>
                         <Text style={styles.rightButtonText}>RESCHEDULE</Text>
                       </View>
                     </TouchableOpacity>
                   </>
                 )}
-                <TouchableOpacity onPress={_changeDisclaimer}>
+                <TouchableOpacity activeOpacity={0.5} onPress={_changeDisclaimer}>
                   {showDisclaimer ? (
                     <Up style={styles.arrowIconStyle} />
                   ) : (
@@ -594,7 +594,7 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
   const renderTestPreparation = () => {
     return (
       <View style={styles.testPreparationView}>
-        <TouchableOpacity onPress={() => _changeDropDownState()} style={{}}>
+        <TouchableOpacity activeOpacity={0.5} onPress={() => _changeDropDownState()} style={{}}>
           <View style={styles.testPreparationInnerView}>
             <PendingIcon style={styles.pendingIconStyle} />
             <Text style={styles.preTestingText}>See Pre-testing Requirements</Text>
@@ -611,7 +611,7 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
 
   return (
     <TouchableOpacity
-      activeOpacity={1}
+      activeOpacity={0.5}
       onPress={props.onPress}
       style={[styles.containerStyle, props.style]}
     >

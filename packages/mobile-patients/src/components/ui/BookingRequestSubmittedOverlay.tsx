@@ -88,7 +88,7 @@ export const BookingRequestSubmittedOverlay: React.FC<BookingRequestSubmittedOve
           }}
         >
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             onPress={() => {
               props.setdisplayoverlay(false);
             }}

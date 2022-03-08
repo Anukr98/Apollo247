@@ -93,7 +93,7 @@ import {
   DiagnosticPhleboCallingClicked,
   DiagnosticTrackOrderViewed,
   DiagnosticViewReportClicked,
-} from '@aph/mobile-patients/src/components/Tests/Events';
+} from '@aph/mobile-patients/src/components/Tests/utils/Events';
 import {
   getHCOrderFormattedTrackingHistory,
   getHCOrderFormattedTrackingHistoryVariables,
@@ -863,8 +863,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             <Spearator style={styles.horizontalSeparator} />
 
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => _onPressDropDown(index)}
-              activeOpacity={1}
               style={styles.itemsTouch}
             >
               <Text style={styles.itemsAddedText}>{refundDetails?.length} refunds processed</Text>
@@ -938,8 +938,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                     <View style={{ marginTop: '2%' }}>
                       <Spearator style={styles.horizontalSeparator} />
                       <TouchableOpacity
+                        activeOpacity={0.5}
                         onPress={() => _onPressDropDown(index)}
-                        activeOpacity={1}
                         style={styles.itemsTouch}
                       >
                         <Text style={styles.itemsAddedText}>
@@ -1014,8 +1014,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       <View style={styles.viewInvoiceView}>
         <Text style={styles.invoiceGeneratedText}>Invoice is generated</Text>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={onPressInvoice}
-          activeOpacity={1}
           style={{ justifyContent: 'center' }}
         >
           <Text style={styles.yellowText}>VIEW INVOICE</Text>
@@ -1115,8 +1115,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           <View style={{ marginVertical: '2%' }}>
             <Spearator style={styles.horizontalSeparator} />
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => _onPressDropDown(index)}
-              activeOpacity={1}
               style={styles.itemsTouch}
             >
               <>
@@ -1258,8 +1258,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             <View style={styles.lineSeparator} />
             <View style={styles.inclusionContainer}>
               <TouchableOpacity
+                activeOpacity={0.5}
                 onPress={() => setShowInclusionStatus(!showInclusionStatus)}
-                activeOpacity={1}
                 style={styles.viewRowStyle}
               >
                 <Text style={styles.itemNameText}>{!!reportText ? reportText : ''}</Text>
@@ -1345,8 +1345,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             <View style={styles.lineSeparator} />
             <View style={styles.inclusionContainer}>
               <TouchableOpacity
+                activeOpacity={0.5}
                 onPress={() => setShowInclusionStatus(!showInclusionStatus)}
-                activeOpacity={1}
                 style={styles.viewRowStyle}
               >
                 <Text style={styles.itemNameText}>{!!reportText ? reportText : ''}</Text>
@@ -1406,8 +1406,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       <View>
         <View style={styles.lineSeparator} />
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => setShowFeedbackPopup(true)}
-          activeOpacity={1}
           style={styles.feedbackTouch}
         >
           <Text style={styles.rateYourExpText}>{string.diagnostics.rateYourExperience}</Text>
@@ -1687,7 +1687,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
   const renderHeaderRightComponent = () => {
     return (
-      <TouchableOpacity activeOpacity={1} style={{ paddingLeft: 10 }} onPress={onPressHelp}>
+      <TouchableOpacity activeOpacity={0.5} style={{ paddingLeft: 10 }} onPress={onPressHelp}>
         <Text style={styles.helpTextStyle}>{string.help.toUpperCase()}</Text>
       </TouchableOpacity>
     );

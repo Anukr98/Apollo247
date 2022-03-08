@@ -24,6 +24,7 @@ export const MedSearchBar: React.FC<Props> = ({
     <ActivityIndicator size={24} />
   ) : isFocused ? (
     <TouchableOpacity
+      activeOpacity={0.5}
       onPress={() => onSearchSend(value)}
       disabled={value.length < 3}
       style={{ opacity: value.length < 3 ? 0.5 : 1 }}

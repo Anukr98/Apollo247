@@ -42,7 +42,7 @@ export const SearchHealthRecordCard: React.FC<SearchHealthRecordCardProps> = (pr
   } = props;
   return (
     <TouchableOpacity
-      activeOpacity={1}
+      activeOpacity={0.5}
       style={styles.cardMainContainerStyle}
       onPress={() => onSearchHealthCardPress(item)}
     >

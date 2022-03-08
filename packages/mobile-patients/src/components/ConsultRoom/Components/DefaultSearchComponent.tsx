@@ -67,6 +67,7 @@ export const DefaultSearchComponent: React.FC<defaultSearchProps> = (props) => {
             <View>
               {index === 3 && renderTrackSymptoms()}
               <TouchableOpacity
+                activeOpacity={0.5}
                 style={styles.doctorCard}
                 onPress={() => {
                   props.navigation.navigate(AppRoutes.SlotSelection, {
@@ -111,6 +112,7 @@ export const DefaultSearchComponent: React.FC<defaultSearchProps> = (props) => {
                 consultedDoctors?.length !== 3 &&
                 renderTrackSymptoms()}
               <TouchableOpacity
+                activeOpacity={0.5}
                 style={styles.doctorCard}
                 onPress={() => {
                   if (isSearchTypeDoctor) {
@@ -226,6 +228,7 @@ export const DefaultSearchComponent: React.FC<defaultSearchProps> = (props) => {
                 consultedDoctors?.length < 4 &&
                 renderTrackSymptoms()}
               <TouchableOpacity
+                activeOpacity={0.5}
                 style={styles.doctorCard}
                 onPress={() => {
                   if (locationDetails || isOnlineConsultMode) {

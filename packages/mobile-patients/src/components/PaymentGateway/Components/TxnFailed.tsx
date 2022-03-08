@@ -27,7 +27,7 @@ export const TxnFailed: React.FC<TxnFailedProps> = (props) => {
 
   const renderRetry = () => {
     return (
-      <TouchableOpacity style={styles.retryCont} onPress={onPressRetry}>
+      <TouchableOpacity activeOpacity={0.5} style={styles.retryCont} onPress={onPressRetry}>
         <Text style={styles.retry}>RETRY WITH ANOTHER PAYMENT METHOD</Text>
       </TouchableOpacity>
     );
@@ -36,7 +36,7 @@ export const TxnFailed: React.FC<TxnFailedProps> = (props) => {
   const renderCOD = () => {
     return (businessLine == 'diagnostics' && showCODonDiag) ||
       (businessLine == 'pharma' && showCODonPharma) ? (
-      <TouchableOpacity style={styles.button} onPress={onPressCOD}>
+      <TouchableOpacity activeOpacity={0.5} style={styles.button} onPress={onPressCOD}>
         <Text style={styles.cod}>PLACE ORDER - CASH ON DELIVERY</Text>
       </TouchableOpacity>
     ) : null;

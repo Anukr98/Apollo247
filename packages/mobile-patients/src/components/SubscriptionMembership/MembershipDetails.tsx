@@ -817,6 +817,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         />
         {ctaLabel !== 'NULL' && (
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               handleCtaClick(type, action, message, availableCount, id, webengageevent, '');
             }}
@@ -1091,6 +1092,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     const buttonText = isCanUpgradeTo ? 'AVAIL NOW' : isActivePlan ? 'EXPLORE NOW' : 'ACTIVATE NOW';
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={styles.bottomContainer}
         onPress={() => {
           if (isCanUpgradeTo) {
@@ -1123,6 +1125,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     return (
       <View style={styles.cardStyle}>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             setIsHowToAvailVisible(!isHowToAvailVisible);
           }}
@@ -1325,7 +1328,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
       const { action, message, type, webEngageEvent } = benefitCtaAction;
       return (
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => {
             if (!isExpired) {
               handleCtaClick(type, action, message, availableCount, _id, null, attribute);
@@ -1409,6 +1412,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           />
           {!!benefit.benefitCTALabel && (
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 handleCtaClick(
                   benefit?.benefitCTAType,

@@ -183,7 +183,7 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
     return (
       <View style={{ opacity: isCouponTextValid(couponText) ? 1 : 0.5 }}>
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           disabled={!isCouponTextValid(couponText)}
           onPress={() => applyCoupon(couponText)}
         >
@@ -245,7 +245,7 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
       <View>
         {couponList.map((coupon, i) => (
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             style={styles.radioButtonContainer}
             key={i}
             onPress={() => setCouponText(coupon!.coupon == couponText ? '' : coupon!.coupon!)}

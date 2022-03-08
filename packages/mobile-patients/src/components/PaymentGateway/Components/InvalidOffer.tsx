@@ -28,7 +28,11 @@ export const InvalidOffer: React.FC<InvalidOfferProps> = (props) => {
 
   const renderContinue = () => {
     return (
-      <TouchableOpacity style={styles.continueCont} onPress={() => onPressContinue()}>
+      <TouchableOpacity
+        activeOpacity={0.5}
+        style={styles.continueCont}
+        onPress={() => onPressContinue()}
+      >
         <Text style={styles.continue}>{`${'CONTINUE WITHOUT OFFER & PAY'}`}</Text>
       </TouchableOpacity>
     );

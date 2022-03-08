@@ -10,7 +10,7 @@ export interface ProfileImageComponentProps {
 export const ProfileImageComponent: React.FC<ProfileImageComponentProps> = (props) => {
   const { onPressProfileImage, currentPatient } = props;
   return (
-    <TouchableOpacity activeOpacity={1} onPress={onPressProfileImage}>
+    <TouchableOpacity activeOpacity={0.5} onPress={onPressProfileImage}>
       {currentPatient?.photoUrl?.match(
         /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/
       ) ? (

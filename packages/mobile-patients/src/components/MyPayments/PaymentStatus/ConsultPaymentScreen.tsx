@@ -237,6 +237,7 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
       return (
         <View style={styles.viewInvoice}>
           <TouchableOpacity
+            activeOpacity={0.5}
             style={styles.viewInvoiceContainer}
             onPress={() => requestStoragePermission()}
           >
@@ -244,6 +245,7 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
             {textComponent('VIEW INVOICE', undefined, theme.colors.TANGERINE_YELLOW, false)}
           </TouchableOpacity>
           <TouchableOpacity
+            activeOpacity={0.5}
             style={styles.emailInvoiceView}
             onPress={() => setshowEmailInput(!showEmailInput)}
           >
@@ -304,7 +306,7 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
     return (
       <View style={{ paddingBottom: 0, opacity: isSatisfyingEmailRegex(email.trim()) ? 1 : 0.5 }}>
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           disabled={!isSatisfyingEmailRegex(email.trim())}
           onPress={() => {
             emailInvoice();
@@ -429,7 +431,11 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
           </View>
         </View>
         {status == success && (
-          <TouchableOpacity style={styles.refStyles} onPress={() => copyToClipboard(refId)}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            style={styles.refStyles}
+            onPress={() => copyToClipboard(refId)}
+          >
             <Text style={theme.viewStyles.text('R', 10, theme.colors.SLATE_GRAY, 1, 20)}>
               {'Payment Ref. Number - ' + refId}
             </Text>
@@ -564,7 +570,11 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
           <Text style={styles.consultInfoText}>{string.consultPayment.stepThree}</Text>
         </View>
         <Text style={styles.guidelineText}>{string.consultPayment.detailedGuidelines}</Text>
-        <TouchableOpacity onPress={() => setShowPDF(true)} style={styles.pdfView}>
+        <TouchableOpacity
+          activeOpacity={0.5}
+          onPress={() => setShowPDF(true)}
+          style={styles.pdfView}
+        >
           <Pdf style={styles.pdfIcon} />
           <Text style={theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE)}>
             {string.consultPayment.viewGuideline}

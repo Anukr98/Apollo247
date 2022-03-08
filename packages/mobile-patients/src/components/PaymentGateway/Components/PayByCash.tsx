@@ -49,6 +49,7 @@ export const PayByCash: React.FC<PayByCashProps> = (props) => {
   const renderPlaceOrder = () => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={() => {
           !disableCodOption && onPressPlaceOrder();
         }}

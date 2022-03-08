@@ -551,7 +551,11 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
         ticket?.customFields?.Business == BUSINESS.VIRTUAL_CONSULTATION ||
         ticket?.customFields?.Business == BUSINESS.PHYSICAL_CONSULTATION ||
         ticket?.customFields?.Business == BUSINESS.DIAGNOSTICS ? (
-          <TouchableOpacity style={styles.whatsWithUsContainer} onPress={() => onPressWhatsApp()}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            style={styles.whatsWithUsContainer}
+            onPress={() => onPressWhatsApp()}
+          >
             <WhatsAppIcon style={styles.whatsAppIcon} />
             <Text style={styles.whatsWithUsText}>{string.needHelpScreen.whatsapp_with_us}</Text>
           </TouchableOpacity>
@@ -638,6 +642,7 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
                   {string.needHelpScreen.no_conversation_till_now}
                 </Text>
                 <TouchableOpacity
+                  activeOpacity={0.5}
                   style={styles.refreshContainer}
                   onPress={() => {
                     getConversation();
@@ -694,7 +699,7 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
             </View>
 
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               style={[styles.sendButtonStyles, { opacity: isTicketClosed ? 0.5 : 1 }]}
               onPress={async () => {
                 if (!isTicketClosed) {

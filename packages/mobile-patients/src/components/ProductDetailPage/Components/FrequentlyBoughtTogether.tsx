@@ -49,7 +49,7 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
   const [totalPrice, setTotalPrice] = useState<number>(defaultTotalPrice || 0);
 
   const { setUserActionPayload } = useServerCart();
-  const { allCurrentPatients, currentPatient } = useAllCurrentPatients()
+  const { allCurrentPatients, currentPatient } = useAllCurrentPatients();
 
   const onPressIcon = (id: number, itemPrice: number, item) => {
     const newArr = [...selectedProductsId];
@@ -73,22 +73,24 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
 
   const postFrequentlyBoughtTogetherEvent = async (item: object) => {
     const eventAttributes = {
-      source: "Frequently Bought Together",
+      source: 'Frequently Bought Together',
       sku: item?.sku,
       name: item?.name,
       price: item?.price,
       special_price: item?.special_price,
       quantity: 1,
       'Circle Member': pharmacyCircleAttributes?.['Circle Membership Added'],
-      'Circle Membership Value': pharmacyCircleAttributes?.['Circle Membership Value'] ? pharmacyCircleAttributes?.['Circle Membership Value'] : 0
-    }
-    postCleverTapEvent(CleverTapEventName.PHARMACY_ADD_TO_CART, eventAttributes)
-  }
+      'Circle Membership Value': pharmacyCircleAttributes?.['Circle Membership Value']
+        ? pharmacyCircleAttributes?.['Circle Membership Value']
+        : 0,
+    };
+    postCleverTapEvent(CleverTapEventName.PHARMACY_ADD_TO_CART, eventAttributes);
+  };
 
   const onPressAdd = (selectedProductsArray) => {
     if (selectedProductsArray.length > 0) {
       selectedProductsArray.map((item) => {
-        postFrequentlyBoughtTogetherEvent(item)
+        postFrequentlyBoughtTogetherEvent(item);
         setUserActionPayload?.({
           medicineOrderCartLineItems: [
             {
@@ -132,6 +134,7 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
         <View style={styles.ItemContainer}>
           <View style={styles.imageContainer}>
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 item?.special_price
                   ? onPressIcon(item?.id, +item?.special_price, item)
@@ -205,6 +208,7 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
           </View>
           <View>
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 onPressAdd(selectedProductsArray);
               }}

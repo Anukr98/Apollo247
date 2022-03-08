@@ -161,7 +161,7 @@ export const PrescriptionOptions: React.FC<Props> = ({
         <Text style={styles.blueMediumText}>{'Add Photos / PDF using:'}</Text>
         <View style={styles.buttonWrapper}>
           {buttons.map(({ title, icon, onPress }) => (
-            <TouchableOpacity onPress={onPress} style={styles.buttonContainer}>
+            <TouchableOpacity activeOpacity={0.5} onPress={onPress} style={styles.buttonContainer}>
               {icon}
               <Text style={styles.buttonTitle}>{title}</Text>
             </TouchableOpacity>

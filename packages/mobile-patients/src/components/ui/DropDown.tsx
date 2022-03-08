@@ -38,7 +38,7 @@ export const DropDown: React.FC<DropDownProps> = (props) => {
     <View style={[styles.cardContainer, props.cardContainer]}>
       {props.options.map((option, index, array) => {
         return (
-          <TouchableOpacity activeOpacity={1} key={index} onPress={option.onPress}>
+          <TouchableOpacity activeOpacity={0.5} key={index} onPress={option.onPress}>
             <View style={{ flexDirection: 'row' }}>
               <View>{option.icon ? option.icon : null}</View>
               <Text style={[styles.descriptiontext, props.selectedOptionIndex == index ? {} : {}]}>

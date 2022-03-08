@@ -53,7 +53,11 @@ export const UPIAppsPopup: React.FC<UPIAppsPopupProps> = (props) => {
 
   const renderUPICollect = () => {
     return (
-      <TouchableOpacity style={styles.upiCont} onPress={() => onPressUpiCollect()}>
+      <TouchableOpacity
+        activeOpacity={0.5}
+        style={styles.upiCont}
+        onPress={() => onPressUpiCollect()}
+      >
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <UPI style={styles.icon} />
           <Text style={styles.UPIHeader}>Pay with UPI ID</Text>
@@ -69,6 +73,7 @@ export const UPIAppsPopup: React.FC<UPIAppsPopupProps> = (props) => {
     const outageStatus = item?.outage_list?.[0]?.outage_status;
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={{
           ...styles.AppCont,
           marginLeft: marginLeft,

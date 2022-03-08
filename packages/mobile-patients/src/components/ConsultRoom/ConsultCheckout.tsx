@@ -531,6 +531,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           showsHorizontalScrollIndicator={false}
           renderItem={({ item }) => (
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 initiatePayment(item);
               }}
@@ -600,6 +601,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
               showsHorizontalScrollIndicator={false}
               renderItem={({ item }) => (
                 <TouchableOpacity
+                  activeOpacity={0.5}
                   onPress={() => {
                     initiatePayment(item);
                   }}
@@ -637,6 +639,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           </View>
           <View style={{ flex: 0.35, flexDirection: 'row' }}>
             <TouchableOpacity
+              activeOpacity={0.5}
               style={{
                 flex: 0.3,
                 justifyContent: 'center',

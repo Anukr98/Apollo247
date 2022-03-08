@@ -232,7 +232,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
             prismFile && (
               <View style={{ flexDirection: 'row' }}>
                 <TouchableOpacity
-                  activeOpacity={1}
+                  activeOpacity={0.5}
                   onPress={() => {
                     try {
                       if (!url || url === '[object Object]') {

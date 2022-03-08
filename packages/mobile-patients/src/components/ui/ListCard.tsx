@@ -69,25 +69,27 @@ export const ListCard: React.FC<ListCardProps> = (props) => {
   } = props;
 
   return (
-    <TouchableOpacity activeOpacity={1} onPress={props.onPress}>
-      <View style={[styles.container, props.container]}>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          {leftIcon}
-          <View style={styles.titleContainer}>
-            <Text style={[styles.titleStyle, leftTitleStyle]}>
-              {leftTitle}
-              <Text style={[styles.titleStyle, titleStyle]}>{title}</Text>
-            </Text>
-            {showRemoveBtn && (
-              <TouchableOpacity onPress={() => onRemoveCoupon()}>
-                <Text style={styles.removeText}>Remove</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-          {rightIcon ? rightIcon : <ArrowRight style={{ marginRight: 'auto' }} />}
+    <TouchableOpacity
+      activeOpacity={0.5}
+      onPress={props.onPress}
+      style={[styles.container, props.container]}
+    >
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        {leftIcon}
+        <View style={styles.titleContainer}>
+          <Text style={[styles.titleStyle, leftTitleStyle]}>
+            {leftTitle}
+            <Text style={[styles.titleStyle, titleStyle]}>{title}</Text>
+          </Text>
+          {showRemoveBtn && (
+            <TouchableOpacity activeOpacity={0.5} onPress={() => onRemoveCoupon()}>
+              <Text style={styles.removeText}>Remove</Text>
+            </TouchableOpacity>
+          )}
         </View>
-        {children}
+        {rightIcon ? rightIcon : <ArrowRight style={{ marginRight: 'auto' }} />}
       </View>
+      {children}
     </TouchableOpacity>
   );
 };

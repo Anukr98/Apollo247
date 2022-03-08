@@ -165,6 +165,7 @@ export const CancelReasonPopup: React.FC<CancelReasonProps> = (props) => {
       >
         {selectedReason == OTHER_REASON ? (
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               resetReasonForCancelFields();
             }}
@@ -190,7 +191,7 @@ export const CancelReasonPopup: React.FC<CancelReasonProps> = (props) => {
         </Text>
         {selectedReason != OTHER_REASON ? (
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             onPress={() => {
               setOverlayDropdown(true);
             }}
@@ -243,6 +244,7 @@ export const CancelReasonPopup: React.FC<CancelReasonProps> = (props) => {
       isCancelVisible && (
         <View style={{ marginHorizontal: 20 }}>
           <TouchableOpacity
+            activeOpacity={0.5}
             style={styles.reasonCancelCrossTouch}
             onPress={() => {
               closePopup();

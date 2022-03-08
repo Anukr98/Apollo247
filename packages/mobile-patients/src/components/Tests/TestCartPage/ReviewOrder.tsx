@@ -10,12 +10,13 @@ import {
   OffersIconGreen,
   CartIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import {
   createDiagnosticValidateCouponLineItems,
   createPatientAddressObject,
   createPatientObjLineItems,
-  sourceHeaders,
-} from '@aph/mobile-patients/src/utils/commonUtils';
+} from '@aph/mobile-patients/src/components/Tests/utils/helpers';
+
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
@@ -75,10 +76,8 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import {
-  convertNumberToDecimal,
-  diagnosticsDisplayPrice,
-} from '@aph/mobile-patients/src/utils/commonUtils';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
+import { diagnosticsDisplayPrice } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { TestProceedBar } from '@aph/mobile-patients/src/components/Tests/components/TestProceedBar';
 import {
@@ -105,7 +104,7 @@ import {
   DiagnosticModifyOrder,
   DiagnosticProceedToPay,
   DiagnosticRemoveFromCartClicked,
-} from '@aph/mobile-patients/src/components/Tests/Events';
+} from '@aph/mobile-patients/src/components/Tests/utils/Events';
 
 import moment from 'moment';
 import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
@@ -1100,7 +1099,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             {defaultPlanPurchasePrice}
           </Text>
         </View>
-        <TouchableOpacity onPress={() => _onPressRemovePlan()} style={styles.removeTouch}>
+        <TouchableOpacity
+          activeOpacity={0.5}
+          onPress={() => _onPressRemovePlan()}
+          style={styles.removeTouch}
+        >
           <Text style={styles.removeText}>REMOVE</Text>
         </TouchableOpacity>
       </View>
@@ -1252,6 +1255,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             {defaultPlanPurchasePrice}
           </Text>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               _onTogglePlans();
             }}
@@ -1309,6 +1313,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           ]}
         >
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => setShowAllPreviousItems(!showAllPreviousItems)}
             style={styles.previousContainerTouch}
           >
@@ -1400,7 +1405,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             {title}
           </Text>
           {showCouponView && !!touchView && touchView && !!!coupon && !coupon?.valid && (
-            <TouchableOpacity onPress={() => _navigateToCoupons()} style={styles.applyCouponTouch}>
+            <TouchableOpacity
+              activeOpacity={0.5}
+              onPress={() => _navigateToCoupons()}
+              style={styles.applyCouponTouch}
+            >
               <Text style={styles.couponText}>
                 {nameFormater(string.diagnosticsCoupons.applyCoupon, 'upper')}
               </Text>
@@ -1593,7 +1602,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
               </Text>
             </View>
           </View>
-          <TouchableOpacity onPress={() => _removeAppliedCoupon()} style={styles.crossIconTouch}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            onPress={() => _removeAppliedCoupon()}
+            style={styles.crossIconTouch}
+          >
             <Text style={styles.crossIconText}>X </Text>
           </TouchableOpacity>
         </View>
@@ -1607,6 +1620,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const renderOffersCouponsView = () => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={() => _navigateToCoupons()}
         style={[styles.couponViewTouch, styles.flexRow]}
       >

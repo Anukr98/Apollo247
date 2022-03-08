@@ -354,7 +354,11 @@ export const DiagnosticLocation: React.FC<DiagnosticLocationProps> = (props) => 
   const renderCurrentLocation = () => {
     return (
       <View style={styles.currentLocationContainer}>
-        <TouchableOpacity style={styles.currentLocationTouch} onPress={onPressCurrentLocation}>
+        <TouchableOpacity
+          activeOpacity={0.5}
+          style={styles.currentLocationTouch}
+          onPress={onPressCurrentLocation}
+        >
           <View style={styles.centerRowStyle}>
             <Image source={icon_gps} style={[styles.currentLocationIcon]} />
             <View style={{ marginHorizontal: '4%' }}>
@@ -381,6 +385,7 @@ export const DiagnosticLocation: React.FC<DiagnosticLocationProps> = (props) => 
               </View>
               {!!permissionCTA && permissionCTA !== '' ? (
                 <TouchableOpacity
+                  activeOpacity={0.5}
                   style={styles.permissionOptionTouch}
                   onPress={_performPermissionCTAAction}
                 >
@@ -450,7 +455,7 @@ export const DiagnosticLocation: React.FC<DiagnosticLocationProps> = (props) => 
 
   const renderLocationView = (item: any, index: number | string, locationSuggestion: any) => {
     return (
-      <TouchableOpacity activeOpacity={1} onPress={() => _onPressSuggestion(item)}>
+      <TouchableOpacity activeOpacity={0.5} onPress={() => _onPressSuggestion(item)}>
         <View style={styles.locationRowOuterContainer}>
           {/**height: screenHeight/12.5 */}
           <View style={styles.locationRowInnerContainer}>

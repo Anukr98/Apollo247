@@ -114,6 +114,11 @@
 		BBA1D02224F4D25800C77819 /* GMUDefaultClusterIconGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = BBA1D00224F4D25800C77819 /* GMUDefaultClusterIconGenerator.m */; };
 		BBA1D02324F4D25800C77819 /* GMUStaticCluster.m in Sources */ = {isa = PBXBuildFile; fileRef = BBA1D00524F4D25800C77819 /* GMUStaticCluster.m */; };
 		BBA1D02424F4D25800C77819 /* GMSMarker+GMUClusteritem.m in Sources */ = {isa = PBXBuildFile; fileRef = BBA1D00824F4D25800C77819 /* GMSMarker+GMUClusteritem.m */; };
+		BBE1B8AA27D729DB005842D8 /* OpenSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BBE1B8A427D729DA005842D8 /* OpenSans-Bold.ttf */; };
+		BBE1B8AB27D729DB005842D8 /* OpenSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BBE1B8A627D729DB005842D8 /* OpenSans-Regular.ttf */; };
+		BBE1B8AC27D729DB005842D8 /* OpenSans-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BBE1B8A727D729DB005842D8 /* OpenSans-ExtraBold.ttf */; };
+		BBE1B8AD27D729DB005842D8 /* OpenSans-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BBE1B8A827D729DB005842D8 /* OpenSans-Light.ttf */; };
+		BBE1B8AE27D729DB005842D8 /* OpenSans-Semibold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BBE1B8A927D729DB005842D8 /* OpenSans-Semibold.ttf */; };
 		C38E9E715A0517993FE5D4F8 /* Pods_ApolloPatient.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72F617656E6541D1F4092240 /* Pods_ApolloPatient.framework */; };
 		D7233BEF61ED4CC7ABE5D4E7 /* (null) in Resources */ = {isa = PBXBuildFile; };
 		E0A12ADE12A2489881685B48 /* (null) in Resources */ = {isa = PBXBuildFile; };
@@ -374,6 +379,11 @@
 		BBA1D00624F4D25800C77819 /* GMUCluster.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GMUCluster.h; sourceTree = "<group>"; };
 		BBA1D00724F4D25800C77819 /* GMUClusterItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GMUClusterItem.h; sourceTree = "<group>"; };
 		BBA1D00824F4D25800C77819 /* GMSMarker+GMUClusteritem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GMSMarker+GMUClusteritem.m"; sourceTree = "<group>"; };
+		BBE1B8A427D729DA005842D8 /* OpenSans-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "OpenSans-Bold.ttf"; sourceTree = "<group>"; };
+		BBE1B8A627D729DB005842D8 /* OpenSans-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "OpenSans-Regular.ttf"; sourceTree = "<group>"; };
+		BBE1B8A727D729DB005842D8 /* OpenSans-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "OpenSans-ExtraBold.ttf"; sourceTree = "<group>"; };
+		BBE1B8A827D729DB005842D8 /* OpenSans-Light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "OpenSans-Light.ttf"; sourceTree = "<group>"; };
+		BBE1B8A927D729DB005842D8 /* OpenSans-Semibold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "OpenSans-Semibold.ttf"; sourceTree = "<group>"; };
 		BC164DC10808B8284C771748 /* Pods-ApolloPatient.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloPatient.release.xcconfig"; path = "Target Support Files/Pods-ApolloPatient/Pods-ApolloPatient.release.xcconfig"; sourceTree = "<group>"; };
 		E892BC212670D8CC0018AA07 /* RNShare.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RNShare.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
@@ -806,6 +816,11 @@
 		F1B3D75422B8D37100521684 /* Fonts */ = {
 			isa = PBXGroup;
 			children = (
+				BBE1B8A427D729DA005842D8 /* OpenSans-Bold.ttf */,
+				BBE1B8A727D729DB005842D8 /* OpenSans-ExtraBold.ttf */,
+				BBE1B8A827D729DB005842D8 /* OpenSans-Light.ttf */,
+				BBE1B8A627D729DB005842D8 /* OpenSans-Regular.ttf */,
+				BBE1B8A927D729DB005842D8 /* OpenSans-Semibold.ttf */,
 				F1B3D75622B8D37100521684 /* IBMPlexSans-Medium.ttf */,
 				F1B3D75722B8D37100521684 /* IBMPlexSans-SemiBold.ttf */,
 				F1B3D75F22B8D37100521684 /* IBMPlexSans-Light.ttf */,
@@ -965,13 +980,17 @@
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
 				F1B3D79722B8D37200521684 /* IBMPlexSans-Regular.ttf in Resources */,
 				9784DFB723A2282600CB4A28 /* GoogleService-Info.plist in Resources */,
+				BBE1B8AD27D729DB005842D8 /* OpenSans-Light.ttf in Resources */,
 				F1B3D79922B8D37200521684 /* IBMPlexSans-Bold.ttf in Resources */,
 				F1B3D78D22B8D37200521684 /* IBMPlexSans-SemiBold.ttf in Resources */,
 				F1B3D78C22B8D37200521684 /* IBMPlexSans-Medium.ttf in Resources */,
+				BBE1B8AC27D729DB005842D8 /* OpenSans-ExtraBold.ttf in Resources */,
 				F1B3D79522B8D37200521684 /* IBMPlexSans-Light.ttf in Resources */,
 				97B123D924E53C1600B9D379 /* callkitAppIcon.png in Resources */,
+				BBE1B8AA27D729DB005842D8 /* OpenSans-Bold.ttf in Resources */,
 				492AFA5125C2A4A500330A9C /* left_sound.mp3 in Resources */,
 				97A7C9D4249B430A00EDDFC0 /* incallmanager_ringtone.mp3 in Resources */,
+				BBE1B8AB27D729DB005842D8 /* OpenSans-Regular.ttf in Resources */,
 				97FFBDEC23E4887B00E55E34 /* Info-iOS.plist in Resources */,
 				97FFBDF023E4887B00E55E34 /* nlp.js in Resources */,
 				97D79A1C24924D410029DE31 /* main.jsbundle in Resources */,
@@ -979,6 +998,7 @@
 				F109515A71C04208812E40C7 /* (null) in Resources */,
 				51DB4749A9874BD886B2F10B /* (null) in Resources */,
 				92F3F92657424548B56588C7 /* (null) in Resources */,
+				BBE1B8AE27D729DB005842D8 /* OpenSans-Semibold.ttf in Resources */,
 				7CF13BFBC3EB448BA0017BA0 /* (null) in Resources */,
 				E0A12ADE12A2489881685B48 /* (null) in Resources */,
 				7A1955DD5F9B407C97969865 /* (null) in Resources */,

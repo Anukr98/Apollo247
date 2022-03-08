@@ -37,6 +37,7 @@ export const RefundDetails: React.FC<RefundDetailsProps> = (props) => {
             </Text>
             <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
               <TouchableOpacity
+                activeOpacity={0.5}
                 onPress={() => {
                   props.navigaitonProps.navigate(AppRoutes.RefundStatus, {
                     orderAutoId: item.orderId,
@@ -54,7 +55,7 @@ export const RefundDetails: React.FC<RefundDetailsProps> = (props) => {
         );
       })}
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         style={styles.oneApolloTxt}
         onPress={() => props.navigaitonProps.navigate(AppRoutes.OneApolloMembership)}
       >

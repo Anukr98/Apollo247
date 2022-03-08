@@ -72,7 +72,7 @@ export const PatientDetailsOverlay: React.FC<PatientDetailsOverlayProps> = (prop
         <View style={{ marginTop: -5 }}>
           <View style={{ paddingTop: 0, paddingBottom: 10 }}>
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               style={styles.placeholderViewStyle}
               onPress={() => {
                 Keyboard.dismiss();
@@ -145,7 +145,7 @@ export const PatientDetailsOverlay: React.FC<PatientDetailsOverlayProps> = (prop
       overlayStyle={styles.phrOverlayStyle}
     >
       <View style={{ flex: 1 }}>
-        <TouchableOpacity style={{ flex: 1 }} onPress={_onPressClose} />
+        <TouchableOpacity activeOpacity={0.5} style={{ flex: 1 }} onPress={_onPressClose} />
         <View style={styles.overlayViewStyle}>
           <SafeAreaView style={styles.overlaySafeAreaViewStyle}>
             <View style={styles.mainViewStyle}>

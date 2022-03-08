@@ -50,7 +50,7 @@ export const CardsPopUp: React.FC<CardsPopUpProps> = (props) => {
     return (
       <View>
         {!!savedCards?.length && <Text style={styles.header}>NEW DEBIT/CREDIT CARD</Text>}
-        <TouchableOpacity style={styles.subCont} onPress={onPressNewCard}>
+        <TouchableOpacity activeOpacity={0.5} style={styles.subCont} onPress={onPressNewCard}>
           <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 12 }}>
             <Image
               source={require('@aph/mobile-patients/src/components/ui/icons/CardIcon.webp')}

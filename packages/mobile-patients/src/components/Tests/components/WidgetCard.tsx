@@ -15,10 +15,11 @@ export interface WidgetCardProps {
 export const WidgetCard: React.FC<WidgetCardProps> = (props) => {
   const { data, onPressWidget } = props;
   const itemIcon = !!data?.itemIcon
-    ? data?.itemIcon
+    ? data?.itemIcon + '?imwidth=' + 50
     : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_ICON;
   return (
     <TouchableOpacity
+      activeOpacity={0.5}
       style={styles.container}
       onPress={() => {
         onPressWidget();

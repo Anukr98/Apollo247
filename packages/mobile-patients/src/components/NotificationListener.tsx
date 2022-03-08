@@ -173,6 +173,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           }}
         >
           <TouchableOpacity
+            activeOpacity={0.5}
             style={styles.buttonStyle}
             onPress={() => {
               hideAphAlert!();

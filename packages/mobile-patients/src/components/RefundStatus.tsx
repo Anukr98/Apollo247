@@ -179,6 +179,7 @@ export const RefundStatus: React.FC<RefundStatusProps> = (props) => {
   const renderButton = () => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={styles.buttonStyle}
         onPress={() => {
           handleButton();

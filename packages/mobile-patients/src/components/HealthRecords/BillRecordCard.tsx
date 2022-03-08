@@ -131,7 +131,7 @@ export const BillRecordCard: React.FC<BillRecordCardProps> = (props) => {
           {items?.data?.labTestResults?.length > 0 ? (
             <>
               <View style={styles.elementSubContainer}>
-                <TouchableOpacity onPress={() => onHealthCardPress(items.data)}>
+                <TouchableOpacity activeOpacity={0.5} onPress={() => onHealthCardPress(items.data)}>
                   <Text numberOfLines={1} style={styles.elementText}>
                     {items?.data?.labTestName}
                   </Text>
@@ -201,6 +201,7 @@ export const BillRecordCard: React.FC<BillRecordCardProps> = (props) => {
         </View>
 
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => onDownloadLabTestReports && onDownloadLabTestReports(testReportItems)}
           style={styles.downloadLabTestContainer}
         >

@@ -51,7 +51,10 @@ export const HotSellersSection: React.FC<HotSellersProps> = (props) => {
 
     return (
       <View style={styles.hotSellersContainer}>
-        <TouchableOpacity onPress={() => gotToProductPage(item?.url_key, item?.sku, movedFrom)}>
+        <TouchableOpacity
+          activeOpacity={0.5}
+          onPress={() => gotToProductPage(item?.url_key, item?.sku, movedFrom)}
+        >
           <View style={styles.hotSellersBoxStyles}>
             {item?.special_price ? renderDiscountTag(item, discount) : <View></View>}
             <View style={styles.squareContainer}>
@@ -112,7 +115,11 @@ export const HotSellersSection: React.FC<HotSellersProps> = (props) => {
     const quantity = getItemQuantity(item.sku);
     return !quantity ? (
       <View style={{ paddingBottom: 15, paddingTop: 5 }}>
-        <TouchableOpacity style={styles.cartButtonStyle} onPress={() => onAddCartItem(item)}>
+        <TouchableOpacity
+          activeOpacity={0.5}
+          style={styles.cartButtonStyle}
+          onPress={() => onAddCartItem(item)}
+        >
           <Text style={styles.cartButtonTextStyle}>Add to Cart</Text>
         </TouchableOpacity>
       </View>

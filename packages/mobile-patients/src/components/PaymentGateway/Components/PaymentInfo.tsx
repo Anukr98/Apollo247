@@ -19,7 +19,7 @@ export const PaymentInfo: React.FC<PaymentInfoProps> = (props) => {
           <Text style={styles.orderId}>Order ID:</Text>
           <Text style={styles.id}>{orderIds}</Text>
         </View>
-        <TouchableOpacity style={styles.paymentId} onPress={onPressCopy}>
+        <TouchableOpacity activeOpacity={0.5} style={styles.paymentId} onPress={onPressCopy}>
           <Text style={styles.orderId}>Payment Ref. Number:</Text>
           <Text style={styles.id}>{paymentId}</Text>
           <Copy style={styles.iconStyle} />

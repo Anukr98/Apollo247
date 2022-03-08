@@ -416,7 +416,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             )}
           </View>
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             onPress={() => {
               props.navigation.navigate(AppRoutes.EditProfile, {
                 isEdit: true,
@@ -482,6 +482,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         {aboutApolloListing.map((item, index) => {
           return (
             <TouchableOpacity
+              activeOpacity={0.5}
               style={[
                 styles.aboutContainer,
                 {

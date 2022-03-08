@@ -253,7 +253,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
         rightComponent={
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               onPress={() => {
                 props.navigation.navigate(AppRoutes.MedAndTestCart);
               }}
@@ -341,7 +341,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
     };
 
     return (
-      <TouchableOpacity activeOpacity={1} onPress={data.onPress}>
+      <TouchableOpacity activeOpacity={0.5} onPress={data.onPress}>
         <View style={localStyles.containerStyle} key={data.name}>
           <View style={localStyles.iconAndDetailsContainerStyle}>
             {renderIconOrImage()}
@@ -425,7 +425,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
     const enableSearchEnterBtn = searchText.length > 0 && medicineList.length > 0;
     const rigthIconView = (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         style={{
           opacity: enableSearchEnterBtn ? 1 : 0.4,
         }}
@@ -596,7 +596,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
     return (
       (medicineList.length || searchSate == 'load') && (
         <View style={overlayStyle}>
-          <TouchableOpacity activeOpacity={1} style={overlayStyle} onPress={resetSearchState} />
+          <TouchableOpacity activeOpacity={0.5} style={overlayStyle} onPress={resetSearchState} />
         </View>
       )
     );

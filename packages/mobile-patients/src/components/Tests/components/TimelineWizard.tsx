@@ -142,6 +142,7 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
       <View style={styles.textIconView}>
         <View style={styles.flexRow}>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() =>
               isModify
                 ? {}
@@ -185,6 +186,7 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
       <View style={styles.textIconView}>
         <View style={styles.flexRow}>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() =>
               imageRules(currentPage)?.onPressActionOnCart
                 ? _navigateToRespectivePage(AppRoutes.CartPage)
@@ -226,6 +228,7 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
       <View style={styles.textIconView}>
         <View style={styles.flexRow}>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() =>
               isModify
                 ? {}
@@ -270,6 +273,7 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
       <View style={styles.textIconView}>
         <View style={styles.flexRow}>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() =>
               imageRules(currentPage)?.onPressActionOnReview
                 ? props.navigation.navigate(AppRoutes.ReviewOrder)

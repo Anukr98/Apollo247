@@ -49,7 +49,7 @@ import {
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import moment from 'moment';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { DiagnosticPrescriptionSubmitted } from '@aph/mobile-patients/src/components/Tests/Events';
+import { DiagnosticPrescriptionSubmitted } from '@aph/mobile-patients/src/components/Tests/utils/Events';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   getPatientPrescriptions,
@@ -410,6 +410,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
       <View style={styles.errorMessageView}>
         <Text style={styles.errorMsgText}>{string.diagnostics.prescriptionError}</Text>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             setIsErrorOccured(false);
           }}
@@ -505,6 +506,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                               <Text style={styles.leftText}>{item?.title}</Text>
                             </View>
                             <TouchableOpacity
+                              activeOpacity={0.5}
                               onPress={() => {
                                 const phyPrescription = PhysicalPrescriptionsProps;
                                 const filteredPres = phyPrescription?.filter(
@@ -542,6 +544,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                                 </View>
                               </View>
                               <TouchableOpacity
+                                activeOpacity={0.5}
                                 onPress={() => {
                                   setEPrescriptionsProps(
                                     EPrescriptionsProps?.filter((_item) => _item?.id != item?.id)
@@ -559,6 +562,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                   ) : null}
                 </>
                 <TouchableOpacity
+                  activeOpacity={0.5}
                   style={styles.addPresView}
                   onPress={() => {
                     props.navigation.navigate('TESTS', {

@@ -219,11 +219,11 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
   ) => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={[
           index < addresses.length - 1 ? {} : { marginBottom: 80 },
           index == 0 ? { marginTop: 20 } : {},
         ]}
-        activeOpacity={1}
         onPress={() => updateAddress('Update', address)} //need to check entire view is clickable
       >
         <View style={[styles.cardStyle]} key={index}>
@@ -266,13 +266,18 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
               <View style={{ alignSelf: 'flex-end' }}>
                 <View style={{ flexDirection: 'row' }}>
                   <TouchableOpacity
+                    activeOpacity={0.5}
                     onPress={() => updateAddress('Update', address)}
                     style={styles.iconTouch}
                   >
                     <EditAddressIcon style={styles.iconStyles} />
                   </TouchableOpacity>
                   <View style={styles.verticalLine} />
-                  <TouchableOpacity onPress={() => deleteAddress(address)} style={styles.iconTouch}>
+                  <TouchableOpacity
+                    activeOpacity={0.5}
+                    onPress={() => deleteAddress(address)}
+                    style={styles.iconTouch}
+                  >
                     <DeleteIconWhite style={styles.iconStyles} />
                   </TouchableOpacity>
                 </View>

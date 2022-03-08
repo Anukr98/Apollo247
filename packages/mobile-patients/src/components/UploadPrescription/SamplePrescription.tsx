@@ -239,6 +239,7 @@ export const SamplePrescription: React.FC<SamplePrescriptionProps> = (props) => 
     return (
       <View style={styles.arrowContainer}>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             _carousel?.current?.snapToItem(slideIndex - 1);
           }}
@@ -254,6 +255,7 @@ export const SamplePrescription: React.FC<SamplePrescriptionProps> = (props) => 
     return (
       <View style={[styles.arrowContainer, { right: 0 }]}>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             _carousel?.current?.snapToItem(slideIndex + 1);
           }}
@@ -281,11 +283,16 @@ export const SamplePrescription: React.FC<SamplePrescriptionProps> = (props) => 
   const renderSkipButton = (slideIndex: number, dataLength: number) => {
     const showButton = slideIndex + 1 === dataLength;
     return showButton ? (
-      <TouchableOpacity style={styles.okayButton} onPress={() => props.navigation.goBack()}>
+      <TouchableOpacity
+        activeOpacity={0.5}
+        style={styles.okayButton}
+        onPress={() => props.navigation.goBack()}
+      >
         <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 18)}>OK, GOT IT!</Text>
       </TouchableOpacity>
     ) : (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={styles.skipButton}
         activeOpacity={0.6}
         onPress={() => {

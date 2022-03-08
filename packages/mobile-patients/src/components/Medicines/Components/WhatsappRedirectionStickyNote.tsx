@@ -16,6 +16,7 @@ export const WhatsappRedirectionStickyNote = () => {
       {isExpanded ? (
         <View>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               Linking.openURL(
                 `https://api.whatsapp.com/send/?text=${message}&phone=91${phoneNumber}`
@@ -36,6 +37,7 @@ export const WhatsappRedirectionStickyNote = () => {
                     </View>
                   </View>
                   <TouchableOpacity
+                    activeOpacity={0.5}
                     onPress={() => {
                       setIsExpanded(!isExpanded);
                     }}
@@ -52,6 +54,7 @@ export const WhatsappRedirectionStickyNote = () => {
       ) : (
         <View style={[styles.closedViewStyle, { height: 46, width: 48 }]}>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               setIsExpanded(!isExpanded);
             }}

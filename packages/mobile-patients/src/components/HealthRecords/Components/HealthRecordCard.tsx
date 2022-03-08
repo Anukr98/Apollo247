@@ -107,7 +107,7 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
   };
   return (
     <TouchableOpacity
-      activeOpacity={1}
+      activeOpacity={0.5}
       style={styles.cardMainContainerStyle}
       onPress={() => onHealthCardPress(item)}
     >
@@ -186,7 +186,7 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
           <View style={styles.followupAndCartViewStyle}>
             {showFollowUp ? (
               <TouchableOpacity
-                activeOpacity={1}
+                activeOpacity={0.5}
                 onPress={() => onFollowUpPress && onFollowUpPress(item)}
                 style={{ flexDirection: 'row' }}
               >
@@ -197,7 +197,7 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
               <View />
             )}
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               onPress={() => onOrderTestAndMedicinePress && onOrderTestAndMedicinePress(item)}
               style={{ flexDirection: 'row' }}
             >

@@ -393,7 +393,7 @@ export const ClinicalDocumentImageReview: React.FC<ClinicalDocumentImageReviewPr
   const renderButton = () => {
     return (
       <StickyBottomComponent style={styles.bottomStyle}>
-        <TouchableOpacity onPress={() => navigateToListingPage(true)}>
+        <TouchableOpacity activeOpacity={0.5} onPress={() => navigateToListingPage(true)}>
           <Text style={{ ...viewStyles.text('B', 16, '#FCB716', 1, 30) }}>
             {'GO TO CLINICAL DOCUMENTS'}
           </Text>
@@ -435,10 +435,11 @@ export const ClinicalDocumentImageReview: React.FC<ClinicalDocumentImageReviewPr
         {comingFromListing ? (isDigitized ? renderDigitizedButton() : null) : renderButton()}
         {showSpinner && <Spinner />}
         <StickyBottomComponent style={styles.stickyBottomComponentStyle}>
-          <TouchableOpacity style={{ top: 10 }} onPress={() => renderDelete()}>
+          <TouchableOpacity activeOpacity={0.5} style={{ top: 10 }} onPress={() => renderDelete()}>
             <DeleteBlue size="sm" />
           </TouchableOpacity>
           <TouchableOpacity
+            activeOpacity={0.5}
             style={{ top: 10 }}
             onPress={() => {
               props.navigation.navigate(AppRoutes.AddClinicalDocumentDetails, {

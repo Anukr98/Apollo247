@@ -199,6 +199,7 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
   const renderAddToCartView = () => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={[styles.addToCartViewStyle, !isOutOfStock && { paddingHorizontal: 23 }]}
         onPress={isOutOfStock ? onPressNotify : onPressAddToCart}
       >
@@ -318,7 +319,7 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
 
   return (
     <TouchableOpacity
-      activeOpacity={1}
+      activeOpacity={0.5}
       style={[styles.containerStyle, containerStyle, { zIndex: -1 }]}
       onPress={() => onPress()}
     >

@@ -101,6 +101,7 @@ export const AddToCartButtons: React.FC<AddToCartButtonsProps> = (props) => {
     <View style={[localStyles.addRemoveItemContainer, props.containerStyle]}>
       {/* minus or delete button */}
       <TouchableOpacity
+        activeOpacity={0.5}
         style={localStyles.addRemoveButtonContainer}
         onPress={isSingleQty ? props.removeFromCart : props.removeItemFromCart}
         disabled={serverCartLoading}
@@ -132,6 +133,7 @@ export const AddToCartButtons: React.FC<AddToCartButtonsProps> = (props) => {
 
       {/* add button */}
       <TouchableOpacity
+        activeOpacity={0.5}
         style={localStyles.addRemoveButtonContainer}
         disabled={serverCartLoading}
         onPress={() => {

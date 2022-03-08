@@ -93,6 +93,7 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
           }}
         >
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => props.setResheduleoverlay(false)}
             style={{
               marginTop: Platform.OS === 'ios' ? 38 : 14,
@@ -338,6 +339,7 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
+              activeOpacity={0.5}
               style={{
                 height: 60,
                 paddingRight: 25,

@@ -58,7 +58,7 @@ export const RadioSelectionItem: React.FC<RadioSelectionItemProps> = (props) => 
   return (
     <>
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={() => props.onPress(!props.isSelected)}
         style={[styles.radioButtonContainer, props.containerStyle]}
       >
@@ -69,7 +69,7 @@ export const RadioSelectionItem: React.FC<RadioSelectionItemProps> = (props) => 
           {!props.hideSeparator && <View style={[styles.separator, props.separatorStyle]} />}
         </View>
         {props.showEditIcon ? (
-          <TouchableOpacity onPress={props.onPressEdit}>
+          <TouchableOpacity activeOpacity={0.5} onPress={props.onPressEdit}>
             <EditIconNewOrange style={{ height: 18, width: 18, resizeMode: 'contain' }} />
           </TouchableOpacity>
         ) : null}

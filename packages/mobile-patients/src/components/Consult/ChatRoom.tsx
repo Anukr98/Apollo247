@@ -225,10 +225,8 @@ import { CheckReschedulePopup } from '@aph/mobile-patients/src/components/Consul
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { FollowUpChatGuideLines } from '@aph/mobile-patients/src/components/Consult/Components/FollowUpChatGuideLines';
 import { ChatDisablePrompt } from '@aph/mobile-patients/src/components/Consult/Components/ChatDisablePrompt';
-import { getMedicineDetailsApi, MedicineProductDetailsResponse } from '../../helpers/apiCalls';
-import { AxiosResponse } from 'axios';
-import { DiagnosticAddToCartEvent } from '@aph/mobile-patients/src/components/Tests/Events';
-import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
+import { DiagnosticAddToCartEvent } from '@aph/mobile-patients/src/components/Tests/utils/Events';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import {
   postDoctorConsultEvent,
   postDoctorConsultEventVariables,
@@ -3615,12 +3613,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         includeUUIDs: true,
       })
       .then((response: HereNowResponse) => {
-        const data: any = response.channels[appointmentData.id].occupants;
+        
+        //Error prone
+        // const data: any = response.channels[appointmentData.id].occupants;
 
-        const occupancyDoctor = data.filter((obj: any) => {
-          return obj.uuid === 'DOCTOR' || obj.uuid.indexOf('DOCTOR_') > -1;
-        });
+        //Not required anymore
+        // const data: any = response.channels[channel.current].occupants;
+        // const occupancyDoctor = data.filter((obj: any) => {
+        //   return obj.uuid === 'DOCTOR' || obj.uuid.indexOf('DOCTOR_') > -1;
+        // });
+
         InsertMessageToDoctor(message);
+
       })
       .catch((error) => {
         CommonBugFender('ChatRoom_PUBNUB_PRESENCE', error);
@@ -4492,7 +4496,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       .format('Do MMMM, dddd \nhh:mm A')}
                   </Text>
                   <TouchableOpacity
-                    activeOpacity={1}
+                    activeOpacity={0.5}
                     onPress={() => {
                       CommonLogEvent(AppRoutes.ChatRoom, 'navigate to choose doctor');
                       props.navigation.navigate(AppRoutes.ChooseDoctor, {
@@ -5244,10 +5248,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             <View>
               {rowData.url.match(/\.(jpeg|jpg|gif|png|jfif)$/) || rowData.fileType === 'image' ? (
                 <TouchableOpacity
+                  activeOpacity={0.5}
                   onPress={() => {
                     openPopUp(rowData);
                   }}
-                  activeOpacity={1}
                 >
                   <View style={styles.msgImageView}>
                     <Image
@@ -5261,7 +5265,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 </TouchableOpacity>
               ) : (
                 <TouchableOpacity
-                  activeOpacity={1}
+                  activeOpacity={0.5}
                   onPress={() => {
                     openPopUp(rowData);
                   }}
@@ -5964,7 +5968,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   {rowData.url.match(/\.(jpeg|jpg|gif|png|jfif)$/) ||
                   rowData.fileType === 'image' ? (
                     <TouchableOpacity
-                      activeOpacity={1}
+                      activeOpacity={0.5}
                       onPress={() => {
                         openPopUp(rowData);
                       }}
@@ -5983,7 +5987,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     </TouchableOpacity>
                   ) : (
                     <TouchableOpacity
-                      activeOpacity={1}
+                      activeOpacity={0.5}
                       onPress={() => {
                         openPopUp(rowData);
                       }}
@@ -6024,12 +6028,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
           <View style={styles.externalMeetingLinkCTAWrapper}>
             <TouchableOpacity
+              activeOpacity={0.5}
               style={[styles.externalMeetingLinkMeetingCTAContainer, { flex: 0.9 }]}
               onPress={() => onMeetingLinkClicked(rowData)}
             >
               <Text style={styles.exeternalMeetingLinkMeetingCTAText}>{rowData.url}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={{ flex: 0.1 }} onPress={() => onLinkCopyClicked(rowData)}>
+            <TouchableOpacity
+              activeOpacity={0.5}
+              style={{ flex: 0.1 }}
+              onPress={() => onLinkCopyClicked(rowData)}
+            >
               <CopyIcon />
             </TouchableOpacity>
           </View>
@@ -6394,6 +6403,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           )}
         </Text>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             fireWebengageEvent(appointmentData);
             appointmentData?.doctorInfo?.allowBookingRequest
@@ -6862,7 +6872,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }}
       >
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => {
             setCallMinimize(true);
             setTalkStyles({
@@ -6895,8 +6905,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     return (
       <View style={styles.callBottomButtonsStyle}>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={styles.btnActionContainer}
-          activeOpacity={1}
           onPress={() => {
             cameraPosition === 'front' ? setCameraPosition('back') : setCameraPosition('front');
           }}
@@ -6904,7 +6914,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <CallCameraIcon style={styles.cameraIcon} />
         </TouchableOpacity>
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           style={styles.btnActionContainer}
           onPress={() => {
             isPublishAudio === true ? setIsPublishAudio(false) : setIsPublishAudio(true);
@@ -6917,8 +6927,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           )}
         </TouchableOpacity>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={styles.btnActionContainer}
-          activeOpacity={1}
           onPress={() => {
             setShowVideo(!showVideo);
           }}
@@ -6931,8 +6941,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         </TouchableOpacity>
 
         <TouchableOpacity
+          activeOpacity={0.5}
           style={styles.disconnectViewStyle}
-          activeOpacity={1}
           onPress={() => {
             callStatus.current = disconnecting;
             callToastStatus.current = 'You Disconnected the call';
@@ -7428,7 +7438,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           marginTop: 30,
         }}
       >
-        <TouchableOpacity activeOpacity={1} onPress={() => closeviews()}>
+        <TouchableOpacity activeOpacity={0.5} onPress={() => closeviews()}>
           <CrossPopup style={{ marginRight: 1, width: 28, height: 28 }} />
         </TouchableOpacity>
       </View>
@@ -7684,6 +7694,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const renderTapToReturnToCallView = () => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={styles.tapToReturnToCallView}
         onPress={() => {
           setCallMinimize(false);
@@ -7790,6 +7801,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       ) : null}
       {displayUploadHealthRecords ? (
         <TouchableOpacity
+          activeOpacity={0.5}
           style={{
             position: 'absolute',
             top: 0,
@@ -7803,7 +7815,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             opacity: 0.85,
             justifyContent: 'flex-end',
           }}
-          activeOpacity={1}
           onPress={() => {
             setDisplayUploadHealthRecords(false);
             AsyncStorage.setItem(appointmentData.id, appointmentData.id);
@@ -7836,7 +7847,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           >
             <View style={{ flexDirection: 'row', width: width }}>
               <TouchableOpacity
-                activeOpacity={1}
+                activeOpacity={0.5}
                 style={{
                   width: 58,
                   height: 50,
@@ -7887,6 +7898,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
           rightIcon={
             <TouchableOpacity
+              activeOpacity={0.5}
               disabled={doctorJoinedChat || status.current === STATUS.COMPLETED}
               onPress={() => onPressCalender()}
             >
@@ -7940,7 +7952,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         {Platform.OS == 'ios' ? (
           <>
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               style={[styles.uploadButtonStyles, { opacity: disableChat ? 0.5 : 1 }]}
               onPress={async () => {
                 if (!disableChat) {
@@ -8002,7 +8014,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               </View>
             </View>
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               style={[styles.sendButtonStyles, { opacity: disableChat ? 0.5 : 1 }]}
               onPress={async () => {
                 if (!disableChat) {
@@ -8027,7 +8039,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <>
             {availableMessages == 0 && <ChatDisablePrompt followChatLimit={followChatLimit} />}
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               style={[styles.uploadButtonStyles, { bottom: 0, opacity: disableChat ? 0.5 : 1 }]}
               onPress={async () => {
                 if (!disableChat) {
@@ -8089,7 +8101,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               </View>
             </View>
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               style={[styles.sendButtonStyles, { bottom: 0, opacity: disableChat ? 0.5 : 1 }]}
               onPress={async () => {
                 if (!disableChat) {
@@ -8250,7 +8262,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               style={{
                 height: 60,
                 paddingRight: 25,
@@ -8280,7 +8292,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               style={{
                 height: 60,
                 paddingRight: 25,
@@ -8318,7 +8330,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             }}
           >
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               style={styles.claimStyles}
               onPress={() => {
                 setShowDoctorNoShowAlert(false);
@@ -8327,7 +8339,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               <Text style={styles.rescheduleTextStyles}>{'CLAIM REFUND'}</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               style={styles.rescheduletyles}
               onPress={() => {
                 NextAvailableSlot(appointmentData, 'Transfer', true);
@@ -8346,7 +8358,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               style={{
                 height: 60,
                 paddingRight: 25,
@@ -8376,7 +8388,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               style={{
                 height: 60,
                 paddingRight: 25,
@@ -8411,7 +8423,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           >
             <View style={{ height: 60 }}>
               <TouchableOpacity
-                activeOpacity={1}
+                activeOpacity={0.5}
                 style={styles.gotItStyles}
                 onPress={() => {
                   setSucessPopup(false);

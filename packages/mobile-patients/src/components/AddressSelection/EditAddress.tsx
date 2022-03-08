@@ -195,7 +195,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
   useEffect(() => {
     if (props.navigation.getParam('KeyName') == 'Update' && addressData) {
       //needs to be shown only when editing the address (addressLine1)
-      if (locationResponse) {
+      if (!!locationResponse) {
         const isPincodeNotPresent = pincodeCheck?.includes(
           locationResponse?.pincode! || locationResponse?.zipcode!
         );
@@ -459,6 +459,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
         rightComponent={
           props.navigation.getParam('KeyName') == 'Update' ? (
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 setDeleteProfile(true);
               }}
@@ -474,7 +475,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
   const validateAndSetPincode = (pincode: string) => {
     if (pincode == '' || isValidPincode(pincode)) {
       setpincode(pincode);
-      pincode.length == 6 && updateCityStateByPincode(pincode);
+      pincode?.length == 6 && updateCityStateByPincode(pincode);
     }
   };
 
@@ -689,8 +690,8 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
 
   const renderUserName = () => {
     let beforeFocus =
-      Platform.OS == 'android' && userName.length > 32
-        ? userName.slice(0, setCharLen).concat('...')
+      Platform.OS == 'android' && userName?.length > 32
+        ? userName?.slice(0, setCharLen)?.concat('...')
         : userName;
     return (
       <View style={styles.userNameView}>
@@ -722,7 +723,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
                 <TextInputComponent
                   conatinerstyles={styles.textInput}
                   onChangeText={(userName) =>
-                    userName.startsWith(' ') ? null : setuserName(userName)
+                    userName?.startsWith(' ') ? null : setuserName(userName)
                   }
                   onFocus={() => _onFocus()}
                   onBlur={() => _onBlur()}
@@ -735,6 +736,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
             </View>
             {!editName ? (
               <TouchableOpacity
+                activeOpacity={0.5}
                 onPress={() => {
                   setEditName(true);
                 }}
@@ -744,6 +746,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
             ) : (
               <View style={styles.userSave}>
                 <TouchableOpacity
+                  activeOpacity={0.5}
                   style={{ width: '100%' }}
                   onPress={() => {
                     validateUserDetails('userName');
@@ -797,6 +800,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
             </View>
             {!editNumber ? (
               <TouchableOpacity
+                activeOpacity={0.5}
                 onPress={() => {
                   setEditNumber(true);
                 }}
@@ -806,6 +810,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
             ) : (
               <View style={styles.userSave}>
                 <TouchableOpacity
+                  activeOpacity={0.5}
                   style={{ width: '100%' }}
                   onPress={() => {
                     validateUserDetails('userNumber');
@@ -916,7 +921,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
         <Text style={[styles.addressLabel, { marginTop: '4%' }]}>LandMark</Text>
         <TextInputComponent
           value={landMark}
-          onChangeText={(landMark) => (landMark.startsWith(' ') ? null : setlandMark(landMark))}
+          onChangeText={(landMark) => (landMark?.startsWith(' ') ? null : setlandMark(landMark))}
           placeholder={'Enter LandMark'}
           inputStyle={styles.addressFieldsText}
         />
@@ -924,7 +929,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
         {/* state*/}
         <Text style={[styles.addressLabel, { marginTop: 12 }]}>*State</Text>
         <TextInputComponent
-          value={(state || '').startsWith(',') ? state.replace(', ', '') : state}
+          value={(state || '')?.startsWith(',') ? state?.replace(', ', '') : state}
           textInputprops={{ editable: isStateEdit }}
           onChangeText={(state) =>
             state.startsWith(' ') || state.startsWith('.')
@@ -943,7 +948,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
           <TextInputComponent
             value={optionalAddress}
             onChangeText={(optionalAddress) =>
-              optionalAddress.startsWith(' ') || city.startsWith('.')
+              optionalAddress?.startsWith(' ') || city?.startsWith('.')
                 ? null
                 : (optionalAddress == '' || /^([a-zA-Z0-9.\s])+$/.test(optionalAddress)) &&
                   setOptionalAddress(optionalAddress)
@@ -960,14 +965,14 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
     return (
       <View style={styles.deleteButtonView}>
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => {
             setDeleteProfile(false);
           }}
         >
           <View style={styles.deleteInnerView}>
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               onPress={() => {
                 //deleteUserProfile();
                 setshowSpinner(true);

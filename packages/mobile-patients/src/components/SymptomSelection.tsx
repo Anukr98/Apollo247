@@ -171,6 +171,7 @@ export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
   const renderSymptoms = (item: any, index: number) => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         key={index}
         style={styles.symptomsContainer}
         onPress={() => {

@@ -167,6 +167,7 @@ export const PostShareAppointmentSelectorScreen: React.FC<PostShareAppointmentSe
   function renderAppointmentListItem(item: any, index: number) {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={styles.appointmentItemCardContainer}
         onPress={() => {
           if (Platform.OS === 'android') {

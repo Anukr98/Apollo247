@@ -63,6 +63,7 @@ export const SearchResultCard: React.FC<SearchResultProps> = (props) => {
     return (
       <View>
         <TouchableOpacity
+          activeOpacity={0.5}
           key={index}
           style={styles.card}
           onPress={() => onPressCallback(item, index, componentName)}

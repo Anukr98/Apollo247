@@ -835,7 +835,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           )}
         </View>
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => {
             setUploadVisible(true);
           }}
@@ -853,7 +853,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         <View style={{ marginTop: -5 }}>
           <View style={{ paddingTop: 0, paddingBottom: 10 }}>
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               style={styles.placeholderViewStyle}
               onPress={() => {
                 Keyboard.dismiss();
@@ -971,8 +971,8 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
             {'You cannot edit Name, Age, \nDate of Birth and Gender!'}
           </Text>
           <TouchableOpacity
+            activeOpacity={0.5}
             style={styles.addNewMemberButtonStyle}
-            activeOpacity={1}
             onPress={() => {
               setIsEditProfile(false);
               setPhotoUrl('');
@@ -1331,7 +1331,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         }}
       >
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => {
             setDeleteProfile(false);
           }}
@@ -1345,7 +1345,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
             }}
           >
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               onPress={() => {
                 setDeleteProfile(false);
                 deleteConfirmation();

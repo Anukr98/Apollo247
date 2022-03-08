@@ -104,6 +104,7 @@ export const ConsultPackageFAQ: React.FC<ConsultPackageFAQProps> = (props) => {
 
           {faqItem?.isCollapsed ? (
             <TouchableOpacity
+              activeOpacity={0.5}
               style={{}}
               onPress={() => {
                 expandFaqItem(index, false);
@@ -113,6 +114,7 @@ export const ConsultPackageFAQ: React.FC<ConsultPackageFAQProps> = (props) => {
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
+              activeOpacity={0.5}
               style={{}}
               onPress={() => {
                 expandFaqItem(index, true);

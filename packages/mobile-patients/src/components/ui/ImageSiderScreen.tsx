@@ -72,7 +72,7 @@ export const ImageSliderScreen: React.FC<ImageSliderScreenProps> = (props) => {
           <Header
             containerStyle={styles.headerContainer}
             leftComponent={
-              <TouchableOpacity activeOpacity={1} onPress={() => props.navigation.goBack()}>
+              <TouchableOpacity activeOpacity={0.5} onPress={() => props.navigation.goBack()}>
                 <Remove style={{ tintColor: '#fff' }} />
               </TouchableOpacity>
             }
