@@ -683,9 +683,9 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
   if (props.isPriceAvailable) {
     actualItemsToShow =
       source === 'Cart page'
-        ? data?.length > 0 && data?.filter((item: any) => item?.diagnosticPricing)
+        ? data?.length > 0 && data?.filter((item: any) => item?.diagnosticPricing?.length > 0)
         : diagnosticWidgetData?.length > 0 &&
-          diagnosticWidgetData?.filter((item: any) => item?.diagnosticPricing);
+          diagnosticWidgetData?.filter((item: any) => item?.diagnosticPricing?.length > 0);
   }
 
   return (
