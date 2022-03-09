@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { NavigationScreenProps } from 'react-navigation';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { WebView } from 'react-native-webview';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -25,7 +25,6 @@ import {
   isPhysicalConsultation,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { getAsyncStorageValues } from '../../helpers/helperFunctions';
 
 export interface ConsultPaymentnewProps extends NavigationScreenProps {}
 
@@ -74,14 +73,12 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   );
   const { isCircleDoctorOnSelectedConsultMode } = circleDoctorDetails;
   const { circleSubscriptionId } = useShoppingCart();
+  const { returnAuthToken } = useAuth();
 
   useEffect(() => {
     const saveSessionValues = async () => {
-      const [loginToken, phoneNumber] = await getAsyncStorageValues();
-      setToken(JSON.parse(loginToken));
-      setUserMobileNumber(
-        JSON.parse(phoneNumber)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber
-      );
+      returnAuthToken?.().then(setToken);
+      setUserMobileNumber(currentPatient?.mobileNumber);
     };
     saveSessionValues();
     BackHandler.addEventListener('hardwareBackPress', handleBack);

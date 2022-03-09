@@ -70,6 +70,7 @@ export const useServerCart = () => {
     setPharmacyLocation,
   } = useAppCommonData();
   const [userActionPayload, setUserActionPayload] = useState<any>(null);
+  const [isFetchingServerCart, setIsFetchingServerCart] = useState<boolean>(true);
   const [userAgent, setUserAgent] = useState<string>('');
   const genericErrorMessage = 'Oops! Something went wrong.';
 
@@ -87,7 +88,7 @@ export const useServerCart = () => {
         ...userActionPayload,
         patientId: userActionPayload?.patientId ? userActionPayload?.patientId : currentPatient?.id,
       };
-      serverCartLoading === false ? saveServerCart(cartInputData) : {};
+      saveServerCart(cartInputData);
     }
   }, [userActionPayload]);
 
@@ -130,6 +131,7 @@ export const useServerCart = () => {
   };
 
   const fetchServerCart = async (userAgentInput?: string) => {
+    setIsFetchingServerCart(true);
     const authToken: string = (await returnAuthToken?.()?.catch((error) => {})) || '';
     const apolloClient = buildApolloClient(authToken);
     apolloClient
@@ -160,6 +162,7 @@ export const useServerCart = () => {
       })
       .finally(() => {
         setUserActionPayload?.(null);
+        setIsFetchingServerCart(false);
       });
   };
 
@@ -418,5 +421,6 @@ export const useServerCart = () => {
     uploadEPrescriptionsToServerCart,
     removePrescriptionFromCart,
     userActionPayload,
+    isFetchingServerCart,
   };
 };

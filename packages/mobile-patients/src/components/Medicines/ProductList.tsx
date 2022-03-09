@@ -130,6 +130,7 @@ const ProductListFun: React.FC<Props> = ({
         productPageViewedEventProps,
         urlKey,
         navSrcForSearchSuccess,
+        data: item,
       });
     } else {
       navigation.push(AppRoutes.ProductDetailPage, {
@@ -139,6 +140,7 @@ const ProductListFun: React.FC<Props> = ({
         productPageViewedEventProps,
         urlKey,
         navSrcForSearchSuccess,
+        data: item,
       });
     }
     if (comingFromSearch !== false) {

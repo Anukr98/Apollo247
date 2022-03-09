@@ -81,7 +81,7 @@ import {
 import { LoginCarousel } from '@aph/mobile-patients/src/components/ui/LoginCarousel';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import SmsRetriever from 'react-native-sms-retriever';
-import { InputCheckBox } from '@aph/mobile-patients/src/components/ui/InputCheckBox';
+import LinearGradient from 'react-native-linear-gradient'
 
 let TRUECALLER: any;
 
@@ -959,9 +959,9 @@ export const Login: React.FC<LoginProps> = (props) => {
   return (
     <Animated.View style={{ flex: 1, backgroundColor: colors.CALL_BG_GRAY }}>
       <SafeAreaView style={[styles.container, { backgroundColor: colors.WHITE }]}>
-        <ImageBackground
-          source={require('@aph/mobile-patients/src/images/home/gradient-background.webp')}
-          style={{ width, flex: 1 }}
+        <LinearGradient
+          colors={[colors.LIGHT_GREEN_ONE, colors.HEX_WHITE]}
+          style={{ flex: 1 }}
         >
           <ScrollView keyboardShouldPersistTaps="handled">
             <View style={styles.logoContainer}>
@@ -1011,7 +1011,7 @@ export const Login: React.FC<LoginProps> = (props) => {
               {string.login.ofApollo247}
             </Text>
           </View>
-        </ImageBackground>
+        </LinearGradient>
       </SafeAreaView>
       {showSpinner ? <Spinner /> : null}
       {openFillerView && <FetchingDetails />}

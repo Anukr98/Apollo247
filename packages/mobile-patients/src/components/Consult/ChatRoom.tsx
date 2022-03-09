@@ -184,7 +184,6 @@ import {
   getNetStatus,
   postAppointmentCleverTapEvents,
   fileToBase64,
-  getAsyncStorageValues,
   formatUrl,
   updateCallKitNotificationReceivedStatus,
 } from '../../helpers/helperFunctions';
@@ -1509,7 +1508,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const typingClearTime = 1000; //1 seconds
   const clearTimerId = useRef<NodeJS.Timeout>();
   const { unstable } = useOpenTokSpeedTest();
-
+  const { returnAuthToken } = useAuth();
   let cancelAppointmentTitle = `${string.common.cancelAppointmentBody} ${
     appointmentData?.appointmentType === APPOINTMENT_TYPE.PHYSICAL ? 'Physical' : 'Online'
   } Appointment ${appointmentData?.displayId}. A full refund will be issued.`;
@@ -1964,11 +1963,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   useEffect(() => {
     const saveSessionValues = async () => {
-      const [loginToken, phoneNumber] = await getAsyncStorageValues();
-      setLoginToken(JSON.parse(loginToken));
-      setUserMobileNumber(
-        JSON.parse(phoneNumber)?.data?.getPatientByMobileNumber?.patients[0]?.mobileNumber
-      );
+      returnAuthToken?.().then(setLoginToken);
+      setUserMobileNumber(currentPatient?.mobileNumber);
     };
     saveSessionValues();
     if (Platform.OS === 'android') {
@@ -3619,12 +3615,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         includeUUIDs: true,
       })
       .then((response: HereNowResponse) => {
-        const data: any = response.channels[appointmentData.id].occupants;
+        
+        //Error prone
+        // const data: any = response.channels[appointmentData.id].occupants;
 
-        const occupancyDoctor = data.filter((obj: any) => {
-          return obj.uuid === 'DOCTOR' || obj.uuid.indexOf('DOCTOR_') > -1;
-        });
+        //Not required anymore
+        // const data: any = response.channels[channel.current].occupants;
+        // const occupancyDoctor = data.filter((obj: any) => {
+        //   return obj.uuid === 'DOCTOR' || obj.uuid.indexOf('DOCTOR_') > -1;
+        // });
+
         InsertMessageToDoctor(message);
+
       })
       .catch((error) => {
         CommonBugFender('ChatRoom_PUBNUB_PRESENCE', error);
