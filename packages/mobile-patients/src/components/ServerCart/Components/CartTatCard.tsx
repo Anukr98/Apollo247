@@ -44,7 +44,11 @@ export const CartTatCard: React.FC<CartTatCardProps> = (props) => {
 
   const renderViewDelivery = () => {
     return (
-      <TouchableOpacity onPress={onPressTatCard} style={styles.viewDeliveryView}>
+      <TouchableOpacity
+        activeOpacity={0.5}
+        onPress={onPressTatCard}
+        style={styles.viewDeliveryView}
+      >
         <Text style={styles.viewDelivery}>View delivery time</Text>
       </TouchableOpacity>
     );
@@ -68,6 +72,7 @@ export const CartTatCard: React.FC<CartTatCardProps> = (props) => {
             renderViewDelivery()
           ))}
         <TouchableOpacity
+          activeOpacity={0.5}
           style={{ flexDirection: 'row', alignItems: 'center' }}
           onPress={() => onPressChangeAddress()}
         >

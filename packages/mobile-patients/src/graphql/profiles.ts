@@ -1770,6 +1770,7 @@ export const GET_PACKAGE_INCLUSIONS = gql`
         sampleTypeName
         testParameters
         name
+        gender
         testPreparationData
       }
     }
@@ -1783,6 +1784,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         id
         patientId
         patientAddressId
+        parentOrderId
         patientObj {
           firstName
           lastName
@@ -1945,6 +1947,7 @@ export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
         itemType
         rate
         gender
+        imageUrl
         itemRemarks
         city
         state
@@ -1963,6 +1966,18 @@ export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
           startDate
           endDate
         }
+        observations{
+          observationName
+          mandatoryValue
+        }
+        diagnosticInclusions{
+          name
+          itemId
+          observations{
+            observationName
+            mandatoryValue
+          }
+        }
       }
     }
   }
@@ -1973,6 +1988,7 @@ export const GET_WIDGETS_PRICING_BY_ITEMID_CITYID = gql`
     findDiagnosticsWidgetsPricing(cityID: $cityID, itemIDs: $itemIDs) {
       diagnostics {
         itemId
+        gender
         packageCalculatedMrp
         diagnosticPricing {
           mrp
@@ -2170,9 +2186,11 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
         medicineOrderAddress {
           addressLine1
           addressLine2
+          landmark
           city
           state
           zipcode
+          name
         }
       }
     }
@@ -2185,15 +2203,18 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
     $paginated: Boolean
     $limit: Int
     $offset: Int
+    $patientId: String
   ) {
     getDiagnosticOrdersListByMobile(
       mobileNumber: $mobileNumber
       offset: $offset
       limit: $limit
       paginated: $paginated
+      patientId: $patientId
     ) {
       ordersList {
         id
+        preBookingId
         parentOrderId
         primaryOrderID
         isRescheduled
@@ -2271,6 +2292,7 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
           isRemoved
           itemObj {
             itemType
+            gender
             testPreparationData
             packageCalculatedMrp
             inclusions
@@ -4406,31 +4428,6 @@ export const SEARCH_DIAGNOSTICS_BY_CITY_ID = gql`
   }
 `;
 
-export const SEARCH_DIAGNOSTICS_BY_ID = gql`
-  query searchDiagnosticsById($itemIds: String) {
-    searchDiagnosticsById(itemIds: $itemIds) {
-      diagnostics {
-        id
-        itemId
-        itemName
-        itemType
-        rate
-        itemType
-        gender
-        itemRemarks
-        city
-        state
-        collectionType
-        fromAgeInDays
-        toAgeInDays
-        testDescription
-        testPreparationData
-        inclusions
-      }
-    }
-  }
-`;
-
 export const CREATE_INTERNAL_ORDER = gql`
   mutation createOrderInternal($order: OrderCreate) {
     createOrderInternal(order: $order) {
@@ -4750,13 +4747,24 @@ export const CONSULT_ORDER_PAYMENT_DETAILS = gql`
       }
       appointments {
         id
+        orderType
         doctorId
         displayId
         appointmentDateTime
         actualAmount
         status
         appointmentType
-        discountedAmount
+        discountedAmount   
+        subscriptionOrderDetails{
+          _id,
+          status,
+          plan_id
+          group_plan_id
+          transaction_date_time
+          payment_reference
+          sub_plan_id
+          order_id
+        }
         appointmentRefunds {
           refundAmount
           txnTimestamp
@@ -5644,6 +5652,7 @@ export const GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID = gql`
       ordersList {
         patientId
         patientAddressId
+        parentOrderId
         orderStatus
         totalPrice
         createdDate
@@ -5854,6 +5863,7 @@ export const GET_PATIENT_LATEST_PRESCRIPTION = gql`
         diagnosticPrescription {
           itemId
           itemname
+          gender
           testInstruction
         }
       }
@@ -6452,6 +6462,12 @@ export const GET_RESCHEDULE_AND_CANCELLATION_REASONS = gql`
       cancellationReasonsv2 {
         reason
         isDirectCancellation
+        ctaOptions {
+          cta
+          multiCtas
+          displayText
+          userCommentsEnabled
+        }
       }
     }
   }
@@ -6684,11 +6700,17 @@ export const POST_WEB_ENGAGE = gql`
 `;
 
 export const GET_DIAGNOSTICS_RECOMMENDATIONS = gql`
-  mutation getDiagnosticItemRecommendations($itemIds: [Int]!, $records: Int) {
-    getDiagnosticItemRecommendations(itemIds: $itemIds, numberOfRecordsToFetch: $records) {
+  mutation getDiagnosticItemRecommendations($itemIds: [Int]!, $records: Int, $genderFilters: [Gender]) {
+    getDiagnosticItemRecommendations(itemIds: $itemIds, numberOfRecordsToFetch: $records, genderFilters:$genderFilters) {
       itemsData {
         itemId
         itemName
+        gender
+        imageUrl
+        observations{
+          observationName
+          mandatoryValue
+        }
         diagnosticInclusions {
           itemId
           name
@@ -6841,6 +6863,7 @@ export const GET_DIAGNOSTIC_SEARCH_RESULTS = gql`
       data {
         diagnostic_item_id
         diagnostic_item_name
+        diagnostic_item_gender
         testParametersCount
         diagnostic_inclusions
         diagnostic_item_alias
@@ -7059,13 +7082,64 @@ export const GET_CAMPAIGN_ID_FOR_REFERRER = gql`
 `;
 
 export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS = gql`
-  query getDiagnosticPackageRecommendations($itemId: Int!, $cityId: Int!) {
-    getDiagnosticPackageRecommendations(itemId: $itemId, cityId: $cityId) {
+  query getDiagnosticPackageRecommendations($itemId: Int!, $cityId: Int!, $genderFilters: [Gender]) {
+    getDiagnosticPackageRecommendations(itemId: $itemId, cityId: $cityId, genderFilters: $genderFilters) {
       packageRecommendations {
         itemId
         itemName
+        gender
         inclusions
         packageCalculatedMrp
+        diagnosticInclusions {
+          itemId
+          name
+          observations {
+            observationName
+            mandatoryValue
+          }
+        }
+        diagnosticPricing {
+          mrp
+          price
+          groupPlan
+          status
+          startDate
+          endDate
+        }
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTICS_PACKAGE_RECOMMENDATIONS_V2 = gql`
+  query getDiagnosticPackageRecommendationsv2(
+    $recommendationInputItems: [recommendationInputItem]!
+    $cityId: Int!
+    $genderFilters: [Gender]
+    $groupPlan: DIAGNOSTICS_GROUPPLAN!
+  ) {
+    getDiagnosticPackageRecommendationsv2(
+      recommendationInputItems: $recommendationInputItems
+      cityId: $cityId
+      genderFilters: $genderFilters
+      groupPlan: $groupPlan
+    ) {
+      packageRecommendations {
+        id
+        itemId
+        itemName
+        gender
+        rate
+        itemRemarks
+        itemType
+        testPreparationData
+        collectionType
+        testDescription
+        inclusions
+        packageCalculatedMrp
+        totalSavings
+        extraInclusionsCount
+        price
         diagnosticInclusions {
           itemId
           name
@@ -7503,6 +7577,12 @@ export const DIAGNOSTIC_PAST_ORDER_RECOMMENDATIONS = gql`
       itemsData {
         itemId
         itemName
+        gender
+        imageUrl
+        observations{
+          observationName
+          mandatoryValue
+        }
         diagnosticInclusions {
           observations {
             observationName
@@ -7600,5 +7680,107 @@ export const MEDICINE_HOMEPAGE_API_CALLS = gql`
         message
         response
       }
+  }
+`;
+
+
+export const DIAGNOSTIC_HOMEPAGE_API_CALLS = gql`
+  query diagnosticHomepageCalls(
+    $mobile_number: String!
+    $skip: Int!
+    $take: Int!
+  ) {
+    getDiagnosticOpenOrdersList(mobileNumber: $mobile_number, skip: $skip, take: $take) {
+      openOrders {
+        id
+        displayId
+        patientId
+        orderStatus
+        slotDateTimeInUTC
+        labReportURL
+        paymentType
+        patientObj {
+          firstName
+          lastName
+        }
+        attributesObj {
+          reportTATMessage
+          reportGenerationTime
+          expectedReportGenerationTime
+        }
+        diagnosticOrderLineItems {
+          itemObj {
+            testPreparationData
+            preTestingRequirement
+          }
+        }
+      }
+    }
+
+    getDiagnosticClosedOrdersList(mobileNumber: $mobile_number, skip: $skip, take: $take) {
+      closedOrders {
+        id
+        displayId
+        patientId
+        orderStatus
+        slotDateTimeInUTC
+        labReportURL
+        paymentType
+        patientObj {
+          firstName
+          lastName
+        }
+        diagnosticOrderLineItems {
+          itemObj {
+            testPreparationData
+            preTestingRequirement
+          }
+        }
+        attributesObj {
+          reportTATMessage
+          reportGenerationTime
+          expectedReportGenerationTime
+        }
+      }
+    }
+  }
+`;
+
+export const DIAGNOSTIC_HOMEPAGE_API_CALLS_2 = gql`
+  query diagnosticHomepageCalls_2(
+    $mobile_number: String!
+    $prescriptionLimit: Int!
+    $cityId: Int!
+    $status: [String!]!
+  ) {
+    getPatientLatestPrescriptions(
+      mobileNumber: $mobile_number
+      limit: $prescriptionLimit
+      cityId: $cityId
+    ) {
+      doctorName
+      doctorCredentials
+      patientName
+      prescriptionDateTime
+      numberOfTests
+      orderCount
+      caseSheet {
+        id
+        blobName
+        diagnosticPrescription {
+          itemId
+          itemname
+          gender
+          testInstruction
+        }
+      }
+    }
+
+    GetSubscriptionsOfUserByStatus(mobile_number: $mobile_number, status: $status) {
+      code
+      success
+      message
+      response
+    }
   }
 `;

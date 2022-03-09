@@ -22,12 +22,13 @@ export const CouponsUnlocked: React.FC<CouponsUnlockedProps> = (props) => {
         <Text style={theme.viewStyles.text('SB', 13, '#007C9D', 1, 25, 0.35)}>{name}</Text>
         <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 17, 0.35)}>{description}</Text>
       </View>
-    )
+    );
   };
 
   return (
     <View style={styles.cardStyle}>
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={() => {
           setIsActiveCouponVisible(!isActiveCouponVisible);
         }}

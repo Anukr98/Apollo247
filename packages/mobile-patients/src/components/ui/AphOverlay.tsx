@@ -35,7 +35,7 @@ export const AphOverlay: React.FC<AphOverlayProps> = (props) => {
           marginBottom: 16,
         }}
       >
-        <TouchableOpacity onPress={() => props.onClose()}>
+        <TouchableOpacity activeOpacity={0.5} onPress={() => props.onClose()}>
           <CrossPopup style={{ marginRight: 1, width: 28, height: 28 }} />
         </TouchableOpacity>
       </View>

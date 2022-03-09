@@ -45,7 +45,7 @@ export const StorePickupCard: React.FC<StorePickupCardProps> = (props) => {
     return (
       <View style={{ opacity: isValidPinCode(pincode) && pincode.length == 6 ? 1 : 0.5 }}>
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           disabled={pincode.length != 6}
           onPress={onPressRightIcon}
         >

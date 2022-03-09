@@ -76,6 +76,7 @@ export const ApplyCircleBenefits: React.FC<ApplyCircleBenefitsProps> = (props) =
     } else {
       return (
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             setUserActionPayload?.({
               coupon: '',
@@ -109,7 +110,12 @@ export const ApplyCircleBenefits: React.FC<ApplyCircleBenefitsProps> = (props) =
   };
 
   return (
-    <TouchableOpacity activeOpacity={0.7} style={styles.applyBenefits} onPress={() => {}}>
+    <TouchableOpacity
+      activeOpacity={0.5}
+      activeOpacity={0.7}
+      style={styles.applyBenefits}
+      onPress={() => {}}
+    >
       {isCircleCart ? renderBenefitsApplied() : renderSelectCirclePlans()}
     </TouchableOpacity>
   );

@@ -153,6 +153,7 @@ export const NeedHelpContentView: React.FC<Props> = ({ navigation }) => {
         )}
         {!!(buttonTitle && appRoute) && (
           <TouchableOpacity
+            activeOpacity={0.5}
             style={styles.cardButton}
             onPress={() => {
               navigation.push(appRoute, { ...appRouteParams });

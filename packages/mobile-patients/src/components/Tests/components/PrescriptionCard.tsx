@@ -41,16 +41,16 @@ export const PrescriptionCard: React.FC<PrescriptionCardProps> = (props) => {
         </View>
         <View>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={props.onPressViewPrescription}
             style={{ height: 40, width: 40 }}
-            activeOpacity={1}
           >
             <PrescriptionPad style={styles.imageStyle} />
           </TouchableOpacity>
         </View>
       </View>
       <View style={styles.buttonView}>
-        <TouchableOpacity onPress={props.onPressBookNow}>
+        <TouchableOpacity activeOpacity={0.5} onPress={props.onPressBookNow}>
           <Text style={styles.bookNowText}>{nameFormater(props.buttonTitle, 'upper')}</Text>
         </TouchableOpacity>
       </View>

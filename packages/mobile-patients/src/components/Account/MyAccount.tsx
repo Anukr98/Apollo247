@@ -65,6 +65,7 @@ import codePush from 'react-native-code-push';
 import WebEngage from 'react-native-webengage';
 import {
   NavigationActions,
+  NavigationEvents,
   NavigationScreenProps,
   ScrollView,
   StackActions,
@@ -166,6 +167,8 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     setCircleSubscription,
     setPhrSession,
     setCorporateSubscriptions,
+    tabRouteJourney,
+    setTabRouteJourney,
   } = useAppCommonData();
   const {
     setIsDiagnosticCircleSubscription,
@@ -306,29 +309,13 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     postCleverTapEvent(eventName, eventAttributes);
   };
 
-  const onPressLogout = () => {
+  const onPressLogout = async () => {
     try {
       postMyAccountCleverTapEvents(CleverTapEventName.MY_ACCOUNT_USER_LOGOUT);
       const webengage = new WebEngage();
       webengage.user.logout();
       postAppsFlyerEvent(AppsFlyerEventName.USER_LOGGED_OUT, {});
       postFirebaseEvent(FirebaseEventName.USER_LOGGED_OUT, {});
-      AsyncStorage.setItem('userLoggedIn', 'false');
-      AsyncStorage.setItem('createCleverTapProifle', 'false');
-      AsyncStorage.setItem('multiSignUp', 'false');
-      AsyncStorage.setItem('signUp', 'false');
-      AsyncStorage.setItem('selectUserId', '');
-      AsyncStorage.setItem('selectUserUHId', '');
-      AsyncStorage.removeItem('phoneNumber');
-      AsyncStorage.setItem('logginHappened', 'false');
-      AsyncStorage.removeItem('deeplink');
-      AsyncStorage.removeItem('deeplinkReferalCode');
-      AsyncStorage.removeItem('isCircleMember');
-      AsyncStorage.removeItem('saveTokenDeviceApiCall');
-      AsyncStorage.removeItem(LOGIN_PROFILE);
-      AsyncStorage.removeItem('PharmacyLocationPincode');
-      AsyncStorage.setItem(SKIP_LOCATION_PROMPT, 'false');
-      AsyncStorage.setItem(HEALTH_CREDITS, '');
       setSavePatientDetails && setSavePatientDetails('');
       setHdfcUserSubscriptions && setHdfcUserSubscriptions(null);
       setBannerData && setBannerData([]);
@@ -340,26 +327,19 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       setTagalysConfig(null);
       setCircleSubscriptionId && setCircleSubscriptionId('');
       setPhrSession?.('');
-      AsyncStorage.removeItem('circlePlanSelected');
-      AsyncStorage.removeItem('circleSubscriptionId');
-      AsyncStorage.removeItem('isCorporateSubscribed');
-      AsyncStorage.removeItem('VaccinationCmsIdentifier');
-      AsyncStorage.removeItem('VaccinationSubscriptionId');
-      AsyncStorage.removeItem('hasAgreedVaccineTnC');
-      AsyncStorage.removeItem('circleSubscriptionId');
-      AsyncStorage.removeItem('diagnosticUserType');
-      AsyncStorage.removeItem('mobileNumber_CM_Result'); //removing sdk cached api result
       clearCartInfo && clearCartInfo();
       clearDiagnoticCartInfo && clearDiagnoticCartInfo();
       setShowMultiPatientMsg?.(true);
       setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
-      props.navigation.dispatch(
-        StackActions.reset({
-          index: 0,
-          key: null,
-          actions: [NavigationActions.navigate({ routeName: AppRoutes.Login })],
-        })
-      );
+      await AsyncStorage.clear().then(() => {
+        props.navigation.dispatch(
+          StackActions.reset({
+            index: 0,
+            key: null,
+            actions: [NavigationActions.navigate({ routeName: AppRoutes.Login })],
+          })
+        );
+      });
     } catch (error) {}
   };
 
@@ -436,7 +416,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             )}
           </View>
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             onPress={() => {
               props.navigation.navigate(AppRoutes.EditProfile, {
                 isEdit: true,
@@ -502,6 +482,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         {aboutApolloListing.map((item, index) => {
           return (
             <TouchableOpacity
+              activeOpacity={0.5}
               style={[
                 styles.aboutContainer,
                 {
@@ -620,8 +601,29 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     );
   };
 
+  const setRouteJourneyFromTabbar = () => {
+    if (!tabRouteJourney) {
+      setTabRouteJourney &&
+        setTabRouteJourney({
+          previousRoute: 'MY ACCOUNT',
+          currentRoute: 'MY ACCOUNT',
+        });
+    } else {
+      setTabRouteJourney &&
+        setTabRouteJourney({
+          previousRoute: tabRouteJourney?.currentRoute,
+          currentRoute: 'MY ACCOUNT',
+        });
+    }
+  };
+
   return (
     <View style={{ flex: 1 }}>
+      <NavigationEvents
+        onDidFocus={() => {
+          setRouteJourneyFromTabbar();
+        }}
+      />
       <SafeAreaView
         style={{
           ...theme.viewStyles.container,

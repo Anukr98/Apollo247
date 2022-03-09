@@ -378,7 +378,7 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
         rightComponent={
           <View>
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               onPress={() => {
                 const helpSectionQueryId = AppConfig.Configuration.HELP_SECTION_CUSTOM_QUERIES;
                 props.navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
@@ -414,6 +414,7 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
           >
             <Text style={styles.somethingWentWrong}>Unable to see your booking? Try refresh!</Text>
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 fetchAllAppointments();
               }}
@@ -457,6 +458,7 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
 
   const renderEnrollCorporateCta = () => (
     <TouchableOpacity
+      activeOpacity={0.5}
       onPress={() => {
         try {
           props.navigation.navigate(AppRoutes.ActivateCorporateMembership);
@@ -665,6 +667,7 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
   const renderBookingListItem = (bookingItem: any, index: any) => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={styles.bookingItemCardContainer}
         onPress={() => {
           try {
@@ -730,7 +733,7 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
 
         <View>
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             onPress={() => {
               try {
                 props.navigation.navigate(AppRoutes.VaccineBookingConfirmationScreen, {

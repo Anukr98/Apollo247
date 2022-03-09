@@ -29,7 +29,7 @@ export const Header: React.FC<HeaderProps> = (props) => {
   const renderHeader = () => {
     return (
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <TouchableOpacity onPress={props.onPressLeftIcon}>
+        <TouchableOpacity activeOpacity={0.5} onPress={props.onPressLeftIcon}>
           <BackArrow style={styles.icon} />
         </TouchableOpacity>
         <View style={styles.subCont}>

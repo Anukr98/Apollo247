@@ -134,6 +134,7 @@ export const UPICollectPopup: React.FC<UPICollectProps> = (props) => {
         renderItem={(item: any) => (
           <View>
             <TouchableOpacity
+              activeOpacity={0.5}
               style={{
                 ...styles.UPIBankCont,
                 marginTop: isVPAvalid ? 32 : 15,

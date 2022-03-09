@@ -126,7 +126,7 @@ export const ReasonPopUp: React.FC<ReasonPopUpProps> = (props: ReasonPopUpProps)
         ]}
       >
         {selectedReason == props.otherReasonText ? (
-          <TouchableOpacity onPress={() => goBackPress()}>
+          <TouchableOpacity activeOpacity={0.5} onPress={() => goBackPress()}>
             <BackArrow />
           </TouchableOpacity>
         ) : null}
@@ -149,7 +149,7 @@ export const ReasonPopUp: React.FC<ReasonPopUpProps> = (props: ReasonPopUpProps)
         </Text>
         {selectedReason != props.otherReasonText ? (
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             onPress={() => {
               setOverlayDropdown(true);
             }}
@@ -216,7 +216,7 @@ export const ReasonPopUp: React.FC<ReasonPopUpProps> = (props: ReasonPopUpProps)
 
     const skipOption = (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={() => props.onPressSubmit('', '')}
         style={styles.skipOptionTouch}
       >
@@ -228,6 +228,7 @@ export const ReasonPopUp: React.FC<ReasonPopUpProps> = (props: ReasonPopUpProps)
       isCancelVisible && (
         <View style={{ marginHorizontal: 20 }}>
           <TouchableOpacity
+            activeOpacity={0.5}
             style={{ marginTop: 80, alignSelf: 'flex-end' }}
             onPress={props.onPressCross}
           >

@@ -58,6 +58,8 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
+import { DiagnosticHomepageViewedEvent } from '@aph/mobile-patients/src/components/Tests/utils/Events';
 
 const { width: winWidth, height: winHeight } = Dimensions.get('window');
 
@@ -250,7 +252,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
 
     return (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={() =>
           handleOnBannerClick(
             cta_action?.type,
@@ -317,6 +319,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     if (btnTxt || btnSubTxt) {
       return (
         <TouchableOpacity
+          activeOpacity={0.5}
           style={styles.upgradeBtnView}
           onPress={() =>
             handleOnBannerClick(
@@ -416,6 +419,22 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     );
   };
 
+  const postHomepageEvent = () => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_HOMEPAGE_VIEWED] = {
+      'Nav src': 'Consult banner',
+      User: `${currentPatient?.firstName} ${currentPatient?.lastName}`,
+      UHID: currentPatient?.uhid,
+      Gender: currentPatient?.gender,
+      'Mobile Number': currentPatient?.mobileNumber,
+      'Customer Id': currentPatient?.id,
+    };
+    postCleverTapEvent(CleverTapEventName.CONSULT_HOMEPAGE_VIEWED, eventAttributes);
+  };
+
+  const postDiagnosticHomepageViewedEvent = () => {
+    DiagnosticHomepageViewedEvent(currentPatient, DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DIRECT);
+  };
+
   const handleOnBannerClick = (
     type: any,
     action: any,
@@ -463,6 +482,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
           specialities: [type],
         });
       } else {
+        postHomepageEvent();
         props.navigation.navigate(AppRoutes.DoctorSearch);
       }
     } else {
@@ -479,6 +499,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
           const homeScreenAttributes = {
             Source: DiagnosticHomePageSource.BANNER,
           };
+          postDiagnosticHomepageViewedEvent();
           props.navigation.navigate('TESTS', { homeScreenAttributes });
         } else if (action == hdfc_values.MEMBERSHIP_DETAIL) {
           if (hdfcUserSubscriptions != null && hdfcStatus == 'active') {

@@ -43,7 +43,7 @@ export const CouponSectionPDP = (props: { offersData: SpecialOffersCouponsData[]
             )}
           </View>
           <View style={styles.arrowContainer}>
-            <TouchableOpacity onPress={() => updateKnowMore(index)}>
+            <TouchableOpacity activeOpacity={0.5} onPress={() => updateKnowMore(index)}>
               <ArrowRight
                 style={
                   item?.knowMoreOption
@@ -67,6 +67,7 @@ export const CouponSectionPDP = (props: { offersData: SpecialOffersCouponsData[]
     return (
       <View style={styles.offersHeadingContainer}>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             visibleCoupons < totalCoupons ? setVisibleCoupons(totalCoupons) : setVisibleCoupons(2);
           }}

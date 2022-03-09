@@ -24,7 +24,11 @@ export const ExpectCall: React.FC<ExpectCallProps> = (props) => {
       <View style={{ flex: 1 }}>
         <View style={styles.flexRow}>
           <Text style={styles.headerTxt}>Expect a Call from</Text>
-          <TouchableOpacity style={{ flexDirection: 'row' }} onPress={copyToClipboard}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            style={{ flexDirection: 'row' }}
+            onPress={copyToClipboard}
+          >
             <Text style={theme.viewStyles.text('B', 15, '#01475B', 1, 18)}>{phoneNumber}</Text>
             <Copy style={styles.iconStyle} />
           </TouchableOpacity>

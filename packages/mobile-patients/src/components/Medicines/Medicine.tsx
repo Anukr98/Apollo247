@@ -281,6 +281,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     bannerData,
     pharmacyUserType,
     setIsRenew,
+    tabRouteJourney,
+    setTabRouteJourney,
   } = useAppCommonData();
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const {
@@ -564,7 +566,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           children: (
             <View style={{ marginBottom: 15, marginTop: 12, marginHorizontal: 20 }}>
               <TouchableOpacity
-                activeOpacity={1}
+                activeOpacity={0.5}
                 style={styles.callCta}
                 onPress={() =>
                   onPressCallNearestPharmacy(
@@ -1095,7 +1097,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
     const renderIcon = () => (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={() => {
           navigateToHome(props.navigation);
           cleverTapEventForHomeIconClick(
@@ -1141,6 +1143,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         <View style={{ paddingLeft: 15, marginTop: 3.5 }}>
           {hasLocation ? (
             <TouchableOpacity
+              activeOpacity={0.5}
               style={{ marginTop: -7.5 }}
               onPress={() => {
                 showAccessAccessLocationPopup(addresses, false);
@@ -1165,6 +1168,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 showAccessAccessLocationPopup(addresses, false);
               }}
@@ -1182,8 +1186,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const renderCartIcon = () => (
       <View style={{ flex: 1 }}>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={{ alignItems: 'flex-end' }}
-          activeOpacity={1}
           onPress={() =>
             props.navigation.navigate(
               diagnosticCartItems?.length ? AppRoutes.MedAndTestCart : AppRoutes.ServerCart
@@ -1245,7 +1249,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     let imageUrl = productsThumbnailUrl(item?.image) + '?imwidth=' + Math.floor(winWidth);
 
     return (
-      <TouchableOpacity activeOpacity={1} onPress={handleOnPress}>
+      <TouchableOpacity activeOpacity={0.5} onPress={handleOnPress}>
         <ImageNative
           resizeMode="stretch"
           style={{ width: '100%', minHeight: imgHeight }}
@@ -1431,7 +1435,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderBrandCard = (imgUrl: string, onPress: () => void, style?: ViewStyle) => {
     return (
-      <TouchableOpacity activeOpacity={1} onPress={onPress}>
+      <TouchableOpacity activeOpacity={0.5} onPress={onPress}>
         <View
           style={[
             {
@@ -1466,7 +1470,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     style?: ViewStyle
   ) => {
     return (
-      <TouchableOpacity activeOpacity={1} onPress={onPress}>
+      <TouchableOpacity activeOpacity={0.5} onPress={onPress}>
         <View
           style={[
             {
@@ -1643,7 +1647,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           renderItem={({ item, index }) => {
             return (
               <TouchableOpacity
-                activeOpacity={1}
+                activeOpacity={0.5}
                 onPress={() => {
                   postwebEngageCategoryClickedEvent(item?.category_id, 'Banner', title, 'Home');
                   props.navigation.navigate(AppRoutes.MedicineListing, {
@@ -1891,7 +1895,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       <ActivityIndicator size={24} />
     ) : (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         style={{
           opacity: shouldEnableSearchSend ? 1 : 0.4,
         }}
@@ -2201,6 +2205,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         />
         <View style={styles.searchContainer}>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_SEARCH_RESULTS] = {
                 keyword: searchText,
@@ -2351,7 +2356,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       (!!medicineList?.length || medicineSearchLoading || isNoResultsFound) && (
         <View style={theme.viewStyles.overlayStyle}>
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             style={theme.viewStyles.overlayStyle}
             onPress={() => {
               if (medicineList?.length == 0 && !searchText) return;
@@ -2453,7 +2458,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             onPressCategory={onPressCategory}
             categories={data?.categories || []}
           />
-          <TouchableOpacity onPress={onPressDismissView}>
+          <TouchableOpacity activeOpacity={0.5} onPress={onPressDismissView}>
             <View style={styles.categoryTreeDismissView} />
           </TouchableOpacity>
         </View>
@@ -2461,10 +2466,31 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const setRouteJourneyFromTabbar = () => {
+    if (!tabRouteJourney) {
+      setTabRouteJourney &&
+        setTabRouteJourney({
+          previousRoute: 'Medicine',
+          currentRoute: 'Medicine',
+        });
+    } else {
+      setTabRouteJourney &&
+        setTabRouteJourney({
+          previousRoute: tabRouteJourney?.currentRoute,
+          currentRoute: 'Medicine',
+        });
+      const eventArributes = {
+        'Page Name': tabRouteJourney?.currentRoute,
+      };
+      postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED, eventArributes);
+    }
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <NavigationEvents
-        onDidFocus={() => {
+        onDidFocus={(payload) => {
+          setRouteJourneyFromTabbar();
           scrollCount.current = 0;
         }}
         onDidBlur={postScrollScreenEvent}

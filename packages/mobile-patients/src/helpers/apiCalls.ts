@@ -1464,10 +1464,13 @@ export const getDiagnosticListingWidget = (
   });
 };
 
-export const GetAllUHIDSForNumber_CM = (phoneNumber: string): Promise<AxiosResponse<any>> => {
-  const url = `${config.CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL}/askapollo/user/uhids?phoneNumber=${phoneNumber}`;
-  console.log('GetAllUHIDSForNumber_CM_Url', url);
-  return Axios.get(url);
+export const GetProhealthActiveStatusForUhid_CM = (arrayOfUhid: string[]): Promise<AxiosResponse<any>> => {
+  const url = `${config.CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL}/askapollo/user/uhids/status`;
+  console.log('GetProhealthActiveStatusForUhid_CM_Url', url);
+  return Axios.post(
+    url,
+    { "uhids": arrayOfUhid }
+  );
 };
 
 export const GenrateVitalsToken_CM = (
@@ -1475,7 +1478,6 @@ export const GenrateVitalsToken_CM = (
   userId: string
 ): Promise<AxiosResponse<any>> => {
   const url = `${config.CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL}/vitauser/vitatoken?appId=${appId}&appUserId=${userId}`;
-  console.log('GetAllUHIDSForNumber_CM_Url', url);
   return Axios.get(url);
 };
 

@@ -30,10 +30,11 @@ import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/Diagnos
 import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 import {
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
-  DIAGNOSTIC_PINCODE_SOURCE_TYPE,
-} from '@aph/mobile-patients/src/utils/commonUtils';
+  DIAGNOSTIC_CTA_ITEMS,
+} from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientObj } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { AppConfig, AppEnv } from '@aph/mobile-patients/src/strings/AppConfig';
+import { DiagnosticCTJourneyType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 const { APP_ENV } = AppConfig;
 
 function createPatientAttributes(currentPatient: any) {
@@ -41,7 +42,9 @@ function createPatientAttributes(currentPatient: any) {
     'Patient Uhid': currentPatient?.uhid,
     'Patient Gender': currentPatient?.gender,
     'Patient Name': `${currentPatient?.firstName} ${currentPatient?.lastName}`,
+    'Patient MobileNumber': currentPatient?.mobileNumber,
     'Patient Age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
+    Relation: currentPatient?.relation,
   };
   return patientAttributes;
 }
@@ -89,35 +92,6 @@ export function DiagnosticHomePageSearchItem(
   } catch (error) {}
 }
 
-export async function DiagnosticPinCodeClicked(
-  currentPatient: any,
-  pincode: string,
-  serviceable: boolean,
-  source: DIAGNOSTIC_PINCODE_SOURCE_TYPE,
-  isDiagnosticCircleSubscription?: boolean | undefined
-) {
-  try {
-    const getPatientAttributes = await createPatientAttributes(currentPatient);
-    const eventAttributes:
-      | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR]
-      | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR] = {
-      ...getPatientAttributes,
-      Pincode: Number(pincode!),
-      Serviceability: serviceable ? 'Yes' : 'No',
-      Source: source,
-      'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
-    };
-    postWebEngageEvent(
-      WebEngageEventName.DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR,
-      eventAttributes
-    );
-    postCleverTapEvent(
-      CleverTapEventName.DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR,
-      eventAttributes
-    );
-  } catch (error) {}
-}
-
 export function DiagnosticHomePageWidgetClicked(
   currentPatient: any,
   section: string,
@@ -156,7 +130,7 @@ export async function DiagnosticAddToCartEvent(
   price: number,
   discountedPrice: number,
   source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
-  itemType: DIAGNOSTICS_ITEM_TYPE,
+  itemType: DIAGNOSTICS_ITEM_TYPE | any,
   section?: string,
   currentPatient?: any,
   isDiagnosticCircleSubscription?: boolean | undefined,
@@ -172,6 +146,7 @@ export async function DiagnosticAddToCartEvent(
       'Item Id': String(id),
       'Item Type': itemType,
       'Item Price': String(discountedPrice), //should be the selling price
+      'Nav Src': source,
       Source: source,
       'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
     };
@@ -330,7 +305,8 @@ export async function DiagnosticDetailsViewed(
   pharmacyCircleAttributes: any,
   isDiagnosticCircleSubscription?: boolean | undefined,
   originalItemIds?: string[] | null,
-  section?: string
+  section?: string,
+  sectionStr?: string
 ) {
   try {
     const getPatientAttributes = await createPatientAttributes(currentPatient);
@@ -350,6 +326,8 @@ export async function DiagnosticDetailsViewed(
     }
     if (section) {
       eventAttributes['Section name'] = section;
+    } else if (sectionStr) {
+      eventAttributes['Section name'] = sectionStr;
     }
     if (!!originalItemIds) {
       eventAttributes['Original Item ids'] = JSON.stringify(originalItemIds);
@@ -366,6 +344,62 @@ export async function DiagnosticDetailsViewed(
       itemPrice,
       pharmacyCircleAttributes
     );
+  } catch (error) {}
+}
+
+export async function DiagnosticHomePageRecommendationsViewed(
+  recommendationItems: any,
+  currentPatient: any,
+  drupalCount: number,
+  apiCount: string,
+  isDiagnosticCircleSubscription?: boolean | undefined
+) {
+  try {
+    const getPatientAttributes = await createPatientAttributes(currentPatient);
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_HOME_PAGE_RECOMMENDATIONS_VIEWED]
+      | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_HOME_PAGE_RECOMMENDATIONS_VIEWED] = {
+      ...getPatientAttributes,
+      'Recommendation ItemIds': JSON.stringify(
+        recommendationItems?.map((item: any) => {
+          return item?.itemId;
+        })
+      ),
+      'Recommendation ItemNames': JSON.stringify(
+        recommendationItems?.map((item: any) => {
+          return item?.itemName;
+        })
+      ),
+      drupalCount: !!drupalCount ? drupalCount : 0,
+      apiCount: apiCount,
+      'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+    };
+    postWebEngageEvent(
+      WebEngageEventName.DIAGNOSTIC_HOME_PAGE_RECOMMENDATIONS_VIEWED,
+      eventAttributes
+    );
+    postCleverTapEvent(
+      CleverTapEventName.DIAGNOSTIC_HOME_PAGE_RECOMMENDATIONS_VIEWED,
+      eventAttributes
+    );
+  } catch (error) {}
+}
+export async function DiagnosticCtaClicked(
+  currentPatient: any,
+  isDiagnosticCircleSubscription: boolean | undefined,
+  ctaString: DIAGNOSTIC_CTA_ITEMS
+) {
+  try {
+    const getPatientAttributes = await createPatientAttributes(currentPatient);
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CTA_CLICKED]
+      | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_CTA_CLICKED] = {
+      ...getPatientAttributes,
+        'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+        'CTA': ctaString
+      }
+    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION, eventAttributes);
+    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_TEST_DESCRIPTION, eventAttributes);
   } catch (error) {}
 }
 
@@ -448,7 +482,9 @@ export function DiagnosticCartViewed(
   city: string,
   couponCode: string,
   isRecommendationShown: boolean,
-  recommendationData: any
+  recommendationData: any,
+  totalCart: any,
+  recommendationPackageData?: any
 ) {
   try {
     const getPatientAttributes = createPatientAttributes(currentPatient);
@@ -457,7 +493,7 @@ export function DiagnosticCartViewed(
       | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_CART_VIEWED] = {
       ...getPatientAttributes,
       'Page source': source,
-      'Total items in cart': cartItems?.length,
+      'Total items in cart': totalCart?.length,
       // 'Delivery charge': deliveryCharges,
       'Total Discount': couponDiscount ? Number(couponDiscount) : 0,
       'Recommendation Shown': isRecommendationShown ? 'Yes' : 'No',
@@ -477,12 +513,12 @@ export function DiagnosticCartViewed(
       ),
       'Circle user': isCircle ? 'Yes' : 'No',
       'Item ids': JSON.stringify(
-        cartItems?.map((item: any) => {
+        totalCart?.map((item: any) => {
           return item?.id;
         })
       ),
       'Item names': JSON.stringify(
-        cartItems?.map((item: any) => {
+        totalCart?.map((item: any) => {
           return item?.name;
         })
       ),
@@ -490,6 +526,7 @@ export function DiagnosticCartViewed(
       UHID: currentPatient?.uhid,
       city: city,
       'Prescription Needed': prescReqd ? 'Yes' : 'No',
+      'Cart Value': gTotal,
     };
 
     if (!!gTotal) {
@@ -501,6 +538,23 @@ export function DiagnosticCartViewed(
     if (!!couponCode && !!couponDiscount) {
       eventAttributes['Coupon code used'] = couponCode;
       eventAttributes['Coupon Discount'] = Number(couponDiscount);
+    }
+    const itemCartIds = totalCart?.map((item: any) => {
+      return Number(item?.id);
+    });
+    const extraTests = recommendationPackageData?.inclusionData?.filter((item: any) => {
+      if (!itemCartIds?.includes(item?.itemId)) return item?.name;
+    });
+    if (!!recommendationPackageData) {
+      eventAttributes['Package Recommendation Shown'] = !!recommendationPackageData ? 'Yes' : 'No';
+      eventAttributes['Package Recommendation ItemId'] = recommendationPackageData?.itemId;
+      eventAttributes['Package Recommendation ItemName'] = recommendationPackageData?.itemName;
+      eventAttributes['Package Recommendation Price'] = recommendationPackageData?.price;
+      eventAttributes['Package Recommendation Extra Tests'] = JSON.stringify(
+        extraTests?.map((item: any) => {
+          return item?.name;
+        })
+      );
     }
     // fireCircleBenifitAppliedEvent(currentPatient, validity, circleSubId, isCircle);
     fireCircleBenifitAppliedEvent(currentPatient, validity, circleSubId, isCircle);
@@ -602,7 +656,10 @@ export function DiagnosticAppointmentTimeSlot(
   numOfSlots: number,
   slotDate: string,
   currentPatient: any,
-  isDiagnosticCircleSubscription?: boolean | undefined
+  isDiagnosticCircleSubscription?: boolean | undefined,
+  diagLocation?: any,
+  cartItems?: DiagnosticsCartItem[],
+  gTotal?: number
 ) {
   try {
     const getPatientAttributes = createPatientAttributes(currentPatient);
@@ -615,6 +672,22 @@ export function DiagnosticAppointmentTimeSlot(
       'No. of slots': numOfSlots,
       Type: slotType,
       'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+      Latitude: !!diagLocation?.latitude ? diagLocation?.latitude : 0,
+      Longitude: !!diagLocation?.longitude ? diagLocation?.longitude : 0,
+      'Address Pincode': !!diagLocation?.pincode ? diagLocation?.pincode : '',
+      City: !!diagLocation?.city ? diagLocation?.city : '',
+      itemIds: JSON.stringify(
+        cartItems?.map((item: any) => {
+          return item?.id;
+        })
+      ),
+      itemNames: JSON.stringify(
+        cartItems?.map((item: any) => {
+          return item?.name;
+        })
+      ),
+      Source: 'Mobile',
+      'Cart Value': gTotal,
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_SLOT_TIME_SELECTED, eventAttributes);
     postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED, eventAttributes);
@@ -622,12 +695,16 @@ export function DiagnosticAppointmentTimeSlot(
 }
 
 export async function DiagnosticAddresssSelected(
-  type: 'New' | 'Existing',
+  type: 'Manual' | 'Automation',
   serviceable: 'Yes' | 'No',
   pincode: string | number,
   source: 'Home page' | 'Cart page',
   currentPatient?: any,
-  isDiagnosticCircleSubscription?: boolean | undefined
+  isDiagnosticCircleSubscription?: boolean | undefined,
+  latitude?: number | undefined,
+  longitude?: number | undefined,
+  state?: string | undefined,
+  city?: string | undefined
 ) {
   try {
     const getPatientAttributes = await createPatientAttributes(currentPatient);
@@ -640,6 +717,10 @@ export async function DiagnosticAddresssSelected(
       Pincode: pincode,
       Source: source,
       'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+      latitude: !!latitude ? latitude : 0,
+      longitude: !!longitude ? longitude : 0,
+      state: !!state ? state : '',
+      city: !!city ? city : '',
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE, eventAttributes);
     postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE, eventAttributes);
@@ -672,7 +753,8 @@ export function DiagnosticRemoveFromCartClicked(
   mode: 'Customer' | 'Automated',
   currentPatient?: any,
   isDiagnosticCircleSubscription?: boolean | undefined,
-  cartItems?: DiagnosticsCartItem[]
+  cartItems?: DiagnosticsCartItem[],
+  source?: any
 ) {
   try {
     const getPatientAttributes = createPatientAttributes(currentPatient);
@@ -690,6 +772,7 @@ export function DiagnosticRemoveFromCartClicked(
       Pincode: pincode,
       Mode: mode,
       'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+      Source: source,
       itemIdsInCart: JSON.stringify(
         newCart?.map((item: any) => {
           return item?.id;
@@ -1075,7 +1158,8 @@ export function DiagnosticPrescriptionSubmitted(
   prescriptionUrl: any,
   itemName: any,
   userType: string | null,
-  isDiagnosticCircleSubscription?: boolean | undefined
+  isDiagnosticCircleSubscription?: boolean | undefined,
+  journeyType?: DiagnosticCTJourneyType
 ) {
   try {
     const getPatientAttributes = createPatientAttributes(currentPatient);
@@ -1086,7 +1170,8 @@ export function DiagnosticPrescriptionSubmitted(
       'User Type': userType,
       Source: 'Apollo247App',
       PrescriptionUrl: prescriptionUrl,
-      'Item Name': itemName,
+      'Item Name': JSON.stringify(itemName),
+      'Journey Type': journeyType,
     };
     postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_PRESCRIPTION_SUBMITTED, eventAttributes);
   } catch (error) {}
@@ -1202,5 +1287,51 @@ export async function DiagnosticOrderPlaced(
         : CleverTapEventName.DIAGNOSTIC_ORDER_PLACED_QA,
       cleverTapEventAttributes
     );
+  } catch (error) {}
+}
+
+export async function DiagnosticCancellationRetention(
+  preBookingId: string | number,
+  displayId: string | number,
+  slotDate: string,
+  slotTime: string,
+  reason: string,
+  cta: 'Reschedule' | 'Add Test' | 'Edit Patient',
+  patientName: string,
+  patientGender: string,
+  patientNumber: number,
+  city: string
+) {
+  try {
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.DIAGNOSTIC_RETAIN_CANCELLATION] = {
+      preBookingId,
+      displayId,
+      'Slot Date': slotDate,
+      'Slot Time': slotTime,
+      'Cancel Reason': reason,
+      'CTA clicked': cta,
+      'Patient Name': patientName,
+      'Patient Gender': patientGender,
+      'Patient Mobile': patientNumber,
+      City: city,
+    };
+    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_RETAIN_CANCELLATION, cleverTapEventAttributes);
+  } catch (error) {}
+}
+
+export function DiagnosticHomepageViewedEvent(
+  currentPatient: any,
+  source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE
+) {
+  try {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_HOMEPAGE_VIEWED] = {
+      'Nav src': source,
+      User: `${currentPatient?.firstName} ${currentPatient?.lastName}`,
+      UHID: currentPatient?.uhid,
+      Gender: currentPatient?.gender,
+      'Mobile Number': currentPatient?.mobileNumber,
+      'Customer Id': currentPatient?.id,
+    };
+    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_HOMEPAGE_VIEWED, eventAttributes);
   } catch (error) {}
 }

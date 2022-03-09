@@ -14,6 +14,7 @@ export const WhatWillYouGet: React.FC<WhatWillYouGetProps> = (props) => {
   return (
     <View style={styles.cardStyle}>
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={() => {
           setIsWhatWillYouGetVisible(!isWhatWillYouGetVisible);
         }}

@@ -75,9 +75,16 @@ export const ConsultPackageFAQ: React.FC<ConsultPackageFAQProps> = (props) => {
       {faq?.map((faqItem: any, index: number) => (
         <View style={styles.faqItemContainer}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.faqQuestion}>
-              {faqItem?.FaqQuestion || faqItem?.question || ''}
-            </Text>
+            <TouchableOpacity
+              style={{}}
+              onPress={() => {
+                expandFaqItem(index, faqItem?.isCollapsed ? false : true);
+              }}
+            >
+              <Text style={styles.faqQuestion}>
+                {faqItem?.FaqQuestion || faqItem?.question || ''}
+              </Text>
+            </TouchableOpacity>
 
             {faqItem?.isCollapsed ? (
               <HTML
@@ -97,6 +104,7 @@ export const ConsultPackageFAQ: React.FC<ConsultPackageFAQProps> = (props) => {
 
           {faqItem?.isCollapsed ? (
             <TouchableOpacity
+              activeOpacity={0.5}
               style={{}}
               onPress={() => {
                 expandFaqItem(index, false);
@@ -106,6 +114,7 @@ export const ConsultPackageFAQ: React.FC<ConsultPackageFAQProps> = (props) => {
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
+              activeOpacity={0.5}
               style={{}}
               onPress={() => {
                 expandFaqItem(index, true);

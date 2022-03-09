@@ -4,6 +4,7 @@ import DeviceInfo from 'react-native-device-info';
 import {
   CALL_TO_ORDER_CTA_PAGE_ID,
   DIAGNOSTIC_ORDER_STATUS,
+  GENDER,
   REFUND_STATUSES,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { Platform } from 'react-native';
@@ -307,6 +308,7 @@ const appStaticVariables = {
         ctaPhoneNumber: '040-4821-3009',
         ctaText: 'Call to Order',
         ctaItemIds: [2446],
+        ctaDisplayHrsArray: [8, 9, 10, 11],
       },
     ],
     ctaDetailsDefault: {
@@ -314,8 +316,30 @@ const appStaticVariables = {
       ctaDelaySeconds: 3,
       ctaPhoneNumber: '040-4821-3322',
       ctaText: 'Call to Order',
+      ctaItemIds: [2446],
+      ctaDisplayHrsArray: [8, 9, 10, 11],
     },
   },
+  DIAGNOSTICS_SHOW_UPLOAD_PRESCRIPTION_SECTION: true,
+  DIAGNOSTICS_HOME_SINGLE_ITEM: {
+    id: '2446',
+  },
+  DIAGNOSTICS_HOME_TOP_ITEM_DETAILS: {
+    topItemDetails: [
+      {
+        cityId: 216,
+        itemId: 2499,
+        itemName: '',
+        ctaText: '',
+        price: 1999,
+        textLine1: '',
+        textLine2: '',
+        textLine3: '',
+        isCardVisible: false,
+      },
+    ],
+  },
+  DIAGNOSTICS_HOME_PAGE_BANNER_HEIGHT: 160,
   DIAGNOSTICS_PHLEBO_CALL_NUMBER: '08046807674',
   DIAGNOSTICS_COVID_ITEM_IDS: [2446],
   FREE_CONSULT_MESSAGE: {
@@ -335,6 +359,7 @@ const appStaticVariables = {
     topBookedTests: string.diagnostics.topBookedTests,
     similarPackages: string.diagnostics.similarPackages,
     topPackages: 'Top Packages with ',
+    relatedPackages: string.diagnosticsDetails.relatedPackages,
   },
   DeliveryIn_TAT_Text: 'Express Delivery',
   WHATSAPP_TO_ORDER: {
@@ -373,6 +398,7 @@ const appStaticVariables = {
     },
   ],
   DIAGNOSTIC_REVIEW_ORDER_DISCLAIMER_TEXT: string.diagnosticsCartPage.reviewPagePolicyText,
+  DIAGNOSTICS_SHOW_HEALTH_CREDITS: true,
   APOLLO247_API_KEY: '',
   ACTIVATE_NEW_JWT_TOKEN: false,
   ALLOW_PHONEPE_QCLITE: true,
@@ -1674,7 +1700,7 @@ export const DIAGNOSTIC_STATUS_BEFORE_SUBMITTED = [
   DIAGNOSTIC_ORDER_STATUS.CANCELLATION_REQUESTED,
 ];
 
-export const DIAGNOSITC_PHELBO_TRACKING_STATUS = [
+export const DIAGNOSTIC_PHELBO_TRACKING_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
   DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED,
 ];
@@ -1698,17 +1724,16 @@ export const DIAGNOSTIC_SUB_STATUS_TO_SHOW = [
 
 export const ELIGIBLE_HC_VERTICALS = ['pharma', 'diagnostics'];
 
-export const TestsNewFeedbackData = {
-  options: [
-    'Wrong Report recieved',
-    'Delayed Report generation',
-    'Did not get the required time slot',
-    'Inappropriate behaviour of diagnostics staff',
-    'Insufficient communication to customer',
-    'Difficulty in finding the test while booking order',
-    'Others (Please specify)',
-  ],
-};
+enum DiagnosticBannerVisible {
+  APP = 'app',
+  WEB = 'web',
+  Both = 'both',
+}
+
+export const DIANOSTIC_BANNER_VISIBLE_ARRAY = [
+  DiagnosticBannerVisible.APP,
+  DiagnosticBannerVisible.Both,
+];
 
 export const TestsFeedBackData = {
   POOR: {
@@ -1975,6 +2000,10 @@ const Specialities: SpecialitiesType = {
   'Vascular Surgery': ['Vascular Surgeon', 'Vascular Surgeons'],
   Gynaecology: ['Gynaecologist', 'Gynaecologists'],
 };
+
+export const BOTH_GENDER_ARRAY = [GENDER.ALL?.toLowerCase(), GENDER.OTHER?.toLowerCase()];
+export const GENDER_ARRAY = [GENDER.MALE?.toLowerCase(), GENDER.FEMALE?.toLowerCase()];
+
 
 export const AppConfig = {
   APP_ENV,

@@ -1,6 +1,7 @@
 {
   "common": {
     "add": "Add",
+    "selectPackage": "SELECT PACKAGE",
     "availableNow": "AVAILABLE NOW",
     "okay": "okay!",
     "add_profile_imp_text": "Important : You will not be able to edit \nthese details once you have saved them!",
@@ -182,7 +183,8 @@
     "cancelRefundBody": "We regret the inconvenience caused. We’ll issue you a full refund.",
     "goBack": "GO BACK",
     "proceedCta": "PROCEED TO CONNECT",
-    "showDigitalData": "SHOW DIGITAL REPORT"
+    "showDigitalData": "SHOW DIGITAL REPORT",
+    "homePageItem": "Home page item card"
   },
   "diagnosticsLocation": {
     "savedAddressText": "Saved Addresses",
@@ -700,7 +702,7 @@
     "incorrectUserReport": "This report does not belongs to this user.",
     "unableToFetchReport": "We could not fetch your report. Please view report in my order section",
     "reasonForReschedulingText": "Reason for Rescheduling",
-    "reasonForCancellationText": "Reason for Cancellation",
+    "reasonForCancellationText": "Reason for Cancelling",
     "promoteCashbackHeading": "You are missing out on ₹100 Cashback if you cancel",
     "whatWudLikeText": "What would you like to do?",
     "rescheduleBookingText": "Reschedule Booking",
@@ -744,6 +746,7 @@
     "addToCart": "ADD",
     "removeFromCart": "REMOVE",
     "alreadyAdded": "ALREADY ADDED",
+    "addAndProceed": "ADD & PROCEED TO CART",
     "nonServiceableMsg1": "Diagnostics services are not available.",
     "whyBookUs": "why book with us",
     "discardAllPatients": "Your cart has been updated, with the selected patient",
@@ -763,7 +766,7 @@
     "invalidFileType": "Invalid File Type. File type must be PDF.",
     "prescriptionHeading": "Place your order via prescription",
     "test247Text": "Limited period offer",
-    "frequentlyBrought": "Frequently Brought",
+    "frequentlyBrought": "Frequently booked together",
     "topBookedTests": "Top Booked Tests",
     "similarPackages": "Similar Packages",
     "needToAddPaitent": "• Do you want to edit patient details?",
@@ -781,7 +784,14 @@
       "whatsappPhoneNumber": "4048218743",
       "message": "I want to place a Lab Test Order with prescription"
     },
-    "cancelRequestedText": "Cancellation Request In Progress. Apollo agent will contact you soon."
+    "cancelRequestedText": "Cancellation Request In Progress. Apollo agent will contact you soon.",
+    "sameDayReports": "Same Day Reports",
+    "freeHomeCollection": "Free Home Collection",
+    "bookNow": "BOOK NOW",
+    "forFamily":"Book for Family Members in Same Order",
+    "skuGenderMessage": "This {{skuType}} can be added for {{gender}} patients only.",
+    "switchUhidMsg": "Tests in your order are applicable for {{gender}} patients only.",
+    "skuGenderGeneralMsg": "Tests in your cart are applicable for {{gender}} patients only."
   },
   "diagnosticCategoryTitle": {
     "category": "category",
@@ -814,7 +824,24 @@
     "HcDisclaimer": "Use Health Credits at Payments Checkout",
     "healthCredits": "Health Credits",
     "redemmedTxt": "(Redeemed)",
-    "minorAgeTestText": "We allow only RTPCR bookings for children less than 10 years old"
+    "minorAgeTestText": "We allow only RTPCR bookings for children less than 10 years old",
+    "emptyCart": "Your Cart is empty",
+    "recommendedText":"Your cart would include the following items for",
+    "recommendedForYou": "Recommended for you",
+    "pricePerPerson": "Prices are for Per Person"
+  },
+  "diagnosticsDetails":{
+    "about": "About",
+    "sample": "Sample",
+    "gender": "Gender",
+    "ageGroup": "Age Group",
+    "seeMore": "SEE MORE",
+    "seeLess": "SEE LESS",
+    "frequentlyAsked": "Frequently Asked Questions (FAQs)",
+    "relatedPackages": "Related Packages",
+    "frequentlyBooked": "Frequently booked together",
+    "frequentlyAskedQuestions" : "Frequently Asked Questions",
+    "totalTests": "Total tests included :"
   },
   "orders": {
     "urOrders": "MY ORDERS",
@@ -1241,7 +1268,7 @@
       },
       {
         "faqQuestion": "Sounds good. Tell me more about the plans?",
-        "faqAnswer": "There are 3 plans available for you to choose from: INR 49 for 2 months, INR 249 for 6 months, and INR 349 for 12 months."
+        "faqAnswer": "There are 3 plans available for you to choose from: INR 99 for 2 months, INR 199 for 6 months, and INR 299 for 12 months."
       },
       {
         "faqQuestion": "How Do I Sign Up for a Circle Membership?",
@@ -1249,7 +1276,7 @@
       },
       {
         "faqQuestion": "Is annual membership better than the monthly membership?",
-        "faqAnswer": "Yes, if you’re big on savings! The yearly membership only costs you INR 349, which translates to INR 29 per month!"
+        "faqAnswer": "Yes, if you’re big on savings! The yearly membership only costs you INR 299, which translates to INR 25 per month!"
       },
       {
         "faqQuestion": "Can I buy Circle Membership using my health credits?",

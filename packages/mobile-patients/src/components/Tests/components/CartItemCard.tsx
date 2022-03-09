@@ -16,10 +16,11 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import {
   calculatePackageDiscounts,
   diagnosticsDisplayPrice,
-} from '@aph/mobile-patients/src/utils/commonUtils';
+} from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
 import DiscountPercentage from '@aph/mobile-patients/src/components/Tests/components/DiscountPercentage';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 
 interface CartItemCardProps {
   index: number;
@@ -33,6 +34,11 @@ interface CartItemCardProps {
   duplicateArray?: any;
   comingFrom?: string;
   onPressCard: (test: any) => void;
+  showUndo?: boolean;
+  onPressUndo: (test: any) => void;
+  allItemsInCart?: any;
+  groupRecommendationItem?: any;
+  cartItemIds?: any;
 }
 
 export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
@@ -45,21 +51,25 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     comingFrom,
     showCartInclusions,
     index,
+    showUndo,
+    allItemsInCart,
+    groupRecommendationItem,
+    cartItemIds,
   } = props;
 
   const inclusionItem =
     duplicateArray?.length > 0 &&
     duplicateArray?.map((item: any) =>
-      Number(item?.toKeepItemIds) == Number(cartItem?.id)
-        ? nameFormater(item?.itemsToRemovalName, 'default')
-        : ''
+      Number(item?.toKeepItemIds) == Number(cartItem?.id) ? item?.itemsToRemovalName : ''
     );
   const filterInclusions =
     duplicateArray?.length > 0 && inclusionItem?.filter((item: string) => item != '');
 
   const finalFilterInclusions = filterInclusions?.length > 0 && [...new Set(filterInclusions)];
 
-  const inclusionItemToShow = !!finalFilterInclusions && finalFilterInclusions?.join(', ');
+  const inclusionItemToShow = !!finalFilterInclusions ? finalFilterInclusions?.join(', ') : '';
+
+  const inclusionsArray = !!inclusionItemToShow ? inclusionItemToShow?.split(', ') : [];
 
   const hasExtraData =
     (!!reportTat && !isEmptyObject(reportTat) && reportTat?.preOrderReportTATMessage != '') ||
@@ -99,7 +109,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     const promoteDiscount = promoteCircle ? false : discount < specialDiscount;
 
     return (
-      <TouchableOpacity style={{}} onPress={() => _onPressCard(cartItem)}>
+      <TouchableOpacity activeOpacity={0.5} style={{}} onPress={() => _onPressCard(cartItem)}>
         <View
           style={[
             styles.cartItemView,
@@ -127,7 +137,9 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
                     {priceToShow}
                   </Text>
                 </View>
-                <View style={styles.removeIconView}>{renderRemoveIcon(cartItem)}</View>
+                <View style={styles.removeIconView}>
+                  {!showUndo ? renderRemoveIcon(cartItem) : renderUndo(cartItem)}
+                </View>
               </View>
               {renderPercentageDiscount(
                 promoteCircle && isCircleSubscribed
@@ -146,13 +158,31 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
         {((!!reportGenItem && !isEmptyObject(reportGenItem)) ||
           (!!reportTat && !isEmptyObject(reportTat))) &&
           renderReportTat_preTestingReqrmnt()}
-        {comingFrom == AppRoutes.CartPage && showCartInclusions && !!inclusionItemToShow ? (
-          <View style={styles.inclusionView}>
-            <TestInfoIcon style={styles.timeIconStyle} />
-            <Text style={styles.inclusionText}>Includes {inclusionItemToShow}</Text>
-          </View>
-        ) : null}
+        {comingFrom == AppRoutes.CartPage &&
+        showCartInclusions &&
+        !!inclusionsArray &&
+        inclusionsArray?.length > 0
+          ? renderConflictingItemView()
+          : null}
+        {showUndo && renderInclusionsInDetail()}
       </TouchableOpacity>
+    );
+  };
+
+  const renderConflictingItemView = () => {
+    return (
+      <View style={styles.inclusionView}>
+        <Text style={styles.inclusionCommonText}>Has common parameters with </Text>
+        {!!inclusionsArray &&
+          inclusionsArray?.map((item: any) => {
+            return (
+              <View style={styles.inclusionListView}>
+                <Text style={styles.inclusionsBullet}>{'\u2B24'}</Text>
+                <Text style={styles.inclusionText}> {nameFormater(item, 'default')}</Text>
+              </View>
+            );
+          })}
+      </View>
     );
   };
 
@@ -222,12 +252,57 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     return (
       <View style={{ flex: 0.1 }}>
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => props.onPressRemove(cartItem)}
           style={styles.removeTouch}
         >
           <RemoveIcon style={styles.removeIconStyle} />
         </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderUndo = (cartItem: any) => {
+    return (
+      <View style={{ flex: 0.1 }}>
+        <TouchableOpacity activeOpacity={0.5} onPress={() => props.onPressUndo(cartItem)}>
+          <Text style={styles.undoText}>UNDO</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderInclusionsInDetail = () => {
+    let otherInclusions: any[] = [];
+    let includedInclusions: any[] = [];
+
+    groupRecommendationItem?.inclusionData?.map((item: any) => {
+      if (cartItemIds?.includes(item?.itemId)) {
+        includedInclusions?.push(item);
+      } else {
+        otherInclusions?.push(item);
+      }
+    });
+    return (
+      <View style={styles.detailView}>
+        {includedInclusions?.map((item) => (
+          <Text style={styles.textInclusion}> {`• ${item?.name}`}</Text>
+        ))}
+        {otherInclusions?.length > 0 && (
+          <>
+            <Text style={styles.textInclusion}> {`• Other Tests`}</Text>
+            <>
+              {otherInclusions?.map((item) => {
+                return (
+                  <Text style={styles.textOtherInclusion}>
+                    {'     '}
+                    {`• ${item?.name}`}
+                  </Text>
+                );
+              })}
+            </>
+          </>
+        )}
       </View>
     );
   };
@@ -257,7 +332,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
 
 const styles = StyleSheet.create({
   packageSlashedPrice: {
-    ...theme.viewStyles.text('SB', isSmallDevice ? 9 : 10, theme.colors.SHERPA_BLUE, 0.6, 14),
+    ...theme.viewStyles.text('SB', isSmallDevice ? 9 : 10, theme.colors.SHERPA_BLUE_LIGHT, 1, 14),
     marginTop: 5,
     marginRight: 6,
   },
@@ -267,6 +342,11 @@ const styles = StyleSheet.create({
   },
   cartItemText: {
     ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 1, 22),
+  },
+  undoText: { ...theme.viewStyles.text('B', 14, colors.APP_YELLOW, 1), paddingBottom: 10 },
+  detailView: {
+    padding: 10,
+    marginTop: -25,
   },
   removeTouch: {
     height: isSmallDevice ? 28 : 30,
@@ -326,15 +406,19 @@ const styles = StyleSheet.create({
     paddingTop: 6,
   },
   inclusionView: {
-    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
-    flexDirection: 'row',
-    alignItems: 'center',
+    backgroundColor: theme.colors.GREEN_BACKGROUND,
+    margin: 12,
+    marginTop: -4,
+    justifyContent: 'center',
     flex: 1,
   },
-  inclusionText: {
-    ...theme.viewStyles.text('M', 10, theme.colors.SHERPA_BLUE, 0.6, 16),
+  inclusionCommonText: {
+    ...theme.viewStyles.text('M', 10, theme.colors.SHERPA_BLUE, 1, 16, 0.04),
     padding: 8,
-    width: '87%',
+    paddingBottom: 4,
+  },
+  inclusionText: {
+    ...theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE, 1, 18),
   },
   inclusionCountText: {
     ...theme.viewStyles.text('M', isSmallDevice ? 10 : 11, theme.colors.LIGHT_BLUE, 0.6, 18, 0.04),
@@ -386,4 +470,23 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   discountPercentageView: { alignItems: 'flex-end', marginRight: 12, marginTop: -8 },
+  inclusionsBullet: {
+    color: theme.colors.SHERPA_BLUE,
+    fontSize: 4,
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+  inclusionListView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+    width: '87%',
+    paddingTop: 0,
+    marginLeft: 8,
+  },
+  textInclusion: {
+    ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1),
+    padding: 5,
+  },
+  textOtherInclusion: { ...theme.viewStyles.text('R', 12, colors.SHERPA_BLUE, 1), padding: 5 },
 });

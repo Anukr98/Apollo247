@@ -160,6 +160,7 @@ export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
     return (
       <View style={styles.oneApolloHeader}>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={{
             ...styles.headerContainer,
             borderBottomColor:
@@ -179,6 +180,7 @@ export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={{
             ...styles.headerContainer,
             borderBottomColor:

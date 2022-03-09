@@ -19,16 +19,13 @@ import {
   StyleSheet,
   Text,
   View,
-  Image as ImageNative,
   ActivityIndicator,
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import {
-  DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
-  sourceHeaders,
-} from '@aph/mobile-patients/src/utils/commonUtils';
+import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import ItemCard from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
 import PackageCard from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
 
@@ -45,7 +42,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { DiagnosticProductListingPageViewed } from './Events';
+import { DiagnosticProductListingPageViewed } from './utils/Events';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
 import { CALL_TO_ORDER_CTA_PAGE_ID } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { DownO } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -53,8 +50,12 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import {
   getDiagnosticsByItemIdCityId,
   getDiagnosticsPastOrderRecommendations,
+  getUserSubscriptionStatus,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
-
+import { ExpressSlotMessageRibbon } from '@aph/mobile-patients/src/components/Tests/components/ExpressSlotMessageRibbon';
+import { GetSubscriptionsOfUserByStatusVariables } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
+import AsyncStorage from '@react-native-community/async-storage';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 export interface TestListingProps
   extends NavigationScreenProps<{
     movedFrom?: string;
@@ -68,10 +69,25 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     setTestListingBreadCrumbs,
     testListingBreadCrumbs,
     isDiagnosticCircleSubscription,
+    setIsDiagnosticCircleSubscription,
   } = useDiagnosticsCart();
-  const { currentPatient } = useAllCurrentPatients();
-  const { isDiagnosticLocationServiceable, diagnosticServiceabilityData } = useAppCommonData();
+  const {
+    setCircleSubscriptionId,
+    setHdfcSubscriptionId,
+    setIsCircleSubscription,
+    setHdfcPlanName,
+    setIsFreeDelivery,
+    setCirclePlanValidity,
+  } = useShoppingCart();
 
+  const { setIsRenew } = useAppCommonData();
+  const { currentPatient } = useAllCurrentPatients();
+  const {
+    isDiagnosticLocationServiceable,
+    diagnosticServiceabilityData,
+    diagnosticLocation,
+  } = useAppCommonData();
+  const hdfc_values = string.Hdfc_values;
   const movedFrom = props.navigation.getParam('movedFrom');
   const dataFromHomePage = props.navigation.getParam('data');
   const widgetName = props.navigation.getParam('widgetName');
@@ -101,6 +117,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
       : Number(cityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID;
   let deepLinkWidgetName: string;
+  const titleFromProps = props.navigation.getParam('widgetName');
 
   //handle deeplinks as well here.
   useEffect(() => {
@@ -129,13 +146,70 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
 
   useEffect(() => {
     let source = movedFrom == 'Tests' ? '247 Home' : movedFrom == 'deeplink' ? 'Deeplink' : '';
-    DiagnosticProductListingPageViewed(widgetType, source, widgetName!, title);
+    DiagnosticProductListingPageViewed(
+      !!widgetType
+        ? widgetType
+        : widgetName == string.diagnostics.homepagePastOrderRecommendations
+        ? 'Item'
+        : '',
+      source,
+      widgetName!,
+      title
+    );
+    if (!!currentPatient && movedFrom == 'deeplink') {
+      getUserSubscriptionsByStatus();
+    }
   }, []);
 
-  //commented for now
-  // useEffect(() => {
-  //   fetchWidgetsPrices(widgetsData);
-  // }, [widgetsData?.diagnosticWidgetData?.[0]]);
+  const getUserSubscriptionsByStatus = async () => {
+    try {
+      const query: GetSubscriptionsOfUserByStatusVariables = {
+        mobile_number: currentPatient?.mobileNumber,
+        status: ['active', 'deferred_active', 'deferred_inactive', 'disabled'],
+      };
+      const res = await getUserSubscriptionStatus(client, query);
+      const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
+      const filterActiveResults = data?.APOLLO?.filter((val: any) => val?.status == 'active');
+      if (data) {
+        const circleData = !!filterActiveResults ? filterActiveResults?.[0] : data?.APOLLO?.[0];
+        if (circleData._id && circleData?.status !== 'disabled') {
+          AsyncStorage.setItem('circleSubscriptionId', circleData._id);
+          setCircleSubscriptionId && setCircleSubscriptionId(circleData._id);
+          setIsCircleSubscription && setIsCircleSubscription(true);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
+          const planValidity = {
+            startDate: circleData?.start_date,
+            endDate: circleData?.end_date,
+            plan_id: circleData?.plan_id,
+            source_identifier: circleData?.source_meta_data?.source_identifier,
+          };
+          setCirclePlanValidity && setCirclePlanValidity(planValidity);
+          setIsRenew && setIsRenew(!!circleData?.renewNow);
+        } else {
+          setCircleSubscriptionId && setCircleSubscriptionId('');
+          setIsCircleSubscription && setIsCircleSubscription(false);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
+          setCirclePlanValidity && setCirclePlanValidity(null);
+        }
+
+        if (data?.HDFC?.[0]._id) {
+          setHdfcSubscriptionId && setHdfcSubscriptionId(data?.HDFC?.[0]._id);
+
+          const planName = data?.HDFC?.[0].name;
+          setHdfcPlanName && setHdfcPlanName(planName);
+
+          if (planName === hdfc_values.PLATINUM_PLAN && data?.HDFC?.[0].status === 'active') {
+            setIsFreeDelivery && setIsFreeDelivery(true);
+          }
+        } else {
+          setHdfcSubscriptionId && setHdfcSubscriptionId('');
+          setHdfcPlanName && setHdfcPlanName('');
+        }
+      }
+    } catch (error) {
+      CommonBugFender('Diagnositic_Landing_Page_Tests_GetSubscriptionsOfUserByStatus', error);
+    }
+  };
 
   const fetchWidgets = async (title: string) => {
     const createTitle = decodeURIComponent(title)
@@ -143,7 +217,6 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       ?.replace(/ /g, '-')
       ?.toLowerCase();
     let widgetName = movedFrom == AppRoutes.Tests ? `home-${createTitle}` : `${createTitle}`;
-    const titleFromProps = props.navigation.getParam('widgetName');
 
     if (widgetType == 'Category' || widgetType == 'Category_Scroll') {
       widgetName = createTitle.toLowerCase();
@@ -331,6 +404,8 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
             packageCalculatedMrp: _diagItems?.packageCalculatedMrp,
             inclusionData: _widget?.inclusionData || _diagItems?.inclusions,
             inclusions: _widget?.diagnosticInclusions,
+            observations: _widget?.observations,
+            imageUrl: _widget?.imageUrl,
           });
         }
       });
@@ -406,7 +481,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     return (
       <TestListingHeader
         navigation={props.navigation}
-        headerText={nameFormater(heading, 'upper')}
+        headerText={nameFormater(heading || widgetName, 'upper')}
       />
     );
   };
@@ -483,6 +558,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   const renderLoadAll = (source?: string, length?: number) => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={styles.loadAllView}
         onPress={() => {
           if (source == 'packages' && length) {
@@ -547,7 +623,10 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
             {!!packageItemsArray && packageItemsArray?.length > 0 && (
               <>
                 <Text style={styles.headingText}>
-                  {nameFormater(deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle, 'upper')}{' '}
+                  {nameFormater(
+                    deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle || widgetName,
+                    'upper'
+                  )}{' '}
                   PACKAGES{' '}
                   {!!getActualPricePackages && getActualPricePackages?.length > 0 && (
                     <Text style={styles.itemCountText}>
@@ -576,7 +655,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
                   navigation={props.navigation}
                   source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.LISTING}
                   sourceScreen={AppRoutes.TestListing}
-                  widgetHeading={widgetsData?.diagnosticWidgetTitle}
+                  widgetHeading={widgetsData?.diagnosticWidgetTitle! || titleFromProps}
                 />
               </>
             )}
@@ -589,7 +668,10 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
             {!!testItemsArray && testItemsArray?.length > 0 && (
               <>
                 <Text style={styles.headingText}>
-                  {nameFormater(deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle, 'upper')}{' '}
+                  {nameFormater(
+                    deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle || widgetName,
+                    'upper'
+                  )}{' '}
                   TESTS{' '}
                   {!!getActualPriceTests && getActualPriceTests?.length > 0 && (
                     <Text style={styles.itemCountText}>
@@ -651,11 +733,20 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       />
     ) : null;
   };
+  const renderExpressSlots = () => {
+    return diagnosticServiceabilityData && diagnosticLocation ? (
+      <ExpressSlotMessageRibbon
+        serviceabilityObject={diagnosticServiceabilityData}
+        selectedAddress={diagnosticLocation}
+      />
+    ) : null;
+  };
 
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...viewStyles.container }}>
         {renderHeader()}
+        {renderExpressSlots()}
         {!errorStates ? renderBreadCrumb() : null}
         {error ? renderEmptyMessage() : null}
         <View style={{ flex: 1, marginBottom: '5%' }}>{renderList()}</View>

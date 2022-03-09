@@ -82,6 +82,7 @@ const ProductCardFun: React.FC<Props> = ({
   const renderAddToCartButton = () =>
     !quantity ? (
       <TouchableOpacity
+        activeOpacity={0.5}
         hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
         style={styles.addToCart}
         onPress={onPressAddToCart}
@@ -148,7 +149,7 @@ const ProductCardFun: React.FC<Props> = ({
     if (!!cashback) {
       return (
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => {
             if (!circleSubscription?._id || !isCircleSubscription) {
               // if not a circle member open circle webview
@@ -168,7 +169,7 @@ const ProductCardFun: React.FC<Props> = ({
     sell_online ? renderAddToCartButton() : renderNotForSaleTag();
 
   return (
-    <TouchableOpacity activeOpacity={1} style={[styles.card, containerStyle]} onPress={onPress}>
+    <TouchableOpacity activeOpacity={0.5} style={[styles.card, containerStyle]} onPress={onPress}>
       {renderDiscountTag()}
       {is_express === 'Yes' && renderExpressFlag()}
       {renderImage()}

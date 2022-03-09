@@ -86,7 +86,7 @@ export const WeekView: ForwardRefExoticComponent<PropsWithoutRef<WeekViewProps> 
 
       return (
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => !isDiabled && props.onTapDate(item)}
           style={[styles.viewStyle]}
         >

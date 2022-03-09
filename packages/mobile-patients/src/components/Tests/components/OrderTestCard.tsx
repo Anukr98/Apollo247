@@ -7,7 +7,6 @@ import {
   StyleProp,
   ViewStyle,
   TouchableOpacity,
-  Linking,
 } from 'react-native';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -23,17 +22,13 @@ import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { StatusCard } from '@aph/mobile-patients/src/components/Tests/components/StatusCard';
 import {
   InfoIconRed,
-  WhiteProfile,
-  OrangeCall,
-  LocationOutline,
   StarEmpty,
   ClockIcon,
-  StarFillGreen,
   EditProfile,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { isIphone5s, setBugFenderLog } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   AppConfig,
   DIAGNOSTIC_ORDER_FAILED_STATUS,
@@ -46,8 +41,9 @@ import {
   getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems,
   getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientObj,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
-import { DiagnosticTrackPhleboClicked } from '@aph/mobile-patients/src/components/Tests/Events';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { AgentDetailsCard } from '@aph/mobile-patients/src/components/Tests/components/AgentDetailsCard';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
 const screenWidth = Dimensions.get('window').width;
 interface OrderTestCardProps {
@@ -129,30 +125,35 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
             <Text style={styles.testForText}>
               Tests for {props.gender != '' && props.gender} {props.patientName}
             </Text>
-            {props.showEditIcon ? (
-              <View style={styles.editIconView}>
-                <TouchableOpacity
-                  activeOpacity={1}
-                  onPress={props.onPressEditPatient}
-                  style={styles.editIconTouch}
-                >
-                  <EditProfile style={styles.editIcon} />
-                </TouchableOpacity>
-              </View>
-            ) : null}
+            {props.showEditIcon ? renderEditView() : null}
           </View>
         )}
-
-        {showAddTest ? (
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={props.onPressAddTest}
-            style={styles.addTestTouch}
-          >
-            <Text style={styles.yellowText}>ADD MORE TEST</Text>
-          </TouchableOpacity>
-        ) : null}
+        {showAddTest ? renderAddTestView() : null}
       </View>
+    );
+  };
+
+  const renderEditView = () => {
+    return (
+      <TouchableOpacity
+        activeOpacity={0.5}
+        onPress={props.onPressEditPatient}
+        style={styles.editIconTouch}
+      >
+        <EditProfile style={styles.editIcon} />
+      </TouchableOpacity>
+    );
+  };
+
+  const renderAddTestView = () => {
+    return (
+      <TouchableOpacity
+        activeOpacity={0.5}
+        onPress={props.onPressAddTest}
+        style={styles.addTestTouch}
+      >
+        <Text style={styles.yellowText}>ADD TEST</Text>
+      </TouchableOpacity>
     );
   };
 
@@ -350,13 +351,13 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
         ]}
       >
         {!!props.showRescheduleCancel && props.showRescheduleCancel && !props.isHelp ? (
-          <TouchableOpacity activeOpacity={1} onPress={props.onPressReschedule}>
+          <TouchableOpacity activeOpacity={0.5} onPress={props.onPressReschedule}>
             <Text style={[styles.yellowText, { fontSize: screenWidth > 380 ? 14 : 13 }]}>
               RESCHEDULE | CANCEL
             </Text>
           </TouchableOpacity>
         ) : null}
-        <TouchableOpacity activeOpacity={1} onPress={props.onPressViewDetails}>
+        <TouchableOpacity activeOpacity={0.5} onPress={props.onPressViewDetails}>
           <Text style={[styles.yellowText, { fontSize: screenWidth > 380 ? 14 : 13 }]}>
             {props.isHelp ? `HELP` : `VIEW DETAILS`}
           </Text>
@@ -371,25 +372,12 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     const showDetailedInfo = !!phlObj ? phlObj?.showPhleboDetails : false;
     const phleboDetailsETAText = !!phlObj && phlObj?.phleboDetailsETAText;
 
-    /**
-     * -> if phleboDetails -> true :: phleboRelocated -> then change name -> figma 3.1
-     * PICKUP_REQUESTED
-     * -> showPhleboDetails :: show phelbo details and otp (normal view) -> figma 1.1
-     * -> phleboDetails -> false, masking -> false :: show apollo agent receive msg -> figma 1.2
-     * -> phleboDetails -> true , masking -> false :: you can call agent msg -> figma 1.3
-     * -> phleboDetails -> true , masking -> true :: call apollo agent using this msg  -> below normal design
-     * PHLEBO_CHECKIN
-     * -> showPhleboDetails -> true (BE)
-     * -> makedCalling -> true (BE)
-     * -> phleboDetails -> true , masking -> true :: no msg -> figma 2.1
-     */
-
     return (
       <>
         {!!otpToShow && DIAGNOSTIC_SHOW_OTP_STATUS.includes(props.orderLevelStatus) ? (
           <>
             {showDetailedInfo
-              ? renderPhleboDetailView(phlObj)
+              ? renderPhleboDetails(phlObj)
               : !!phleboDetailsETAText && renderYellowSection(phleboDetailsETAText)}
           </>
         ) : null}
@@ -397,89 +385,17 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     );
   };
 
-  const renderPhleboDetailView = (phlObj: any) => {
-    const otpToShow = !!phlObj && phlObj?.phleboOTP;
-    const phoneNumber = !!phlObj && phlObj?.diagnosticPhlebotomists?.mobile;
-    const name = !!phlObj && phlObj?.diagnosticPhlebotomists?.name;
-    const checkEta = !!phlObj?.checkinDateTime;
-    let phleboEta = '';
-    if (checkEta) {
-      phleboEta = moment(phlObj?.checkinDateTime).format('hh:mm A');
-    }
-    const isCallingEnabled = !!phlObj ? phlObj?.allowCalling : false;
-    const showVaccinationStatus = !!phlObj?.diagnosticPhlebotomists?.vaccinationStatus;
-    const allowCallingETAText = !!phlObj && phlObj?.allowCallingETAText;
-    const isNewPhleboAssigned = !!phlObj && phlObj?.isPhleboChanged;
-    const changeVaccineStatusStyle = !!name && name?.length > 16 && otpToShow;
-
+  const renderPhleboDetails = (phlObj: any) => {
     return (
-      <>
-        <View style={styles.otpCallContainer}>
-          <View style={styles.detailContainer}>
-            {phoneNumber ? (
-              <View style={{ opacity: isCallingEnabled ? 1 : 0.5 }}>
-                <TouchableOpacity
-                  style={styles.callContainer}
-                  onPress={() => {
-                    isCallingEnabled ? props.onPressCallOption(name, phoneNumber) : {};
-                  }}
-                >
-                  <WhiteProfile />
-                  <OrangeCall size="sm" style={styles.profileCircle} />
-                </TouchableOpacity>
-              </View>
-            ) : null}
-            {name || isNewPhleboAssigned ? (
-              <View style={styles.nameContainer}>
-                <Text style={styles.nameTextHeadingStyles}>{`${
-                  isNewPhleboAssigned
-                    ? `New ${string.diagnostics.agent} Assigned`
-                    : `${string.diagnostics.agent} Details`
-                }`}</Text>
-                <View style={[styles.rowCenter, changeVaccineStatusStyle && styles.columnStyle]}>
-                  <Text style={styles.nameTextStyles}>{name}</Text>
-                  {renderVaccinationStatus(phlObj, showVaccinationStatus, changeVaccineStatusStyle)}
-                </View>
-              </View>
-            ) : null}
-          </View>
-          {otpToShow ? (
-            <View style={styles.otpBoxConatiner}>
-              <Text style={styles.otpBoxTextStyle}>{'OTP'}</Text>
-              <Text style={styles.otpBoxTextStyle}>{otpToShow}</Text>
-            </View>
-          ) : null}
-        </View>
-        {(orderLevelStatus === DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED ||
-          orderLevelStatus === DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED) &&
-          renderYellowSection(
-            isCallingEnabled ? string.diagnosticsOrders.callPhleboText : allowCallingETAText
-          )}
-        {orderLevelStatus === DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN &&
-          renderAgentETATracking(checkEta, phlObj)}
-      </>
-    );
-  };
-
-  const renderVaccinationStatus = (
-    phlObj: any,
-    showVaccinationStatus: boolean,
-    changeVaccineStatusStyle: boolean
-  ) => {
-    return (
-      !!showVaccinationStatus &&
-      showVaccinationStatus && (
-        <View
-          style={[
-            styles.vaccinationContainer,
-            { marginHorizontal: changeVaccineStatusStyle ? 0 : 8 },
-          ]}
-        >
-          <Text style={styles.vaccinationText}>
-            {phlObj?.diagnosticPhlebotomists?.vaccinationStatus}
-          </Text>
-        </View>
-      )
+      <AgentDetailsCard
+        orderId={props.orderId}
+        phleboDetailsObject={phlObj}
+        orderLevelStatus={props.orderLevelStatus}
+        currentPatient={currentPatient}
+        isDiagnosticCircleSubscription={isDiagnosticCircleSubscription}
+        onPressCallOption={(name, number) => props.onPressCallOption(name, number)}
+        source={AppRoutes.YourOrdersTest}
+      />
     );
   };
 
@@ -497,82 +413,11 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     );
   };
 
-  const renderAgentETATracking = (checkEta: any, phlObj: any) => {
-    let phleboEta = '';
-    if (checkEta) {
-      phleboEta = moment(phlObj?.checkinDateTime).format('hh:mm A');
-    }
-    const isPhleboETAElapsed = !!phlObj && phlObj?.isPhleboETAElapsed;
-    const phleboETAElapsedMessage = phlObj?.phleboETAElapsedMessage;
-    const phleboTrackLink = !!phlObj && phlObj?.phleboTrackLink;
-    const orderId = props.orderId.toString();
-    return (
-      <>
-        {checkEta ? (
-          <View style={styles.otpContainer}>
-            <View style={styles.etaContainer}>
-              <LocationOutline style={styles.locationIcon} />
-              <Text style={styles.otpTextStyle}>
-                {isPhleboETAElapsed
-                  ? phleboETAElapsedMessage
-                  : `Apollo agent will arrive by ${phleboEta}`}
-              </Text>
-            </View>
-            {phleboTrackLink ? (
-              <TouchableOpacity
-                onPress={() => {
-                  try {
-                    Linking.canOpenURL(phleboTrackLink).then((supported) => {
-                      if (supported) {
-                        DiagnosticTrackPhleboClicked(
-                          orderId,
-                          'My Order',
-                          currentPatient,
-                          'Yes',
-                          isDiagnosticCircleSubscription
-                        );
-                        Linking.openURL(phleboTrackLink);
-                      } else {
-                        DiagnosticTrackPhleboClicked(
-                          orderId,
-                          'My Order',
-                          currentPatient,
-                          'No',
-                          isDiagnosticCircleSubscription
-                        );
-                        setBugFenderLog('FAILED_OPEN_URL', phleboTrackLink);
-                      }
-                    });
-                  } catch (e) {
-                    DiagnosticTrackPhleboClicked(
-                      orderId,
-                      'My Order',
-                      currentPatient,
-                      'No',
-                      isDiagnosticCircleSubscription
-                    );
-                    setBugFenderLog('FAILED_OPEN_URL', phleboTrackLink);
-                  }
-                }}
-              >
-                <Text style={styles.trackStyle}>
-                  {nameFormater('Track Apollo agent ', 'upper')}
-                </Text>
-              </TouchableOpacity>
-            ) : null}
-          </View>
-        ) : null}
-      </>
-    );
-  };
-
   const showRatingView = () => {
     const starCount = [1, 2, 3, 4, 5];
     const phlObj = props?.phelboObject;
     const phleboRating = !!phlObj && phlObj?.phleboRating;
     let checkRating = starCount.includes(phleboRating);
-    const ratedStarCount = starCount.slice(0, phleboRating);
-    const unRatedStarCount = starCount.slice(phleboRating, starCount.length);
     return !DIAGNOSTIC_STATUS_BEFORE_SUBMITTED.includes(props.orderLevelStatus) ? (
       !!checkRating ? null : (
         <View style={styles.ratingContainerN}>
@@ -580,6 +425,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
           <View style={styles.startContainerN}>
             {starCount.map((item) => (
               <TouchableOpacity
+                activeOpacity={0.5}
                 onPress={() => {
                   props.onPressRatingStar(item);
                 }}
@@ -592,6 +438,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       )
     ) : null;
   };
+
   const showReportTat = () => {
     const isTatBreach =
       !!props?.orderAttributesObj?.expectedReportGenerationTime &&
@@ -664,7 +511,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
 
   return (
     <TouchableOpacity
-      activeOpacity={1}
+      activeOpacity={0.5}
       onPress={props.onPressCard}
       style={[styles.containerStyle, props.style]}
       key={props?.orderId}
@@ -792,89 +639,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     height: 40,
   },
-  otpTextStyle: {
-    alignSelf: 'center',
-    paddingHorizontal: 10,
-    color: theme.colors.LIGHT_BLUE,
-    ...theme.fonts.IBMPlexSansRegular(10),
-  },
-  otpContainer: {
-    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
-    justifyContent: 'space-between',
-    flexDirection: 'row',
-    minHeight: 40,
-    borderBottomLeftRadius: 8,
-    borderBottomRightRadius: 8,
-    borderRadius: 10,
-    padding: 10,
-  },
-  locationIcon: {
-    width: 15,
-    height: 15,
-    alignSelf: 'center',
-  },
-  otpCallContainer: {
-    backgroundColor: 'white',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flexDirection: 'row',
-    borderTopWidth: 0.5,
-    borderColor: '#000000',
-    borderBottomLeftRadius: 8,
-    borderBottomRightRadius: 8,
-    borderRadius: 10,
-    padding: 10,
-  },
-  detailContainer: {
-    flexDirection: 'row',
-    width: '80%',
-    borderBottomLeftRadius: 4,
-    borderBottomRightRadius: 4,
-  },
-  profileCircle: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-  },
-  callContainer: {
-    margin: 0,
-    height: 55,
-    width: 55,
-  },
-  nameContainer: {
-    justifyContent: 'flex-start',
-    alignContent: 'center',
-    padding: 10,
-    width: '80%',
-  },
-  nameTextHeadingStyles: {
-    ...theme.viewStyles.text('SB', 13, colors.SHERPA_BLUE, 1, 18),
-  },
-  nameTextStyles: {
-    ...theme.viewStyles.text('R', 13, colors.SHERPA_BLUE, 1, 18),
-  },
-  otpBoxConatiner: {
-    width: 45,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 5,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: '#000000',
-  },
-  otpBoxTextStyle: {
-    ...theme.viewStyles.text('SB', 13, colors.SHERPA_BLUE, 1, 18),
-  },
-  etaContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '57%',
-  },
-  trackStyle: {
-    ...theme.viewStyles.text('SB', isSmallDevice ? 11 : 12, colors.APP_YELLOW, 1, 18),
-  },
   ratingContainer: {
     backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
     borderBottomLeftRadius: 8,
@@ -949,27 +713,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 4,
   },
-  vaccinationContainer: {
-    backgroundColor: colors.TURQUOISE_LIGHT_BLUE,
-    borderRadius: 5,
-    borderWidth: 1,
-    borderColor: 'transparent',
-    padding: 4,
-    marginHorizontal: 8,
-    maxWidth: '60%',
-  },
-  vaccinationText: { ...theme.viewStyles.text('M', 12, colors.WHITE, 1, 15) },
-  editIconView: {
-    justifyContent: 'center',
-    marginHorizontal: 3,
-    marginRight: 6,
-  },
   editIconTouch: {
-    width: 20,
-    height: 20,
+    width: 40,
+    height: 40,
+    marginRight: 6,
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 3000,
   },
   editIcon: { height: 16, width: 16, resizeMode: 'contain' },
-  columnStyle: { flexDirection: 'column', alignItems: 'flex-start' },
 });

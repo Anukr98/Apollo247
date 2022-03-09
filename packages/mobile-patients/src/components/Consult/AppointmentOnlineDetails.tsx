@@ -611,6 +611,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
       >
         {selectedReason == OTHER_REASON ? (
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               resetReasonForCancelFields();
             }}
@@ -636,7 +637,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
         </Text>
         {selectedReason != OTHER_REASON ? (
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             onPress={() => {
               setOverlayDropdown(true);
             }}
@@ -690,6 +691,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
         <View style={styles.reasonCancelOverlay}>
           <View style={{ marginHorizontal: 20 }}>
             <TouchableOpacity
+              activeOpacity={0.5}
               style={styles.reasonCancelCrossTouch}
               onPress={() => {
                 setCancelVisible(!isCancelVisible);
@@ -770,7 +772,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             rightComponent={
               showCancel ? (
                 <TouchableOpacity
-                  activeOpacity={1}
+                  activeOpacity={0.5}
                   onPress={() => {
                     CommonLogEvent(AppRoutes.AppointmentDetails, 'UPCOMING CLINIC VISIT Clicked');
                     setCancelAppointment(true);
@@ -921,6 +923,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
           >
             <View style={{ height: 60, alignItems: 'flex-end' }}>
               <TouchableOpacity
+                activeOpacity={0.5}
                 style={{
                   height: 60,
                   paddingRight: 25,
@@ -958,6 +961,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             }}
           >
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'CancelAppointment Clicked');
                 setCancelAppointment(false);
@@ -966,6 +970,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             >
               <View style={styles.cancelMainView}>
                 <TouchableOpacity
+                  activeOpacity={0.5}
                   onPress={() => {
                     CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'CancelAppointment Clicked');
                     setShowCancelPopup(true);
@@ -997,6 +1002,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             >
               <View style={{ height: 60 }}>
                 <TouchableOpacity
+                  activeOpacity={0.5}
                   style={styles.gotItStyles}
                   onPress={() => {
                     postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
@@ -1019,6 +1025,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
               </View>
               <View style={{ height: 60 }}>
                 <TouchableOpacity
+                  activeOpacity={0.5}
                   style={styles.gotItStyles}
                   onPress={() => {
                     postAppointmentWEGEvents(WebEngageEventName.CANCEL_CONSULTATION_CLICKED);

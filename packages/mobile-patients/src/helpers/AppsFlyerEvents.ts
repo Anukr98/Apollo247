@@ -1,5 +1,5 @@
 import { PharmaUserStatus } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 
 type YesOrNo = { value: 'Yes' | 'No' };
 

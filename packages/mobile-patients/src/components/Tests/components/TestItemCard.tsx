@@ -87,7 +87,7 @@ export const TestItemCard: React.FC<TestItemCardProps> = (props) => {
 
   const renderTouchable = (item: Element, onPress: () => void) => {
     return (
-      <TouchableOpacity activeOpacity={1} onPress={onPress} style={styles.removeTouch}>
+      <TouchableOpacity activeOpacity={0.5} onPress={onPress} style={styles.removeTouch}>
         {item}
       </TouchableOpacity>
     );
@@ -263,7 +263,7 @@ export const TestItemCard: React.FC<TestItemCardProps> = (props) => {
     filterInclusions?.length > 0 && filterInclusions && filterInclusions?.join(', ');
   return (
     <TouchableOpacity
-      activeOpacity={1}
+      activeOpacity={0.5}
       style={[styles.containerStyle, containerStyle, { zIndex: -1 }]}
       onPress={() => onPress()}
     >

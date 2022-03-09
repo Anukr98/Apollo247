@@ -99,7 +99,6 @@ import {
   GET_DOCTOR_LIST,
   SAVE_RECENT_SEARCH,
   GET_CONFIGURATION_FOR_ASK_APOLLO_LEAD,
-  GET_HC_REFREE_RECORD,
   GET_CAMPAIGN_ID_FOR_REFERRER,
   GET_REWARD_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -120,7 +119,7 @@ import {
   GenerateTokenforCM,
   notifcationsApi,
   GenrateVitalsToken_CM,
-  GetAllUHIDSForNumber_CM,
+  GetProhealthActiveStatusForUhid_CM,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
 import UserAgent from 'react-native-user-agent';
@@ -161,6 +160,7 @@ import {
   formatUrl,
   checkCleverTapLoginStatus,
   isEmptyObject,
+  postOfferCardClickEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -227,7 +227,6 @@ import {
   renderCircleShimmer,
   renderBannerShimmer,
   renderGlobalSearchShimmer,
-  renderOffersForYouShimmer,
   renderAppointmentCountShimmer,
   renderCircleBox,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
@@ -248,15 +247,20 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { saveRecentVariables } from '@aph/mobile-patients/src/graphql/types/saveRecent';
 import { getConfigurationForAskApolloLead } from '@aph/mobile-patients/src/graphql/types/getConfigurationForAskApolloLead';
 import { ReferralBanner } from '@aph/mobile-patients/src/components/ui/ReferralBanner';
-import {
-  InitiateRefreeType,
-  useReferralProgram,
-} from '@aph/mobile-patients/src/components/ReferralProgramProvider';
+import { useReferralProgram } from '@aph/mobile-patients/src/components/ReferralProgramProvider';
 import { setItem, getItem } from '@aph/mobile-patients/src/helpers/TimedAsyncStorage';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 import { UpdateAppPopup } from '@aph/mobile-patients/src/components/ui/UpdateAppPopup';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import DeviceInfo from 'react-native-device-info';
+import {
+  DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
+  DIAGNOSTIC_CTA_ITEMS,
+} from '@aph/mobile-patients/src/components/Tests/utils/helpers';
+import {
+  DiagnosticCtaClicked,
+  DiagnosticHomepageViewedEvent,
+} from '@aph/mobile-patients/src/components/Tests/utils/Events';
 
 const { Vitals } = NativeModules;
 
@@ -959,6 +963,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     justifyContent: 'center',
     alignItems: 'center',
+    maxWidth: Dimensions.get('window').width * 0.75,
   },
   medCouponContainer: {
     borderRadius: 4,
@@ -1064,6 +1069,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#E6E6E6',
     marginVertical: 6,
     marginRight: 4,
+  },
+  offerTitle: {
+    marginHorizontal: 12,
+    marginTop: 6,
+  },
+  offerSubtitle: {
+    marginHorizontal: 12,
+    marginTop: 6,
   },
   medCTAButton: {
     width: 106,
@@ -1184,6 +1197,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     setDisplayQuickBookAskApollo,
     displayAskApolloNumber,
     setDisplayAskApolloNumber,
+    tabRouteJourney,
+    setTabRouteJourney,
   } = useAppCommonData();
   const { fetchServerCart } = useServerCart();
 
@@ -1222,15 +1237,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     string | number
   >('' | 0);
   const [proActiveAppointments, setProHealthActiveAppointment] = useState([] as any);
-  const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
-  const { APP_ENV } = AppConfig;
   const {
-    refreeReward,
-    setRefreeReward,
-    setRewardId,
-    setCampaignId,
-    setCampaignName,
-  } = useReferralProgram();
+    cartItems,
+    setIsDiagnosticCircleSubscription,
+    isDiagnosticCircleSubscription,
+  } = useDiagnosticsCart();
+  const { APP_ENV } = AppConfig;
+  const { setRewardId, setCampaignId, setCampaignName } = useReferralProgram();
   const [isReferrerAvailable, setReferrerAvailable] = useState<boolean>(false);
   const {
     setHdfcPlanName,
@@ -1252,9 +1265,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     pinCode,
     isPharmacyPincodeServiceable,
     serverCartItems,
-    locationCode,
   } = useShoppingCart();
-  const cartItemsCount = cartItems?.length + serverCartItems?.length;
+  const cartItemsCount = cartItems?.length + serverCartItems?.length! || 0;
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [previousPatient, setPreviousPatient] = useState<any>(currentPatient);
@@ -1935,7 +1947,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         <View style={{ height: 60, alignItems: 'flex-end' }}>
           {isPhysicalConsultBooked ? (
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               style={styles.bottomAlertTitle}
               onPress={() => {
                 hideAphAlert!();
@@ -1946,7 +1958,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               style={styles.goToConsultRoom}
               onPress={() => {
                 hideAphAlert!();
@@ -2076,7 +2088,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         eventName == CleverTapEventName.ORDER_TESTS ||
         eventName == CleverTapEventName.VIEW_HELATH_RECORDS ||
         eventName == CleverTapEventName.NEED_HELP ||
-        eventName == CleverTapEventName.OFFERS_CTA_CLICKED)
+        eventName == CleverTapEventName.HOMEPAGE_OFFERS_ACTIVITY)
     ) {
       (eventAttributes as HomeScreenAttributes)['Source'] = source;
     }
@@ -2136,7 +2148,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     }
     if (
       eventName == CleverTapEventName.COVID_VACCINATION_SECTION_CLICKED ||
-      CleverTapEventName.OFFERS_CTA_CLICKED
+      CleverTapEventName.HOMEPAGE_OFFERS_ACTIVITY
     ) {
       eventAttributes = { ...eventAttributes, ...attributes };
     }
@@ -2371,8 +2383,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             'Page Name': 'Home Screen',
             Source: DiagnosticHomePageSource.HOMEPAGE_CTA,
           };
+          DiagnosticCtaClicked(
+            currentPatient,
+            isDiagnosticCircleSubscription,
+            DIAGNOSTIC_CTA_ITEMS.MAIN_HOME
+          );
           postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Home Screen');
           postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Home Screen');
+          postDiagnosticHomepageViewedEvent(
+            DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME_PAGE_HERO_BUTTON
+          );
           props.navigation.navigate('TESTS', { focusSearch: true, homeScreenAttributes });
         });
       },
@@ -2395,6 +2415,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED,
             'Home Screen'
           );
+          postHomepageEvent('Homepage banner');
           props.navigation.navigate(AppRoutes.DoctorSearch);
         });
       },
@@ -2464,6 +2485,26 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       },
     },
   ];
+
+  const postHomepageEvent = (source: 'Homepage banner' | 'Offer widget HP') => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_HOMEPAGE_VIEWED] = {
+      'Nav src': source,
+      User: `${currentPatient?.firstName} ${currentPatient?.lastName}`,
+      UHID: currentPatient?.uhid,
+      Gender: currentPatient?.gender,
+      'Mobile Number': currentPatient?.mobileNumber,
+      'Customer Id': currentPatient?.id,
+    };
+    postCleverTapEvent(CleverTapEventName.CONSULT_HOMEPAGE_VIEWED, eventAttributes);
+  };
+
+  const postDiagnosticHomepageViewedEvent = (
+    source:
+      | DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME_PAGE_HERO_BUTTON
+      | DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME_PAGE_OFFER_WIDGET
+  ) => {
+    DiagnosticHomepageViewedEvent(currentPatient, source);
+  };
 
   const listValues: menuOptions[] = [...listOptions];
 
@@ -3339,16 +3380,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       ''}`;
 
     const patientUHID = patientDetails ? (patientDetails.uhid ? patientDetails.uhid : '') : '';
-
     if (patientUHID) {
       setLoading?.(true);
-
       GenerateTokenforCM(
-        patientDetails ? patientDetails.uhid : '',
+        patientDetails ? patientDetails?.uhid : '',
         fullName,
-        patientDetails ? (patientDetails.gender ? patientDetails.gender : '') : '',
-        patientDetails ? (patientDetails.emailAddress ? patientDetails.emailAddress : '') : '',
-        patientDetails ? (patientDetails.mobileNumber ? patientDetails.mobileNumber : '') : ''
+        patientDetails ? (patientDetails?.gender ? patientDetails?.gender : '') : '',
+        patientDetails ? (patientDetails?.emailAddress ? patientDetails?.emailAddress : '') : '',
+        patientDetails ? (patientDetails?.mobileNumber ? patientDetails?.mobileNumber : '') : ''
       )
         .then((token: any) => {
           async function fetchTokenData() {
@@ -3471,8 +3510,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const checkIsProhealthActive = async (currentPatientDetails: any) => {
     setPreviousPatient(currentPatientDetails);
     const storedUhid: any = await AsyncStorage.getItem('selectUserUHId');
-    const selectedUHID = storedUhid ? storedUhid : g(currentPatient, 'uhid');
-
+    const selectedUHID = storedUhid ? storedUhid : currentPatient?.uhid;
     const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
     const item = JSON.parse(retrievedItem || 'null');
     const callByPrism: any = await AsyncStorage.getItem('callByPrism');
@@ -3498,17 +3536,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
          * caching the api for 24 hrs.
          */
         const getCachedApiResult: any = await getItem('mobileNumber_CM_Result');
-        const getPhoneNumber =
-          patientDetails?.mobileNumber?.length > 10
-            ? patientDetails?.mobileNumber?.slice(patientDetails?.mobileNumber?.length - 10)
-            : patientDetails?.mobileNumber;
+        const getAllPatientUhid = allPatients?.map((patient: any) => patient?.uhid);
+
         if (!!getCachedApiResult && getCachedApiResult?.data) {
           updateSDKOption(getCachedApiResult?.data, selectedUHID, currentPatientDetails);
         } else {
-          const res: any = await GetAllUHIDSForNumber_CM(getPhoneNumber! || '');
-          if (res?.data?.response && res?.data?.errorCode === 0) {
-            let resultData = res?.data?.response?.signUpUserData;
-            if (resultData?.length > 0) {
+          const res: any = await GetProhealthActiveStatusForUhid_CM(getAllPatientUhid);
+          if (res?.data?.response) {
+            let resultData = res?.data?.response;
+            if (!!resultData && resultData?.length > 0) {
               const obj = {
                 data: resultData,
                 expireAt: 1440,
@@ -3595,7 +3631,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           {tabBarOptions.map((tabBarOptions, i) => (
             <View key={i}>
               <TouchableOpacity
-                activeOpacity={1}
+                activeOpacity={0.5}
                 key={i}
                 onPress={() => {
                   if (i === 0) {
@@ -3619,6 +3655,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                       | WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED]
                       | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED] = {
                       source: 'app home',
+                      'Page Name': 'Homepage',
                     };
                     setTimeout(
                       () =>
@@ -3636,6 +3673,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                       'Page Name': 'Home Screen',
                       Source: DiagnosticHomePageSource.TAB_BAR,
                     };
+                    DiagnosticCtaClicked(
+                      currentPatient,
+                      isDiagnosticCircleSubscription,
+                      DIAGNOSTIC_CTA_ITEMS.BOTTOM_BAR
+                    );
                     postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Menu');
                     postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Menu');
                     CommonLogEvent(AppRoutes.HomeScreen, 'TESTS clicked');
@@ -3880,7 +3922,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
           ) {
             if (item?.id === 1) {
               return (
-                <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
+                <TouchableOpacity activeOpacity={0.5} onPress={item.onPress}>
                   <View style={{}}>
                     {renderDeliveryRibbonTag()}
                     <LinearGradientComponent
@@ -3918,7 +3960,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               );
             } else {
               return (
-                <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
+                <TouchableOpacity activeOpacity={0.5} onPress={item.onPress}>
                   <View style={styles.bottom2CardView}>
                     <View style={styles.topCardContentContainerSecondary}>
                       {item.image}
@@ -3977,17 +4019,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     let arrayList = isProHealthActive ? listValuesForProHealth : listValues;
     return (
       <View style={styles.menuOptionsContainer}>
-        {arrayList.map((item) => {
-          if (item.id > 3) {
+        {arrayList?.map((item) => {
+          if (item?.id > 3) {
             return (
-              <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
+              <TouchableOpacity activeOpacity={0.5} onPress={item?.onPress}>
                 <View style={styles.bottomCardView}>
-                  <View style={styles.bottomImageView}>{item.image}</View>
+                  <View style={styles.bottomImageView}>{item?.image}</View>
                   <View style={styles.bottomTextView}>
                     <Text
                       style={[theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 20)]}
                     >
-                      {item.title}
+                      {item?.title}
                     </Text>
                   </View>
                   <View style={styles.bottomRightArrowView}>
@@ -4047,9 +4089,19 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     let offerDesignTemplate = getTemplateStyle(item?.template_name);
     return (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={() => {
-          postOfferCardClickEvent(item, String(index + 1), textForNotch == 'Offer Expired');
+          postOfferCardClickEvent(
+            item,
+            String(index + 1),
+            textForNotch == 'Offer Expired',
+            allCurrentPatients,
+            currentPatient,
+            textForNotch,
+            !!circleSubscriptionId,
+            offersListLoading ? offersListCache?.length : offersList?.length,
+            'clicked'
+          );
           textForNotch !== 'Offer Expired' && onOfferCtaPressed(item, index + 1);
         }}
       >
@@ -4128,6 +4180,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               </View>
 
               <TouchableOpacity
+                activeOpacity={0.5}
                 style={styles.offersCardCTA}
                 onPress={() =>
                   textForNotch !== 'Offer Expired' && onOfferCtaPressed(item, index + 1)
@@ -4140,32 +4193,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         </LinearGradientVerticalComponent>
       </TouchableOpacity>
     );
-  };
-
-  const postOfferCardClickEvent = (item: any, sequence: string, offerExpired: boolean) => {
-    const eventAttributes = {
-      User_Type: getUserType(allCurrentPatients),
-      'Patient Name': currentPatient?.firstName,
-      'Patient UHID': currentPatient?.uhid,
-      'Patient age': getAge(currentPatient?.dateOfBirth),
-      'Circle Member': circleSubscriptionId ? 'True' : 'False',
-      'Customer ID': currentPatient?.id,
-      'Patient gender': currentPatient?.gender,
-      'Mobile number': currentPatient?.mobileNumber,
-      'Page name': 'HomePage',
-      'Offer Content': item?.title?.text || '',
-      Timer: offerExpired ? 'No' : 'Yes',
-      'Coupon Code': item?.coupon_code,
-      'Offer tile sequence': sequence,
-      LOB: item?.cta?.path?.vertical || '',
-      'Offer Notch Test': getNotchText(item?.expired_at, item?.notch_text?.text),
-      'Offer CTA Text': item?.cta?.text,
-      'Offer Expiry': item?.expired_at,
-      'Offer ID': item?.offer_id,
-      'Offer Subtitle': item?.subtitle?.text,
-    };
-
-    postHomeCleverTapEvent(CleverTapEventName.OFFERS_CTA_CLICKED, 'Home Screen', eventAttributes);
   };
 
   const getNotchText = (expired_at: string, notch_text: string) => {
@@ -4196,9 +4223,19 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     return (
       <View style={styles.menuOptionsContainer}>
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => {
-            postOfferCardClickEvent(item, '1', textForNotch == 'Offer Expired');
+            postOfferCardClickEvent(
+              item,
+              '1',
+              textForNotch == 'Offer Expired',
+              allCurrentPatients,
+              currentPatient,
+              textForNotch,
+              !!circleSubscriptionId,
+              offersListLoading ? offersListCache?.length : offersList?.length,
+              'clicked'
+            );
             textForNotch !== 'Offer Expired' && onOfferCtaPressed(item, 1);
           }}
         >
@@ -4228,10 +4265,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
                       18
                     ),
                   }}
+                  numberOfLines={1}
                 >
-                  {textForNotch?.length > 36
-                    ? textForNotch?.substring(textForNotch?.length - 36, textForNotch?.length)
-                    : textForNotch}
+                  {textForNotch}
                 </Text>
               </View>
 
@@ -4243,27 +4279,23 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             </View>
 
             <Text
+              numberOfLines={1}
               style={{
+                ...styles.offerTitle,
                 ...theme.viewStyles.text('B', 20, offerDesignTemplate?.title_text_color, 1, 30),
-                marginHorizontal: 12,
-                marginTop: 6,
               }}
             >
-              {item?.title?.text?.length > 30
-                ? item?.title?.text?.substring(0, 30)
-                : item?.title?.text}
+              {item?.title?.text}
             </Text>
 
             <Text
+              numberOfLines={1}
               style={{
+                ...styles.offerSubtitle,
                 ...theme.viewStyles.text('M', 14, offerDesignTemplate?.subtitle_text_color, 1, 18),
-                marginHorizontal: 12,
-                marginTop: 6,
               }}
             >
-              {item?.subtitle?.text?.length > 30
-                ? item?.subtitle?.text?.substring(0, 30)
-                : item?.subtitle?.text}
+              {item?.subtitle?.text}
             </Text>
 
             <View style={styles.medBottomContainer}>
@@ -4314,7 +4346,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const circleCashbackOffersComponent = () => {
     return (
       <View style={styles.menuOptionsContainer}>
-        <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+        <TouchableOpacity activeOpacity={0.5} onPress={() => {}}>
           <LinearGradientComponent
             colors={['#FDFBF7', '#F5D5CE']}
             style={[styles.bottom2CardView, { width: width - 32 }]}
@@ -4437,9 +4469,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const navigateCTAActions = (action: any, url: string) => {
     if (action?.type == 'REDIRECT') {
       if (action.cta_action == 'SPECIALITY_LISTING') {
+        postHomepageEvent('Offer widget HP');
         props.navigation.navigate(AppRoutes.DoctorSearch);
       } else if (action.cta_action == 'PHARMACY_LANDING') {
         props.navigation.navigate('MEDICINES');
+        const eventAttributes = {
+          'Nav src': 'offer widger HP',
+        };
+        setTimeout(
+          () => postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED, eventAttributes),
+          500
+        );
       } else if (action.cta_action == 'PRO-HEALTH') {
         setShowWebView({ action: true, url: 'https://www.apollo247.com/apollo-pro-health' });
       } else if (action.cta_action == 'PHR') {
@@ -4448,6 +4488,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         const homeScreenAttributes = {
           Source: DiagnosticHomePageSource.BANNER,
         };
+        postDiagnosticHomepageViewedEvent(
+          DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME_PAGE_OFFER_WIDGET
+        );
         props.navigation.navigate('TESTS', { homeScreenAttributes });
       } else if (action.cta_action == 'MEMBERSHIP_DETAIL_CIRCLE') {
         props.navigation.navigate('MembershipDetails', {
@@ -4525,7 +4568,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     return (
       <View style={styles.circleCardsContainer}>
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => {
             !darktheme ? navigateCTAActions(item?.action, item?.url) : null;
             const membershipState = darktheme
@@ -4919,7 +4962,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     title: string
   ) => {
     return (
-      <TouchableOpacity activeOpacity={0.5} onPress={onButtonClick} style={styles.covidToucahble}>
+      <TouchableOpacity
+        activeOpacity={0.5}
+        activeOpacity={0.5}
+        onPress={onButtonClick}
+        style={styles.covidToucahble}
+      >
         <View style={styles.covidIconView}>{buttonIcon}</View>
         <View style={styles.covidTitleView}>
           <Text style={{ ...theme.viewStyles.text('M', 14, theme.colors.WHITE) }}>{title}</Text>
@@ -5322,18 +5370,18 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         }}
       >
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <TouchableOpacity activeOpacity={1} onPress={cleverTapEventForHomeIconClick}>
+          <TouchableOpacity activeOpacity={0.5} onPress={cleverTapEventForHomeIconClick}>
             <ApolloLogo style={{ width: 57, height: 37 }} resizeMode="contain" />
           </TouchableOpacity>
           {renderProfileDrop()}
         </View>
         <View style={{ flexDirection: 'row' }}>
-          <TouchableOpacity activeOpacity={1} onPress={onPressCart}>
+          <TouchableOpacity activeOpacity={0.5} onPress={onPressCart}>
             <CartIcon />
             {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
           </TouchableOpacity>
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             onPress={() => {
               postVaccineWidgetEvents(CleverTapEventName.NOTIFICATION_CENTER_CLICKED, 'Top bar');
               postHomeWEGEvent(WebEngageEventName.NOTIFICATION_ICON);
@@ -5351,7 +5399,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const renderProhealthBanner = () => {
     return (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={() => _navigateProHealth()}
         style={styles.proHealthBannerTouch}
       >
@@ -5468,7 +5516,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   function webViewGoBack() {
     //call the api.
     getPatientApiCall(); //to check if new user is added
-    checkIsProhealthActive(currentPatient); //to show prohealth option
     getActiveProHealthAppointments(currentPatient); //to show the prohealth appointments
   }
 
@@ -5505,7 +5552,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   const renderSecondaryConsultationCta = () => (
     <View style={styles.menuOptionsContainer}>
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={() => {
           postHomeFireBaseEvent(FirebaseEventName.FIND_A_DOCTOR, 'Home Screen');
           postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT);
@@ -5543,6 +5590,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       </TouchableOpacity>
 
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={() => {
           postHomeFireBaseEvent(FirebaseEventName.FIND_A_DOCTOR, 'Home Screen');
           postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT);
@@ -5611,7 +5659,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
         )}
         {displayAskApolloNumber && (
           <View style={styles.horizontalEnd}>
-            <TouchableOpacity onPress={callAskApolloNumber} style={styles.horizontalView}>
+            <TouchableOpacity
+              activeOpacity={0.5}
+              onPress={callAskApolloNumber}
+              style={styles.horizontalView}
+            >
               <CallIcon style={styles.callLogo} />
               <Text style={styles.askApolloNumber}>
                 {AppConfig.Configuration.Ask_Apollo_Number}
@@ -5777,7 +5829,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       Status: status,
       Vertical: request,
     };
-    postCleverTapEvent(CleverTapEventName.HOMEPAGE_SEARCH_BAR_QUERY_INPUT, eventAttributes);
   };
 
   const postScrollScreenEvent = () => {
@@ -5877,7 +5928,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
               onChangeText={(value) => onSearchTextChange(value)}
             />
             {isSearchFocus && searchText?.length >= 1 ? (
-              <TouchableOpacity onPress={() => setSearchText('')}>
+              <TouchableOpacity activeOpacity={0.5} onPress={() => setSearchText('')}>
                 <RemoveIconGrey style={{ width: 20, height: 20 }} />
               </TouchableOpacity>
             ) : null}
@@ -6063,6 +6114,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     const listitems = recentGlobalSearchList.map((item: any) => {
       return (
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             postHomeCleverTapEvent(
               CleverTapEventName.RECENT_SEARCH_CLICKED_UNDER_SEARCH_BAR,
@@ -6123,41 +6175,76 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     );
   };
 
+  const postProductListingPageViewedEvent = (nav_props: any) => {
+    const eventAttributes = {
+      'Nav src': 'Searchbar',
+      'Test name': nav_props?.testName,
+      'Test id': nav_props?.itemId,
+    };
+    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED, eventAttributes);
+  };
+
   const onClickSearchItem = (key: string, pdp: boolean = false, nav_props: any = {}) => {
     // todo: for view all results
     // postHomeCleverTapEvent(
     //   CleverTapEventName.VIEW_ALL_SEARCH_RESULT_CLICKED,
     //   'Search bar'
     // );
-
     switch (key) {
       case MedicalRecordType.MEDICATION:
         postHomeCleverTapEvent(CleverTapEventName.OPTION_FROM_SEARCH_BAR_CLICKED, 'Search bar', {
           Keyword: searchText,
           Vertical: 'Pharmacy',
         });
-        props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
+        props.navigation.navigate(AppRoutes.MedicineListing, {
+          searchText,
+          comingFromSearch: true,
+          navSrcForSearchSuccess: 'Searchbar',
+        });
         break;
+
       case MedicalRecordType.TEST_REPORT:
         postHomeCleverTapEvent(CleverTapEventName.OPTION_FROM_SEARCH_BAR_CLICKED, 'Search bar', {
           'Test Name': nav_props?.testName,
           Vertical: 'Diagnostic',
         });
-        pdp
-          ? props.navigation.navigate(AppRoutes.TestDetails, nav_props)
-          : props.navigation.navigate(AppRoutes.SearchTestScene, { searchText: searchText });
+        if (pdp) {
+          postProductListingPageViewedEvent(nav_props);
+          props.navigation.navigate(AppRoutes.TestDetails, nav_props);
+        } else {
+          props.navigation.navigate(AppRoutes.SearchTestScene, {
+            searchText: searchText,
+            movedFrom: 'searchbar',
+          });
+        }
         break;
+
       case MedicalRecordType.CONSULTATION:
-        postHomeCleverTapEvent(CleverTapEventName.OPTION_FROM_SEARCH_BAR_CLICKED, 'Search bar', {
-          'Doctor Name': nav_props?.doctorName,
-          Speciality: nav_props?.speciality,
-          Vertical: 'Consult',
-        });
-        pdp
-          ? props.navigation.navigate(AppRoutes.DoctorDetails, nav_props)
-          : props.navigation.navigate(AppRoutes.DoctorSearchListing, nav_props);
+        const consultOptionClicked = !isEmptyObject(nav_props);
+        consultOptionClicked &&
+          postHomeCleverTapEvent(CleverTapEventName.OPTION_FROM_SEARCH_BAR_CLICKED, 'Search bar', {
+            'Doctor Name': nav_props?.doctorName,
+            Speciality: nav_props?.speciality,
+            Vertical: 'Consult',
+          });
+        pdp && postDoctorProfileViewedEvent(nav_props);
+        consultOptionClicked
+          ? pdp
+            ? props.navigation.navigate(AppRoutes.DoctorDetails, nav_props)
+            : props.navigation.navigate(AppRoutes.DoctorSearchListing, nav_props)
+          : props.navigation.navigate(AppRoutes.DoctorSearch, { searchText });
         break;
     }
+  };
+
+  const postDoctorProfileViewedEvent = (nav_props: any) => {
+    const eventAttributes = {
+      'Nav src': 'Searchbar',
+      'Doctor id': nav_props?.doctorId,
+      'Doctor Name': nav_props?.doctorName,
+      Specialty: nav_props?.speciality,
+    };
+    postCleverTapEvent(CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED, eventAttributes);
   };
 
   const renderSearchItem = ({ key, data }: any, index: number) => {
@@ -6225,7 +6312,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       key === MedicalRecordType.TEST_REPORT
         ? {
             itemId: item?.diagnostic_item_id,
-            source: 'Full search',
+            source: 'Homepage Search',
             comingFrom: AppRoutes.HomeScreen,
             testName: item?.diagnostic_item_name,
           }
@@ -6250,7 +6337,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
       key === MedicalRecordType.CONSULTATION && item?.__typename == 'Specialty' ? false : true;
 
     return (
-      <TouchableOpacity onPress={() => onClickSearchItem(key, pdp, nav_props)}>
+      <TouchableOpacity activeOpacity={0.5} onPress={() => onClickSearchItem(key, pdp, nav_props)}>
         <View style={{ marginBottom: 6 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
             <View style={styles.searchItemIcon}>
@@ -6329,11 +6416,28 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
     }
   };
 
+  const setRouteJourneyFromTabbar = () => {
+    if (!tabRouteJourney) {
+      setTabRouteJourney &&
+        setTabRouteJourney({
+          previousRoute: 'Home',
+          currentRoute: 'Home',
+        });
+    } else {
+      setTabRouteJourney &&
+        setTabRouteJourney({
+          previousRoute: tabRouteJourney?.currentRoute,
+          currentRoute: 'Home',
+        });
+    }
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.WHITE }}>
       <NavigationEvents
         onDidFocus={() => {
           scrollCount.current = 0;
+          setRouteJourneyFromTabbar();
         }}
         onDidBlur={postScrollScreenEvent}
       />
@@ -6430,6 +6534,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
             <View style={{ height: 20, alignItems: 'flex-end' }} />
           </BottomPopUp>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               CommonLogEvent(AppRoutes.HomeScreen, 'ConsultRoom_BottomPopUp clicked');
               AsyncStorage.setItem('gotIt', 'true');

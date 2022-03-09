@@ -102,6 +102,7 @@ export const CirclePlansListOverlay: React.FC<CirclePlansListOverlayProps> = (pr
     const defaultPlan = item?.defaultPack;
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={[
           styles.listTouch,
           {
@@ -139,7 +140,7 @@ export const CirclePlansListOverlay: React.FC<CirclePlansListOverlayProps> = (pr
 
   const renderViewAllBenefits = () => {
     return (
-      <TouchableOpacity onPress={onPressViewAll} style={styles.viewAllTouch}>
+      <TouchableOpacity activeOpacity={0.5} onPress={onPressViewAll} style={styles.viewAllTouch}>
         <Text style={styles.yellowText}>VIEW ALL BENEFITS</Text>
       </TouchableOpacity>
     );
@@ -229,7 +230,7 @@ export const CirclePlansListOverlay: React.FC<CirclePlansListOverlayProps> = (pr
       overlayStyle={styles.overlayStyle}
     >
       <View style={{ flex: 1 }}>
-        <TouchableOpacity style={{ flex: 1 }} onPress={onPressClose} />
+        <TouchableOpacity activeOpacity={0.5} style={{ flex: 1 }} onPress={onPressClose} />
         <View style={styles.overlayViewStyle}>
           <SafeAreaView style={styles.overlaySafeAreaViewStyle}>
             <View style={styles.mainViewStyle}>

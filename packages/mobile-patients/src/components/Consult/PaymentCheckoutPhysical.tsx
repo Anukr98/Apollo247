@@ -426,7 +426,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
               }${doctor?.doctorHospital?.[0].facility?.city}`}
             </Text>
             {Platform.OS === 'android' && (
-              <TouchableOpacity onPress={() => openMaps()}>
+              <TouchableOpacity activeOpacity={0.5} onPress={() => openMaps()}>
                 <Text style={[styles.specializationStyle, styles.mapsStyle]}>
                   https://www.google.com/maps/dir/
                 </Text>
@@ -472,6 +472,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       {patientProfiles?.map((item: any, index: any, array: any) =>
         item.firstName !== '+ADD MEMBER' ? (
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               setLoading && setLoading(true);
               onSelectedProfile(item);

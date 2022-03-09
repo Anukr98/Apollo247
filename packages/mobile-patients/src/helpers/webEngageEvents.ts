@@ -7,14 +7,8 @@ import {
   PharmaUserStatus,
   UploadPrescSource,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import {
-  DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
-  DIAGNOSTIC_PINCODE_SOURCE_TYPE,
-} from '@aph/mobile-patients/src/utils/commonUtils';
-import {
-  DiagnosticHomePageSource,
-  DIAGNOSTICS_ITEM_TYPE,
-} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE, DIAGNOSTIC_CTA_ITEMS, DIAGNOSTIC_PINCODE_SOURCE_TYPE } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
+import { DiagnosticHomePageSource, DIAGNOSTICS_ITEM_TYPE } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { DiagnosticsDetailsPageViewedSource } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 
 type YesOrNo = 'Yes' | 'No';
@@ -191,7 +185,6 @@ export enum WebEngageEventName {
   USER_CHANGED_LOCATION = 'Change location',
   // Diagnostics Events
   DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic landing page viewed',
-  DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR = 'Diagnostic pincode entered',
   DIAGNOSTIC_LANDING_ITEM_SEARCHED = 'Diagnostic partial search',
   DIAGNOSTIC_ITEM_SEARCHED = 'Diagnostic full search',
   DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED = 'Diagnostic home page widgets',
@@ -224,6 +217,8 @@ export enum WebEngageEventName {
   DIGNOSTIC_PAYMENT_ABORTED = 'Diagnostic payment aborted',
   DIAGNOSITC_MODIFY_CLICKED = 'Diagnostic modify clicked',
   DIAGNOSTIC_MODIFY_ORDER = 'Diagnostic modify order',
+  DIAGNOSTIC_CTA_CLICKED = 'Home page diagnostics CTA clicked',
+  DIAGNOSTIC_HOME_PAGE_RECOMMENDATIONS_VIEWED = 'Diagnostic home page recommendations viewed',
 
   // Health Records
   CONSULT_RX = 'PHR Consult & RX',
@@ -1254,7 +1249,6 @@ export interface WebEngageEvents {
     'Order id': string;
     'Order status'?: string;
   };
-  [WebEngageEventName.DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR]: DiagnosticPinCode;
   [WebEngageEventName.DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED]: {
     'Item Name'?: string;
     'Item ID'?: string;
@@ -1286,6 +1280,11 @@ export interface WebEngageEvents {
     'Delivery charge'?: number;
     'Coupon code used'?: string;
     'Coupon Discount'?: number;
+    'Package Recommendation Shown'?: 'Yes' | 'No';
+    'Package Recommendation ItemId'?: string | undefined;
+    'Package Recommendation ItemName'?: string | undefined;
+    'Package Recommendation Price'?: number | undefined;
+    'Package Recommendation Extra Tests'?: any
   };
   [WebEngageEventName.DIAGNOSTIC_SLOT_TIME_SELECTED]: {
     'Slot time': string;
@@ -1376,7 +1375,7 @@ export interface WebEngageEvents {
     'Banner title': string;
   };
   [WebEngageEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE]: {
-    'Selection type': 'New' | 'Existing';
+    'Selection type': 'Manual' | 'Automation';
     Serviceability: 'Yes' | 'No';
     Pincode: string | number;
     Source: 'Home page' | 'Cart page';
@@ -1451,6 +1450,17 @@ export interface WebEngageEvents {
     'HC charge updated': 'Yes' | 'No';
     'payment mode': 'Prepaid' | 'Cash';
     'time of modification': string | Date;
+  };
+  [WebEngageEventName.DIAGNOSTIC_CTA_CLICKED]: {
+    'Circle user'?: string;
+    CTA: DIAGNOSTIC_CTA_ITEMS;
+  };
+  [WebEngageEventName.DIAGNOSTIC_HOME_PAGE_RECOMMENDATIONS_VIEWED]: {
+    'Recommendation ItemIds': string;
+    'Recommendation ItemNames': string;
+    'drupalCount': number | string | undefined;
+    'apiCount': number | string | undefined;
+    'Circle user'?: string
   };
 
   // ********** ConsultEvents ********** \\

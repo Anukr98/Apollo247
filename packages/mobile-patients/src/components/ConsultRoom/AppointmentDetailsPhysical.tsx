@@ -528,9 +528,7 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
           BackgroundTimer.clearInterval(appointmentDiffMinTimerId);
         }
         if (updatedDiffMin >= 15) {
-          cancelAppointmentTitle = `${
-            string.common.cancelAppointmentBody
-          } ${
+          cancelAppointmentTitle = `${string.common.cancelAppointmentBody} ${
             data?.appointmentType === APPOINTMENT_TYPE.PHYSICAL ? 'Physical' : 'Online'
           } Appointment ${data?.displayId}.`;
           cancelAppointmentTitleHeadingState = true;
@@ -736,7 +734,7 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
               {'\n' + data?.doctorInfo?.doctorHospital?.[0]?.facility?.city}
             </Text>
             {Platform.OS === 'android' && (
-              <TouchableOpacity onPress={() => openMaps()}>
+              <TouchableOpacity activeOpacity={0.5} onPress={() => openMaps()}>
                 <Text style={[styles.specializationStyle, styles.mapsStyle]}>
                   https://www.google.com/maps/dir/
                 </Text>
@@ -941,7 +939,7 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
             rightComponent={
               showCancel ? (
                 <TouchableOpacity
-                  activeOpacity={1}
+                  activeOpacity={0.5}
                   onPress={() => {
                     CommonLogEvent(AppRoutes.AppointmentDetails, 'UPCOMING CLINIC VISIT Clicked');
                     setShowRescheduleCancel(true);

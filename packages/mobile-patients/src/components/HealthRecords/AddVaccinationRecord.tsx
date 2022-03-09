@@ -512,7 +512,11 @@ export const AddVaccinationRecord: React.FC<AAddVaccinationRecordProps> = (props
               </View>
               <View style={styles.recordNameContainer}>
                 <Text style={styles.fieldTitle}>{`${'Vaccination Date'}*`}</Text>
-                <TouchableOpacity style={styles.recordBtn} onPress={() => renderDatePicker()}>
+                <TouchableOpacity
+                  activeOpacity={0.5}
+                  style={styles.recordBtn}
+                  onPress={() => renderDatePicker()}
+                >
                   <Text style={styles.recordCalendar}>
                     {dateOfTest !== '' ? dateOfTest : 'DD/MM/YYYY'}
                   </Text>
@@ -584,7 +588,7 @@ export const AddVaccinationRecord: React.FC<AAddVaccinationRecordProps> = (props
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               style={styles.gotItStyles}
               onPress={() => {
                 setshowPopUp(false);

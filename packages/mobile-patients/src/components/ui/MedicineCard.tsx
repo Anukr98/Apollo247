@@ -167,7 +167,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
 
   const renderTouchable = (item: Element, onPress: () => void) => {
     return (
-      <TouchableOpacity activeOpacity={1} onPress={onPress}>
+      <TouchableOpacity activeOpacity={0.5} onPress={onPress}>
         {item}
       </TouchableOpacity>
     );
@@ -661,7 +661,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
     filterInclusions?.length > 0 && filterInclusions && filterInclusions?.join(', ');
   return (
     <TouchableOpacity
-      activeOpacity={1}
+      activeOpacity={0.5}
       style={[styles.containerStyle, containerStyle, outOfStockContainerStyle, { zIndex: -1 }]}
       onPress={() => onPress()}
     >

@@ -310,6 +310,7 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
             {validateStringNotToUndefined(yourRewardsScreenData?.noReferralReward.subHeading)}
           </Text>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               onWhatsAppShare();
             }}
@@ -357,7 +358,11 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
   const CustomTabBarHeader = () => {
     return (
       <View style={styles.customTabBarMainContainer}>
-        <TouchableOpacity onPress={() => selectTabBar(1)} style={styles.customTabBarbtn}>
+        <TouchableOpacity
+          activeOpacity={0.5}
+          onPress={() => selectTabBar(1)}
+          style={styles.customTabBarbtn}
+        >
           <Text
             style={[
               styles.customTabBartext,
@@ -368,7 +373,11 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
           </Text>
           <View style={selectedTab === 1 ? styles.horizontalBackground : {}} />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => selectTabBar(2)} style={styles.customTabBarbtn}>
+        <TouchableOpacity
+          activeOpacity={0.5}
+          onPress={() => selectTabBar(2)}
+          style={styles.customTabBarbtn}
+        >
           <Text
             style={[
               styles.customTabBartext,
@@ -394,6 +403,7 @@ export const YourRewardsScreen: React.FC<YourRewardsScreenProps> = (props) => {
           </Text>
           <View style={styles.totalHCrefresh}>
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 setshowSpinner(true);
                 getAllRefreeRecord();

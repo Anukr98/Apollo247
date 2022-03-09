@@ -298,7 +298,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
       if (prescriptionList?.length) {
         let patientName = '';
         if (profileAllPatients && profileAllPatients?.length) {
-          const patientDetails = profileAllPatients.filter(
+          const patientDetails = profileAllPatients?.filter(
             (patient) => patient?.id === presc?.patientId
           );
           if (patientDetails?.[0]?.firstName) patientName = patientDetails?.[0]?.firstName;
@@ -482,9 +482,9 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
     medicines: (getLinkedProfilesPastConsultsAndPrescriptionsByMobile_getLinkedProfilesPastConsultsAndPrescriptionsByMobile_medicineOrders_medicineOrderLineItems | null)[]
   ) =>
     medicines
-      .filter((item) => item!.medicineName)
-      .map((item) => item!.medicineName)
-      .join(', ');
+      ?.filter((item) => item!?.medicineName)
+      ?.map((item) => item!?.medicineName)
+      ?.join(', ');
 
   const getMedicineOrdersPrescriptions = () => {
     let orders: getLinkedProfilesPastConsultsAndPrescriptionsByMobile_getLinkedProfilesPastConsultsAndPrescriptionsByMobile_medicineOrders[] = [];
@@ -536,42 +536,43 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
   };
 
   const formattedEPrescriptions = ePrescriptions
-    .map(
+    ?.map(
       (item) =>
         ({
-          id: item!.id,
-          date: moment(item!.quoteDateTime).format(DATE_FORMAT),
-          uploadedUrl: item!.prescriptionImageUrl,
-          doctorName: `Meds Rx ${(item!.id && item!.id.substring(0, item!.id.indexOf('-'))) || ''}`, // item.referringDoctor ? `Dr. ${item.referringDoctor}` : ''
-          forPatient: (currentPatient && currentPatient.firstName) || '',
-          medicines: getMedicines(item!.medicineOrderLineItems! || []),
-          prismPrescriptionFileId: item!.prismPrescriptionFileId,
+          id: item!?.id,
+          date: moment(item!?.quoteDateTime).format(DATE_FORMAT),
+          uploadedUrl: item!?.prescriptionImageUrl,
+          doctorName: `Meds Rx ${(item!?.id && item!?.id?.substring(0, item!?.id?.indexOf('-'))) ||
+            ''}`, // item.referringDoctor ? `Dr. ${item.referringDoctor}` : ''
+          forPatient: (currentPatient && currentPatient?.firstName) || '',
+          medicines: getMedicines(item!?.medicineOrderLineItems! || []),
+          prismPrescriptionFileId: item!?.prismPrescriptionFileId,
         } as EPrescription)
     )
-    .filter((item) => !!item.prismPrescriptionFileId)
-    .concat(
+    ?.filter((item) => !!item?.prismPrescriptionFileId)
+    ?.concat(
       ePrescriptionsFromConsults
-        .map(
+        ?.map(
           (item) =>
             ({
-              id: item!.id,
+              id: item!?.id,
               appointmentId: item?.id,
-              date: moment(item!.appointmentDateTime).format(DATE_FORMAT),
+              date: moment(item!?.appointmentDateTime).format(DATE_FORMAT),
               uploadedUrl: getBlobUrl(item?.caseSheet),
-              doctorName: item!.doctorInfo ? `${item!.doctorInfo?.displayName}` : '',
-              forPatient: (currentPatient && currentPatient.firstName) || '',
+              doctorName: item!.doctorInfo ? `${item!?.doctorInfo?.displayName}` : '',
+              forPatient: (currentPatient && currentPatient?.firstName) || '',
               prismPrescriptionFileId: getPrismFileIdFromCasesheet(item?.caseSheet),
               medicines: (
-                (getCaseSheet(item!.caseSheet as any) || { medicinePrescription: [] })
+                (getCaseSheet(item!?.caseSheet as any) || { medicinePrescription: [] })
                   .medicinePrescription || []
               )
-                .map((item) => item!.medicineName)
-                .join(', '),
+                ?.map((item) => item!?.medicineName)
+                ?.join(', '),
             } as EPrescription)
         )
-        .filter((item) => !!item.prismPrescriptionFileId)
+        .filter((item) => !!item?.prismPrescriptionFileId)
     )
-    .filter((item) => !!item.uploadedUrl)
+    .filter((item) => !!item?.uploadedUrl)
     .sort(
       (a, b) =>
         moment(b.date, DATE_FORMAT)
@@ -676,6 +677,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
         />
         {healthRecordIndex < (combination?.length || 0) && (
           <TouchableOpacity
+            activeOpacity={0.5}
             style={styles.loadMoreButton}
             activeOpacity={0.4}
             onPress={() => {
@@ -709,6 +711,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
         )}
         <View style={styles.selectButtonContainer}>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               if (!selected) setSelectedHealthRecord([...selectedHealthRecord, imageIndex]);
               setTimeout(() => {
@@ -721,6 +724,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
             <Text style={styles.selectText}>{selected ? `SELECTED` : `SELECT`}</Text>
           </TouchableOpacity>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               setShowPreview(false);
             }}
@@ -754,7 +758,8 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
 
   const renderEPrescription = ({ item, index }) => {
     const isPdf = item?.uploadedUrl?.split('.')?.pop() === 'pdf';
-    const selected = !!selectedPrescription[item.id];
+    const isAddedFromLongPress = selectedHealthRecord?.findIndex((i) => i === item?.id) > -1;
+    const selected = !!selectedPrescription[item.id] || isAddedFromLongPress;
     const heading = item?.doctorName || '';
     const dateOfPrescription = item?.date;
     return (
@@ -767,7 +772,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
         onLongPressCard={() => {
           setIsPdfPrescription(isPdf);
           setImageUrl(item?.uploadedUrl);
-          setImageIndex(index.toString());
+          setImageIndex(item?.id);
           setShowPreview(true);
         }}
         onPressCard={() => {
@@ -782,9 +787,13 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
 
   const onPressUpload = () => {
     CommonLogEvent('SELECT_PRESCRIPTION_MODAL', 'Formatted e prescription');
+    const longPressEntries = prescriptionUpto6months?.filter((item) =>
+      selectedHealthRecord?.includes(item?.id)
+    );
     const submitValues = prescriptionUpto6months?.filter((item) => selectedPrescription[item!.id]);
     const selectedDS = dischargeSummaryData?.filter((item) => selectedDischargeSummary[item?.id]);
-    if (selectedDS.length) submitValues.push(...selectedDS);
+    if (selectedDS?.length) submitValues.push(...selectedDS);
+    if (longPressEntries?.length) submitValues.push(...longPressEntries);
     if (combination) {
       combination.forEach(({ type, data }, index) => {
         if (selectedHealthRecord?.findIndex((i) => i === index.toString()) > -1) {

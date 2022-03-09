@@ -511,7 +511,7 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
           marginBottom: props.phrUpload ? 5 : 16,
         }}
       >
-        <TouchableOpacity onPress={() => props.onClickClose()}>
+        <TouchableOpacity activeOpacity={0.5} onPress={() => props.onClickClose()}>
           {props.phrUpload ? (
             <PhrCloseIcon style={{ marginRight: 4, width: 28, height: 28 }} />
           ) : (
@@ -561,8 +561,8 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
       >
         {!!props.optionTexts.camera && (
           <TouchableOpacity
+            activeOpacity={0.5}
             disabled={isOptionDisabled('CAMERA_AND_GALLERY')}
-            activeOpacity={1}
             style={[styles.cardContainer, getOptionStyle('CAMERA_AND_GALLERY')]}
             onPress={onClickTakePhoto}
           >
@@ -572,8 +572,8 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
         )}
         {!!props.optionTexts.gallery && (
           <TouchableOpacity
+            activeOpacity={0.5}
             disabled={isOptionDisabled('CAMERA_AND_GALLERY')}
-            activeOpacity={1}
             style={[styles.cardContainer, getOptionStyle('CAMERA_AND_GALLERY')]}
             onPress={props.uploadImage ? onClickGalleryImage : onClickGallery}
           >
@@ -583,8 +583,8 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
         )}
         {!!props.optionTexts.prescription && (
           <TouchableOpacity
+            activeOpacity={0.5}
             disabled={isOptionDisabled('E-PRESCRIPTION')}
-            activeOpacity={1}
             style={[styles.cardContainer, getOptionStyle('E-PRESCRIPTION')]}
             onPress={() => {
               postUPrescriptionWEGEvent('E-Rx');
@@ -704,7 +704,6 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
         pad={0}
         containerStyle={styles.listItemContainerStyle}
         underlayColor={'#F7F8F5'}
-        activeOpacity={1}
         leftElement={renderLeftElement()}
         onPress={onPressListItem}
       />

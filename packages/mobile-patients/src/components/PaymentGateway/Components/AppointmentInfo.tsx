@@ -51,7 +51,7 @@ export const AppointmentInfo: React.FC<AppointmentInfoProps> = (props) => {
           <Text style={styles.orderId}>Order ID:</Text>
           <Text style={styles.id}>{displayId}</Text>
         </View>
-        <TouchableOpacity style={styles.paymentId} onPress={onPressCopy}>
+        <TouchableOpacity activeOpacity={0.5} style={styles.paymentId} onPress={onPressCopy}>
           <Text style={styles.orderId}>Payment Ref. Number:</Text>
           <Text style={styles.id}>{paymentId}</Text>
           <Copy style={styles.iconStyle} />
@@ -64,11 +64,16 @@ export const AppointmentInfo: React.FC<AppointmentInfoProps> = (props) => {
     return (
       <View style={styles.viewInvoice}>
         <View style={{ flexDirection: 'row' }}>
-          <TouchableOpacity style={styles.viewInvoiceContainer} onPress={onPressViewInvoice}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            style={styles.viewInvoiceContainer}
+            onPress={onPressViewInvoice}
+          >
             <PdfGray style={styles.viewIcon} />
             <Text style={styles.invoice}>VIEW INVOICE</Text>
           </TouchableOpacity>
           <TouchableOpacity
+            activeOpacity={0.5}
             style={styles.emailInvoiceView}
             onPress={() => setshowEmailInput(!showEmailInput)}
           >
@@ -104,7 +109,7 @@ export const AppointmentInfo: React.FC<AppointmentInfoProps> = (props) => {
     return (
       <View style={{ paddingBottom: 0, opacity: isSatisfyingEmailRegex(email.trim()) ? 1 : 0.5 }}>
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           disabled={!isSatisfyingEmailRegex(email.trim())}
           onPress={() => {
             onPressEmailInvoice(email);

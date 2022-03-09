@@ -3,7 +3,7 @@ import { AddIcon, RemoveIconOrange } from '@aph/mobile-patients/src/components/u
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
-import { isEmptyObject, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { isEmptyObject } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 export interface DiagnosticsNewSearchProps {
   onPress: () => void;
@@ -33,7 +33,6 @@ export const DiagnosticsNewSearch: React.FC<DiagnosticsNewSearchProps> = (props)
               {name}
             </Text>
           </View>
-
           <View style={{ alignItems: 'flex-end' }}>{renderAddToCartView()}</View>
         </View>
       </View>
@@ -48,9 +47,10 @@ export const DiagnosticsNewSearch: React.FC<DiagnosticsNewSearchProps> = (props)
     const isAlreadyPartOfOrder =
       getExisitingOrderItems?.length > 0 &&
       getExisitingOrderItems?.find((id: number) => Number(id) == Number(data?.diagnostic_item_id));
+
     return (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={
           isAlreadyPartOfOrder
             ? () => {}
@@ -71,19 +71,21 @@ export const DiagnosticsNewSearch: React.FC<DiagnosticsNewSearchProps> = (props)
   };
 
   return (
-    <TouchableOpacity
-      activeOpacity={1}
-      style={[styles.containerStyle, props.style]}
-      onPress={props.onPress}
-    >
-      <View style={styles.containerStyle} key={data.name}>
-        <View style={styles.iconAndDetailsContainerStyle}>
-          <View style={{ width: 16 }} />
-          {renderNamePriceAndInStockStatus()}
+    <>
+      <TouchableOpacity
+        activeOpacity={0.5}
+        style={[styles.containerStyle, props.style]}
+        onPress={props.onPress}
+      >
+        <View style={styles.containerStyle} key={data?.name}>
+          <View style={styles.iconAndDetailsContainerStyle}>
+            <View style={{ width: 16 }} />
+            {renderNamePriceAndInStockStatus()}
+          </View>
+          {props.showSeparator ? <Spearator /> : null}
         </View>
-        {props.showSeparator ? <Spearator /> : null}
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </>
   );
 };
 

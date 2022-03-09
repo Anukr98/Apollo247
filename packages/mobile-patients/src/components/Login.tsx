@@ -81,7 +81,7 @@ import {
 import { LoginCarousel } from '@aph/mobile-patients/src/components/ui/LoginCarousel';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import SmsRetriever from 'react-native-sms-retriever';
-import LinearGradient from 'react-native-linear-gradient'
+import LinearGradient from 'react-native-linear-gradient';
 
 let TRUECALLER: any;
 
@@ -284,7 +284,7 @@ export const Login: React.FC<LoginProps> = (props) => {
     checkboxContainer: {
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'center'
+      justifyContent: 'center',
     },
     checkboxInnerContainer: {
       width: 15,
@@ -295,7 +295,7 @@ export const Login: React.FC<LoginProps> = (props) => {
       justifyContent: 'center',
       borderRadius: 4,
       marginRight: 8,
-    }
+    },
   });
 
   useEffect(() => {
@@ -945,7 +945,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         />
       </Animated.View>
       <View style={[styles.submitButtonContainer, { marginTop: !isFocused ? '6%' : '3%' }]}>
-        <TouchableOpacity style={styles.submitButton} onPress={onClickOkay}>
+        <TouchableOpacity activeOpacity={0.5} style={styles.submitButton} onPress={onClickOkay}>
           <Text
             style={[theme.fonts.IBMPlexSansBold(12), { color: colors.WHITE, letterSpacing: 1 }]}
           >
@@ -959,10 +959,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   return (
     <Animated.View style={{ flex: 1, backgroundColor: colors.CALL_BG_GRAY }}>
       <SafeAreaView style={[styles.container, { backgroundColor: colors.WHITE }]}>
-        <LinearGradient
-          colors={[colors.LIGHT_GREEN_ONE, colors.HEX_WHITE]}
-          style={{ flex: 1 }}
-        >
+        <LinearGradient colors={[colors.LIGHT_GREEN_ONE, colors.HEX_WHITE]} style={{ flex: 1 }}>
           <ScrollView keyboardShouldPersistTaps="handled">
             <View style={styles.logoContainer}>
               <ApolloLogo style={{ width: 55, height: 47 }} resizeMode="contain" />
@@ -989,9 +986,19 @@ export const Login: React.FC<LoginProps> = (props) => {
             </View>
           </ScrollView>
           <View style={styles.bottomContainer}>
-            <TouchableOpacity style={styles.checkboxContainer} onPress={() => setTandC(!isTandCSelected)}>
+            <TouchableOpacity
+              activeOpacity={0.5}
+              style={styles.checkboxContainer}
+              onPress={() => setTandC(!isTandCSelected)}
+            >
               <View style={styles.checkboxInnerContainer}>
-                {isTandCSelected && <Image source={require('@aph/mobile-patients/src/components/ui/icons/checkBlack.webp')} style={{ width: 11, height: 11, tintColor: theme.colors.LIGHT_BLUE }} resizeMode='contain' />}
+                {isTandCSelected && (
+                  <Image
+                    source={require('@aph/mobile-patients/src/components/ui/icons/checkBlack.webp')}
+                    style={{ width: 11, height: 11, tintColor: theme.colors.LIGHT_BLUE }}
+                    resizeMode="contain"
+                  />
+                )}
               </View>
             </TouchableOpacity>
             <Text

@@ -38,7 +38,7 @@ const InputEmail: FC<InputEmailProps> = (props) => {
     return (
       <View style={{ paddingBottom: 0, opacity: isSatisfyingEmailRegex(email.trim()) ? 1 : 0.5 }}>
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           disabled={!isSatisfyingEmailRegex(email.trim())}
           onPress={onPressSend}
         >

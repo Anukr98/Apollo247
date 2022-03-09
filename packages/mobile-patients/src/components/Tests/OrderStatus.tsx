@@ -39,12 +39,11 @@ import {
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import {
   DiagnosticOrderPlaced,
   firePurchaseEvent,
-} from '@aph/mobile-patients/src/components/Tests/Events';
+} from '@aph/mobile-patients/src/components/Tests/utils/Events';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -232,9 +231,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     /**if modify + cod - then don't call fetch getOrderInternal */
     isModifyCod ? getOrderDetails(modifiedOrderDetails?.id) : fetchOrderDetailsFromPayments();
     isCircleAddedToCart && getUserSubscriptionsByStatus();
-    if (modifiedOrderDetails == null) {
-      postwebEngageCheckoutCompletedEvent();
-    }
+    postwebEngageCheckoutCompletedEvent();
     firePurchaseEvent(
       orderDetails?.orderId,
       orderDetails?.amount,
@@ -644,6 +641,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
               : string.diagnostics.addOrEditPassportText}
           </Text>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               setShowPassportModal(true);
             }}
@@ -727,7 +725,11 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
                   </Text>
                   {!!isNewlyModified ? renderNewTag() : null}
                   {remainingItems > 0 && (
-                    <TouchableOpacity onPress={() => _onPressMore(order)} style={{ marginLeft: 2 }}>
+                    <TouchableOpacity
+                      activeOpacity={0.5}
+                      onPress={() => _onPressMore(order)}
+                      style={{ marginLeft: 2 }}
+                    >
                       <Text style={styles.moreText}>+ {remainingItems} MORE</Text>
                     </TouchableOpacity>
                   )}
@@ -779,7 +781,11 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
               <Text style={[styles.testName]}>{nameFormater(items?.itemName, 'default')}</Text>
               {!!isNewlyModified ? renderNewTag() : null}
               {lineItems?.length - 1 == index && (
-                <TouchableOpacity onPress={() => _onPressLess(item)} style={{ marginLeft: 2 }}>
+                <TouchableOpacity
+                  activeOpacity={0.5}
+                  onPress={() => _onPressLess(item)}
+                  style={{ marginLeft: 2 }}
+                >
                   <Text style={styles.moreText}> LESS</Text>
                 </TouchableOpacity>
               )}
@@ -793,6 +799,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     return (
       <View style={styles.orderSummaryView}>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={styles.orderSummaryTouch}
           onPress={() => navigateToOrderDetails(true, orderDetails?.orderId!)}
         >
@@ -842,6 +849,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
           </View>
         </View>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => _navigateToCircleBenefits()}
           style={styles.viewAllBenefitsTouch}
         >

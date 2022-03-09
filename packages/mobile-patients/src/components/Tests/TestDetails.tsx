@@ -5,9 +5,9 @@ import {
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
-  ClockIcon,
-  ExpressSlotClock,
-  InfoIconRed,
+  OrangeCartIcon,
+  OrangeFAQIcon,
+  RelatedPackageIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import {
@@ -23,18 +23,17 @@ import {
   TestPackage,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import stripHtml from 'string-strip-html';
 import {
-  g,
   nameFormater,
-  isSmallDevice,
   isEmptyObject,
   showDiagnosticCTA,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
+  BackHandler,
   Dimensions,
+  Platform,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -45,60 +44,55 @@ import {
 import { NavigationScreenProps } from 'react-navigation';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useApolloClient } from 'react-apollo-hooks';
-import {
-  GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
-  GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
-} from '@aph/mobile-patients/src/graphql/profiles';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import {
-  DiagnosticData,
-  LocationData,
-  useAppCommonData,
-} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import {
-  findDiagnosticsByItemIDsAndCityIDVariables,
-  findDiagnosticsByItemIDsAndCityID,
-} from '@aph/mobile-patients/src/graphql/types/findDiagnosticsByItemIDsAndCityID';
-import { CircleHeading } from '@aph/mobile-patients/src/components/ui/CircleHeading';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   getPricesForItem,
-  sourceHeaders,
-  convertNumberToDecimal,
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
-} from '@aph/mobile-patients/src/utils/commonUtils';
-import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
+  createDiagnosticAddToCartObject,
+} from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import {
   DiagnosticAddToCartEvent,
   DiagnosticDetailsViewed,
-} from '@aph/mobile-patients/src/components/Tests/Events';
+} from '@aph/mobile-patients/src/components/Tests/utils/Events';
 import { TestListingHeader } from '@aph/mobile-patients/src/components/Tests/components/TestListingHeader';
 import { Breadcrumb } from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
-import { SectionHeader, Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import { SectionHeader } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { FAQComponent } from '@aph/mobile-patients/src/components/SubscriptionMembership/Components/FAQComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import PackageCard from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
 import ItemCard from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
-import {
-  findDiagnosticsWidgetsPricing,
-  findDiagnosticsWidgetsPricingVariables,
-} from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
-import HTML from 'react-native-render-html';
 import _ from 'lodash';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
   getDiagnosticCartRecommendations,
-  getDiagnosticExpressSlots,
+  getDiagnosticsByItemIdCityId,
   getDiagnosticsPackageRecommendations,
+  getDiagnosticWidgetPricing,
   getReportTAT,
+  getUserSubscriptionStatus,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import moment from 'moment';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { CallToOrderView } from '@aph/mobile-patients/src/components/Tests/components/CallToOrderView';
-import DiscountPercentage from '@aph/mobile-patients/src/components/Tests/components/DiscountPercentage';
-import { renderDiagnosticWidgetTestShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
+import {
+  renderDiagnosticTestDetailShimmer,
+  renderDiagnosticWidgetTestShimmer,
+  renderTestDetailFaqShimmer,
+  renderTestDetailHorizontalOptionShimmer,
+} from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import { DIAGNOSTICS_ITEM_TYPE } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
+import FullWidthItemCard from '@aph/mobile-patients/src/components/Tests/components/FullWidthItemCard';
+import { ExpressSlotMessageRibbon } from '@aph/mobile-patients/src/components/Tests/components/ExpressSlotMessageRibbon';
+import { GetSubscriptionsOfUserByStatusVariables } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
+import AsyncStorage from '@react-native-community/async-storage';
+import { TestDetailsItemCard } from '@aph/mobile-patients/src/components/Tests/components/TestDetailsItemCard';
+import { TestDetailsPriceView } from '@aph/mobile-patients/src/components/Tests/components/TestDetailsPriceView';
+import { TestDetailsAboutCard } from '@aph/mobile-patients/src/components/Tests/components/TestDetailsAboutCard';
+import { TestDetailsInclusionsCard } from './components/TestDetailsInclusionsCard';
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
@@ -165,13 +159,13 @@ export interface TestDetailsProps
     changeCTA?: boolean;
     stateId?: string;
     widgetTitle?: string;
+    section?: string;
   }> {}
 
 export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const {
     cartItems,
     addCartItem,
-    removeCartItem,
     isDiagnosticCircleSubscription,
     testDetailsBreadCrumbs,
     setTestDetailsBreadCrumbs,
@@ -186,23 +180,31 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     setDeliveryAddressId,
     addresses,
     deliveryAddressId,
-    deliveryAddressCityId,
-    deliveryAddressStateId,
     diagnosticSlot,
+    setIsDiagnosticCircleSubscription,
   } = useDiagnosticsCart();
-  const { pharmacyCircleAttributes } = useShoppingCart();
+  const {
+    pharmacyCircleAttributes,
+    setCircleSubscriptionId,
+    setHdfcSubscriptionId,
+    setIsCircleSubscription,
+    setHdfcPlanName,
+    setIsFreeDelivery,
+    setCirclePlanValidity,
+  } = useShoppingCart();
 
   const {
+    setIsRenew,
     diagnosticServiceabilityData,
     isDiagnosticLocationServiceable,
     diagnosticLocation,
   } = useAppCommonData();
-
+  const hdfc_values = string.Hdfc_values;
   const testDetails = props.navigation.getParam('testDetails', {} as TestPackageForDetails);
   const testName = props.navigation.getParam('itemName');
   const changeCTA = props.navigation.getParam('changeCTA');
 
-  const { setLoading: setLoadingContext, showAphAlert, hideAphAlert } = useUIElements();
+  const { loading, setLoading: setLoadingContext, showAphAlert, hideAphAlert } = useUIElements();
 
   const addressCityId = props.navigation.getParam('cityId');
   const movedFrom = props.navigation.getParam('comingFrom');
@@ -211,27 +213,25 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const itemId =
     movedFrom == AppRoutes.CartPage ? testDetails?.ItemID : props.navigation.getParam('itemId');
   const source = props.navigation.getParam('source');
+  const section = props.navigation.getParam('section');
   const isAlreadyPartOfOrder =
     !!modifiedOrderItemIds &&
     modifiedOrderItemIds?.length &&
     modifiedOrderItemIds?.find((id: number) => Number(id) == Number(itemId));
-
   //if passed from cartPage
   const cityIdToUse = !!addressCityId
     ? Number(addressCityId)
     : Number(
         diagnosticServiceabilityData?.cityId! || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
       );
-
   const getWidgetTitle = AppConfig.Configuration.DIAGNOSITCS_WIDGET_TITLES;
-
+  const client = useApolloClient();
+  const { currentPatient } = useAllCurrentPatients();
   const [cmsTestDetails, setCmsTestDetails] = useState((([] as unknown) as CMSTestDetails) || []);
   const [testInfo, setTestInfo] = useState(movedFrom == 'TestsCart' ? testDetails : ({} as any));
-  const [moreInclusions, setMoreInclusions] = useState(false);
   const [readMore, setReadMore] = useState(true);
   const [errorState, setErrorState] = useState(false);
   const [widgetsData, setWidgetsData] = useState([] as any);
-  const [expressSlotMsg, setExpressSlotMsg] = useState<string>('');
   const [reportTat, setReportTat] = useState<string>('');
   const [showBottomBar, setShowBottomBar] = useState<boolean>(false);
   const [priceHeight, setPriceHeight] = useState<number>(0);
@@ -245,46 +245,48 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const [packageRecommendationsShimmer, setPackageRecommendationsShimmer] = useState<boolean>(
     false
   );
+  const [parameterExpandedArray, setParameterExpandedArray] = useState([] as any);
+  const [frequentlyBroughtVerticalPosition, setFrequentlyBroughtVerticalPosition] = useState<
+    number
+  >(0);
+  const [faqVerticalPosition, setFaqVerticalPosition] = useState<number>(0);
+  const [relatedPackagesVerticalPosition, setRelatedPackagesVerticalPosition] = useState<number>(0);
+  const [horizontalComponentElements, setHorizontalComponentElements] = useState({
+    releatedPackage: false,
+    frequentlyBooked: false,
+    faq: false,
+  });
+  const [horizontalComponentOptions, setHorizontalComponentOptions] = useState([] as any);
+  const [priceViewRef, setPriceViewRef] = useState() as any;
+
   const originalItemIds =
     !!packageRecommendations?.length || !!frequentlyBroughtRecommendations?.length
       ? [itemId!]
       : null;
   const callToOrderDetails = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_CALL_TO_ORDER;
-  const ctaDetailArray = callToOrderDetails?.ctaDetailsOnCityId;
   const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
     CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL
   );
-  const checkForCtaCityAvailabilty = () => {
-    for (let index = 0; index < ctaDetailArray.length; index++) {
-      const element = ctaDetailArray[index];
-      if (Number(element?.ctaCityId) == cityIdToUse) {
-        return element;
-      } else {
-        return null;
-      }
-    }
-  };
+
+  const getCTADetails = showDiagnosticCTA(CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL, cityIdToUse);
+
   const checkItemIdForCta = () => {
-    let newArray = [];
-    for (let index = 0; index < ctaDetailArray.length; index++) {
-      const element = ctaDetailArray[index];
-      if (
-        Number(element?.ctaCityId) == cityIdToUse &&
-        element?.ctaProductPageArray?.includes(CALL_TO_ORDER_CTA_PAGE_ID.TESTDETAIL) &&
-        element?.ctaItemIds?.length > 0 &&
-        element?.ctaItemIds?.includes(Number(itemId))
-      ) {
-        newArray.push(element);
-        return newArray;
-      } else {
-        return null;
-      }
+    const data = getCTADetails?.[0];
+    if (
+      !!data &&
+      !!data?.ctaItemIds &&
+      data?.ctaItemIds?.length > 0 &&
+      data?.ctaItemIds?.includes(Number(itemId))
+    ) {
+      return [data];
+    } else {
+      return null;
     }
   };
 
-  const ctaDetailMatched = checkForCtaCityAvailabilty()
+  const ctaDetailMatched = !!getCTADetails?.length
     ? checkItemIdForCta()
-    : isCtaDetailDefault
+    : isCtaDetailDefault && !isDiagnosticLocationServiceable
     ? [callToOrderDetails?.ctaDetailsDefault]
     : [];
   const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
@@ -296,28 +298,75 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     testInfo?.ItemName ||
     '';
 
-  const client = useApolloClient();
-  const { currentPatient } = useAllCurrentPatients();
-
   const isAddedToCart = !!cartItems?.find((item) => item.id == testInfo?.ItemID);
   const scrollViewRef = React.useRef<ScrollView | null>(null);
-  const priceViewRef = React.useRef<View>(null);
-
-  const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
-    client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
-      query: GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
-      context: {
-        sourceHeaders,
-      },
-      variables: {
-        cityID: Number(cityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
-        itemIDs: listOfId,
-      },
-      fetchPolicy: 'no-cache',
-    });
+  var horizontalCompArr: { icon: JSX.Element; title: string }[] = [];
 
   useEffect(() => {
-    getExpressSlots(diagnosticServiceabilityData!, diagnosticLocation!);
+    if (!!cmsTestDetails) {
+      const isRelatedPackage = !!packageRecommendations && packageRecommendations?.length > 0;
+      const isFreqBooked =
+        (!!frequentlyBroughtRecommendations && frequentlyBroughtRecommendations?.length > 0) ||
+        (!!topBookedTests && topBookedTests?.length > 0);
+      const isFAQ = !!cmsTestDetails && cmsTestDetails?.diagnosticFAQs?.length > 0;
+      if (isRelatedPackage) {
+        setHorizontalComponentElements({ ...horizontalComponentElements, releatedPackage: true });
+      }
+      if (isFreqBooked) {
+        setHorizontalComponentElements({ ...horizontalComponentElements, frequentlyBooked: true });
+      }
+      if (isFAQ) {
+        setHorizontalComponentElements({ ...horizontalComponentElements, faq: true });
+      }
+
+      if (isRelatedPackage && isFreqBooked) {
+        setHorizontalComponentElements({
+          ...horizontalComponentElements,
+          frequentlyBooked: true,
+          releatedPackage: true,
+        });
+      }
+      if (isRelatedPackage && isFreqBooked && isFAQ) {
+        setHorizontalComponentElements({
+          ...horizontalComponentElements,
+          frequentlyBooked: true,
+          releatedPackage: true,
+          faq: true,
+        });
+      }
+    }
+  }, [packageRecommendations, frequentlyBroughtRecommendations, cmsTestDetails]);
+
+  useEffect(() => {
+    if (horizontalComponentElements?.releatedPackage == true) {
+      horizontalCompArr.push({
+        icon: <RelatedPackageIcon style={styles.horizontalComponentIcon} />,
+        title:
+          packageRecommendations?.length == 0
+            ? string.diagnostics.topBookedTests
+            : string.diagnosticsDetails.relatedPackages,
+      });
+    }
+    if (horizontalComponentElements?.frequentlyBooked == true) {
+      horizontalCompArr.push({
+        icon: <OrangeCartIcon style={styles.horizontalComponentIcon} />,
+        title: string.diagnosticsDetails.frequentlyBooked,
+      });
+    }
+    if (horizontalComponentElements?.faq == true) {
+      horizontalCompArr.push({
+        icon: <OrangeFAQIcon style={styles.horizontalComponentIcon} />,
+        title: string.diagnosticsDetails.frequentlyAskedQuestions,
+      });
+    }
+
+    setHorizontalComponentOptions([...new Set(horizontalCompArr)]);
+  }, [horizontalComponentElements]);
+
+  useEffect(() => {
+    if (!!currentPatient && isDeep == 'deeplink') {
+      getUserSubscriptionsByStatus();
+    }
   }, []);
 
   /**
@@ -328,7 +377,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       fetchTestDetails_CMS(itemId, null);
       loadTestDetails(itemId);
       fetchReportTat(itemId);
-      loadWidgets(itemId);
+      // loadWidgets(itemId);
     } else if (testName) {
       fetchTestDetails_CMS(99999, testName);
     } else {
@@ -340,14 +389,88 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     if (!!testInfo) {
       if (testInfo?.inclusions == null || testInfo?.inclusions?.length == 1) {
         if (frequentlyBroughtRecommendations?.length == 0 || topBookedTests?.length == 0) {
-          getFrequentlyBroughtRecommendations(testInfo?.ItemID || itemId);
+          getFrequentlyBroughtRecommendations(testInfo?.ItemID! || itemId);
         }
-        if (packageRecommendations?.length == 0) {
-          getPackageRecommendationsForTest(testInfo?.ItemID || itemId);
+        if (
+          packageRecommendations?.length == 0 &&
+          (testInfo?.inclusions == null || testInfo?.inclusions?.length == 1)
+        ) {
+          getPackageRecommendationsForTest(testInfo?.ItemID! || itemId);
         }
       }
     }
   }, [testInfo]);
+
+  useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+    const didBlur = props.navigation.addListener('didBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      didBlur && didBlur.remove();
+    };
+  }, []);
+
+  function handleBack() {
+    if (movedFrom === 'registration') {
+      props.navigation.replace(AppRoutes.HomeScreen);
+    } else if (movedFrom == 'deeplink') {
+      props.navigation.replace(AppRoutes.HomeScreen);
+    } else {
+      props.navigation.goBack();
+    }
+  }
+
+  const getUserSubscriptionsByStatus = async () => {
+    try {
+      const query: GetSubscriptionsOfUserByStatusVariables = {
+        mobile_number: currentPatient?.mobileNumber,
+        status: ['active', 'deferred_active', 'deferred_inactive', 'disabled'],
+      };
+      const res = await getUserSubscriptionStatus(client, query);
+      const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
+      const filterActiveResults = data?.APOLLO?.filter((val: any) => val?.status == 'active');
+      if (data) {
+        const circleData = !!filterActiveResults ? filterActiveResults?.[0] : data?.APOLLO?.[0];
+        if (circleData._id && circleData?.status !== 'disabled') {
+          AsyncStorage.setItem('circleSubscriptionId', circleData._id);
+          setCircleSubscriptionId && setCircleSubscriptionId(circleData._id);
+          setIsCircleSubscription && setIsCircleSubscription(true);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
+          const planValidity = {
+            startDate: circleData?.start_date,
+            endDate: circleData?.end_date,
+            plan_id: circleData?.plan_id,
+            source_identifier: circleData?.source_meta_data?.source_identifier,
+          };
+          setCirclePlanValidity && setCirclePlanValidity(planValidity);
+          setIsRenew && setIsRenew(!!circleData?.renewNow);
+        } else {
+          setCircleSubscriptionId && setCircleSubscriptionId('');
+          setIsCircleSubscription && setIsCircleSubscription(false);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
+          setCirclePlanValidity && setCirclePlanValidity(null);
+        }
+
+        if (data?.HDFC?.[0]._id) {
+          setHdfcSubscriptionId && setHdfcSubscriptionId(data?.HDFC?.[0]._id);
+          const planName = data?.HDFC?.[0].name;
+          setHdfcPlanName && setHdfcPlanName(planName);
+          if (planName === hdfc_values.PLATINUM_PLAN && data?.HDFC?.[0].status === 'active') {
+            setIsFreeDelivery && setIsFreeDelivery(true);
+          }
+        } else {
+          setHdfcSubscriptionId && setHdfcSubscriptionId('');
+          setHdfcPlanName && setHdfcPlanName('');
+        }
+      }
+    } catch (error) {
+      CommonBugFender('TestDetails_GetSubscriptionsOfUserByStatus', error);
+    }
+  };
 
   function loadWidgets(itemId: number | string) {
     /**to be shown only for single tests */
@@ -359,6 +482,62 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     }
   }
 
+  function skuParameterInclusionLogic() {
+    const isInclusionPrsent =
+      !!cmsTestDetails?.diagnosticInclusionName &&
+      cmsTestDetails?.diagnosticInclusionName?.length > 0;
+    const inclusions = isInclusionPrsent && cmsTestDetails?.diagnosticInclusionName;
+
+    const filterParamters = cmsTestDetails?.diagnosticInclusionName?.filter(
+      (item: any) => !!item?.TestObservation && item?.TestObservation != ''
+    );
+
+    const filterParamters_topFour = cmsTestDetails?.diagnosticInclusionName?.filter(
+      (item: any, index: number) =>
+        index < 4 && !!item?.TestObservation && item?.TestObservation != ''
+    );
+
+    const getDispalyedParameterCount =
+      !!filterParamters_topFour &&
+      filterParamters_topFour?.length > 0 &&
+      filterParamters_topFour?.map((inclusion: any, index: number) =>
+        !!inclusion?.TestObservation
+          ? inclusion?.TestObservation?.filter((item: any) => item?.mandatoryValue === '1')
+          : []
+      );
+
+    const getMandatoryParameterCount_topFour =
+      !!getDispalyedParameterCount &&
+      getDispalyedParameterCount?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
+
+    const getMandatoryParamter =
+      !!filterParamters &&
+      filterParamters?.length > 0 &&
+      filterParamters?.map((inclusion: any) =>
+        !!inclusion?.TestObservation
+          ? inclusion?.TestObservation?.filter((item: any) => item?.mandatoryValue === '1')
+          : []
+      );
+
+    const nonInclusionParamters = cmsTestDetails?.diagnosticInclusionName?.filter(
+      (item: any) => !!item && (!item?.TestObservation || item?.TestObservation?.length == 0)
+    );
+
+    const getMandatoryParameterCount =
+      !!getMandatoryParamter && getMandatoryParamter?.length > 0
+        ? getMandatoryParamter?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0)
+        : undefined;
+
+    return {
+      isInclusionPrsent,
+      getMandatoryParameterCount,
+      nonInclusionParamters,
+      inclusions,
+      getMandatoryParameterCount_topFour,
+      filterParamters,
+    };
+  }
+
   const fetchTestDetails_CMS = async (itemId: string | number, itemName: string | null) => {
     setLoadingContext?.(true);
     const res: any = await getDiagnosticTestDetails(
@@ -367,12 +546,13 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       !!itemName ? itemName : cmsTestDetails?.diagnosticUrlAlias,
       cityIdToUse
     );
-    if (res?.data?.success) {
+    if (res?.data?.success && !!res?.data?.data) {
       const result = res?.data?.data;
       !!itemName && loadTestDetails(result?.diagnosticItemID);
       setCmsTestDetails(result);
       setLoadingContext?.(false);
-
+      result?.diagnosticFAQs?.length > 0 &&
+        setHorizontalComponentElements({ ...horizontalComponentElements, faq: true });
       !!result?.diagnosticWidgetsData &&
         result?.diagnosticWidgetsData?.length > 0 &&
         fetchWidgetPrices(result?.diagnosticWidgetsData, cityIdToUse);
@@ -391,20 +571,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       setLoadingContext?.(true);
       const {
         data: { findDiagnosticsByItemIDsAndCityID },
-      } = await client.query<
-        findDiagnosticsByItemIDsAndCityID,
-        findDiagnosticsByItemIDsAndCityIDVariables
-      >({
-        query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
-        context: {
-          sourceHeaders,
-        },
-        variables: {
-          cityID: cityIdToUse,
-          itemIDs: listOfIds,
-        },
-        fetchPolicy: 'no-cache',
-      });
+      } = await getDiagnosticsByItemIdCityId(client, cityIdToUse, listOfIds);
       const {
         rate,
         gender,
@@ -418,7 +585,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         inclusions,
         testDescription,
         itemType,
-      } = g(findDiagnosticsByItemIDsAndCityID, 'diagnostics', '0' as any)!;
+      } = findDiagnosticsByItemIDsAndCityID?.diagnostics?.[0]!;
 
       const getDiagnosticPricingForItem = diagnosticPricing;
       const packageMrpForItem = packageCalculatedMrp!;
@@ -493,7 +660,11 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     try {
       const res = Promise.all(
         itemIds?.map((item: any) =>
-          fetchPricesForCityId(Number(cityId!), item?.length > 12 ? item?.slice(0, 12) : item)
+          getDiagnosticWidgetPricing(
+            client,
+            Number(cityId!),
+            item?.length > 12 ? item?.slice(0, 12) : item
+          )
         )
       );
       const response = (await res)
@@ -586,62 +757,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     } else {
       setPackageRecommendations([]);
       CommonBugFender('TestDetails_getPackageRecommendationsForTest', 'unable to fetch itemId');
-    }
-  }
-
-  async function getExpressSlots(
-    serviceabilityObject: DiagnosticData,
-    selectedAddress: LocationData
-  ) {
-    var getLat = selectedAddress?.latitude!;
-    var getLng = selectedAddress?.longitude!;
-    var getZipcode = selectedAddress?.pincode!;
-    var getServiceablityObject = {
-      cityID: Number(serviceabilityObject?.cityId),
-      stateID: Number(serviceabilityObject?.stateId),
-    };
-    if (movedFrom === AppRoutes.CartPage) {
-      const selectedAddressIndex = addresses?.findIndex(
-        (address) => address?.id == deliveryAddressId
-      );
-      getLat = addresses?.[selectedAddressIndex]?.latitude!;
-      getLng = addresses?.[selectedAddressIndex]?.longitude!;
-      getZipcode = addresses?.[selectedAddressIndex]?.zipcode!;
-      getServiceablityObject = {
-        cityID: Number(deliveryAddressCityId),
-        stateID: Number(deliveryAddressStateId),
-      };
-    }
-
-    if (
-      (movedFrom == AppRoutes.CartPage && Number(deliveryAddressStateId) == 0) ||
-      !isDiagnosticLocationServiceable
-    ) {
-      setExpressSlotMsg('');
-      return;
-    }
-
-    try {
-      const res = await getDiagnosticExpressSlots(
-        client,
-        getLat,
-        getLng,
-        String(getZipcode),
-        getServiceablityObject
-      );
-      if (res?.data?.getUpcomingSlotInfo) {
-        const getResponse = res?.data?.getUpcomingSlotInfo;
-        if (getResponse?.status) {
-          setExpressSlotMsg(getResponse?.slotInfo);
-        } else {
-          setExpressSlotMsg('');
-        }
-      } else {
-        setExpressSlotMsg('');
-      }
-    } catch (error) {
-      CommonBugFender('getExpressSlots_TestDetails', error);
-      setExpressSlotMsg('');
     }
   }
 
@@ -834,12 +949,14 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   useEffect(() => {
     if (testInfo?.Rate) {
       const itemType = (testInfo?.type! || testDetails?.type)?.toLowerCase();
-      DiagnosticDetailsViewed(
+      const getSource =
         isDeep == 'deeplink'
           ? 'Deeplink'
           : movedFrom == AppRoutes.SearchTestScene
           ? source
-          : testInfo?.source! || testDetails?.source,
+          : testInfo?.source! || testDetails?.source;
+      DiagnosticDetailsViewed(
+        getSource == undefined ? source : getSource,
         itemName,
         !!itemType && itemType == DIAGNOSTICS_ITEM_TYPE.PACKAGE?.toLowerCase()
           ? DIAGNOSTICS_ITEM_TYPE.PACKAGE
@@ -858,125 +975,63 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             : 'You can also order'
           : !!widgetTitle
           ? widgetTitle
-          : ''
+          : '',
+        section
       );
     }
   }, [testInfo]);
 
-  function createSampleType(data: any) {
-    const array = data?.map(
-      (item: CMSTestInclusions) => nameFormater(item?.sampleTypeName),
-      'title'
-    );
-    const sampleTypeArray = [...new Set(array)];
-    return sampleTypeArray;
-  }
-
   const renderDescriptionCard = () => {
-    const sampleType =
-      !!cmsTestDetails && cmsTestDetails?.diagnosticInclusionName?.length > 0
-        ? createSampleType(cmsTestDetails?.diagnosticInclusionName)
-        : [];
-    const sampleString = sampleType?.length > 0 ? sampleType?.join(', ') : false;
-    const showAge = (!!cmsTestDetails && cmsTestDetails?.diagnosticAge) || 'For all age group';
-    const showGender =
-      (!!cmsTestDetails && cmsTestDetails?.diagnosticGender) ||
-      (!_.isEmpty(testInfo) && `FOR ${gender?.[testInfo?.Gender]}`) ||
-      'Both';
     const showDescription =
       (!!cmsTestDetails &&
         cmsTestDetails?.diagnosticOverview?.length > 0 &&
         cmsTestDetails?.diagnosticOverview?.[0]?.value) ||
       (!_.isEmpty(testInfo) && testInfo?.testDescription);
-    return (
-      <>
-        {sampleType || showAge || showGender || showDescription ? (
-          <View style={styles.descriptionCardOuterView}>
-            {/**
-             * if package then package otherwise, test.
-             * age if not coming from cms -> db
-             * gender if not coming from cms -> db
-             * sample type cms -> db
-             */}
-            <Text style={styles.packageDescriptionHeading}>Package Description</Text>
-            {!!sampleString ? renderDetails('Sample type', sampleString) : null}
-            {!!showGender ? renderDetails('Gender', nameFormater(showGender, 'title')) : null}
-            {!!showAge ? renderDetails('Age group', showAge) : null}
-            {!!showDescription ? renderDescription(showDescription) : null}
-          </View>
-        ) : null}
-      </>
-    );
-  };
 
-  const renderDetails = (key: string, value: string) => {
-    return (
-      <View style={{ flexDirection: 'row', marginTop: 5, width: '90%' }}>
-        <Text style={styles.packageDescriptionText}>{key} : </Text>
-        <Text
-          style={[
-            styles.packageDescriptionText,
-            {
-              width: '83%',
-            },
-          ]}
-        >
-          {value}
-        </Text>
-      </View>
-    );
+    return showDescription ? (
+      <TestDetailsAboutCard
+        containerStyle={styles.descriptionCardOuterView}
+        showDescription={showDescription}
+        readMore={readMore}
+        onPressReadMore={() => onPressReadMore()}
+        inclusionName={cmsTestDetails?.diagnosticInclusionName}
+        diagnosticAge={cmsTestDetails?.diagnosticAge}
+        diagnosticGender={cmsTestDetails?.diagnosticGender}
+        testInfo={testInfo}
+      />
+    ) : null;
   };
 
   function onPressReadMore() {
     setReadMore(!readMore);
   }
 
-  function filterDiagnosticHTMLContent(content: string = '') {
-    return content
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;rn/g, '>')
-      .replace(/&gt;r/g, '>')
-      .replace(/&gt;/g, '>')
-      .replace(/&nbsp;/g, '\n')
-      .replace(/\.t/g, '.');
-  }
-
-  const renderDescription = (showDescription: string) => {
-    const formattedText = filterDiagnosticHTMLContent(showDescription);
-    return (
-      <>
-        <View style={[styles.overViewContainer, { width: readMore ? '85%' : '100%' }]}>
-          {readMore ? (
-            <Text style={styles.packageDescriptionText} numberOfLines={2}>
-              {stripHtml(showDescription)}
-            </Text>
-          ) : (
-            <HTML html={formattedText} baseFontStyle={styles.packageDescriptionText} />
-          )}
-        </View>
-        <TouchableOpacity
-          onPress={() => onPressReadMore()}
-          activeOpacity={1}
-          style={styles.readMoreTouch}
-        >
-          <Text style={styles.readMoreText}> {!readMore ? 'READ LESS' : 'READ MORE'}</Text>
-        </TouchableOpacity>
-      </>
-    );
-  };
-
   const renderItemCard = () => {
     return (
-      <View style={styles.descriptionCardOuterView}>
-        {renderCardTopView()}
-        {renderPriceView(false)}
-      </View>
+      <TestDetailsItemCard
+        containerStyle={styles.descriptionCardOuterView}
+        itemName={testDetails?.ItemName || cmsTestDetails?.diagnosticItemName || testInfo?.itemName}
+        aliasName={cmsTestDetails?.diagnosticItemAliases}
+        reportTat={reportTat}
+        diagnosticReportCustomerText={cmsTestDetails?.diagnosticReportCustomerText}
+        diagnosticReportGenerationTime={cmsTestDetails?.diagnosticReportGenerationTime}
+        pretestingRequirement={cmsTestDetails?.diagnosticPretestingRequirement}
+        slashedPrice={
+          !!testInfo?.packageMrp && testInfo?.packageMrp > testInfo?.Rate
+            ? testInfo?.packageMrp
+            : testInfo?.Rate
+        }
+        priceToShow={calculatePriceToShow()}
+        setPriceLayoutPosition={(layout, event, ref) => _setPriceLayoutPosition(layout, event, ref)}
+        testInfo={testInfo}
+        isCircleSubscribed={isDiagnosticCircleSubscription}
+      />
     );
   };
 
-  function _setPriceLayoutPosition(layout: any, event: any) {
+  function _setPriceLayoutPosition(layout: any, event: any, ref: any) {
     setPriceHeight(layout?.height);
+    setPriceViewRef(ref);
   }
 
   function calculatePriceToShow() {
@@ -1006,455 +1061,58 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     return priceToShow;
   }
 
-  const renderPriceView = (isBottom: boolean) => {
-    //if coming from anywhere other than cart page
-    //check other conidtions
+  const renderPriceView = () => {
     const slashedPrice =
       !!testInfo?.packageMrp && testInfo?.packageMrp > testInfo?.Rate
         ? testInfo?.packageMrp
         : testInfo?.Rate;
-
     const priceToShow = calculatePriceToShow();
-
     return (
       <View>
-        {!isBottom
-          ? renderTopPriceView(slashedPrice, priceToShow)
-          : renderBottomPriceView(slashedPrice, priceToShow)}
+        <TestDetailsPriceView
+          testInfo={testInfo}
+          isCircleSubscribed={isDiagnosticCircleSubscription}
+          slashedPrice={slashedPrice}
+          priceToShow={priceToShow}
+          isTop={false}
+        />
       </View>
     );
   };
 
-  const renderTopPriceView = (slashedPrice: number, priceToShow: number) => {
-    return (
-      <View
-        ref={priceViewRef}
-        onLayout={(event) => {
-          const layout = event.nativeEvent.layout;
-          _setPriceLayoutPosition(layout, event);
-        }}
-      >
-        {renderSeparator()}
-        <View style={{ marginTop: '2%' }}>
-          {renderSlashedView(slashedPrice, priceToShow, true)}
-          {!_.isEmpty(testInfo) && renderMainPriceView(priceToShow, true)}
-        </View>
-      </View>
-    );
-  };
+  function expandParameter(index: number) {
+    const expandedArray = parameterExpandedArray?.concat(index);
+    setParameterExpandedArray(expandedArray);
+  }
 
-  const renderBottomPriceView = (slashedPrice: number, priceToShow: number) => {
-    return (
-      <View>
-        {renderSlashedView(slashedPrice, priceToShow, false)}
-        {!_.isEmpty(testInfo) && renderMainPriceView(priceToShow, false)}
-      </View>
-    );
-  };
+  function collapseParameter(index: number) {
+    const removeItem = parameterExpandedArray?.filter((id: number) => id !== index);
+    setParameterExpandedArray(removeItem);
+  }
 
-  const renderSlashedView = (
-    slashedPrice: number,
-    priceToShow: number,
-    showPercentage: boolean
-  ) => {
-    const promoteCircle = testInfo?.promoteCircle;
-    const promoteDiscount = testInfo?.promoteDiscount;
-    const circleDiscount = testInfo?.circleDiscount;
-    const specialDiscount = testInfo?.specialDiscount;
-    const discount = testInfo?.discount;
+  function onPressInclusion(item: any, index: number) {
+    const isAlreadyPresent = parameterExpandedArray?.filter((val: number) => val == index);
+    isAlreadyPresent?.length > 0 ? collapseParameter(index) : expandParameter(index);
+  }
 
-    return (
-      <View style={{ flexDirection: 'row' }}>
-        {(!isDiagnosticCircleSubscription &&
-          testInfo?.promoteCircle &&
-          priceToShow == slashedPrice) ||
-        priceToShow == slashedPrice ? null : (
-          <Text style={styles.slashedPriceText}>
-            MRP {string.common.Rs}
-            <Text style={{ textDecorationLine: 'line-through' }}>
-              {convertNumberToDecimal(slashedPrice)}
-            </Text>
-          </Text>
-        )}
-        {/**percentage discount */}
-        {showPercentage &&
-          renderPercentageDiscount(
-            promoteCircle && isDiagnosticCircleSubscription
-              ? circleDiscount
-              : promoteDiscount
-              ? specialDiscount
-              : discount,
-            promoteCircle && isDiagnosticCircleSubscription ? true : false,
-            promoteDiscount && specialDiscount > 0 ? specialDiscount : 0,
-            discount > 0 ? discount : 0
-          )}
-      </View>
-    );
-  };
-
-  const renderPercentageDiscount = (
-    discount: string | number,
-    isOnlyCircle: boolean,
-    specialDiscount: number,
-    hasOtherDiscount: number
-  ) => {
-    const discountPrice =
-      specialDiscount > 0 ? specialDiscount : hasOtherDiscount > 0 ? hasOtherDiscount : 0;
-    return (
-      <DiscountPercentage
-        discount={discount}
-        isOnlyCircle={isOnlyCircle}
-        discountPrice={discountPrice}
+  const renderInclusionsView = () => {
+    const {
+      isInclusionPrsent,
+      nonInclusionParamters,
+      getMandatoryParameterCount,
+      inclusions,
+    } = skuParameterInclusionLogic();
+    return isInclusionPrsent ? (
+      <TestDetailsInclusionsCard
+        containerStyle={styles.descriptionCardOuterView}
+        getMandatoryParameterCount={getMandatoryParameterCount}
+        nonInclusionParamters={nonInclusionParamters}
+        diagnosticInclusionName={cmsTestDetails?.diagnosticInclusionName}
+        inclusions={inclusions}
+        onPressInclusion={(item, index) => onPressInclusion(item, index)}
+        parameterExpandedArray={parameterExpandedArray}
       />
-    );
-  };
-
-  const renderMainPriceView = (priceToShow: number, showSavings: boolean) => {
-    return (
-      <View style={styles.rowStyle}>
-        {!!priceToShow && (
-          <Text style={styles.mainPriceText}>
-            {string.common.Rs} {convertNumberToDecimal(priceToShow)}
-          </Text>
-        )}
-        {showSavings ? renderDiscountView() : null}
-      </View>
-    );
-  };
-
-  const renderDiscountView = () => {
-    const circleSpecialPrice = testInfo?.circleSpecialPrice!;
-    const circleDiscountSaving = testInfo?.circleDiscountDiffPrice;
-    const specialDiscountSaving = testInfo?.specialDiscountDiffPrice;
-    const groupPlan = testInfo?.groupPlan?.groupPlan;
-
-    return (
-      <View style={styles.savingsOuterView}>
-        {isDiagnosticCircleSubscription &&
-        circleDiscountSaving > 0 &&
-        !testInfo?.promoteDiscount &&
-        groupPlan != DIAGNOSTIC_GROUP_PLAN.ALL ? (
-          <View style={styles.rowStyle}>
-            {renderSavingView('save', circleDiscountSaving, {}, styles.savingsText)}
-          </View>
-        ) : testInfo?.promoteDiscount &&
-          specialDiscountSaving > 0 &&
-          !testInfo?.promoteCircle &&
-          groupPlan != DIAGNOSTIC_GROUP_PLAN.ALL ? (
-          <View style={styles.rowStyle}>
-            <SpecialDiscountText isImage={false} text={string.diagnostics.test247Text} />
-            {renderSavingView(
-              'save',
-              specialDiscountSaving,
-              {
-                marginHorizontal: '2%',
-              },
-              styles.savingsText
-            )}
-          </View>
-        ) : circleDiscountSaving > 0 && groupPlan != DIAGNOSTIC_GROUP_PLAN.ALL ? (
-          <View style={[styles.rowStyle, { alignSelf: 'flex-end' }]}>
-            <CircleHeading isSubscribed={false} />
-            {renderSavingView(
-              '',
-              circleSpecialPrice,
-              { marginHorizontal: '2%' },
-              styles.savingsText
-            )}
-          </View>
-        ) : null}
-      </View>
-    );
-  };
-
-  const renderSavingView = (
-    text: string,
-    price: number | string,
-    mainViewStyle: any,
-    textStyle: any
-  ) => {
-    return (
-      <View style={mainViewStyle}>
-        <Text style={textStyle}>
-          {text} {string.common.Rs}
-          {convertNumberToDecimal(price)}
-        </Text>
-      </View>
-    );
-  };
-
-  const renderAliasName = () => {
-    const aliasName =
-      !!cmsTestDetails?.diagnosticItemAliases && cmsTestDetails?.diagnosticItemAliases != '';
-    return (
-      <View style={{ marginTop: 4 }}>
-        {aliasName ? (
-          <Text style={styles.italicStyle}>
-            {string.diagnostics.alsoKnownAs} {cmsTestDetails?.diagnosticItemAliases}
-          </Text>
-        ) : null}
-      </View>
-    );
-  };
-
-  /**
-   * if not coming from the config report tat, then if not by drupal then show from local db.
-   */
-  const renderCardMidView = () => {
-    const showReportTat =
-      reportTat != ''
-        ? reportTat
-        : !!cmsTestDetails?.diagnosticReportGenerationTime ||
-          !cmsTestDetails?.diagnosticReportCustomerText;
-    const heading =
-      !!reportTat &&
-      reportTat
-        ?.split(' ')
-        ?.slice(0, 2)
-        ?.join(' ');
-    const configurableTat =
-      !!reportTat &&
-      reportTat
-        ?.split(' ')
-        ?.slice(2)
-        ?.join(' ');
-    return (
-      <>
-        {!!showReportTat && showReportTat != '' ? (
-          <>
-            <View style={styles.midCardView}>
-              <ClockIcon style={styles.clockIconStyle} />
-              <View style={styles.midCardTextView}>
-                <Text style={styles.reportTimeText}>
-                  {!!heading ? heading : 'Get reports earliest by'}
-                </Text>
-                <Text style={styles.reportTime}>
-                  {!!configurableTat
-                    ? nameFormater(configurableTat, 'default')
-                    : cmsTestDetails?.diagnosticReportCustomerText
-                    ? cmsTestDetails?.diagnosticReportCustomerText
-                    : cmsTestDetails?.diagnosticReportGenerationTime}
-                </Text>
-              </View>
-            </View>
-          </>
-        ) : null}
-      </>
-    );
-  };
-
-  /**
-   * if not by drupal then show from local db.
-   */
-  const renderCardBottomView = () => {
-    return (
-      <>
-        {renderSeparator()}
-        <View style={styles.bottomCardView}>
-          <InfoIconRed style={styles.infoIconStyle} />
-          <Text style={styles.preTestingText}>
-            {cmsTestDetails?.diagnosticPretestingRequirement}
-          </Text>
-        </View>
-        {renderSeparator()}
-      </>
-    );
-  };
-
-  const renderSeparator = (space?: boolean) => {
-    return <Spearator style={{ marginTop: space ? 10 : 0 }} />;
-  };
-
-  const renderCardTopView = () => {
-    const isInclusionPrsent =
-      !!cmsTestDetails?.diagnosticInclusionName &&
-      cmsTestDetails?.diagnosticInclusionName?.length > 0;
-    const inclusions = isInclusionPrsent && cmsTestDetails?.diagnosticInclusionName;
-
-    const filterParamters = cmsTestDetails?.diagnosticInclusionName?.filter(
-      (item: any) => !!item?.TestObservation && item?.TestObservation != ''
-    );
-
-    const filterParamters_topFour = cmsTestDetails?.diagnosticInclusionName?.filter(
-      (item: any, index: number) =>
-        index < 4 && !!item?.TestObservation && item?.TestObservation != ''
-    );
-
-    const getDispalyedParameterCount =
-      !!filterParamters_topFour &&
-      filterParamters_topFour?.length > 0 &&
-      filterParamters_topFour?.map((inclusion: any, index: number) =>
-        !!inclusion?.TestObservation
-          ? inclusion?.TestObservation?.filter((item: any) => item?.mandatoryValue === '1')
-          : []
-      );
-
-    const getMandatoryParameterCount_topFour =
-      !!getDispalyedParameterCount &&
-      getDispalyedParameterCount?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
-
-    const getMandatoryParamter =
-      !!filterParamters &&
-      filterParamters?.length > 0 &&
-      filterParamters?.map((inclusion: any) =>
-        !!inclusion?.TestObservation
-          ? inclusion?.TestObservation?.filter((item: any) => item?.mandatoryValue === '1')
-          : []
-      );
-
-    const nonInclusionParamters = cmsTestDetails?.diagnosticInclusionName?.filter(
-      (item: any) => !!item && (!item?.TestObservation || item?.TestObservation?.length == 0)
-    );
-
-    const getMandatoryParameterCount =
-      !!getMandatoryParamter && getMandatoryParamter?.length > 0
-        ? getMandatoryParamter?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0)
-        : undefined;
-
-    return (
-      <>
-        <View style={{ width: '75%' }}>
-          <Text style={styles.itemNameText}>
-            {testDetails?.ItemName || cmsTestDetails?.diagnosticItemName || testInfo?.itemName}
-          </Text>
-          {renderAliasName()}
-        </View>
-        {renderSeparator(true)}
-        {renderCardMidView()}
-        {!!cmsTestDetails?.diagnosticPretestingRequirement
-          ? renderCardBottomView()
-          : renderSeparator()}
-        <View style={styles.inclusionsView}>
-          {isInclusionPrsent ? (
-            <Text style={styles.testIncludedText}>
-              Total tests included :{' '}
-              {getMandatoryParameterCount + nonInclusionParamters?.length ||
-                cmsTestDetails?.diagnosticInclusionName?.length}
-            </Text>
-          ) : null}
-          {isInclusionPrsent &&
-            !moreInclusions &&
-            inclusions?.map((item: any, index: number) =>
-              index < 4 ? (
-                <>
-                  <View style={styles.rowStyle}>
-                    <Text style={styles.inclusionsBullet}>{'\u2B24'}</Text>
-                    <Text style={styles.inclusionsItemText}>
-                      {!!item?.inclusionName ? nameFormater(item?.inclusionName!, 'title') : ''}{' '}
-                      {index == 3 &&
-                        inclusions?.length - 4 > 0 &&
-                        item?.TestObservation?.length == 0 &&
-                        renderShowMore(
-                          getMandatoryParameterCount_topFour ||
-                            cmsTestDetails?.diagnosticInclusionName?.length,
-                          item?.inclusionName
-                        )}
-                    </Text>
-                  </View>
-                  {renderParamterData(
-                    item,
-                    inclusions,
-                    index,
-                    true,
-                    getMandatoryParameterCount_topFour,
-                    getMandatoryParameterCount
-                  )}
-                </>
-              ) : null
-            )}
-          {isInclusionPrsent &&
-            moreInclusions &&
-            inclusions?.map((item: any, index: number) => (
-              <>
-                <View style={styles.rowStyle}>
-                  <Text style={styles.inclusionsBullet}>{'\u2B24'}</Text>
-                  <Text style={styles.inclusionsItemText}>
-                    {!!item?.inclusionName ? nameFormater(item?.inclusionName!, 'title') : ''}{' '}
-                  </Text>
-                </View>
-                {renderParamterData(
-                  item,
-                  inclusions,
-                  index,
-                  false,
-                  getMandatoryParameterCount_topFour,
-                  getMandatoryParameterCount
-                )}
-              </>
-            ))}
-          {isInclusionPrsent && moreInclusions && (
-            <Text onPress={() => setMoreInclusions(!moreInclusions)} style={styles.showLessText}>
-              SHOW LESS
-            </Text>
-          )}
-        </View>
-      </>
-    );
-  };
-
-  const renderShowMore = (getMandatoryParametersCount: any, name: string) => {
-    return (
-      <Text
-        onPress={() => setMoreInclusions(!moreInclusions)}
-        style={[
-          styles.moreText,
-          {
-            ...theme.viewStyles.text(
-              'SB',
-              isSmallDevice ? (name?.length > 25 ? 10 : 12) : name?.length > 25 ? 11 : 13,
-              theme.colors.APP_YELLOW,
-              1,
-              15
-            ),
-          },
-        ]}
-      >
-        {'   '}
-        {!moreInclusions && `+${getMandatoryParametersCount} MORE`}
-      </Text>
-    );
-  };
-
-  const renderParamterData = (
-    item: any,
-    inclusions: any,
-    index: number,
-    showOption: boolean,
-    count: number,
-    totalCount: number
-  ) => {
-    const getMandatoryParameters =
-      item?.TestObservation?.length > 0 &&
-      item?.TestObservation != '' &&
-      item?.TestObservation?.filter((obs: any) => obs?.mandatoryValue === '1');
-
-    return (
-      <>
-        {!!getMandatoryParameters && getMandatoryParameters?.length > 0 ? (
-          getMandatoryParameters.map((para: any, pIndex: number, array: any) => (
-            <View style={[styles.rowStyle, { marginHorizontal: '10%', width: '88%' }]}>
-              <Text style={[styles.inclusionsBullet, { fontSize: 4 }]}>{'\u2B24'}</Text>
-              <Text style={styles.parameterText}>
-                {!!para?.observationName ? nameFormater(para?.observationName!, 'title') : ''}{' '}
-                {index == 3 &&
-                  inclusions?.length - 4 > 0 &&
-                  array?.length - 1 == pIndex &&
-                  renderShowMore(
-                    totalCount - count || inclusions?.length - 4,
-                    para?.observationName
-                  )}
-              </Text>
-            </View>
-          ))
-        ) : (
-          <>
-            {index == 3 && inclusions?.length - 4 > 0 && !moreInclusions
-              ? renderShowMore(totalCount - count || inclusions?.length - 4, 'test')
-              : null}
-          </>
-        )}
-      </>
-    );
+    ) : null;
   };
 
   const renderBreadCrumb = () => {
@@ -1480,15 +1138,25 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
   const renderFAQView = () => {
     return (
-      <FAQComponent
-        headingText={'Frequently Asked Questions'}
-        headingStyle={styles.faqHeadingText}
-        headerSeparatorStyle={{ marginVertical: 10 }}
-        containerStyle={{ marginLeft: 20, marginRight: 25 }}
-        data={cmsTestDetails?.diagnosticFAQs}
-        arrowStyle={{ tintColor: theme.colors.APP_YELLOW }}
-        horizontalLine={styles.faqLine}
-      />
+      <View
+        onLayout={(event) => {
+          const layout = event?.nativeEvent?.layout;
+          setFaqVerticalPosition(layout?.y);
+        }}
+      >
+        <FAQComponent
+          faqIcon={<OrangeFAQIcon style={styles.faqIcon} />}
+          headingText={string.diagnosticsDetails.frequentlyAsked}
+          headingStyle={styles.faqHeadingText}
+          headerSeparatorStyle={{ marginVertical: 10 }}
+          containerStyle={{ marginLeft: 20, marginRight: 25 }}
+          data={cmsTestDetails?.diagnosticFAQs}
+          horizontalLine={styles.faqLine}
+          questionStyle={styles.questionsStyle}
+          answerStyle={styles.faqAnswer}
+          source={'diagnostics'}
+        />
+      </View>
     );
   };
 
@@ -1577,6 +1245,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   };
 
   function onPressAddToCart() {
+    const { getMandatoryParameterCount, nonInclusionParamters } = skuParameterInclusionLogic();
+    const comingFrom = props.navigation.getParam('comingFrom');
     const specialPrice = testInfo?.specialPrice!;
     const price = testInfo?.Rate!;
     const circlePrice = testInfo?.circlePrice! || testInfo?.circleRate!;
@@ -1597,35 +1267,40 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       itemId!,
       mrpToDisplay, //mrp
       priceToShow, //actual price
-      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS,
+      comingFrom === 'HomeScreen'
+        ? DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.SEARCH_BAR
+        : section == string.common.homePageItem
+        ? DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME
+        : DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS,
       testInclusions?.length < 2 ? DIAGNOSTICS_ITEM_TYPE.TEST : DIAGNOSTICS_ITEM_TYPE.PACKAGE,
-      '',
+      section == string.common.homePageItem ? section : '',
       currentPatient,
       isDiagnosticCircleSubscription,
       originalItemIds
     );
 
-    const addedItems = {
-      id: `${itemId}`,
-      mou: 1,
-      name: cmsTestDetails?.diagnosticItemName || testInfo?.ItemName,
-      price: price,
-      specialPrice: specialPrice! | price,
-      circlePrice: circlePrice,
-      circleSpecialPrice: circleSpecialPrice,
-      discountPrice: discountPrice,
-      discountSpecialPrice: discountSpecialPrice,
-      thumbnail: cmsTestDetails?.diagnosticItemImageUrl,
-      collectionMethod: TEST_COLLECTION_TYPE.HC,
-      groupPlan: testInfo?.promoteCircle
+    const addedItems = createDiagnosticAddToCartObject(
+      Number(itemId),
+      cmsTestDetails?.diagnosticItemName || testInfo?.ItemName,
+      testInfo?.Gender,
+      price,
+      specialPrice! | price,
+      circlePrice,
+      circleSpecialPrice,
+      discountPrice,
+      discountSpecialPrice,
+      TEST_COLLECTION_TYPE.HC,
+      testInfo?.promoteCircle
         ? DIAGNOSTIC_GROUP_PLAN.CIRCLE
         : testInfo?.promoteDiscount
         ? DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
         : DIAGNOSTIC_GROUP_PLAN.ALL,
-      packageMrp: Number(testInfo?.packageMrp!),
-      inclusions: testInclusions,
-      isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
-    };
+      Number(testInfo?.packageMrp!),
+      testInclusions,
+      AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
+      cmsTestDetails?.diagnosticItemImageUrl,
+      getMandatoryParameterCount + nonInclusionParamters?.length
+    );
 
     isModify &&
       setModifiedPatientCart?.([
@@ -1645,23 +1320,15 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     }
   }
 
-  function onPressRemoveFromCart() {
-    if (diagnosticServiceabilityData?.city != '') {
-      return;
-    }
-    removeCartItem!(`${itemId}`);
-  }
-
   const renderExpressSlots = () => {
-    return (
-      <View style={styles.outerExpressView}>
-        <View style={styles.innerExpressView}>
-          <ExpressSlotClock style={styles.expressSlotIcon} />
-          <Text style={styles.expressSlotText}>{expressSlotMsg}</Text>
-        </View>
-      </View>
-    );
+    return diagnosticServiceabilityData && diagnosticLocation ? (
+      <ExpressSlotMessageRibbon
+        serviceabilityObject={diagnosticServiceabilityData}
+        selectedAddress={diagnosticLocation}
+      />
+    ) : null;
   };
+
   const renderCallToOrder = () => {
     return ctaDetailMatched?.length ? (
       <CallToOrderView
@@ -1692,12 +1359,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         : topBookedTests;
 
     const inclusionIdArray: any[] = [];
-    const inclusionIds =
-      !!testInfo &&
-      !!testInfo?.inclusions?.length &&
-      testInfo?.inclusions?.map((_item: any) => {
-        inclusionIdArray?.push(_item);
-      });
     const dataToRender = dataToShow?.filter((item: any) => {
       if (item?.itemId != itemId || !inclusionIdArray?.includes(item?.itemId)) {
         return item;
@@ -1708,76 +1369,222 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         {frequentlyBroughtShimmer ? (
           renderDiagnosticWidgetTestShimmer(true)
         ) : (
-          <View style={{ marginTop: 10 }}>
+          <View
+            onLayout={(event) => {
+              const layout = event?.nativeEvent?.layout;
+              setFrequentlyBroughtVerticalPosition(layout?.y);
+            }}
+            style={{ marginTop: 10 }}
+          >
             <SectionHeader
+              leftImage={<OrangeCartIcon style={styles.widgetHeadingIcon} />}
               leftText={widgetTitle}
-              leftTextStyle={styles.widgetHeading}
-              style={{ borderBottomWidth: 0, borderColor: 'transparent' }}
+              leftTextStyle={[styles.itemNameText, { marginHorizontal: 8 }]}
+              style={styles.widgetHeadingStyle}
             />
-            <ItemCard
-              diagnosticWidgetData={dataToRender}
-              onPressRemoveItemFromCart={(item) => {}}
-              data={dataToRender}
-              isCircleSubscribed={isDiagnosticCircleSubscription}
-              isServiceable={true}
-              isVertical={false}
-              navigation={props.navigation}
-              source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS}
-              sourceScreen={AppRoutes.TestDetails}
-              changeCTA={true}
-              widgetHeading={widgetTitle}
-            />
+            {renderFullWidthItemCard(dataToRender)}
           </View>
         )}
       </>
     );
   };
 
+  const renderFullWidthItemCard = (dataToRender: any) => {
+    const filterToFourItems = dataToRender?.length > 4 ? dataToRender?.slice(0, 4) : dataToRender;
+    return (
+      <FullWidthItemCard
+        diagnosticWidgetData={filterToFourItems}
+        onPressRemoveItemFromCart={(item) => {}}
+        data={filterToFourItems}
+        isCircleSubscribed={isDiagnosticCircleSubscription}
+        isServiceable={true}
+        isVertical={true}
+        columns={1}
+        navigation={props.navigation}
+        source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS}
+        sourceScreen={AppRoutes.TestDetails}
+        changeCTA={true}
+        widgetHeading={widgetTitle}
+      />
+    );
+  };
+
   const renderPackageRecommendations = () => {
-    const heading = `${getWidgetTitle?.topPackages} "${itemName}"`;
+    const heading = `${getWidgetTitle?.relatedPackages}`;
     return (
       <>
         {packageRecommendationsShimmer ? (
           renderDiagnosticWidgetTestShimmer(true)
         ) : (
-          <View style={{ marginTop: 10 }}>
+          <View
+            style={{ marginTop: 10 }}
+            onLayout={(event) => {
+              const layout = event?.nativeEvent?.layout;
+              setRelatedPackagesVerticalPosition(layout?.y);
+            }}
+          >
             <SectionHeader
+              leftImage={<RelatedPackageIcon style={styles.widgetHeadingIcon} />}
               leftText={heading}
-              leftTextStyle={styles.widgetHeading}
-              style={{ borderBottomWidth: 0, borderColor: 'transparent' }}
+              leftTextStyle={[styles.itemNameText, { marginHorizontal: 8 }]}
+              style={styles.widgetHeadingStyle}
             />
-            <PackageCard
-              diagnosticWidgetData={packageRecommendations}
-              data={packageRecommendations}
-              isCircleSubscribed={isDiagnosticCircleSubscription}
-              isServiceable={true}
-              isVertical={false}
-              navigation={props.navigation}
-              source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS}
-              sourceScreen={AppRoutes.TestDetails}
-              widgetHeading={heading}
-            />
+            {renderRecommendedPackages(heading)}
           </View>
         )}
       </>
     );
   };
 
+  const renderRecommendedPackages = (heading: string) => {
+    const filterTopFourRecommendation =
+      !!packageRecommendations &&
+      (packageRecommendations?.length > 4
+        ? packageRecommendations?.slice(0, 4)
+        : packageRecommendations);
+    return (
+      <ItemCard
+        diagnosticWidgetData={filterTopFourRecommendation}
+        data={filterTopFourRecommendation}
+        isCircleSubscribed={isDiagnosticCircleSubscription}
+        isServiceable={true}
+        isVertical={true}
+        columns={2}
+        navigation={props.navigation}
+        source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS}
+        sourceScreen={AppRoutes.TestDetails}
+        widgetHeading={heading}
+        isPackage={true}
+      />
+    );
+  };
+
+  function onPressHorizontalIcon(item: any) {
+    const title = item?.title;
+    switch (title) {
+      case string.diagnosticsDetails.relatedPackages:
+        scrollToYPosition(relatedPackagesVerticalPosition);
+        break;
+      case string.diagnosticsDetails.frequentlyBooked:
+        scrollToYPosition(frequentlyBroughtVerticalPosition);
+        break;
+      case string.diagnosticsDetails.frequentlyAskedQuestions:
+        scrollToYPosition(faqVerticalPosition);
+        break;
+    }
+  }
+
+  function scrollToYPosition(val: number) {
+    scrollViewRef?.current?.scrollTo({
+      x: 0,
+      y: val - 10,
+      animated: true,
+    });
+  }
+
+  const renderHorizontalItem = (item: any) => {
+    return (
+      <TouchableOpacity
+        activeOpacity={0.5}
+        style={styles.horizontalItemTouch}
+        onPress={() => onPressHorizontalIcon(item)}
+      >
+        {item?.icon}
+        <Text style={styles.horizontalItemTitle}>{item?.title}</Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderHorizontalOptions = () => {
+    return (
+      <View style={styles.horizontalOptionsView}>
+        {horizontalComponentOptions?.map((item: any) => {
+          return renderHorizontalItem(item);
+        })}
+      </View>
+    );
+  };
+
+  const renderSkuContent = () => {
+    return (
+      <>
+        {loading
+          ? renderDiagnosticTestDetailShimmer()
+          : !_.isEmpty(testInfo) && !!cmsTestDetails && renderItemCard()}
+        {loading ? renderDiagnosticTestDetailShimmer() : renderDescriptionCard()}
+        {loading
+          ? renderTestDetailHorizontalOptionShimmer(horizontalComponentOptions)
+          : horizontalComponentOptions?.length > 1
+          ? renderHorizontalOptions()
+          : null}
+        {loading ? renderDiagnosticTestDetailShimmer() : renderInclusionsView()}
+        {loading
+          ? renderDiagnosticTestDetailShimmer()
+          : !!cmsTestDetails?.diagnosticWidgetsData &&
+            cmsTestDetails?.diagnosticWidgetsData?.length > 0
+          ? renderWidgetsView()
+          : null}
+        {/**packages for single test */}
+        {loading
+          ? renderTestDetailHorizontalOptionShimmer(Array(2))
+          : !!packageRecommendations &&
+            packageRecommendations?.length > 0 &&
+            renderPackageRecommendations()}
+        {/** frequently brought together */}
+        {(frequentlyBroughtRecommendations?.length > 0 || topBookedTests?.length > 0) &&
+          renderFrequentlyBrought()}
+        {loading
+          ? renderTestDetailFaqShimmer()
+          : !!cmsTestDetails?.diagnosticFAQs && cmsTestDetails?.diagnosticFAQs?.length > 0
+          ? renderFAQView()
+          : null}
+      </>
+    );
+  };
+
+  const renderButton = () => {
+    return (
+      <Button
+        title={
+          isAlreadyPartOfOrder
+            ? string.diagnostics.alreadyAdded
+            : movedFrom === AppRoutes.CartPage && changeCTA
+            ? string.diagnostics.addAndProceed
+            : isAddedToCart
+            ? string.diagnostics.proceedToCartCTA
+            : string.circleDoctors.addToCart
+        }
+        onPress={() =>
+          isAlreadyPartOfOrder
+            ? props.navigation.navigate(AppRoutes.CartPage, {
+                orderDetails: modifiedOrder,
+              })
+            : movedFrom === AppRoutes.CartPage && changeCTA
+            ? onPressAddToCart()
+            : isAddedToCart
+            ? isModify
+              ? props.navigation.navigate(AppRoutes.CartPage, {
+                  orderDetails: modifiedOrder,
+                })
+              : props.navigation.navigate(AppRoutes.AddPatients)
+            : onPressAddToCart()
+        }
+        style={showBottomBar ? { width: '70%' } : {}}
+      />
+    );
+  };
+
   return (
-    <SafeAreaView
-      style={{
-        ...theme.viewStyles.container,
-      }}
-    >
+    <SafeAreaView style={styles.containerStyle}>
       {!errorState ? (
         <>
           {renderHeader()}
-          {expressSlotMsg != '' ? renderExpressSlots() : null}
+          {renderExpressSlots()}
           {renderBreadCrumb()}
           <ScrollView
             bounces={false}
             keyboardDismissMode="on-drag"
-            style={{ marginBottom: 60 }}
+            style={{ marginBottom: Platform.OS == 'android' ? 70 : 60 }}
             ref={scrollViewRef}
             scrollEventThrottle={16}
             onScroll={(event) => {
@@ -1791,53 +1598,12 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                 );
             }}
           >
-            {!_.isEmpty(testInfo) && !!cmsTestDetails && renderItemCard()}
-            {renderDescriptionCard()}
-            {!!cmsTestDetails?.diagnosticFAQs && cmsTestDetails?.diagnosticFAQs?.length > 0
-              ? renderFAQView()
-              : null}
-            {!!cmsTestDetails?.diagnosticWidgetsData &&
-            cmsTestDetails?.diagnosticWidgetsData?.length > 0
-              ? renderWidgetsView()
-              : null}
-            {/** frequently brought together */}
-            {(frequentlyBroughtRecommendations?.length > 0 || topBookedTests?.length > 0) &&
-              renderFrequentlyBrought()}
-            {/**packages for single test */}
-            {!!packageRecommendations &&
-              packageRecommendations?.length > 0 &&
-              renderPackageRecommendations()}
+            {renderSkuContent()}
           </ScrollView>
           {renderCallToOrder()}
           <StickyBottomComponent>
-            {showBottomBar && renderPriceView(true)}
-            <Button
-              title={
-                isAlreadyPartOfOrder
-                  ? 'ALREADY ADDED'
-                  : movedFrom === AppRoutes.CartPage && changeCTA
-                  ? 'ADD & PROCEED TO CART'
-                  : isAddedToCart
-                  ? 'PROCEED TO CART'
-                  : 'ADD TO CART'
-              }
-              onPress={() =>
-                isAlreadyPartOfOrder
-                  ? props.navigation.navigate(AppRoutes.CartPage, {
-                      orderDetails: modifiedOrder,
-                    })
-                  : movedFrom === AppRoutes.CartPage && changeCTA
-                  ? onPressAddToCart()
-                  : isAddedToCart
-                  ? isModify
-                    ? props.navigation.navigate(AppRoutes.CartPage, {
-                        orderDetails: modifiedOrder,
-                      })
-                    : props.navigation.navigate(AppRoutes.AddPatients)
-                  : onPressAddToCart()
-              }
-              style={showBottomBar ? { width: '70%' } : {}}
-            />
+            {showBottomBar && renderPriceView()}
+            {renderButton()}
           </StickyBottomComponent>
         </>
       ) : (
@@ -1859,6 +1625,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 };
 
 const styles = StyleSheet.create({
+  containerStyle: {
+    ...theme.viewStyles.container,
+    backgroundColor: colors.WHITE,
+  },
   container: {
     flexDirection: 'column',
     justifyContent: 'space-between',
@@ -1872,156 +1642,25 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 2,
   },
-  personDetailStyles: {
-    ...theme.fonts.IBMPlexSansMedium(10),
-    color: theme.colors.LIGHT_BLUE,
-    letterSpacing: 0.25,
-    marginTop: 4,
-  },
-  pendingIconStyle: { height: 15, width: 15, resizeMode: 'contain' },
-  notificationCard: {
-    ...theme.viewStyles.cardViewStyle,
-    flexDirection: 'row',
-    margin: 16,
-    padding: 16,
-  },
   descriptionCardOuterView: {
-    width: screenWidth * 0.9,
-    ...theme.viewStyles.card(16, 4, 10, '#fff', 10),
+    flex: 1,
+    ...theme.viewStyles.card(16, 4, 10, colors.WHITE, 10),
     padding: 16,
     elevation: 10,
     margin: 16,
-    flex: 1,
-  },
-  packageDescriptionHeading: {
-    ...theme.viewStyles.text('SB', isSmallDevice ? 16.5 : 18, theme.colors.SHERPA_BLUE, 1, 25),
-    textAlign: 'left',
-    marginBottom: '2%',
-  },
-  packageDescriptionText: {
-    ...theme.viewStyles.text('L', 13, theme.colors.SHERPA_BLUE, 1, 20),
-    textAlign: 'left',
-    letterSpacing: 0.5,
-  },
-  overViewContainer: {
-    marginTop: 10,
-  },
-  readMoreTouch: { alignSelf: 'flex-end', marginTop: 10 },
-  readMoreText: {
-    ...theme.viewStyles.text('SB', isSmallDevice ? 14 : 15, theme.colors.APP_YELLOW, 1, 20),
-    letterSpacing: 0.25,
-    marginBottom: '1.5%',
-  },
-  flexRowView: { flexDirection: 'row', justifyContent: 'space-between' },
-  rowStyle: { flexDirection: 'row' },
-  slashedPriceText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE),
-    lineHeight: 21,
-    textAlign: 'left',
-    opacity: 0.5,
-  },
-  mainPriceText: {
-    ...theme.viewStyles.text('SB', isSmallDevice ? 15 : 16, theme.colors.SHERPA_BLUE),
-    lineHeight: 21,
-    textAlign: 'left',
-    alignSelf: 'flex-start',
-  },
-  circleLogoIcon: {
-    height: 20,
-    width: isSmallDevice ? 32 : 36,
-    resizeMode: 'contain',
-  },
-  savingsText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 10.5 : 11, theme.colors.SHERPA_BLUE, 0.9, 18),
-    textAlign: 'center',
-    alignSelf: 'center',
-  },
-  midCardView: { flexDirection: 'row', height: 60, width: '90%' },
-  clockIconStyle: {
-    height: 17,
-    width: 17,
-    resizeMode: 'contain',
-    alignSelf: 'flex-start',
-    marginVertical: '4%',
-  },
-  midCardTextView: {
-    flexDirection: 'column',
-    marginHorizontal: '3%',
-    justifyContent: 'center',
-    alignSelf: 'center',
-  },
-  reportTimeText: {
-    ...theme.viewStyles.text('M', 11, theme.colors.SHERPA_BLUE, 0.5, 13),
-    textAlign: 'left',
-    letterSpacing: 0.25,
-  },
-  reportTime: {
-    ...theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE, 1, 16),
-    textAlign: 'left',
-    letterSpacing: 0.25,
-    marginVertical: 4,
-  },
-  bottomCardView: {
-    flexDirection: 'row',
-    height: 40,
-    alignItems: 'center',
-  },
-  infoIconStyle: { height: 17, width: 17, resizeMode: 'contain' },
-  preTestingText: {
-    ...theme.viewStyles.text('M', 11, '#FF637B', 1, 15),
-    textAlign: 'left',
-    letterSpacing: 0.25,
-    marginHorizontal: '3%',
   },
   itemNameText: {
-    ...theme.viewStyles.text('SB', isSmallDevice ? 16.5 : 18, theme.colors.SHERPA_BLUE, 1, 25),
+    ...theme.viewStyles.text('SB', 16, theme.colors.SHERPA_BLUE, 1, 21),
     textAlign: 'left',
   },
-  inclusionsView: { width: '100%', marginVertical: '4%' },
-  testIncludedText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 0.5, 18),
-    textAlign: 'left',
-    marginTop: '1%',
-    letterSpacing: 0.25,
-    marginBottom: '3%',
-  },
-  inclusionsBullet: {
-    color: '#007C9D',
-    fontSize: 6,
-    textAlign: 'center',
-    paddingTop: 3,
-  },
-  inclusionsItemText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 11.5 : 12, '#007C9D', 1, 17),
-    letterSpacing: 0,
-    marginBottom: '1.5%',
-    marginHorizontal: '3%',
-  },
-  parameterText: {
-    ...theme.viewStyles.text('R', isSmallDevice ? 10.5 : 11, '#007C9D', 1, 15),
-    letterSpacing: 0,
-    marginBottom: '1.5%',
-    marginHorizontal: '3%',
-  },
-  moreText: {
-    ...theme.viewStyles.text('SB', isSmallDevice ? 12 : 13, theme.colors.APP_YELLOW, 1, 15),
-    letterSpacing: 0.25,
-    marginBottom: '1.5%',
-  },
-  showLessText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 12 : 13, theme.colors.APP_YELLOW, 1, 15),
-    letterSpacing: 0.25,
-    marginBottom: '1.5%',
-    marginTop: '2%',
-    marginLeft: '5%',
-  },
+  inclusionsView: { width: '100%' },
   breadCrumbContainer: {
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5E5',
   },
   faqHeadingText: {
     ...theme.viewStyles.text('SB', 16, '#02475B', 1, 20, 0.35),
-    marginTop: 10,
+    marginHorizontal: 16,
   },
   widgetHeading: {
     ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE, 1, 20),
@@ -2029,29 +1668,58 @@ const styles = StyleSheet.create({
   },
   faqLine: {
     marginVertical: 8,
-    borderTopColor: '#02475B',
-    opacity: 0.3,
+    borderTopColor: colors.SHERPA_BLUE,
+    opacity: 0.1,
     borderTopWidth: 1,
+    marginLeft: -16,
+    width: screenWidth - 42,
   },
-  outerExpressView: { backgroundColor: theme.colors.APP_GREEN, marginBottom: 2 },
-  innerExpressView: {
+  detailsView: {
     flexDirection: 'row',
-    padding: 4,
-    paddingLeft: 8,
-    paddingRight: 8,
     alignItems: 'center',
-    width: '97%',
+    justifyContent: 'space-around',
   },
-  expressSlotIcon: { width: 35, height: 35, resizeMode: 'contain' },
-  expressSlotText: {
-    ...theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1, 18),
-    marginLeft: 10,
+  faqIcon: { height: 13, width: 12, resizeMode: 'contain', tintColor: colors.SHERPA_BLUE },
+  questionsStyle: {
+    ...theme.viewStyles.text('M', 14, colors.SHERPA_BLUE, 1, 18),
+    width: '80%',
   },
-  italicStyle: {
-    fontStyle: 'italic',
-    color: theme.colors.SHERPA_BLUE,
-    lineHeight: 15.6,
-    fontSize: 12,
+  horizontalComponentIcon: {
+    height: 20,
+    width: 20,
+    resizeMode: 'contain',
+    marginBottom: 6,
   },
-  savingsOuterView: { marginLeft: '3%', justifyContent: 'center' },
+  horizontalOptionsView: {
+    flexDirection: 'row',
+    marginLeft: 16,
+    width: screenWidth - 16,
+    justifyContent: 'space-around',
+    marginTop: 10,
+  },
+  horizontalItemTouch: {
+    width: screenWidth / 4,
+    alignItems: 'center',
+    marginRight: 10,
+    padding: 4,
+  },
+  horizontalItemTitle: {
+    ...theme.viewStyles.text('SB', 12, colors.APP_YELLOW, 1, 16, 0.25),
+    textAlign: 'center',
+  },
+  widgetHeadingIcon: {
+    tintColor: colors.SHERPA_BLUE,
+    height: 18,
+    width: 18,
+    resizeMode: 'contain',
+  },
+  widgetHeadingStyle: {
+    borderBottomWidth: 0,
+    borderColor: 'transparent',
+    justifyContent: 'flex-start',
+  },
+  faqAnswer: {
+    ...theme.viewStyles.text('L', 12, '#01475B', 1, 16, 0.35),
+    marginVertical: 8,
+  },
 });

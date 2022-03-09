@@ -34,7 +34,7 @@ export const AddPassportNo: React.FC<AddPassportNoProps> = (props) => {
             ? string.diagnostics.editpassportText
             : string.diagnostics.addOrEditPassportText}
         </Text>
-        <TouchableOpacity onPress={onPressAdd}>
+        <TouchableOpacity activeOpacity={0.5} onPress={onPressAdd}>
           <Text style={styles.add}>{passportNo?.length ? 'EDIT' : 'ADD'}</Text>
         </TouchableOpacity>
       </View>

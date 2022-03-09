@@ -30,7 +30,7 @@ export const LocationInfo: React.FC<LocationInfoProps> = (props) => {
               {locationDetails?.pincode ? `, ${locationDetails?.pincode}` : ''}
             </Text>
           </View>
-          <TouchableOpacity onPress={onPressChange}>
+          <TouchableOpacity activeOpacity={0.5} onPress={onPressChange}>
             <Text style={styles.changeLocationBtnTxt}>CHANGE LOCATION</Text>
           </TouchableOpacity>
         </View>

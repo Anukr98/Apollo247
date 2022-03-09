@@ -36,7 +36,11 @@ export const MedicineListingHeader: React.FC<Props> = ({
 
   const renderHeaderCenterView = () => {
     return (
-      <TouchableOpacity style={{ marginLeft: '-75%' }} onPress={onPressApolloIcon}>
+      <TouchableOpacity
+        activeOpacity={0.5}
+        style={{ marginLeft: '-75%' }}
+        onPress={onPressApolloIcon}
+      >
         <ApolloLogo style={styles.apolloLogo} />
       </TouchableOpacity>
     );
@@ -60,10 +64,10 @@ export const MedicineListingHeader: React.FC<Props> = ({
     };
 
     const icons = [
-      <TouchableOpacity onPress={onPressSearchIcon}>
+      <TouchableOpacity activeOpacity={0.5} onPress={onPressSearchIcon}>
         <WhiteSearchIcon />
       </TouchableOpacity>,
-      <TouchableOpacity onPress={onPressCartIcon}>
+      <TouchableOpacity activeOpacity={0.5} onPress={onPressCartIcon}>
         <CartIcon />
         {cartItemsCount > 0 && <Badge label={cartItemsCount} />}
       </TouchableOpacity>,

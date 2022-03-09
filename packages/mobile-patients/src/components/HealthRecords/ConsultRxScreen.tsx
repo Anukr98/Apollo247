@@ -106,8 +106,8 @@ import moment from 'moment';
 import _ from 'lodash';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/SearchHealthRecordCard';
-import { DiagnosticAddToCartEvent } from '@aph/mobile-patients/src/components/Tests/Events';
-import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
+import { DiagnosticAddToCartEvent } from '@aph/mobile-patients/src/components/Tests/utils/Events';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import { useServerCart } from '@aph/mobile-patients/src/components/ServerCart/useServerCart';
 import ListEmptyComponent from '@aph/mobile-patients/src/components/HealthRecords/Components/ListEmptyComponent';
 
@@ -603,7 +603,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         </Text>
         <View style={styles.searchBarMainView}>
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             onPress={() => {
               setShowSearchBar(true);
               setSearchInputFocus(true);
@@ -1058,7 +1058,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         : `${healthRecordSearchResults?.length} search results for \‘${searchText}\’`;
     return (
       <View style={styles.searchListHeaderViewStyle}>
-        <Text style={styles.searchListHeaderTextStyle}>{search_result_text}</Text>
+        <Text style={styles.searchListHeaderTextStyle}>{search_result_text + 'Found'}</Text>
       </View>
     );
   };

@@ -58,7 +58,7 @@ export const CollapseCard: React.FC<CollapseCardProps> = (props) => {
       <View style={[styles.labelView, props.labelViewStyle]}>
         <View style={styles.containerView}>
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             style={styles.arrowview}
             onPress={() => props.onPress(!props.collapse)}
           >

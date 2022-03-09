@@ -261,7 +261,11 @@ export const OrderProgressCard: React.FC<OrderProgressCardProps> = (props) => {
             </View>
             {props.newItemsDescription?.showOption ? (
               <View>
-                <TouchableOpacity onPress={props.onPressViewSummary} style={styles.newItemsTouch}>
+                <TouchableOpacity
+                  activeOpacity={0.5}
+                  onPress={props.onPressViewSummary}
+                  style={styles.newItemsTouch}
+                >
                   <Text style={styles.customOrangeOption}>VIEW ORDER SUMMARY</Text>
                 </TouchableOpacity>
               </View>

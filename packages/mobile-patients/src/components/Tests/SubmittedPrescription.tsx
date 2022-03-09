@@ -43,12 +43,13 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import { addPatientPrescriptionRecord } from '@aph/mobile-patients/src/graphql/types/addPatientPrescriptionRecord';
 import {
   AddPrescriptionRecordInput,
+  DiagnosticCTJourneyType,
   MedicalRecordType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import moment from 'moment';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { DiagnosticPrescriptionSubmitted } from '@aph/mobile-patients/src/components/Tests/Events';
+import { DiagnosticPrescriptionSubmitted } from '@aph/mobile-patients/src/components/Tests/utils/Events';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   getPatientPrescriptions,
@@ -86,6 +87,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
   const [additionalNotes, setadditionalNotes] = useState<string>('');
   const [onSumbitSuccess, setOnSumbitSuccess] = useState<boolean>(false);
   const [isErrorOccured, setIsErrorOccured] = useState<boolean>(false);
+
   useEffect(() => {
     setLoading?.(false);
     fetchPatientPrescriptions();
@@ -145,6 +147,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
       </View>
     );
   };
+
   const setUploadedImages = (selectedImages: any) => {
     let imagesArray = [] as any;
     selectedImages?.forEach((item: any) => {
@@ -158,11 +161,14 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
     });
     return imagesArray;
   };
+
   useEffect(() => {
     if (EPrescriptionsProps && EPrescriptionsProps?.length) {
       const ePrescriptionArray = EPrescriptionsProps?.filter(
         (item: any, index: any) =>
-          EPrescriptionsProps?.findIndex((obj) => obj?.id == item?.id) === index
+          EPrescriptionsProps?.findIndex(
+            (obj) => obj?.id == item?.id && obj?.fileName == item?.fileName
+          ) === index
       );
       setEPrescriptionsProps(ePrescriptionArray);
     }
@@ -304,7 +310,8 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
         prescriptionUrl ? prescriptionUrl : '',
         inputData?.prescriptionName ? inputData?.prescriptionName : '',
         userType,
-        isDiagnosticCircleSubscription
+        isDiagnosticCircleSubscription,
+        DiagnosticCTJourneyType?.UPLOAD_PRESCRIPTION
       );
     } else {
       let uploadUrl;
@@ -320,7 +327,8 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
         !!uploadUrl ? uploadUrl : '',
         inputData?.prescriptionName ? inputData?.prescriptionName : '',
         userType,
-        isDiagnosticCircleSubscription
+        isDiagnosticCircleSubscription,
+        DiagnosticCTJourneyType?.UPLOAD_PRESCRIPTION
       );
     }
     setOnSumbitSuccess(true);
@@ -361,12 +369,21 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
       ? finalConcatenatedUrl?.map((item: any) => item)?.join(' ')
       : finalConcatenatedUrl;
 
+    let itemNames = [];
+    if (responseResult?.prescriptionFiles?.length == 1) {
+      itemNames = responseResult?.prescriptionFiles?.[0]?.fileName;
+    } else {
+      itemNames = responseResult?.prescriptionFiles?.map(
+        (attributes: any) => `${attributes?.fileName}`
+      );
+    }
     DiagnosticPrescriptionSubmitted(
       currentPatient,
       !!newUrl ? newUrl : '',
-      inputData?.prescriptionName ? inputData?.prescriptionName : '',
+      !!itemNames ? itemNames : '',
       userType,
-      isDiagnosticCircleSubscription
+      isDiagnosticCircleSubscription,
+      DiagnosticCTJourneyType?.UPLOAD_PRESCRIPTION
     );
     setOnSumbitSuccess(true);
   }
@@ -393,6 +410,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
       <View style={styles.errorMessageView}>
         <Text style={styles.errorMsgText}>{string.diagnostics.prescriptionError}</Text>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             setIsErrorOccured(false);
           }}
@@ -488,6 +506,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                               <Text style={styles.leftText}>{item?.title}</Text>
                             </View>
                             <TouchableOpacity
+                              activeOpacity={0.5}
                               onPress={() => {
                                 const phyPrescription = PhysicalPrescriptionsProps;
                                 const filteredPres = phyPrescription?.filter(
@@ -525,6 +544,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                                 </View>
                               </View>
                               <TouchableOpacity
+                                activeOpacity={0.5}
                                 onPress={() => {
                                   setEPrescriptionsProps(
                                     EPrescriptionsProps?.filter((_item) => _item?.id != item?.id)
@@ -542,6 +562,7 @@ export const SubmittedPrescription: React.FC<SubmittedPrescriptionProps> = (prop
                   ) : null}
                 </>
                 <TouchableOpacity
+                  activeOpacity={0.5}
                   style={styles.addPresView}
                   onPress={() => {
                     props.navigation.navigate('TESTS', {

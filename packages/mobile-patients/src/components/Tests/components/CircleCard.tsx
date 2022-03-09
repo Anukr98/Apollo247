@@ -84,6 +84,7 @@ const CircleCard: React.FC<CircleCardProps> = (props) => {
       <View style={styles.belowView}>
         {!!defaultPlanMonths && !!defaultPlanPrice ? (
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={onTogglePlans}
             style={[
               styles.leftTouch,
@@ -117,7 +118,7 @@ const CircleCard: React.FC<CircleCardProps> = (props) => {
             </View>
           </TouchableOpacity>
         ) : null}
-        <TouchableOpacity onPress={onPressViewPlan} style={styles.rightTouch}>
+        <TouchableOpacity activeOpacity={0.5} onPress={onPressViewPlan} style={styles.rightTouch}>
           <Text style={styles.yellowText}>{rightText}</Text>
           <ArrowRight style={styles.rightIconStyle} />
         </TouchableOpacity>

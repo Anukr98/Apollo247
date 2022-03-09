@@ -193,7 +193,7 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
   const renderAddToCartView = () => {
     return (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={isOutOfStock ? props.onPressNotify : props.onPressAddToCart}
       >
         <Text style={theme.viewStyles.text('SB', 12, '#fc9916', 1, 24, 0)}>
@@ -224,7 +224,7 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
 
   return (
     <TouchableOpacity
-      activeOpacity={1}
+      activeOpacity={0.5}
       style={[styles.containerStyle, props.style]}
       onPress={props.onPress}
     >

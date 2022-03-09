@@ -362,7 +362,11 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
 
   const saveCardOption = () => {
     return (
-      <TouchableOpacity style={styles.saveCard} onPress={() => setSaveCard(!saveCard)}>
+      <TouchableOpacity
+        activeOpacity={0.5}
+        style={styles.saveCard}
+        onPress={() => setSaveCard(!saveCard)}
+      >
         {saveCard ? <CheckIcon style={styles.icon} /> : <UnCheck style={styles.icon} />}
         <Text style={styles.saveCardTxt}>Save this card for faster checkout</Text>
       </TouchableOpacity>

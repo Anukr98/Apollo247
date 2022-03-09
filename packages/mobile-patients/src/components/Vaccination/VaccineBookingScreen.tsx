@@ -936,7 +936,7 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
         rightComponent={
           <View>
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               onPress={() => {
                 props.navigation.navigate(AppRoutes.MobileHelp);
               }}
@@ -1284,8 +1284,8 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
             </Text>
 
             <TouchableOpacity
+              activeOpacity={0.5}
               style={{ alignSelf: 'center' }}
-              activeOpacity={1}
               onPress={() => {
                 setSelectedSlot(undefined);
                 setCancellationWarningAlertShown(false);
@@ -1414,6 +1414,7 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
               {string.vaccineBooking.request_submission_failed_message_1}
             </Text>
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 setRequestSubmissionErrorAlert(false);
               }}
@@ -1546,6 +1547,7 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
           </Text>
         </View>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             setShowPatientListOverlay(true);
           }}

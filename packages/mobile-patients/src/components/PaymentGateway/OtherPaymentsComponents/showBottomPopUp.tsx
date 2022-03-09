@@ -52,7 +52,7 @@ export const ShowBottomPopUp: React.FC<ShowBottomPopUpProps> = (props) => {
     return (
       <View style={styles.headerCont}>
         <Text style={styles.header}>{getHeader()}</Text>
-        <TouchableOpacity onPress={() => onDismissPopUp()}>
+        <TouchableOpacity activeOpacity={0.5} onPress={() => onDismissPopUp()}>
           <GreyCrossIcon style={{ height: 20, width: 20 }} />
         </TouchableOpacity>
       </View>

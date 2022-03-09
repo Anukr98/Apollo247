@@ -10,12 +10,13 @@ import {
   OffersIconGreen,
   CartIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import {
   createDiagnosticValidateCouponLineItems,
   createPatientAddressObject,
   createPatientObjLineItems,
-  sourceHeaders,
-} from '@aph/mobile-patients/src/utils/commonUtils';
+} from '@aph/mobile-patients/src/components/Tests/utils/helpers';
+
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
@@ -75,10 +76,8 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import {
-  convertNumberToDecimal,
-  diagnosticsDisplayPrice,
-} from '@aph/mobile-patients/src/utils/commonUtils';
+import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
+import { diagnosticsDisplayPrice } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { TestProceedBar } from '@aph/mobile-patients/src/components/Tests/components/TestProceedBar';
 import {
@@ -105,7 +104,7 @@ import {
   DiagnosticModifyOrder,
   DiagnosticProceedToPay,
   DiagnosticRemoveFromCartClicked,
-} from '@aph/mobile-patients/src/components/Tests/Events';
+} from '@aph/mobile-patients/src/components/Tests/utils/Events';
 
 import moment from 'moment';
 import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
@@ -263,6 +262,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const { setauthToken } = useAppCommonData();
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
+  const showHCOption = AppConfig.Configuration.DIAGNOSTICS_SHOW_HEALTH_CREDITS;
 
   type PatientsObjWithOrderIDs = saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patientsObjWithOrderIDs;
   type PatientObjWithModifyOrderIDs = saveModifyDiagnosticOrder_saveModifyDiagnosticOrder_attributes_conflictedItems;
@@ -462,6 +462,13 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     }
   }, [toPayPrice, isFocused]);
 
+  const paitentTotalCart: any[] = [];
+  patientCartItemsCopy?.map((item: any) => {
+    item?.cartItems?.map((_item: any) => {
+      paitentTotalCart?.push(_item);
+    });
+  });
+
   function triggerCartPageViewed() {
     const addressToUse = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
     const pinCodeFromAddress = addressToUse?.zipcode!;
@@ -483,14 +490,20 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       cityFromAddress,
       coupon,
       false,
-      []
+      [],
+      paitentTotalCart
     );
     //add coupon code + coupon discount
   }
 
   useEffect(() => {
+    !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
+  }, [isfetchingId]);
+
+  useEffect(() => {
     //modify case
     if (isModifyFlow && cartItems?.length > 0 && modifiedPatientCart?.length > 0) {
+      //commented for future ref
       //if multi-uhid modify -> don't call phleboCharges api
       // !!modifiedOrder?.attributesObj?.isMultiUhid && modifiedOrder?.attributesObj?.isMultiUhid
       //   ? clearCollectionCharges()
@@ -500,10 +513,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       fetchHC_ChargesForTest();
     }
   }, [isCircleAddedToCart]);
-
-  useEffect(() => {
-    !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
-  }, [isfetchingId]);
 
   async function populateCartMapping() {
     const listOfIds = cartItems?.map((item) => Number(item?.id));
@@ -1090,7 +1099,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             {defaultPlanPurchasePrice}
           </Text>
         </View>
-        <TouchableOpacity onPress={() => _onPressRemovePlan()} style={styles.removeTouch}>
+        <TouchableOpacity
+          activeOpacity={0.5}
+          onPress={() => _onPressRemovePlan()}
+          style={styles.removeTouch}
+        >
           <Text style={styles.removeText}>REMOVE</Text>
         </TouchableOpacity>
       </View>
@@ -1108,6 +1121,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const slashedPrice = diagnosticsDisplayPrice(item, showCirclePrice)?.slashedPrice;
 
     const calTotal = priceToShow * item?.mou;
+    //removed packageMrp for showing circle savings  Number((!!item?.packageMrp && item?.packageMrp!) || mrpToDisplay)
     const savingAmount =
       Number(item?.circlePrice! || item?.price) - Number(item?.circleSpecialPrice!);
 
@@ -1212,23 +1226,28 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const defaultPlanDurationInMonths = !!selectedCirclePlan
       ? selectedCirclePlan?.durationInMonth
       : !!defaultCirclePlan && defaultCirclePlan?.durationInMonth;
+    const isSavingZero = circleSaving == 0;
     return (
       <View style={styles.circleItemCartView}>
-        <View style={styles.circleIconView}>
-          <CircleLogo style={styles.circleIcon} />
-        </View>
-        <View style={styles.circleText}>
-          <Text style={styles.circleTextStyle}>
-            Circle membership ({defaultPlanDurationInMonths} month)
-          </Text>
-          <Text style={styles.mediumText}>
-            {upperLeftText}{' '}
-            <Text style={styles.mediumGreenText}>
-              {upperMiddleText} {string.common.Rs}
-              {circleSaving}
-            </Text>{' '}
-            {upperRightText}{' '}
-          </Text>
+        <View style={{ flexDirection: 'row', width: '75%' }}>
+          <View style={[styles.circleIconView, isSavingZero && { justifyContent: 'center' }]}>
+            <CircleLogo style={styles.circleIcon} />
+          </View>
+          <View style={[styles.circleText, isSavingZero && { justifyContent: 'center' }]}>
+            <Text style={styles.circleTextStyle}>
+              Circle membership ({defaultPlanDurationInMonths} month)
+            </Text>
+            {!isSavingZero && (
+              <Text style={styles.mediumText}>
+                {upperLeftText}{' '}
+                <Text style={styles.mediumGreenText}>
+                  {upperMiddleText} {string.common.Rs}
+                  {circleSaving}
+                </Text>{' '}
+                {upperRightText}{' '}
+              </Text>
+            )}
+          </View>
         </View>
         <View style={styles.circleTextPrice}>
           <Text style={styles.leftTextPrice}>
@@ -1236,6 +1255,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             {defaultPlanPurchasePrice}
           </Text>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               _onTogglePlans();
             }}
@@ -1293,6 +1313,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           ]}
         >
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => setShowAllPreviousItems(!showAllPreviousItems)}
             style={styles.previousContainerTouch}
           >
@@ -1384,7 +1405,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             {title}
           </Text>
           {showCouponView && !!touchView && touchView && !!!coupon && !coupon?.valid && (
-            <TouchableOpacity onPress={() => _navigateToCoupons()} style={styles.applyCouponTouch}>
+            <TouchableOpacity
+              activeOpacity={0.5}
+              onPress={() => _navigateToCoupons()}
+              style={styles.applyCouponTouch}
+            >
               <Text style={styles.couponText}>
                 {nameFormater(string.diagnosticsCoupons.applyCoupon, 'upper')}
               </Text>
@@ -1577,7 +1602,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
               </Text>
             </View>
           </View>
-          <TouchableOpacity onPress={() => _removeAppliedCoupon()} style={styles.crossIconTouch}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            onPress={() => _removeAppliedCoupon()}
+            style={styles.crossIconTouch}
+          >
             <Text style={styles.crossIconText}>X </Text>
           </TouchableOpacity>
         </View>
@@ -1591,6 +1620,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const renderOffersCouponsView = () => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={() => _navigateToCoupons()}
         style={[styles.couponViewTouch, styles.flexRow]}
       >
@@ -1619,11 +1649,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const showCirclePurchaseAmount = isDiagnosticCircleSubscription || isCircleAddedToCart;
     const showCircleRelatedSavings =
       showCirclePurchaseAmount && circleSaving > 0 && (!!coupon ? couponCircleBenefits : true);
-    //commented for this release
-    // const showOneApollo = isModifyFlow
-    //   ? modifiedOrder?.paymentType === DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT
-    //   : true;
-    const showOneApollo = false;
+    const showOneApollo = isModifyFlow
+      ? modifiedOrder?.paymentType === DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT && showHCOption
+      : showHCOption;
     return (
       <>
         <View
@@ -2298,12 +2326,13 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       itemIds?.length &&
       itemIds?.map((id: number) => {
         const isFromApi = !!cartItemsMapping && cartItemsMapping?.length > 0;
-        const arrayToSelect = isFromApi ? cartItemsMapping : cartItems;
+        const apiArray = isFromApi && cartItemsMapping?.length > cartItems?.length;
+        const arrayToSelect = apiArray ? cartItemsMapping : cartItems;
         const findItem = arrayToSelect?.find(
-          (cItems: any) => Number(isFromApi ? cItems?.itemId : cItems?.id) === Number(id)
+          (cItems: any) => Number(apiArray ? cItems?.itemId : cItems?.id) === Number(id)
         );
         if (!!findItem) {
-          itemNames?.push(isFromApi ? findItem?.itemName : findItem?.name);
+          itemNames?.push(apiArray ? findItem?.itemName : findItem?.name);
         }
         //in case of modify. => only for single uhid
         if (isModifyFlow) {
@@ -3400,9 +3429,11 @@ const styles = StyleSheet.create({
   circleItemCartView: {
     backgroundColor: 'white',
     flexDirection: 'row',
+    paddingTop: 12,
+    paddingBottom: 12,
   },
   circleIconView: { paddingHorizontal: 10 },
   circleText: { flexDirection: 'column' },
-  circleTextPrice: { padding: 10 },
+  circleTextPrice: { padding: 10, paddingTop: 2 },
   circleTextStyle: { ...theme.viewStyles.text('M', 14, colors.SHERPA_BLUE, 1) },
 });

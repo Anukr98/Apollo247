@@ -10,14 +10,19 @@ import {
 } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { Down, Up, CircleLogo, ExclamationGreen } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  Down,
+  Up,
+  CircleLogo,
+  ExclamationGreen,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {
   calculateCircleDoctorPricing,
   convertNumberToDecimal,
   isPhysicalConsultation,
 } from '@aph/mobile-patients/src/utils/commonUtils';
-import {Tooltip} from 'react-native-elements';
+import { Tooltip } from 'react-native-elements';
 import { Decimal } from 'decimal.js';
 
 interface ConsultDiscountProps {
@@ -59,18 +64,19 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
     onlineConsultMRPPrice,
   } = circleDoctorDetails;
 
-  const cashbackPercentage = +new Decimal(cashbackAmount || 0).dividedBy(
-    onlineConsultMRPPrice || onlineConsultDiscountedPrice).mul(100);
+  const cashbackPercentage = +new Decimal(cashbackAmount || 0)
+    .dividedBy(onlineConsultMRPPrice || onlineConsultDiscountedPrice)
+    .mul(100);
   const hcCashbackAmount = Math.round(
-   +new Decimal(cashbackPercentage * (onlineConsultMRPPrice - couponDiscountFees)).dividedBy(100)
-   );
-  
+    +new Decimal(cashbackPercentage * (onlineConsultMRPPrice - couponDiscountFees)).dividedBy(100)
+  );
+
   const totalSavings =
     isCircleDoctorOnSelectedConsultMode && (circleSubscriptionId || planSelected)
-      ? isOnlineConsult 
+      ? isOnlineConsult
         ? cashbackEnabled
-        ? hcCashbackAmount + couponDiscountFees
-        : onlineConsultDiscountedPrice + couponDiscountFees
+          ? hcCashbackAmount + couponDiscountFees
+          : onlineConsultDiscountedPrice + couponDiscountFees
         : physicalConsultDiscountedPrice + couponDiscountFees
       : couponDiscountFees;
   const [showPriceBreakup, setShowPriceBreakup] = useState<boolean>(false);
@@ -79,7 +85,7 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
     return (
       <View style={[styles.container, props.style]}>
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           style={styles.rowContainer}
           onPress={() => {
             setShowPriceBreakup(!showPriceBreakup);
@@ -110,59 +116,65 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
                 </Text>
               </View>
             ) : null}
-            {isCircleDoctorOnSelectedConsultMode && 
-            (!!circleSubscriptionId || planSelected) ? !cashbackEnabled ? (
-              <View style={[styles.rowContainer, { marginTop: 5 }]}>
-                <View style={styles.row}>
-                  <CircleLogo style={styles.careLogo} />
-                  <Text style={styles.membershipDiscountStyle}>
-                    {string.common.membershipDiscount}
-                  </Text>
-                </View>
-                <Text style={styles.membershipDiscountStyle}>
-                  {string.common.Rs}
-                  {convertNumberToDecimal(
-                    isOnlineConsult ? onlineConsultDiscountedPrice : physicalConsultDiscountedPrice
-                  )}
-                </Text>
-              </View>
-            ) : (
-              <View style={[styles.rowContainer, { marginTop: 5 }]}>
-                <View style={styles.row}>
-                  <Text style={styles.circleCashbackStyle}>
-                    Circle
-                    <Text style={styles.couponTextStyle}>
-                      {string.common.memberCashback}
-                      {coupon && '(HC)'}
+            {isCircleDoctorOnSelectedConsultMode && (!!circleSubscriptionId || planSelected) ? (
+              !cashbackEnabled ? (
+                <View style={[styles.rowContainer, { marginTop: 5 }]}>
+                  <View style={styles.row}>
+                    <CircleLogo style={styles.careLogo} />
+                    <Text style={styles.membershipDiscountStyle}>
+                      {string.common.membershipDiscount}
                     </Text>
+                  </View>
+                  <Text style={styles.membershipDiscountStyle}>
+                    {string.common.Rs}
+                    {convertNumberToDecimal(
+                      isOnlineConsult
+                        ? onlineConsultDiscountedPrice
+                        : physicalConsultDiscountedPrice
+                    )}
                   </Text>
-                  {!!coupon &&
-                    <Tooltip
-                      containerStyle={styles.tooltipView}
-                      height={80}
-                      width={264}
-                      skipAndroidStatusBar={true}
-                      pointerColor={theme.colors.WHITE}
-                      overlayColor={theme.colors.CLEAR}
-                      popover={
-                        <View>
-                          <Text style={styles.tooltipTitle}>{string.common.whyCashbackChanged}</Text>
-                          <Text style={styles.tootipDesc}>{string.common.hcCreditInfo}</Text>
-                        </View>
-                    }>
-                      <ExclamationGreen style={styles.infoIcon} />
-                    </Tooltip>}
                 </View>
-                <Text style={styles.circleCashbackStyle}>
-                  {`${hcCashbackAmount} HC`}
-                </Text>
-              </View>
+              ) : (
+                <View style={[styles.rowContainer, { marginTop: 5 }]}>
+                  <View style={styles.row}>
+                    <Text style={styles.circleCashbackStyle}>
+                      Circle
+                      <Text style={styles.couponTextStyle}>
+                        {string.common.memberCashback}
+                        {coupon && '(HC)'}
+                      </Text>
+                    </Text>
+                    {!!coupon && (
+                      <Tooltip
+                        containerStyle={styles.tooltipView}
+                        height={80}
+                        width={264}
+                        skipAndroidStatusBar={true}
+                        pointerColor={theme.colors.WHITE}
+                        overlayColor={theme.colors.CLEAR}
+                        popover={
+                          <View>
+                            <Text style={styles.tooltipTitle}>
+                              {string.common.whyCashbackChanged}
+                            </Text>
+                            <Text style={styles.tootipDesc}>{string.common.hcCreditInfo}</Text>
+                          </View>
+                        }
+                      >
+                        <ExclamationGreen style={styles.infoIcon} />
+                      </Tooltip>
+                    )}
+                  </View>
+                  <Text style={styles.circleCashbackStyle}>{`${hcCashbackAmount} HC`}</Text>
+                </View>
+              )
             ) : null}
-            {cashbackEnabled &&
+            {cashbackEnabled && (
               <Text style={styles.cashbackInfo}>
                 {string.common.cashbackInfo}
                 <Text style={styles.cashbackInfoBold}>1 HC= ₹ 1)</Text>
-              </Text>}
+              </Text>
+            )}
             <View style={styles.seperatorLine} />
             <Text style={styles.totalPayStyle}>
               {string.common.Rs}
@@ -241,12 +253,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   infoIcon: {
-    height: 12, 
-    width: 12, 
-    marginStart: 8
+    height: 12,
+    width: 12,
+    marginStart: 8,
   },
   tooltipTitle: {
-    ...theme.viewStyles.text('M', 13, theme.colors.APP_YELLOW)
+    ...theme.viewStyles.text('M', 13, theme.colors.APP_YELLOW),
   },
   tootipDesc: {
     ...theme.viewStyles.text('R', 10, theme.colors.LIGHT_BLUE, undefined, 12),
@@ -264,6 +276,6 @@ const styles = StyleSheet.create({
     shadowColor: theme.colors.SHADOW_GRAY,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.4,
-    shadowRadius: 8
+    shadowRadius: 8,
   },
 });

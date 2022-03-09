@@ -159,6 +159,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
         <View style={styles.statusView}>
           <Text style={styles.refNumber}>{paymentOrderId}</Text>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               try {
                 Clipboard.setString(paymentOrderId);
@@ -178,6 +179,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
         </View>
         <View style={styles.invoiceBtnView}>
           <TouchableOpacity
+            activeOpacity={0.5}
             style={{ flexDirection: 'row', alignItems: 'center' }}
             onPress={() => {
               if (invoiceUrl) {
@@ -200,6 +202,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
           </TouchableOpacity>
 
           <TouchableOpacity
+            activeOpacity={0.5}
             style={{ flexDirection: 'row', alignItems: 'center' }}
             onPress={() => {
               if (invoiceUrl) {
@@ -242,7 +245,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
     return (
       <View style={{ paddingBottom: 0, opacity: isSatisfyingEmailRegex(email.trim()) ? 1 : 0.5 }}>
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           disabled={!isSatisfyingEmailRegex(email.trim())}
           onPress={() => {
             emailInvoice();
@@ -414,7 +417,11 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
           <Text style={styles.consultInfoText}>{string.consultPayment.stepThree}</Text>
         </View>
         <Text style={styles.guidelineText}>{string.consultPayment.detailedGuidelines}</Text>
-        <TouchableOpacity onPress={() => setShowPDF(true)} style={styles.pdfView}>
+        <TouchableOpacity
+          activeOpacity={0.5}
+          onPress={() => setShowPDF(true)}
+          style={styles.pdfView}
+        >
           <Pdf style={styles.pdfIcon} />
           <Text style={theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE)}>
             {string.consultPayment.viewGuideline}
@@ -509,6 +516,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
           (paymentStatus != PAYMENT_STATUS.TXN_SUCCESS &&
             paymentStatus != PAYMENT_STATUS.TXN_FAILURE) ? (
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 fetchOrderStatus(false);
               }}
@@ -911,6 +919,7 @@ export const PackagePaymentStatus: React.FC<PackagePaymentStatusProps> = (props)
           (paymentStatus != PAYMENT_STATUS.TXN_SUCCESS &&
             paymentStatus != PAYMENT_STATUS.TXN_FAILURE) ? (
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 fetchOrderStatus(false);
               }}

@@ -375,6 +375,7 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
   const renderBillingQueries = (viewMarginHorizontal = false) => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={{
           backgroundColor: '#ffffff',
           justifyContent: 'center',
@@ -386,7 +387,6 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
           marginHorizontal: viewMarginHorizontal ? 20 : 0,
           marginVertical: viewMarginHorizontal ? 20 : 0,
         }}
-        activeOpacity={1}
         onPress={() => {
           Linking.openURL(
             AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK

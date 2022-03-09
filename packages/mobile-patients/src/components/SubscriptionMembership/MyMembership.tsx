@@ -11,6 +11,7 @@ import {
   Image,
   ImageBackground,
   Linking,
+  Dimensions,
 } from 'react-native';
 import {
   NavigationScreenProps,
@@ -70,6 +71,7 @@ import { postCircleWEGEvent } from '@aph/mobile-patients/src/components/CirclePl
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import AsyncStorage from '@react-native-community/async-storage';
 
+const screenWidth = Dimensions.get('window').width;
 const styles = StyleSheet.create({
   cardStyle: {
     ...theme.viewStyles.cardViewStyle,
@@ -656,7 +658,9 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
 
   const getEllipseBulletPoint = (text: string, index: number, isExpired: boolean) => {
     return (
-      <View style={[styles.ellipseBulletContainer, index === 2 ? { width: '75%' } : {}]}>
+      <View
+        style={[styles.ellipseBulletContainer, index === 2 ? { width: screenWidth / 1.7 } : {}]}
+      >
         <EllipseBulletPoint style={styles.ellipseBullet} />
         <Text
           style={theme.viewStyles.text('B', 13, isExpired ? '#979797' : '#007C9D', 1, 20, 0.35)}
@@ -685,7 +689,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
         >
           {isCanUpgradeToPlan ? `Key Benefits you get...` : `Benefits Available`}
         </Text>
-        {benefits.slice(0, 3).map((value, index) => {
+        {benefits?.slice(0, 3)?.map((value, index) => {
           return getEllipseBulletPoint(value.headerContent, index, isExpired);
         })}
         <Text
@@ -756,6 +760,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     return (
       <View style={styles.membershipButtons}>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={{ padding: 10 }}
           onPress={() => {
             if (!isCare) {
@@ -783,6 +788,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
         </TouchableOpacity>
         {!isCorporate && (
           <TouchableOpacity
+            activeOpacity={0.5}
             style={{ padding: 10 }}
             onPress={() => {
               if (isCanUpgradeToPlan) {
@@ -846,6 +852,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
         ) : null}
 
         <TouchableOpacity
+          activeOpacity={0.5}
           style={[styles.membershipButtons, { padding: 10, marginBottom: -1 }]}
           onPress={() => {
             props.navigation.navigate(AppRoutes.ConsultPackagePostPurchase, {
@@ -986,6 +993,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           })}
         </View>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={[styles.membershipButtons, { padding: 10, marginBottom: -1 }]}
           onPress={() => {
             Linking.openURL('https://www.apollo247.com/my-membership').catch((e: any) =>
@@ -1004,6 +1012,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   const renderUpgradeButton = () => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={[styles.membershipButtons, { padding: 10 }]}
         onPress={() => {
           setShowCirclePlans(true);

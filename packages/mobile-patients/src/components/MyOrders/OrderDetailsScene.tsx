@@ -346,40 +346,16 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     return !!isHomeDelivery && !!isDeliveredToHome;
   };
 
-  const getAddressDatails = async () => {
-    try {
-      const address = addresses.find((a) => a.id == order!.patientAddressId);
-      let formattedAddress = '';
-      let nameToDisplayInDetails = '';
-      if (address) {
-        formattedAddress = formatAddressWithLandmark(address);
-        nameToDisplayInDetails = getNameFromAddress(address);
-      } else {
-        const getPatientAddressByIdResponse = await client.query<
-          getPatientAddressById,
-          getPatientAddressByIdVariables
-        >({
-          query: GET_PATIENT_ADDRESS_BY_ID,
-          variables: { id: order!.patientAddressId },
-        });
-        formattedAddress = formatAddressWithLandmark(
-          getPatientAddressByIdResponse?.data?.getPatientAddressById
-            ?.patientAddress as savePatientAddress_savePatientAddress_patientAddress
-        );
-        nameToDisplayInDetails = getNameFromAddress(
-          getPatientAddressByIdResponse?.data?.getPatientAddressById
-            ?.patientAddress as savePatientAddress_savePatientAddress_patientAddress
-        );
-      }
-      setAddressData(formattedAddress);
-      setNameToDisplay(
-        nameToDisplayInDetails
-          ? nameToDisplayInDetails
-          : `${orderDetails?.patient?.firstName || ''} ${orderDetails?.patient?.lastName || ''}`
-      );
-    } catch (error) {
-      CommonBugFender(`${AppRoutes.OrderDetailsScene}_getAddressDatails`, error);
-    }
+  const setAddressDetails = () => {
+    const address = order?.medicineOrderAddress;
+    const formattedAddress = address ? formatAddressWithLandmark(address) : '';
+    const nameToDisplayInDetails = address ? getNameFromAddress(address) : '';
+    setAddressData(formattedAddress);
+    setNameToDisplay(
+      nameToDisplayInDetails
+        ? nameToDisplayInDetails
+        : `${orderDetails?.patient?.firstName || ''} ${orderDetails?.patient?.lastName || ''}`
+    );
   };
 
   const [isEventFired, setEventFired] = useState(false);
@@ -400,7 +376,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         g(order, 'orderType') == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION ? 'Non Cart' : 'Cart',
         currentPatient
       );
-      order.deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY && getAddressDatails();
+      order.deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY && setAddressDetails();
       let shopAddress =
         order.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP && order.shopAddress
           ? JSON.parse(order.shopAddress)
@@ -1762,7 +1738,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     return (
       <View style={styles.chatView}>
         <Text style={styles.queryText}>In case of any issues/queries:</Text>
-        <TouchableOpacity onPress={() => onPressHelp()}>
+        <TouchableOpacity activeOpacity={0.5} onPress={() => onPressHelp()}>
           <Text style={styles.goToHelp}>{string.orders.go_to_help}</Text>
         </TouchableOpacity>
       </View>
@@ -1842,7 +1818,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             ]}
           >
             {showAlertStore && (
-              <TouchableOpacity onPress={() => alertTheStore()}>
+              <TouchableOpacity activeOpacity={0.5} onPress={() => alertTheStore()}>
                 <Text
                   style={{
                     color: theme.colors.APP_YELLOW,
@@ -1853,7 +1829,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 </Text>
               </TouchableOpacity>
             )}
-            <TouchableOpacity onPress={() => Linking.openURL(`tel:${storePhoneNumber}`)}>
+            <TouchableOpacity
+              activeOpacity={0.5}
+              onPress={() => Linking.openURL(`tel:${storePhoneNumber}`)}
+            >
               <Text
                 style={{
                   color: theme.colors.APP_YELLOW,
@@ -2254,7 +2233,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               headingTextStyle={{ fontSize: 14 }}
             />
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               onPress={async () => {
                 try {
                   setLoading!(true);

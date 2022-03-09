@@ -384,7 +384,7 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
   const renderCloseIcon = () => {
     return (
       <View style={styles.crossIconContainer}>
-        <TouchableOpacity onPress={() => props.onClickClose()}>
+        <TouchableOpacity activeOpacity={0.5} onPress={() => props.onClickClose()}>
           <CrossPopup style={styles.crossIcon} />
         </TouchableOpacity>
       </View>
@@ -409,6 +409,7 @@ export const CombinedBarChart: React.FC<CombinedBarChartProps> = (props) => {
     return (
       <View style={styles.serviceNameSubContainer}>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={async () => {
             if (!!showLabel) {
               props.allTestReports?.map((item: any) => {

@@ -51,6 +51,7 @@ export const OtherPaymentOptions: React.FC<OtherPaymentOptionsProps> = (props) =
         <>
           {!!otherPaymentMethodsInfo?.[item?.item?.name] ? (
             <TouchableOpacity
+              activeOpacity={0.5}
               style={{ ...styles.paymentOption, borderTopWidth: item?.index == 0 ? 0 : 1 }}
               onPress={() => onPressOtherPaymentOption(item?.item)}
             >

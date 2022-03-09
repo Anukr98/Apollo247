@@ -15,6 +15,7 @@ export const PickUpUploadPrescription: React.FC<PickUpUploadPrescriptionProps> =
   const renderShowPrescriptionatStore = () => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={{ flexDirection: 'row', marginTop: 8, alignItems: 'center' }}
         onPress={() => setShowPrescriptionAtStore!(!showPrescriptionAtStore)}
       >
@@ -31,7 +32,7 @@ export const PickUpUploadPrescription: React.FC<PickUpUploadPrescriptionProps> =
       <Text style={{ ...theme.fonts.IBMPlexSansMedium(14), lineHeight: 20, color: '#02475B' }}>
         Items in your cart marked with ‘Rx’ need prescriptions.
       </Text>
-      <TouchableOpacity onPress={onPressUploadPrescription}>
+      <TouchableOpacity activeOpacity={0.5} onPress={onPressUploadPrescription}>
         <Text style={styles.upload}>UPLOAD PRESCRIPTION</Text>
       </TouchableOpacity>
       <Text style={{ ...theme.fonts.IBMPlexSansSemiBold(14), lineHeight: 24, color: '#01475B' }}>

@@ -47,7 +47,7 @@ export const CapsuleView: React.FC<CapsuleViewProps> = (props) => {
   if (props.title)
     return (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         style={[styles.containerStyles, props.style, !props.isActive ? styles.disabledStyle : null]}
       >
         <Text

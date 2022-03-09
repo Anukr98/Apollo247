@@ -627,7 +627,11 @@ export const AddClinicalDocumentDetails: React.FC<AddClinicalDocumentDetailsProp
           <Text style={{ color: 'red' }}>{'*'}</Text>
         </Text>
         <View style={[styles.renderPHRCategories, { marginRight: 5 }]}>
-          <TouchableOpacity style={{ top: 5, marginLeft: 5 }} onPress={() => handleConsultDoctor()}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            style={{ top: 5, marginLeft: 5 }}
+            onPress={() => handleConsultDoctor()}
+          >
             {!!consultColor || documentType === 'Prescription' ? (
               <ConsultGreen size="sm" style={{ width: 30, height: 30 }} />
             ) : (
@@ -645,7 +649,11 @@ export const AddClinicalDocumentDetails: React.FC<AddClinicalDocumentDetailsProp
               {'Consult & Prescription'}
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={{ top: 5, marginRight: 23 }} onPress={() => handleTestReport()}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            style={{ top: 5, marginRight: 23 }}
+            onPress={() => handleTestReport()}
+          >
             {!!labTestColor || documentType === 'LabTest' ? (
               <SelectedTestReport size="sm" style={{ width: 30, height: 30 }} />
             ) : (
@@ -665,7 +673,11 @@ export const AddClinicalDocumentDetails: React.FC<AddClinicalDocumentDetailsProp
           </TouchableOpacity>
         </View>
         <View style={[styles.renderPHRCategories]}>
-          <TouchableOpacity style={{ top: 5, marginLeft: 5 }} onPress={() => handleBills()}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            style={{ top: 5, marginLeft: 5 }}
+            onPress={() => handleBills()}
+          >
             {!!billColor || documentType === 'Bill' ? (
               <SelectedBills size="sm" style={{ width: 30, height: 30 }} />
             ) : (
@@ -680,7 +692,8 @@ export const AddClinicalDocumentDetails: React.FC<AddClinicalDocumentDetailsProp
               {'Bills'}
             </Text>
           </TouchableOpacity>
-          {/* <TouchableOpacity style={{ top: 5 }} onPress={() => handleInsurance()}>
+          {/*  <TouchableOpacity 
+        activeOpacity={0.5} style={{ top: 5 }} onPress={() => handleInsurance()}>
             {!!insuranceColor || documentType === 'Insurance' ? (
               <SelectedInsurance size="sm" style={{ width: 30, height: 30 }} />
             ) : (
@@ -698,7 +711,11 @@ export const AddClinicalDocumentDetails: React.FC<AddClinicalDocumentDetailsProp
               {'Insurance'}
             </Text>
           </TouchableOpacity> */}
-          <TouchableOpacity style={{ top: 5, right: 5 }} onPress={() => handleHospitalization()}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            style={{ top: 5, right: 5 }}
+            onPress={() => handleHospitalization()}
+          >
             {!!hospitalColor || documentType === 'Hospitalization' ? (
               <SelectedHospitalization size="sm" style={{ width: 30, height: 30 }} />
             ) : (
@@ -719,7 +736,8 @@ export const AddClinicalDocumentDetails: React.FC<AddClinicalDocumentDetailsProp
         </View>
         {/* <View style={styles.commonTextInputView}>
           <Text style={[styles.fieldTitle]}>{'Record Date*'}</Text>
-          <TouchableOpacity style={styles.recordBtn} onPress={() => renderDatePicker()}>
+           <TouchableOpacity 
+        activeOpacity={0.5} style={styles.recordBtn} onPress={() => renderDatePicker()}>
             <Text style={styles.recordCalendar}>
               {dateOfTest !== '' ? dateOfTest : 'DD/MM/YYYY'}
             </Text>
@@ -730,7 +748,8 @@ export const AddClinicalDocumentDetails: React.FC<AddClinicalDocumentDetailsProp
         {/* {!!insuranceColor ? (
           <View style={styles.commonTextInputView}>
             <Text style={[styles.fieldTitle]}>{'Record End Date*'}</Text>
-            <TouchableOpacity style={styles.recordBtn} onPress={() => renderEndDatePicker()}>
+             <TouchableOpacity 
+        activeOpacity={0.5} style={styles.recordBtn} onPress={() => renderEndDatePicker()}>
               <Text style={styles.recordCalendar}>
                 {endDateTest !== '' ? endDateTest : 'DD/MM/YYYY'}
               </Text>
@@ -996,7 +1015,7 @@ export const AddClinicalDocumentDetails: React.FC<AddClinicalDocumentDetailsProp
 
   const headerRightComponent = () => {
     return (
-      <TouchableOpacity activeOpacity={1} onPress={onPressCloseReview}>
+      <TouchableOpacity activeOpacity={0.5} onPress={onPressCloseReview}>
         <Remove />
       </TouchableOpacity>
     );
@@ -1070,7 +1089,7 @@ export const AddClinicalDocumentDetails: React.FC<AddClinicalDocumentDetailsProp
 
     const rightElementParameter = (i: number) => {
       return (
-        <TouchableOpacity activeOpacity={1} onPress={() => onPressRemoveRecordParameter(i)}>
+        <TouchableOpacity activeOpacity={0.5} onPress={() => onPressRemoveRecordParameter(i)}>
           <RedCross style={{ width: 20, height: 20 }} />
         </TouchableOpacity>
       );
@@ -1088,7 +1107,7 @@ export const AddClinicalDocumentDetails: React.FC<AddClinicalDocumentDetailsProp
       const renderRightElement = () => {
         return (
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             onPress={() => {
               onPressEditDate?.();
               if (inputRef?.current) {
@@ -1115,7 +1134,11 @@ export const AddClinicalDocumentDetails: React.FC<AddClinicalDocumentDetailsProp
     return (
       <View style={{ backgroundColor: 'white', borderRadius: 5 }}>
         <View style={[styles.recordDetailsView, { marginBottom: 0 }]}>
-          <TouchableOpacity style={styles.recordBtn} onPress={() => onPressAddRecordParameter()}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            style={styles.recordBtn}
+            onPress={() => onPressAddRecordParameter()}
+          >
             <Text style={[styles.recordCalendar, { color: '#01475B' }]}>{'RECORD DETAILS'}</Text>
             <BlackPlus style={styles.calendarIcon} />
           </TouchableOpacity>
@@ -1285,7 +1308,8 @@ export const AddClinicalDocumentDetails: React.FC<AddClinicalDocumentDetailsProp
 
   //   const rightElementParameter = (i: number) => {
   //     return (
-  //       <TouchableOpacity activeOpacity={1} onPress={() => onPressRemoveRecordParameter(i)}>
+  //        <TouchableOpacity
+  //      activeOpacity={0.5}   onPress={() => onPressRemoveRecordParameter(i)}>
   //         <RedCross style={{ width: 20, height: 20 }} />
   //       </TouchableOpacity>
   //     );
@@ -1302,8 +1326,9 @@ export const AddClinicalDocumentDetails: React.FC<AddClinicalDocumentDetailsProp
   //     };
   //     const renderRightElement = () => {
   //       return (
-  //         <TouchableOpacity
-  //           activeOpacity={1}
+  //          <TouchableOpacity
+  //      activeOpacity={0.5}
+  //
   //           onPress={() => {
   //             onPressEditDate?.();
   //             if (inputRef?.current) {
@@ -1336,7 +1361,8 @@ export const AddClinicalDocumentDetails: React.FC<AddClinicalDocumentDetailsProp
   //       }}
   //     >
   //       <View style={[styles.recordDetailsView, { marginBottom: 0 }]}>
-  //         <TouchableOpacity style={styles.recordBtn} onPress={() => onPressAddRecordParameter()}>
+  //          <TouchableOpacity
+  //      activeOpacity={0.5} style={styles.recordBtn} onPress={() => onPressAddRecordParameter()}>
   //           <Text style={[styles.recordCalendar, { color: '#01475B' }]}>
   //             {'MEDICATION DETAILS'}
   //           </Text>

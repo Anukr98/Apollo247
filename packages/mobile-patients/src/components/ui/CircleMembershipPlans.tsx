@@ -492,8 +492,8 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       <View>
         <View style={{ paddingBottom: 20 }}>
           <TouchableOpacity
+            activeOpacity={0.5}
             key={index}
-            activeOpacity={1}
             onPress={() => onPressMembershipPlans(index)}
             style={[styles.subscriptionCard, { marginLeft: index === 0 ? 10 : 0 }]}
           >
@@ -555,7 +555,11 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
             </ImageBackground>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={() => onPressMembershipPlans(index)} style={styles.radioBtn}>
+        <TouchableOpacity
+          activeOpacity={0.5}
+          onPress={() => onPressMembershipPlans(index)}
+          style={styles.radioBtn}
+        >
           <View
             style={[
               styles.radioBtnIcon,
@@ -592,6 +596,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   const renderCloseIcon = () => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={() => {
           if (!buyNow && from !== string.banner_context.PHARMACY_HOME) {
             setIsCircleSubscription && setIsCircleSubscription(false);
@@ -750,6 +755,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         ]}
       >
         <TouchableOpacity
+          activeOpacity={0.5}
           style={styles.knowMoreBtn}
           onPress={() => {
             fireCircleKnowMoreEvent();
@@ -763,7 +769,11 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         </TouchableOpacity>
         {!isModal && defaultCirclePlan ? <View style={styles.seperatorLine} /> : null}
         {!isModal && defaultCirclePlan ? (
-          <TouchableOpacity style={styles.knowMoreBtn} onPress={() => removeAutoAddedPlan()}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            style={styles.knowMoreBtn}
+            onPress={() => removeAutoAddedPlan()}
+          >
             <Text style={{ ...theme.viewStyles.text('SB', 13, theme.colors.BORDER_BOTTOM_COLOR) }}>
               REMOVE
             </Text>
@@ -1075,6 +1085,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
           </View>
         </View>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={{ marginTop: 7 }}
           onPress={() => {
             fireCirclePlanRemovedEvent();

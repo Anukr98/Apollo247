@@ -805,6 +805,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
                   Payment Reference Number :{' '}
                 </Text>
                 <TouchableOpacity
+                  activeOpacity={0.5}
                   style={styles.refStyles}
                   onPress={() => copyToClipboard(refNumberText)}
                 >
@@ -828,7 +829,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
           )}
         </View>
         <View>
-          <TouchableOpacity onPress={() => {}}></TouchableOpacity>
+          <TouchableOpacity activeOpacity={0.5} onPress={() => {}}></TouchableOpacity>
         </View>
       </View>
     );
@@ -962,11 +963,19 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const renderRetryPayment = () => {
     return (
       <View style={styles.retryPayment}>
-        <TouchableOpacity style={styles.retryButton} onPress={() => handleButton()}>
+        <TouchableOpacity
+          activeOpacity={0.5}
+          style={styles.retryButton}
+          onPress={() => handleButton()}
+        >
           <Text style={theme.viewStyles.text('SB', 13, '#ffffff', 1, 24)}>RETRY PAYMENT</Text>
         </TouchableOpacity>
         {!circleMembershipCharges && (
-          <TouchableOpacity style={styles.codButton} onPress={() => initiateOrder()}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            style={styles.codButton}
+            onPress={() => initiateOrder()}
+          >
             <Text style={theme.viewStyles.text('SB', 13, '#fcb716', 1, 24)}>PAY COD</Text>
           </TouchableOpacity>
         )}
@@ -994,6 +1003,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     return (
       <View>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={styles.buttonStyle}
           onPress={() => {
             handleButton();
@@ -1005,6 +1015,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         </TouchableOpacity>
         {(status === success || paymentMode === 'COD') && (
           <TouchableOpacity
+            activeOpacity={0.5}
             style={styles.textButtonStyle}
             onPress={() => {
               clearCircleSubscriptionData();

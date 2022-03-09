@@ -9,6 +9,7 @@ import {
   Clipboard,
   Alert,
   ImageBackground,
+  BackHandler,
 } from 'react-native';
 import { NavigationScreenProps, SafeAreaView } from 'react-navigation';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -18,6 +19,7 @@ import {
   g,
   getCleverTapCircleMemberValues,
   getUserType,
+  navigateToHome,
   postCleverTapEvent,
   replaceVariableInString,
   validateStringNotToUndefined,
@@ -76,11 +78,30 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
 
   const { pharmacyCircleAttributes } = useShoppingCart();
   const { navigation } = props;
+  const comingFrom = props.navigation.getParam('comingFrom');
 
   useEffect(() => {
     generateReferrerLink();
     checkRefreeRewardData();
   }, []);
+
+  useEffect(() => {
+    if (comingFrom === 'deeplink') {
+      const eventArributes = {
+        'Nav Src': 'deeplink',
+      };
+      postCleverTapEvent(CleverTapEventName.REFER_EARN_CTA_CLICKED, eventArributes);
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+      return () => {
+        BackHandler.removeEventListener('hardwareBackPress', handleBack);
+      };
+    }
+  }, []);
+
+  const handleBack = () => {
+    navigateToHome(props.navigation, {}, comingFrom === 'deeplink');
+    return true;
+  };
 
   const checkRefreeRewardData = async () => {
     try {
@@ -257,10 +278,11 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
               <View style={styles.referSharereferViaHRLineRight} />
             </View>
             <View style={styles.referSharebtnContainer}>
-              <TouchableOpacity onPress={() => onWhatsAppShare()}>
+              <TouchableOpacity activeOpacity={0.5} onPress={() => onWhatsAppShare()}>
                 <WhatsAppIconReferral style={styles.whatsIconImage} />
               </TouchableOpacity>
               <TouchableOpacity
+                activeOpacity={0.5}
                 onPress={() => {
                   copyLinkToShare();
                 }}
@@ -325,6 +347,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
         </View>
         <View style={styles.howWorklinkMainContainer}>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               const eventArributes = {
                 ...getReferEarnCommonAttributes(),
@@ -343,6 +366,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               const eventArributes = {
                 ...getReferEarnCommonAttributes(),
@@ -371,6 +395,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
   const renderCheckRewardsContainer = () => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={() => {
           const eventArributes = {
             ...getReferEarnCommonAttributes(),
@@ -401,7 +426,7 @@ export const ShareReferLink: React.FC<ShareReferLinkProps> = (props) => {
           {string.referAndEarn.ExpireON} {refreeReward.expirationData}
         </Text>
         <View style={styles.initialHCreedemContainer}>
-          <TouchableOpacity onPress={() => navigation.navigate('MEDICINES')}>
+          <TouchableOpacity activeOpacity={0.5} onPress={() => navigation.navigate('MEDICINES')}>
             <Text style={styles.initialHCreedemContainerText}>
               {validateStringNotToUndefined(shareReferrerLinkData?.redeemNow)}
             </Text>

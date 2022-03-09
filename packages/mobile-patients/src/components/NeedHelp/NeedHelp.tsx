@@ -317,7 +317,7 @@ export const NeedHelp: React.FC<Props> = (props) => {
     const onPress = () => onSubmit(id!);
     return (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         key={id}
         style={[styles.categoryItemStyle, containerStyle]}
         onPress={onPress}
@@ -437,6 +437,7 @@ export const NeedHelp: React.FC<Props> = (props) => {
               {string.needHelpScreen.view_previous_tickets}
             </Text>
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 setShowPreviousTickets(true);
                 cleverTapEvent(CleverTapEventName.VIEW_PREVIOUS_TICKETS_CTA_ON_NEED_HELP);
@@ -454,6 +455,7 @@ export const NeedHelp: React.FC<Props> = (props) => {
   const renderOrderStatusCard = (ticket: any) => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         onPress={() => {
           setShowPreviousTickets(false);
           cleverTapEvent(

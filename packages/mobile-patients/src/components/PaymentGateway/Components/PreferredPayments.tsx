@@ -108,6 +108,7 @@ export const PreferredPayments: React.FC<PreferredPaymentsProps> = (props) => {
       <View>
         <TouchableOpacity
           style={styles.subCont}
+          activeOpacity={0.5}
           onPress={() => {
             setSelectedCardToken(''), setApayselected(!Apayselected);
           }}
@@ -181,6 +182,7 @@ export const PreferredPayments: React.FC<PreferredPaymentsProps> = (props) => {
     return (
       <View>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={styles.subCont}
           disabled={outageStatus == 'DOWN' ? true : false}
           onPress={() => {

@@ -123,6 +123,7 @@ export const TestWidgetListing: React.FC<TestWidgetListingProps> = (props) => {
   const renderItems = (item: any, index: number) => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={styles.gridPart}
         onPress={() => {
           {

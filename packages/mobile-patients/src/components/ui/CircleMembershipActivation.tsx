@@ -112,6 +112,7 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
     return (
       <View style={styles.closeIcon}>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             closeModal && closeModal(planActivated.current);
           }}
@@ -153,6 +154,7 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
               }}
             />
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 props.navigation.navigate(AppRoutes.SubscriptionCart, {
                   circleEventSource,
@@ -186,6 +188,7 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
           </Text>
         ) : null}
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             closeModal && closeModal(true);
             props.navigation.navigate(AppRoutes.MembershipDetails, {

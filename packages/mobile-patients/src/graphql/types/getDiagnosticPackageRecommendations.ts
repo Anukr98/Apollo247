@@ -3,6 +3,8 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
+import { Gender } from "./globalTypes";
+
 // ====================================================
 // GraphQL query operation: getDiagnosticPackageRecommendations
 // ====================================================
@@ -34,6 +36,8 @@ export interface getDiagnosticPackageRecommendations_getDiagnosticPackageRecomme
   __typename: "Diagnostics";
   itemId: number;
   itemName: string;
+  gender: string;
+  imageUrl: string;
   inclusions: (number | null)[] | null;
   packageCalculatedMrp: number | null;
   diagnosticInclusions: (getDiagnosticPackageRecommendations_getDiagnosticPackageRecommendations_packageRecommendations_diagnosticInclusions | null)[] | null;
@@ -52,4 +56,5 @@ export interface getDiagnosticPackageRecommendations {
 export interface getDiagnosticPackageRecommendationsVariables {
   itemId: number;
   cityId: number;
+  genderFilters?: (Gender | null)[] | null;
 }

@@ -34,7 +34,7 @@ export const AddedToCartToast: React.FC<AddedToCartToastProps> = (props) => {
   return (
     <View style={styles.proceedToCheckout}>
       <Text style={text('M', 13, WHITE, 1, 20)}>Added to cart successfully</Text>
-      <TouchableOpacity onPress={onPressGoToCart}>
+      <TouchableOpacity activeOpacity={0.5} onPress={onPressGoToCart}>
         <Text style={text('M', 13, '#FCB716', 1, 20)}>GO TO CART</Text>
       </TouchableOpacity>
     </View>

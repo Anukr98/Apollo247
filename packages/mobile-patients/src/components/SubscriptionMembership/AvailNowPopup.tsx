@@ -93,6 +93,7 @@ export const AvailNowPopup: React.FC<AvailNowPopupProps> = (props) => {
   const renderBottomContainer = () => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={styles.bottomContainer}
         onPress={() => {
           props.navigation.navigate(AppRoutes.HomeScreen, {});
@@ -109,6 +110,7 @@ export const AvailNowPopup: React.FC<AvailNowPopupProps> = (props) => {
         <View style={{ width: '5.72%' }} />
         <View style={styles.popupView}>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               props.onClose();
             }}

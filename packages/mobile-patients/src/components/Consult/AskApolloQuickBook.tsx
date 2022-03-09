@@ -109,6 +109,7 @@ export const AskApolloQuickBook: React.FC<AskApolloQuickBookProps> = (props) => 
       <View style={styles.container}>
         {renderHeader()}
         <TouchableOpacity
+          activeOpacity={0.5}
           style={styles.callBtn}
           onPress={() => {
             postCallEvent();

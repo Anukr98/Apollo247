@@ -19,7 +19,7 @@ export const DeleteCardAlert: React.FC<DeleteCardAlertProps> = (props) => {
   const renderCloseIcon = () => {
     return (
       <View style={styles.closeIcon}>
-        <TouchableOpacity onPress={() => props.onDismiss()}>
+        <TouchableOpacity activeOpacity={0.5} onPress={() => props.onDismiss()}>
           <CrossPopup style={{ marginRight: 1, width: 28, height: 28 }} />
         </TouchableOpacity>
       </View>
@@ -51,7 +51,7 @@ export const DeleteCardAlert: React.FC<DeleteCardAlertProps> = (props) => {
   const renderButtons = () => {
     return (
       <View style={styles.row}>
-        <TouchableOpacity onPress={() => props.onDismiss()}>
+        <TouchableOpacity activeOpacity={0.5} onPress={() => props.onDismiss()}>
           <Text style={styles.back}> GO BACK</Text>
         </TouchableOpacity>
         <Button

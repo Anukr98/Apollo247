@@ -383,6 +383,7 @@ export const CheckReschedulePopup: React.FC<CheckRescheduleProps> = (props) => {
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
+              activeOpacity={0.5}
               style={{
                 height: 60,
                 paddingRight: 25,

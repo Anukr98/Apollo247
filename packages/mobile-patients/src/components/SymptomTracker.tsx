@@ -155,6 +155,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
           rightComponent={
             !showHowItWorks ? (
               <TouchableOpacity
+                activeOpacity={0.5}
                 style={styles.infoIconView}
                 onPress={() => {
                   setShowInfo(true);
@@ -399,6 +400,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
         .map((item: any, index: any, array: any) =>
           item.firstName !== '+ADD MEMBER' ? (
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 onSelectedProfile(item);
               }}
@@ -461,6 +463,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
           </Text>
         </View>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={styles.selectMemberBtn}
           onPress={() => {
             const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_SELECT_ANOTHER_MEMBER_CLICKED] = patientInfoAttributes;
@@ -535,7 +538,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
           <Text style={styles.botTextTitle}>{item.text}</Text>
           {index === messages.length - 1 && !chatEnded ? (
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               style={styles.inputStyle}
               onPress={() => {
                 if (messages.length > 2) {
@@ -576,6 +579,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
           )}
           {messages.length !== 1 && index === messages.length - 1 && !chatEnded ? (
             <TouchableOpacity
+              activeOpacity={0.5}
               style={styles.plainBtn}
               onPress={() => {
                 const eventAttributes:
@@ -712,6 +716,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
     return (
       <View style={styles.bottomView}>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             const eventAttributes:
               | WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_RESTART_CLICKED]
@@ -776,7 +781,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
   const renderCloseIcon = () => {
     return (
       <View style={styles.closeIcon}>
-        <TouchableOpacity onPress={() => setShowInfo(false)}>
+        <TouchableOpacity activeOpacity={0.5} onPress={() => setShowInfo(false)}>
           <CrossPopup style={styles.crossIconStyle} />
         </TouchableOpacity>
       </View>

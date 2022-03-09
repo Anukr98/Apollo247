@@ -511,7 +511,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             rightComponent={
               showCancel ? (
                 <TouchableOpacity
-                  activeOpacity={1}
+                  activeOpacity={0.5}
                   onPress={() => {
                     CommonLogEvent(AppRoutes.AppointmentDetails, 'UPCOMING CLINIC VISIT Clicked');
                     setCancelAppointment(true);
@@ -692,6 +692,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
           >
             <View style={{ height: 60, alignItems: 'flex-end' }}>
               <TouchableOpacity
+                activeOpacity={0.5}
                 style={{
                   height: 60,
                   paddingRight: 25,
@@ -728,6 +729,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             }}
           >
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 CommonLogEvent(AppRoutes.AppointmentDetails, 'AppointmentDetails Cancel Clicked');
                 setCancelAppointment(false);
@@ -742,6 +744,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                 }}
               >
                 <TouchableOpacity
+                  activeOpacity={0.5}
                   onPress={() => {
                     setShowCancelPopup(true);
                     setCancelAppointment(false);
@@ -793,6 +796,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             >
               <View style={{ height: 60 }}>
                 <TouchableOpacity
+                  activeOpacity={0.5}
                   style={styles.gotItStyles}
                   onPress={() => {
                     postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
@@ -811,6 +815,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
               </View>
               <View style={{ height: 60 }}>
                 <TouchableOpacity
+                  activeOpacity={0.5}
                   style={styles.gotItStyles}
                   onPress={() => {
                     postAppointmentWEGEvents(WebEngageEventName.CANCEL_CONSULTATION_CLICKED);

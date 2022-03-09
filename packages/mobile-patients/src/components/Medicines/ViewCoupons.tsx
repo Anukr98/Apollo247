@@ -380,7 +380,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
         !couponError && (
           <View style={{ opacity: isEnableApplyBtn ? 1 : 0.5 }}>
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               disabled={!isEnableApplyBtn}
               onPress={() => {
                 Keyboard.dismiss();
@@ -478,6 +478,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
       const disableList = disableCouponsList?.indexOf(coupon?.coupon) > -1;
       return (
         <TouchableOpacity
+          activeOpacity={0.5}
           key={i}
           disabled={disableList}
           onPress={() => {
@@ -502,7 +503,11 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
             {i !== coupons?.length - 1 && <View style={styles.itemSeperator} />}
           </View>
           {showMoreLessButton && i === couponsForYou?.length - 1 ? (
-            <TouchableOpacity style={styles.bottomViewCardBtn} onPress={onPressMoreLessButton}>
+            <TouchableOpacity
+              activeOpacity={0.5}
+              style={styles.bottomViewCardBtn}
+              onPress={onPressMoreLessButton}
+            >
               <Text style={styles.viewBtnText}>View{showAllCoupons ? ' less' : ' more'}</Text>
               {showAllCoupons ? <Up /> : <Down />}
             </TouchableOpacity>

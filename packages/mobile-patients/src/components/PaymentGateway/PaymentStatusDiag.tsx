@@ -56,7 +56,7 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import {
   DiagnosticOrderPlaced,
   firePurchaseEvent,
-} from '@aph/mobile-patients/src/components/Tests/Events';
+} from '@aph/mobile-patients/src/components/Tests/utils/Events';
 import LottieView from 'lottie-react-native';
 const paymentSuccess =
   '@aph/mobile-patients/src/components/PaymentGateway/AnimationFiles/Animation_2/tick.json';
@@ -108,6 +108,7 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
   const [showPassportModal, setShowPassportModal] = useState<boolean>(false);
   const [passportNo, setPassportNo] = useState<any>([]);
   const [passportData, setPassportData] = useState<any>([]);
+  const [animationfinished, setAnimationfinished] = useState<boolean>(false);
   const orderCartSaving = orderDetails?.cartSaving!;
   const orderCircleSaving = orderDetails?.circleSaving!;
   const circleSavings = isDiagnosticCircleSubscription ? Number(orderCircleSaving) : 0;
@@ -211,54 +212,50 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
 
   const validatePermission = () => {
     // const { data } = await client.query<
-      //   getDiagnosticOrderDetails,
-      //   getDiagnosticOrderDetailsVariables
-      // >({
-      //   query: GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
-      //   variables: { diagnosticOrderId: orderId },
-      //   fetchPolicy: 'no-cache',
-      // });
-      // const { attributesObj, createdDate, slotDateTimeInUTC } =
-      //   data?.getDiagnosticOrderDetails?.ordersList || {};
-      // const { expectedReportGenerationTime } = attributesObj || {};
-
-      // const reportGenerationDifference = moment
-      //   .duration(moment(expectedReportGenerationTime).diff(moment(createdDate)))
-      //   .asHours();
-
-      // const sampleCollectedTimeDifference = moment
-      //   .duration(moment(slotDateTimeInUTC).diff(moment(createdDate)))
-      //   .asHours();
-
-      // const popupConfig: {
-      //   vertical: string;
-      //   report_generation_time_hrs?: string;
-      //   sample_collected_time_min?: string;
-      //   diag_appointment_time_hrs?: string;
-      // } = {
-      //   vertical: 'diagnostic',
-      // };
-      // if (expectedReportGenerationTime)
-      //   popupConfig['report_generation_time_hrs'] = Math.floor(
-      //     reportGenerationDifference
-      //   ).toString();
-      // if (slotDateTimeInUTC) {
-      //   popupConfig['sample_collected_time_min'] = Math.floor(
-      //     sampleCollectedTimeDifference
-      //   ).toString();
-      //   popupConfig['diag_appointment_time_hrs'] = Math.floor(
-      //     sampleCollectedTimeDifference
-      //   ).toString();
-      // }
-
-      // const permission = await client.query({
-      //   query: GET_REVIEW_POPUP_PERMISSION,
-      //   variables: {
-      //     popupConfig,
-      //   },
-      //   fetchPolicy: 'no-cache',
-      // });
-  }
+    //   getDiagnosticOrderDetails,
+    //   getDiagnosticOrderDetailsVariables
+    // >({
+    //   query: GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
+    //   variables: { diagnosticOrderId: orderId },
+    //   fetchPolicy: 'no-cache',
+    // });
+    // const { attributesObj, createdDate, slotDateTimeInUTC } =
+    //   data?.getDiagnosticOrderDetails?.ordersList || {};
+    // const { expectedReportGenerationTime } = attributesObj || {};
+    // const reportGenerationDifference = moment
+    //   .duration(moment(expectedReportGenerationTime).diff(moment(createdDate)))
+    //   .asHours();
+    // const sampleCollectedTimeDifference = moment
+    //   .duration(moment(slotDateTimeInUTC).diff(moment(createdDate)))
+    //   .asHours();
+    // const popupConfig: {
+    //   vertical: string;
+    //   report_generation_time_hrs?: string;
+    //   sample_collected_time_min?: string;
+    //   diag_appointment_time_hrs?: string;
+    // } = {
+    //   vertical: 'diagnostic',
+    // };
+    // if (expectedReportGenerationTime)
+    //   popupConfig['report_generation_time_hrs'] = Math.floor(
+    //     reportGenerationDifference
+    //   ).toString();
+    // if (slotDateTimeInUTC) {
+    //   popupConfig['sample_collected_time_min'] = Math.floor(
+    //     sampleCollectedTimeDifference
+    //   ).toString();
+    //   popupConfig['diag_appointment_time_hrs'] = Math.floor(
+    //     sampleCollectedTimeDifference
+    //   ).toString();
+    // }
+    // const permission = await client.query({
+    //   query: GET_REVIEW_POPUP_PERMISSION,
+    //   variables: {
+    //     popupConfig,
+    //   },
+    //   fetchPolicy: 'no-cache',
+    // });
+  };
 
   const requestInAppReview = async () => {
     try {
@@ -272,9 +269,8 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
         variables: { diagnosticOrderId: orderId },
         fetchPolicy: 'no-cache',
       });
-      const { slotDateTimeInUTC } =
-        data?.getDiagnosticOrderDetails?.ordersList || {};
-      const diff = moment.duration(moment(slotDateTimeInUTC).diff(moment())).asHours()
+      const { slotDateTimeInUTC } = data?.getDiagnosticOrderDetails?.ordersList || {};
+      const diff = moment.duration(moment(slotDateTimeInUTC).diff(moment())).asHours();
       /*
         The following bit of code is going to be needed in the future
         when the backend has been deployed properly to communicate with the
@@ -284,8 +280,8 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
 
         validatePermission()
       */
-      if (diff<=48 && InAppReview.isAvailable()) {
-        const onfulfilled = await InAppReview.RequestInAppReview()
+      if (diff <= 48 && InAppReview.isAvailable()) {
+        const onfulfilled = await InAppReview.RequestInAppReview();
         if (!!onfulfilled) {
           InAppReviewEvent(currentPatient, pharmacyUserTypeAttribute, pharmacyCircleAttributes);
         }
@@ -444,14 +440,12 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
     ) : null;
   };
 
-  const [animationfinished, setAnimationfinished] = useState<boolean>(false);
-
   const renderSucccessAnimation = () => {
     return (
       <View style={{ alignItems: 'center' }}>
         <LottieView
           source={require(paymentSuccess)}
-          onAnimationFinish={() => setAnimationfinished(true)}
+          onAnimationFinish={() => setTimeout(() => setAnimationfinished(true), 200)}
           autoPlay
           loop={false}
           autoSize={true}
@@ -485,6 +479,7 @@ export const PaymentStatusDiag: React.FC<PaymentStatusDiagProps> = (props) => {
     return (
       <View style={styles.orderSummaryView}>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={styles.orderSummaryTouch}
           onPress={() => navigateToOrderDetails(true, orderDetails?.orderId!)}
         >

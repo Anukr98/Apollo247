@@ -311,6 +311,7 @@ export const CowinCertificateGetOTP: React.FC<CowinCertificateGetOTPProps> = (pr
           </View>
           {startCountdown === false ? (
             <TouchableOpacity
+              activeOpacity={0.5}
               style={{ marginTop: Platform.OS === 'android' ? 10 : 15 }}
               onPress={() => getOTPFromPrism()}
             >

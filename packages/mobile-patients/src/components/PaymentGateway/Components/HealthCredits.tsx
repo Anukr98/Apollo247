@@ -74,6 +74,7 @@ export const HealthCredits: React.FC<HealthCreditsProps> = (props) => {
     return (
       <View>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={{
             ...styles.ChildComponent,
             backgroundColor: amount != 0 && HCSelected ? '#EBFFF8' : '#FAFEFF',

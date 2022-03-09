@@ -10,7 +10,11 @@ export interface InputCheckBoxProps {
 }
 export const InputCheckBox: React.FC<InputCheckBoxProps> = (props) => {
   return (
-    <TouchableOpacity style={styles.checkboxMainContainer} onPress={() => props.onClick()}>
+    <TouchableOpacity
+      activeOpacity={0.5}
+      style={styles.checkboxMainContainer}
+      onPress={() => props.onClick()}
+    >
       <View style={styles.checkboxContainer}>
         {props.checked && (
           <WhatsAppCheckTick

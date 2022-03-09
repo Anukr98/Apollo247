@@ -596,6 +596,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   }, []);
 
   const getDoctorOfTheHour = async (partnerDoctor: boolean = false, state?: string) => {
+    if (!specialityId) {
+      return;
+    }
     client
       .query<getPlatinumDoctor>({
         query: GET_PLATINUM_DOCTOR,
@@ -1112,7 +1115,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           }
           rightComponent={
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               onPress={() => {
                 setSearchIconClicked(!searchIconClicked);
                 setDoctorSearch('');
@@ -1483,7 +1486,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             headingTextStyle={{ fontSize: 14 }}
           />
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             onPress={() => {
               setshowSpinner(true);
               getNetStatus()
@@ -2266,7 +2269,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           <View style={styles.bottomItemContainer}>
             <View style={styles.bottomItemContainer}>
               <TouchableOpacity
-                activeOpacity={1}
+                activeOpacity={0.5}
                 style={styles.centerRow}
                 onPress={() => onPressHospitalVisit()}
               >
@@ -2275,17 +2278,17 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 </Text>
               </TouchableOpacity>
               {onlineCheckBox ? (
-                <TouchableOpacity onPress={() => onPressHospitalVisit()}>
+                <TouchableOpacity activeOpacity={0.5} onPress={() => onPressHospitalVisit()}>
                   <Toggle style={styles.toggleIcon} />
                 </TouchableOpacity>
               ) : (
-                <TouchableOpacity onPress={() => onPressVideoConsult()}>
+                <TouchableOpacity activeOpacity={0.5} onPress={() => onPressVideoConsult()}>
                   <LeftToggle style={styles.toggleIcon} />
                 </TouchableOpacity>
               )}
               <TouchableOpacity
+                activeOpacity={0.5}
                 style={styles.centerRow}
-                activeOpacity={1}
                 onPress={() => onPressVideoConsult()}
               >
                 <Text style={[styles.consultModeText, { opacity: onlineCheckBox ? 1 : 0.6 }]}>
@@ -2297,7 +2300,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           <View style={styles.seperator} />
           <View style={styles.bottomItemContainer}>
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               onPress={() => {
                 CommonLogEvent(AppRoutes.DoctorSearchListing, 'Filter view opened');
                 setDisplayFilter(true);
@@ -2361,6 +2364,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       return (
         <View style={styles.topTabBar}>
           <TouchableOpacity
+            activeOpacity={0.5}
             style={{
               ...styles.docTypeCont,
               borderBottomColor:
@@ -2379,6 +2383,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
+            activeOpacity={0.5}
             style={{
               ...styles.docTypeCont,
               borderBottomColor:
@@ -2447,7 +2452,11 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         )}
         {displayAskApolloNumber && (
           <View style={styles.horizontalEnd}>
-            <TouchableOpacity onPress={callAskApolloNumber} style={styles.horizontalView}>
+            <TouchableOpacity
+              activeOpacity={0.5}
+              onPress={callAskApolloNumber}
+              style={styles.horizontalView}
+            >
               <CallIcon style={styles.callLogo} />
               <Text style={styles.askApolloNumber}>
                 {AppConfig.Configuration.Ask_Apollo_Number}

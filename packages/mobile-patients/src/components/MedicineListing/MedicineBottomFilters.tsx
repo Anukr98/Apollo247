@@ -51,6 +51,7 @@ const MedicineBottomFilters: React.FC<medicineBottomFilterProps> = ({
   return (
     <>
       <TouchableOpacity
+        activeOpacity={0.5}
         style={styles.btnStyle}
         onPress={() => {
           if (categoryId === bottomCategoryId) {
@@ -76,4 +77,3 @@ const MedicineBottomFilters: React.FC<medicineBottomFilterProps> = ({
 };
 
 export default React.memo(MedicineBottomFilters);
-

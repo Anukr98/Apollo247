@@ -51,10 +51,14 @@ export const OrderPlacedPopUp: React.FC<OrderPlacedPopUpProps> = (props) => {
       <View>
         <View style={styles.footerBorder} />
         <View style={styles.popupButtonStyle}>
-          <TouchableOpacity style={{ flex: 1 }} onPress={onPressViewInvoice}>
+          <TouchableOpacity activeOpacity={0.5} style={{ flex: 1 }} onPress={onPressViewInvoice}>
             <Text style={styles.popupButtonTextStyle}>VIEW INVOICE</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={{ flex: 1, alignItems: 'flex-end' }} onPress={onPressTrackOrder}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            style={{ flex: 1, alignItems: 'flex-end' }}
+            onPress={onPressTrackOrder}
+          >
             <Text style={styles.popupButtonTextStyle}>TRACK ORDER</Text>
           </TouchableOpacity>
         </View>

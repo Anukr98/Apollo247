@@ -47,7 +47,7 @@ export const ChooseAddress: React.FC<ChooseAddressProps> = (props) => {
   const renderAddress = (item: savePatientAddress_savePatientAddress_patientAddress) => {
     return (
       <View style={{ ...styles.addressCard, borderWidth: item.id == deliveryAddressId ? 1 : 0 }}>
-        <TouchableOpacity onPress={() => onPressSelectAddress(item)}>
+        <TouchableOpacity activeOpacity={0.5} onPress={() => onPressSelectAddress(item)}>
           <View style={styles.header}>
             <View style={{ flex: 0.85 }}>
               <Text numberOfLines={2} style={styles.addressType}>
@@ -57,7 +57,7 @@ export const ChooseAddress: React.FC<ChooseAddressProps> = (props) => {
               </Text>
             </View>
             <View style={{ flex: 0.15 }}>
-              <TouchableOpacity onPress={() => onPressEditAddress(item)}>
+              <TouchableOpacity activeOpacity={0.5} onPress={() => onPressEditAddress(item)}>
                 <EditAddressIcon />
               </TouchableOpacity>
             </View>
@@ -76,6 +76,7 @@ export const ChooseAddress: React.FC<ChooseAddressProps> = (props) => {
     const length = addresses ? addresses.length : 0;
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={{ ...styles.addAddressCard, height: length % 2 == 0 ? 80 : undefined }}
         onPress={onPressAddAddress}
       >

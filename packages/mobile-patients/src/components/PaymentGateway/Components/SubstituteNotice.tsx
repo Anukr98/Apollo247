@@ -28,10 +28,10 @@ export const SubstituteNotice: React.FC<SubstituteNoticeProps> = (props) => {
   const renderButtons = () => {
     return (
       <View>
-        <TouchableOpacity onPress={onPressAccept}>
+        <TouchableOpacity activeOpacity={0.5} onPress={onPressAccept}>
           <Text style={styles.agree}>Yes, Agree to Receiving Substitutes</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={onPressReject}>
+        <TouchableOpacity activeOpacity={0.5} onPress={onPressReject}>
           <Text style={styles.reject}>No, I want the Exact Items Delivered</Text>
         </TouchableOpacity>
       </View>

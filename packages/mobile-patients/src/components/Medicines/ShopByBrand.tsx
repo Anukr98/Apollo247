@@ -117,7 +117,7 @@ export const ShopByBrand: React.FC<ShopByBrandProps> = (props) => {
         title={'SHOP BY BRAND'}
         rightComponent={
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <TouchableOpacity activeOpacity={1} onPress={() => {}}></TouchableOpacity>
+            <TouchableOpacity activeOpacity={0.5} onPress={() => {}}></TouchableOpacity>
           </View>
         }
         onPressLeftIcon={() => props.navigation.goBack()}
@@ -157,6 +157,7 @@ export const ShopByBrand: React.FC<ShopByBrandProps> = (props) => {
               data={filteredBrands}
               renderItem={({ item, index }) => (
                 <TouchableOpacity
+                  activeOpacity={0.5}
                   key={1}
                   style={{
                     flexDirection: 'row',
@@ -167,7 +168,6 @@ export const ShopByBrand: React.FC<ShopByBrandProps> = (props) => {
                     borderBottomColor: 'rgba(2,71,91, 0.2)',
                     borderBottomWidth: 0.5,
                   }}
-                  activeOpacity={1}
                   onPress={() => {
                     CommonLogEvent(AppRoutes.ShopByBrand, 'Naviagte to search by brand view');
                     getBrandPagesData(item?.url_key)

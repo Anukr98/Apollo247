@@ -15,10 +15,11 @@ export interface WidgetCardProps {
 export const WidgetCard: React.FC<WidgetCardProps> = (props) => {
   const { data, onPressWidget } = props;
   const itemIcon = !!data?.itemIcon
-    ? data?.itemIcon
+    ? data?.itemIcon + '?imwidth=' + 50
     : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_ICON;
   return (
     <TouchableOpacity
+      activeOpacity={0.5}
       style={styles.container}
       onPress={() => {
         onPressWidget();
@@ -40,13 +41,12 @@ export const WidgetCard: React.FC<WidgetCardProps> = (props) => {
 
 const styles = StyleSheet.create({
   container: {
+    ...theme.viewStyles.card(12, 0, 5, theme.colors.HEX_WHITE, 5),
     width: screenWidth / 4.15,
-    backgroundColor: theme.colors.HEX_WHITE,
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'flex-start',
     margin: 5,
-    elevation: 5,
     padding: 16,
     paddingLeft: 12,
     paddingRight: 12,

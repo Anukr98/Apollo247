@@ -181,6 +181,7 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
     return (
       <>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => {
             setRowSelected(index);
           }}
@@ -280,6 +281,7 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
         <BottomPopUp title={'Hi:)'} description="Please check you Internet connection!">
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
+              activeOpacity={0.5}
               style={{
                 height: 60,
                 paddingRight: 25,

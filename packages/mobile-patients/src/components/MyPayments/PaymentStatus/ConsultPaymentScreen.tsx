@@ -148,28 +148,39 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
       displayId,
       discountedAmount,
       appointmentRefunds,
+      orderType,
+      subscriptionOrderDetails,
     } = itemDetails;
     const { refund } = PaymentOrders;
     const refundInfo = refund?.length ? refund : appointmentRefunds;
-    const paymentInfo = PaymentOrders?.paymentStatus ? PaymentOrders : appointmentPayments[0];
+    const paymentInfo =
+      orderType === 'SUBSCRIPTION'
+        ? subscriptionOrderDetails
+        : PaymentOrders?.paymentStatus
+        ? PaymentOrders
+        : appointmentPayments?.[0];
     if (!paymentInfo) {
       status = 'PENDING';
-    } else if (refundInfo.length || paymentStatus == REFUND) {
+    } else if (refundInfo?.length || paymentStatus == REFUND) {
       const { paymentRefId, amountPaid } = paymentInfo;
       refId = paymentRefId;
       price = amountPaid;
       status = REFUND;
     } else {
       const { paymentStatus, paymentRefId, amountPaid } = paymentInfo;
-      status = paymentStatus;
-      refId = paymentRefId;
-      price = amountPaid;
+      status =
+        orderType === 'SUBSCRIPTION'
+          ? paymentInfo?.payment_reference?.payment_status
+          : paymentStatus;
+      refId = orderType === 'SUBSCRIPTION' ? paymentInfo?._id : paymentRefId;
+      price =
+        orderType === 'SUBSCRIPTION' ? paymentInfo?.payment_reference?.amount_paid : amountPaid;
     }
     return {
       status: status,
       refId: refId,
       price: `${string.common.Rs} ` + String(price),
-      orderId: displayId,
+      orderId: orderType === 'SUBSCRIPTION' ? paymentInfo?.order_id : displayId,
     };
   };
   const { refId, price, orderId, status } = statusItemValues();
@@ -226,6 +237,7 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
       return (
         <View style={styles.viewInvoice}>
           <TouchableOpacity
+            activeOpacity={0.5}
             style={styles.viewInvoiceContainer}
             onPress={() => requestStoragePermission()}
           >
@@ -233,6 +245,7 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
             {textComponent('VIEW INVOICE', undefined, theme.colors.TANGERINE_YELLOW, false)}
           </TouchableOpacity>
           <TouchableOpacity
+            activeOpacity={0.5}
             style={styles.emailInvoiceView}
             onPress={() => setshowEmailInput(!showEmailInput)}
           >
@@ -293,7 +306,7 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
     return (
       <View style={{ paddingBottom: 0, opacity: isSatisfyingEmailRegex(email.trim()) ? 1 : 0.5 }}>
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           disabled={!isSatisfyingEmailRegex(email.trim())}
           onPress={() => {
             emailInvoice();
@@ -329,63 +342,70 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
       .finally(() => {});
   };
 
-  const downloadInvoice = () => {
-    client
-      .query({
-        query: CONSULT_ORDER_INVOICE,
-        variables: {
-          patientId: patientId,
-          appointmentId: itemDetails?.id,
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((res) => {
-        const { data } = res;
-        const { getOrderInvoice } = data;
-        let dirs = RNFetchBlob.fs.dirs;
-        let fileName: string =
-          'Apollo_Consult_Invoice' + moment().format('MMM_D_YYYY_HH_mm') + '.pdf';
-        const downloadPath =
-          Platform.OS === 'ios'
-            ? (dirs.DocumentDir || dirs.MainBundleDir) +
-              '/' +
-              (fileName || 'Apollo_Consult_Invoice.pdf')
-            : dirs.DownloadDir + '/' + (fileName || 'Apollo_Consult_Invoice.pdf');
-        RNFetchBlob.config({
-          fileCache: true,
-          path: downloadPath,
-          addAndroidDownloads: {
-            title: fileName,
-            useDownloadManager: true,
-            notification: true,
-            path: downloadPath,
-            mime: mimeType(downloadPath),
-            description: 'File downloaded by download manager.',
+  const downloadInvoice = async () => {
+    try {
+      let res: any = {};
+      let data: any = {};
+
+      if (itemDetails?.orderType !== 'SUBSCRIPTION') {
+        res = await client.query({
+          query: CONSULT_ORDER_INVOICE,
+          variables: {
+            patientId: patientId,
+            appointmentId: itemDetails?.id,
           },
-        })
-          .fetch('GET', String(getOrderInvoice), {
-            //some headers ..
-          })
-          .then((res) => {
-            if (Platform.OS === 'android') {
-              Alert.alert('Download Complete');
-            }
-            Platform.OS === 'ios'
-              ? RNFetchBlob.ios.previewDocument(res.path())
-              : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
-          })
-          .catch((err) => {
-            CommonBugFender('ConsultView_downloadInvoice', err);
-          });
+          fetchPolicy: 'no-cache',
+        });
+        data = res?.data;
+      } else {
+        data = {
+          getOrderInvoice: itemDetails?.subscriptionOrderDetails?.payment_reference?.invoice_url,
+        };
+      }
+      const { getOrderInvoice } = data;
+      let dirs = RNFetchBlob.fs.dirs;
+      let fileName: string =
+        'Apollo_Consult_Invoice' + moment().format('MMM_D_YYYY_HH_mm') + '.pdf';
+      const downloadPath =
+        Platform.OS === 'ios'
+          ? (dirs.DocumentDir || dirs.MainBundleDir) +
+            '/' +
+            (fileName || 'Apollo_Consult_Invoice.pdf')
+          : dirs.DownloadDir + '/' + (fileName || 'Apollo_Consult_Invoice.pdf');
+
+      RNFetchBlob.config({
+        fileCache: true,
+        path: downloadPath,
+        addAndroidDownloads: {
+          title: fileName,
+          useDownloadManager: true,
+          notification: true,
+          path: downloadPath,
+          mime: mimeType(downloadPath),
+          description: 'File downloaded by download manager.',
+        },
       })
-      .catch((error) => {
-        renderErrorPopup(`Something went wrong, please try again after sometime`);
-        CommonBugFender('fetchingConsultInvoice', error);
-      });
+        .fetch('GET', String(getOrderInvoice), {})
+        .then((res) => {
+          if (Platform.OS === 'android') {
+            Alert.alert('Download Complete');
+          }
+          Platform.OS === 'ios'
+            ? RNFetchBlob.ios.previewDocument(res.path())
+            : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
+        })
+        .catch((err) => {
+          CommonBugFender('ConsultView_downloadInvoice', err);
+        });
+    } catch (error) {
+      renderErrorPopup(`Something went wrong, please try again after sometime, Error Code: C1`);
+      CommonBugFender('fetchingConsultInvoice', error);
+    }
   };
   const renderStatusCard = () => {
     const orderIdText = 'Order ID: ' + String(orderId);
-    const { appointmentType, appointmentDateTime, doctor } = itemDetails || {};
+    const { appointmentType, appointmentDateTime, doctor, orderType, subscriptionOrderDetails } =
+      itemDetails || {};
     return (
       <View style={styles.statusCardStyle}>
         <View
@@ -411,7 +431,11 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
           </View>
         </View>
         {status == success && (
-          <TouchableOpacity style={styles.refStyles} onPress={() => copyToClipboard(refId)}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            style={styles.refStyles}
+            onPress={() => copyToClipboard(refId)}
+          >
             <Text style={theme.viewStyles.text('R', 10, theme.colors.SLATE_GRAY, 1, 20)}>
               {'Payment Ref. Number - ' + refId}
             </Text>
@@ -438,10 +462,12 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
             {string.consultPayment.appointmentDetails}
           </Text>
           <Text style={theme.viewStyles.text('M', 12, theme.colors.CONSULT_SUCCESS_TEXT, 1, 20)}>
-            {appointmentType.charAt(0).toUpperCase() +
-              appointmentType.slice(1).toLowerCase() +
-              ' Consultation,' +
-              getDate(appointmentDateTime)}
+            {orderType === 'SUBSCRIPTION'
+              ? subscriptionOrderDetails?.plan_id?.toUpperCase()
+              : appointmentType.charAt(0).toUpperCase() +
+                appointmentType.slice(1).toLowerCase() +
+                ' Consultation,' +
+                getDate(appointmentDateTime)}
           </Text>
           <Text style={theme.viewStyles.text('M', 12, theme.colors.BLACK_COLOR, 1, 20)}>
             {doctor?.name}
@@ -544,7 +570,11 @@ export const ConsultPaymentScreen: React.FC<ConsultPaymentScreenProps> = (props)
           <Text style={styles.consultInfoText}>{string.consultPayment.stepThree}</Text>
         </View>
         <Text style={styles.guidelineText}>{string.consultPayment.detailedGuidelines}</Text>
-        <TouchableOpacity onPress={() => setShowPDF(true)} style={styles.pdfView}>
+        <TouchableOpacity
+          activeOpacity={0.5}
+          onPress={() => setShowPDF(true)}
+          style={styles.pdfView}
+        >
           <Pdf style={styles.pdfIcon} />
           <Text style={theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE)}>
             {string.consultPayment.viewGuideline}

@@ -155,7 +155,11 @@ const StatusCard: FC<StatusCardProps> = (props) => {
       </View>
       <View style={styles.refIdStyles}>
         {textComponent(payRefId, undefined, theme.colors.SHADE_GREY, false)}
-        <TouchableOpacity style={styles.refStyles} onPress={() => copyToClipboard(refId)}>
+        <TouchableOpacity
+          activeOpacity={0.5}
+          style={styles.refStyles}
+          onPress={() => copyToClipboard(refId)}
+        >
           {textComponent(refId, undefined, theme.colors.SHADE_GREY, false)}
           <Copy style={styles.iconStyle} />
         </TouchableOpacity>

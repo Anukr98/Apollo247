@@ -175,7 +175,7 @@ export const FeedbackPopup: React.FC<FeedbackPopupProps> = (props) => {
       </Text>
       {ratingOption != OTHERS_FEEDBACK ? (
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           onPress={() => {
             setOverlayDropdown(true);
           }}

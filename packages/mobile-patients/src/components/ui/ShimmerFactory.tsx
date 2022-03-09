@@ -446,6 +446,27 @@ const styles = StyleSheet.create({
     height: 50,
     width: 70,
   },
+  descriptionCardOuterView: {
+    width:'96%',
+    height: 200,
+    elevation: 10,
+    borderRadius: 6,
+    marginVertical: 20
+  },
+  descriptionCardSquareView: {
+    width:'30%',
+    height: 100,
+    elevation: 10,
+    borderRadius: 6,
+    margin: 20
+  },
+  descriptionCardFaqView: {
+    width:'96%',
+    height: 300,
+    elevation: 10,
+    borderRadius: 6,
+    marginVertical: 20
+  },
 });
 
 export const renderCovidVaccinationShimmer = () => {
@@ -1183,7 +1204,43 @@ export const renderDiagnosticWidgetHeadingShimmer = () => {
     </View>
   );
 };
+export const renderDiagnosticTestDetailShimmer = () => {
+  return (
+    <View style={{ marginLeft: 16 }}>
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.descriptionCardOuterView}
+      />
+    </View>
+  );
+};
 
+export const renderTestDetailHorizontalOptionShimmer = (options: any[]) => {
+  return (
+    <View style={{justifyContent: 'space-evenly', flexDirection:'row' }}>
+      {options?.map((_item: any) => (
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={styles.descriptionCardSquareView}
+        />
+      ))}
+    </View>
+  );
+};
+
+export const renderTestDetailFaqShimmer = () => {
+  return (
+    <View>
+        <ShimmerPlaceHolder
+          shimmerColors={shimmerColors}
+          LinearGradient={LinearGradient}
+          shimmerStyle={styles.descriptionCardFaqView}
+        />
+    </View>
+  );
+};
 export const renderPostShareAppointmentLoadingShimmer = () => {
   return (
     <View style={{ marginHorizontal: 20, marginVertical: 10 }}>

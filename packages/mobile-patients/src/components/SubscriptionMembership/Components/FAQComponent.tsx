@@ -12,6 +12,7 @@ import {
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
+import HTML from 'react-native-render-html';
 
 export interface FAQComponentProps {
   data?: any;
@@ -23,6 +24,8 @@ export interface FAQComponentProps {
   containerStyle?: ViewStyle;
   arrowStyle?: ImageStyle;
   horizontalLine?: ViewStyle;
+  faqIcon?: any;
+  source?: string;
 }
 
 export const FAQComponent: React.FC<FAQComponentProps> = (props) => {
@@ -31,10 +34,11 @@ export const FAQComponent: React.FC<FAQComponentProps> = (props) => {
   const [previousIndex, setPreviousIndex] = useState<number>(-1);
 
   const renderQuestions = () => {
-    return faq.map((value: any, index: number) => {
+    return faq?.map((value: any, index: number) => {
       return (
         <View>
           <TouchableOpacity
+            activeOpacity={0.5}
             style={styles.questionContainer}
             activeOpacity={0.7}
             onPress={() => {
@@ -47,7 +51,11 @@ export const FAQComponent: React.FC<FAQComponentProps> = (props) => {
             }}
           >
             <Text style={props.questionStyle}>
-              {props.data ? value?.faqQuestion : value.question}
+              {props.data
+                ? props.source == 'diagnostics'
+                  ? decodeURIComponent(value?.faqQuestion)
+                  : value?.faqQuestion
+                : value?.question}
             </Text>
             <ArrowRight
               style={[
@@ -69,11 +77,41 @@ export const FAQComponent: React.FC<FAQComponentProps> = (props) => {
           {!!(previousIndex != -1 && index === previousIndex) ? (
             <></>
           ) : activeIndex === index ? (
-            <Text style={props.answerStyle}>{props.data ? value?.faqAnswer : value.answer}</Text>
+            props?.data ? (
+              props.source == 'diagnostics' ? (
+                <Text style={props.answerStyle}>decodeURIComponent(value?.faqAnswer)?.trim()</Text>
+              ) : (
+                <HTML
+                  html={value?.faqAnswer || ''}
+                  baseFontStyle={styles.faqAnswer}
+                  ignoredStyles={[
+                    'line-height',
+                    'margin-bottom',
+                    'color',
+                    'text-align',
+                    'font-size',
+                    'font-family',
+                  ]}
+                />
+              )
+            ) : (
+              <HTML
+                html={value?.answer || ''}
+                baseFontStyle={styles.faqAnswer}
+                ignoredStyles={[
+                  'line-height',
+                  'margin-bottom',
+                  'color',
+                  'text-align',
+                  'font-size',
+                  'font-family',
+                ]}
+              />
+            )
           ) : (
             <></>
           )}
-          {faq.length - 1 !== index && <View style={props.horizontalLine} />}
+          {faq?.length - 1 !== index && <View style={props.horizontalLine} />}
         </View>
       );
     });
@@ -81,7 +119,10 @@ export const FAQComponent: React.FC<FAQComponentProps> = (props) => {
 
   return (
     <View style={[styles.container, props.containerStyle]}>
-      <Text style={props.headingStyle}>{props.headingText}</Text>
+      <View style={!!props.faqIcon && styles.faqIconViewStyle}>
+        {!!props.faqIcon && props.faqIcon}
+        <Text style={props.headingStyle}>{props.headingText}</Text>
+      </View>
       <View style={props.headerSeparatorStyle} />
       {renderQuestions()}
     </View>
@@ -117,6 +158,11 @@ const styles = StyleSheet.create({
   },
   faqAnswer: {
     ...theme.viewStyles.text('L', 12, '#01475B', 1, 16, 0.35),
+  },
+  faqIconViewStyle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
   },
 });
 

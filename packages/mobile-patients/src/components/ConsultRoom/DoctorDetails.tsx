@@ -1014,7 +1014,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         </View>
         {!showCircleSubscribed ? (
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             style={styles.row}
             onPress={() => openCircleWebView()}
           >
@@ -1113,7 +1113,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               <View style={styles.doctorNameViewStyle}>
                 <Text style={styles.doctorNameStyles}>{doctorDetails?.displayName}</Text>
                 <TouchableOpacity
-                  activeOpacity={1}
+                  activeOpacity={0.5}
                   onPress={() => onClickDoctorShare()}
                   style={styles.shareViewStyle}
                 >
@@ -1375,6 +1375,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const renderUpgradeToCircle = () => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={styles.upgradeContainer}
         onPress={() => {
           setShowCirclePlans(true);
@@ -1658,7 +1659,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             data={arrayHistory}
             renderItem={({ item }) => (
               <TouchableOpacity
-                activeOpacity={1}
+                activeOpacity={0.5}
                 onPress={() => {
                   props.navigation.navigate(AppRoutes.ConsultDetails, {
                     CaseSheet: item.id,
@@ -2038,7 +2039,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             top: statusBarHeight() + 30,
           }}
         >
-          <TouchableOpacity onPress={callAskApolloNumber} style={styles.horizontalView}>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            onPress={callAskApolloNumber}
+            style={styles.horizontalView}
+          >
             <CallIcon style={styles.callLogo} />
             <Text style={styles.askApolloNumber}>{AppConfig.Configuration.Ask_Apollo_Number}</Text>
           </TouchableOpacity>

@@ -25,6 +25,7 @@ export const CancelAppointmentPopup: React.FC<CancelAppointmentProps> = (props) 
       <View style={styles.container}>
         <View style={{ height: 60 }}>
           <TouchableOpacity
+            activeOpacity={0.5}
             style={styles.gotItStyles}
             onPress={() => {
               onPressReschedule();
@@ -35,6 +36,7 @@ export const CancelAppointmentPopup: React.FC<CancelAppointmentProps> = (props) 
         </View>
         <View style={{ height: 60 }}>
           <TouchableOpacity
+            activeOpacity={0.5}
             style={styles.gotItStyles}
             onPress={() => {
               onPressCancel();

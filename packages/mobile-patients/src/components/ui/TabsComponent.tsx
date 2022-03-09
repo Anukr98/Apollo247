@@ -70,7 +70,7 @@ export const TabsComponent: React.FC<TabsComponentProps> = (props) => {
       const isSelected = selected == item.title;
       return (
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           key={index}
           style={[
             styles.tabView,

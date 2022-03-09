@@ -554,6 +554,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const scrollCount = useRef<number>(0);
   const [searchResults, setSearchResults] = useState<any>(null);
 
+  const isFromDeepLink = props.navigation.getParam('isFromDeeplink');
+
   useEffect(() => {
     if (!currentPatient) {
       getPatientApiCall();
@@ -563,6 +565,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const client = useApolloClient();
 
   useEffect(() => {
+    if (isFromDeepLink) postHomepageEvent();
     const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       BackHandler.addEventListener('hardwareBackPress', backDataFunctionality);
     });
@@ -574,6 +577,18 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       _willBlurSubscription?.remove();
     };
   }, []);
+
+  const postHomepageEvent = () => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_HOMEPAGE_VIEWED] = {
+      'Nav src': 'Direct',
+      User: `${currentPatient?.firstName} ${currentPatient?.lastName}`,
+      UHID: currentPatient?.uhid,
+      Gender: currentPatient?.gender,
+      'Mobile Number': currentPatient?.mobileNumber,
+      'Customer Id': currentPatient?.id,
+    };
+    postCleverTapEvent(CleverTapEventName.CONSULT_HOMEPAGE_VIEWED, eventAttributes);
+  };
 
   const moveSelectedToTop = () => {
     if (currentPatient !== undefined) {
@@ -1082,6 +1097,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const renderOneTapPackage = () => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={styles.oneTapContainer}
         onPress={() => {
           props.navigation.navigate(AppRoutes.ConsultPackageDetail, {
@@ -1455,7 +1471,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
     return (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={() => {
           CommonLogEvent(AppRoutes.DoctorSearch, item.name);
           if (isOnlineConsultMode || locationDetails) {
@@ -1644,6 +1660,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             />
             {searchText.length > 2 && !showAllSearchedSymptomsData && SpecialitiesList?.length > 2 && (
               <TouchableOpacity
+                activeOpacity={0.5}
                 onPress={() => {
                   setShowAllSearchedSymptomsData(true);
                   const result = (
@@ -1758,7 +1775,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         <Mutation<saveSearch> mutation={SAVE_SEARCH}>
           {(mutate, { loading, data, error }) => (
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               onPress={() => {
                 if (locationDetails || isOnlineConsultMode) {
                   CommonLogEvent(AppRoutes.DoctorSearch, rowData?.name);
@@ -2069,6 +2086,36 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     });
   };
 
+  const postProfileViewedEvent = (doctor: any) => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED] = {
+      'Nav src': 'Searchbar',
+      'Patient name': `${currentPatient?.firstName} ${currentPatient?.lastName}`,
+      'Patient UHID': currentPatient?.uhid,
+      'Patient age': Math.round(moment().diff(currentPatient?.dateOfBirth, 'years', true)),
+      'Patient gender': currentPatient?.gender,
+      'Mobile number': currentPatient?.mobileNumber,
+      'Doctor ID': doctor?.id,
+      'Doctor name': doctor?.displayName,
+      'Speciality name': doctor?.specialtydisplayName,
+      Experience: String(doctor?.experience) || '',
+      'Media source': 'NA',
+      User_Type: getUserType(allCurrentPatients),
+      Languages: doctor?.languages?.join(',') || '',
+      Fee: Number(doctor?.onlineConsultationFees) || doctor?.fee || undefined,
+      Source: 'Doctor Card clicked',
+      'Doctor card clicked': 'Yes',
+      Rank: doctor?.rowId,
+      'Doctor category': doctor?.doctorType,
+      'Appointment CTA': 'NA',
+      'Customer ID': currentPatient?.id,
+      'Available in mins': doctor?.earliestSlotInMinutes || '',
+      'Circle Membership added': String(!!circlePlanSelected),
+      'Doctor city': 'NA',
+      'Hospital name': 'NA',
+    };
+    postCleverTapEvent(CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED, eventAttributes);
+  };
+
   const renderDoctorSearches = () => {
     if (searchText.length > 2 && doctorsList && doctorsList.length > 0) {
       const SpecialitiesList = (searchText.length > 2 ? searchSpecialities : Specialities) || [];
@@ -2103,6 +2150,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             />
             {showViewAllDoctors && (
               <TouchableOpacity
+                activeOpacity={0.5}
                 onPress={() => {
                   setShowAllSearchedDoctorData(true);
                   const result = (
@@ -2128,6 +2176,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               const itemNo = index + 1;
               postDoctorClickWEGEvent({ ...item, itemNo }, 'Search');
               postSearchedResultWebEngageEvent(item?.displayName);
+              postProfileViewedEvent(item);
               CommonLogEvent(AppRoutes.DoctorSearch, 'renderSearchDoctorResultsRow clicked');
               item?.allowBookingRequest
                 ? props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
@@ -2138,7 +2187,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                     doctorId: item?.id,
                     callSaveSearch: 'true',
                     showBookAppointment: true,
-                    consultModeSelected: isOnlineConsultMode
+                    consultModeSelected: !!item?.doctorNextAvailSlots?.onlineSlot
                       ? string.consultModeTab.VIDEO_CONSULT
                       : string.consultModeTab.HOSPITAL_VISIT,
                   });
@@ -2160,6 +2209,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             />
             {!showAllSearchedProcedures && procedures?.length > 2 && (
               <TouchableOpacity
+                activeOpacity={0.5}
                 onPress={() => {
                   setShowAllSearchedProcedures(true);
                   const result = (
@@ -2200,6 +2250,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             />
             {!showAllSearchedSymptoms && symptoms?.length > 2 && (
               <TouchableOpacity
+                activeOpacity={0.5}
                 onPress={() => {
                   setShowAllSearchedSymptoms(true);
                   const result = (
@@ -2320,6 +2371,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         >
           {packages?.map((pkg: any) => (
             <TouchableOpacity
+              activeOpacity={0.5}
               onPress={() => {
                 props.navigation.navigate(AppRoutes.ConsultPackageDetail, {
                   planId: pkg?.PackageIdentifier,
@@ -2370,6 +2422,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const renderMySpecialtyPackage = (pkg: any) => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={styles.mySpecialtyPackageContainer}
         onPress={() => {
           props.navigation.navigate(AppRoutes.ConsultPackagePostPurchase, {

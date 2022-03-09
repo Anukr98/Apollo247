@@ -92,7 +92,7 @@ export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
       <View style={[{ flex: 1 }, isLoading && { opacity: 0 }]}>
         <View style={{ flexDirection: 'row', marginBottom: 5 }}>
           <View style={{ flex: 0.85 }}>
-            <TouchableOpacity onPress={onPressProduct}>
+            <TouchableOpacity activeOpacity={0.5} onPress={onPressProduct}>
               <Text style={{ ...styles.itemName, opacity: itemAvailable ? 1 : 0.3 }}>
                 {item?.name}
               </Text>
@@ -103,7 +103,7 @@ export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
               >{`(Pack of ${item?.mou})`}</Text>
             ) : null}
           </View>
-          <TouchableOpacity onPress={onPressDelete} style={styles.delete}>
+          <TouchableOpacity activeOpacity={0.5} onPress={onPressDelete} style={styles.delete}>
             {renderDelete()}
           </TouchableOpacity>
         </View>
@@ -277,7 +277,7 @@ export const ServerCartItem: React.FC<ServerCartItemProps> = (props) => {
   };
 
   return (
-    <TouchableOpacity style={styles.cardContainer}>
+    <TouchableOpacity activeOpacity={0.5} style={styles.cardContainer}>
       <View style={{ ...styles.card, backgroundColor: itemAvailable ? '#fff' : '#F0F1EC' }}>
         {renderImage()}
         {renderProduct()}

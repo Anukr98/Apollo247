@@ -100,10 +100,13 @@ import { UIElementsContextProps } from '@aph/mobile-patients/src/components/UIEl
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getLatestMedicineOrder';
-import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetailsWithAddress';
+import {
+  getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails,
+  getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderAddress,
+} from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsWithAreaID';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
-import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { getDiagnosticsByItemIdCityId, getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { NavigationActions, StackActions } from 'react-navigation';
 import { differenceInYears, parse } from 'date-fns';
 import stripHtml from 'string-strip-html';
@@ -124,6 +127,7 @@ import { getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientA
 import { handleOpenURL, pushTheView } from './deeplinkRedirection';
 import DeviceInfo from 'react-native-device-info';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { DiagnosticItemGenderMapping, DIAGNOSTIC_ITEM_GENDER, getPricesForItem } from '../components/Tests/utils/helpers';
 
 const width = Dimensions.get('window').width;
 
@@ -282,7 +286,9 @@ export const getDoctorShareMessage = (doctorData: any) => {
 };
 
 export const formatAddressWithLandmark = (
-  address: savePatientAddress_savePatientAddress_patientAddress
+  address:
+    | savePatientAddress_savePatientAddress_patientAddress
+    | getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderAddress
 ) => {
   const addrLine1 = removeConsecutiveComma(
     [address?.addressLine1, address?.addressLine2]?.filter((v) => v)?.join(', ')
@@ -307,7 +313,9 @@ export const formatAddressWithLandmark = (
 };
 
 export const getNameFromAddress = (
-  address: savePatientAddress_savePatientAddress_patientAddress
+  address:
+    | savePatientAddress_savePatientAddress_patientAddress
+    | getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderAddress
 ) => {
   return address?.name || '';
 };
@@ -1457,14 +1465,30 @@ export const reOrderMedicines = async (
   };
 };
 
+function calculateInclusionsParameterCount(result: any){
+  function filterMandatoryResults (arr: any){
+    return arr?.filter((item: any)=> item?.mandatoryValue == '1');
+  }
+  let getMandatoryResults, count;
+  if(result?.diagnosticInclusions?.length > 0){
+    const getRes  =  result?.diagnosticInclusions?.map((item: any) => item?.observations)?.flat();
+    getMandatoryResults = filterMandatoryResults(getRes);
+    count = getMandatoryResults?.length ;
+  }
+  else{
+     getMandatoryResults = filterMandatoryResults(result?.observations);
+     count = getMandatoryResults?.length ;
+  }
+  return count;
+}
+
 export const addTestsToCart = async (
   testPrescription: getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[], // testsIncluded will not come from API
   apolloClient: ApolloClient<object>,
   pincode?: string,
   setLoading?: UIElementsContextProps['setLoading']
 ) => {
-  const detailQuery = async (itemId: string) =>
-    await getPackageInclusions(apolloClient, [Number(itemId)]);
+  const fetchPricesQuery = async (itemIds: Number[]) => await getDiagnosticsByItemIdCityId(apolloClient, AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID, itemIds);
   try {
     setLoading?.(true);
     const items = testPrescription?.filter((val) => val?.itemname)?.map((item) => item?.itemname);
@@ -1477,27 +1501,36 @@ export const addTestsToCart = async (
     if (searchQueries?.data?.success) {
       const searchResults = searchQueries?.data?.data;
       const searchQueriesData = searchResults?.filter((item: any) => !!item);
-      const detailQueries = Promise.all(
-        searchQueriesData?.map((item: any) => detailQuery(`${item.itemId}`))
-      );
-      const detailQueriesData = (await detailQueries)?.map(
-        (item: any) => g(item, 'data', 'getInclusionsOfMultipleItems', 'inclusions', 'length') || 1 // updating testsIncluded
-      );
+      const getAllItemId = searchQueriesData?.map((item: any)=> Number(item?.diagnostic_item_id));
+      const getResponse = await fetchPricesQuery(getAllItemId)
+      const getPricesForItems =  getResponse?.data?.findDiagnosticsByItemIDsAndCityID?.diagnostics;
       setLoading?.(false);
       const finalArray: DiagnosticsCartItem[] = Array.from({
         length: searchQueriesData?.length,
       }).map((_, index) => {
-        const s = searchQueriesData?.[index];
-        const testIncludedCount = detailQueriesData?.[index];
+        const s = searchQueriesData?.[index];  
+        const findDetailedResult =  getPricesForItems?.find((val: any)=> Number(val?.itemId) == Number(s?.diagnostic_item_id));
+        const count = calculateInclusionsParameterCount(findDetailedResult);
+        const packageMrpForItem = findDetailedResult?.packageCalculatedMrp!;
+        const getDiagnosticPricingForItem = findDetailedResult?.diagnosticPricing;
+        const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
+        const inclusions = s?.inclusions == null ? [Number(s?.diagnostic_item_id)] : s?.inclusions,
         return {
           id: `${s?.diagnostic_item_id}`,
           name: s?.diagnostic_item_name,
-          price: 0,
-          specialPrice: undefined,
+          price: pricesForItem?.price,
+          specialPrice: pricesForItem?.specialPrice,
+          circlePrice: pricesForItem?.circlePrice,
+          circleSpecialPrice: pricesForItem?.circleSpecialPrice,
+          discountPrice: pricesForItem?.discountPrice,
+          discountSpecialPrice: pricesForItem?.discountSpecialPrice,
           mou: 1,
           thumbnail: '',
           collectionMethod: TEST_COLLECTION_TYPE.HC,
-          inclusions: s?.inclusions == null ? [Number(s?.diagnostic_item_id)] : s?.inclusions,
+          inclusions:inclusions,
+          gender : !!findDetailedResult ? DiagnosticItemGenderMapping(findDetailedResult?.gender!) : DiagnosticItemGenderMapping(DIAGNOSTIC_ITEM_GENDER.B),
+          parameterCount : !!count ? count : inclusions?.length,
+          isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG
         } as DiagnosticsCartItem;
       });
       return finalArray;
@@ -2414,19 +2447,20 @@ export const InitiateAppsFlyer = (
   let isDeepLinked = false;
   onDeepLinkCanceller = appsFlyer.onDeepLink((res) => {
     isDeepLinked = true;
-    if (res.is_deferred) {
+    if (res.isDeferred) {
       getInstallResources();
       const url = handleOpenURL(res?.data?.deep_link_value);
       AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
     }
     try {
-      if (!res.is_deferred) {
+      if (!res.isDeferred) {
         if (redirectUrl && checkUniversalURL(redirectUrl).universal) {
           if (Object.keys(res.data).length < 2) {
             clevertapEventForAppsflyerDeeplink(
               removeNullFromObj({
                 source_url: checkUniversalURL(redirectUrl).source_url,
                 channel: 'Organic',
+                'Nav Src': 'universal URL',
               })
             );
           } else {
@@ -2434,18 +2468,20 @@ export const InitiateAppsFlyer = (
               filterAppLaunchSoruceAttributesByKey({
                 ...res.data,
                 source_url: checkUniversalURL(redirectUrl).source_url,
+                'Nav Src': 'universal URL',
               })
             );
           }
         } else {
-          clevertapEventForAppsflyerDeeplink(filterAppLaunchSoruceAttributesByKey(res.data));
+          const eventAttributes = {
+            ...res.data,
+            'Nav Src': 'deeplink',
+          };
+          clevertapEventForAppsflyerDeeplink(filterAppLaunchSoruceAttributesByKey(eventAttributes));
           const url = handleOpenURL(res.data.deep_link_value);
           AsyncStorage.setItem('deferred_deep_link_value', JSON.stringify(url));
           redirectWithOutDeferred(url);
         }
-      }
-      if (res.status == 'success') {
-        clevertapEventForAppsflyerDeeplink(removeNullFromObj(res.data));
       }
     } catch (e) {}
   });
@@ -2455,9 +2491,9 @@ export const InitiateAppsFlyer = (
 };
 
 export const checkUniversalURL = (url: string) => {
-  if (
-    url.indexOf(string.common.apollo247UniversalLink) != -1 ||
-    url.indexOf(string.common.apolloPharmacyUniversalLink) != -1
+  if (!url.includes('https://apollo247.onelink.me') &&
+    (url.indexOf(string.common.apollo247UniversalLink) != -1 ||
+      url.indexOf(string.common.apolloPharmacyUniversalLink) != -1)
   ) {
     if (url.indexOf('?') != -1) {
       var splitedArray = url.split('?');
@@ -2492,7 +2528,11 @@ const setAppReferralData = (data: {
 
 const getInstallResources = () => {
   let installConversation = appsFlyer.onInstallConversionData((res) => {
-    clevertapEventForAppsflyerDeeplink(removeNullFromObj(res.data));
+    clevertapEventForAppsflyerDeeplink({
+      ...removeNullFromObj(filterAppLaunchSoruceAttributesByKey(res.data)),
+      'Nav Src': 'deffered deeplink',
+      is_first_launch: true,
+    });
     installConversation();
   });
 };
@@ -2920,6 +2960,13 @@ export const addPharmaItemToCart = (
         pharmacyCircleAttributes!
       );
     };
+    if (comingFromSearch === true) {
+      cleverTapSearchSuccessEventAttributes?.['Product availability'] = 'Is in stock';
+      postCleverTapEvent(
+        CleverTapEventName.PHARMACY_SEARCH_SUCCESS,
+        cleverTapSearchSuccessEventAttributes
+      );
+    }
     if (!isLocationServeiceable) {
       const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE] = {
         'product name': cartItem.name,
@@ -2931,13 +2978,7 @@ export const addPharmaItemToCart = (
       onComplete && onComplete();
       return;
     }
-    if (comingFromSearch === true) {
-      cleverTapSearchSuccessEventAttributes?.['Product availability'] = 'Is in stock';
-      postCleverTapEvent(
-        CleverTapEventName.PHARMACY_SEARCH_SUCCESS,
-        cleverTapSearchSuccessEventAttributes
-      );
-    }
+
     addToCart();
     onAddedSuccessfully?.();
   } catch (error) {}
@@ -4158,6 +4199,7 @@ export const filterAppLaunchSoruceAttributesByKey = (raw: any) => {
     'is_paid',
     'adgroup',
     'campaign_id',
+    'Nav Src',
   ];
   let filteredObj = removeNullFromObj(raw);
   return Object.keys(filteredObj)
@@ -4483,19 +4525,48 @@ export const showDiagnosticCTA = (pageName: CALL_TO_ORDER_CTA_PAGE_ID, cityId: s
   const isCtaDetailDefault = callToOrderDetails?.ctaDetailsDefault?.ctaProductPageArray?.includes(
     pageName
   );
-  return ctaDetailArray?.filter((item: any) => {
-    if (Number(item?.ctaCityId) == Number(cityId)) {
-      if (item?.ctaProductPageArray?.includes(pageName)) {
-        return item;
-      } else {
-        return null;
+  const checkForCtaCityAvailabilty = () => {
+    for (let index = 0; index < ctaDetailArray.length; index++) {
+      const element = ctaDetailArray[index];
+      if (
+        Number(element?.ctaCityId) == cityId &&
+        element?.ctaProductPageArray?.includes(pageName)
+      ) {
+        return element;
       }
-    } else if (isCtaDetailDefault) {
-      return callToOrderDetails?.ctaDetailsDefault;
+    }
+  };
+  const checkForCtaTime = () => {
+    const element = checkForCtaCityAvailabilty();
+    if (!!element?.ctaDisplayHrsArray?.length) {
+      const object1 = element?.ctaDisplayHrsArray?.filter((item) => {
+        const timeStart = moment(item, 'HH');
+        const timeEnd = moment(timeStart, 'HH:mm').add(59, 'minutes');
+        const currentTime = moment();
+        const showCta = currentTime.isBetween(timeStart, timeEnd, 'hour', '[]');
+        if (showCta) {
+          return element;
+        } else {
+          return null;
+        }
+      });
+      return object1;
     } else {
       return null;
     }
-  });
+  };
+
+  if (checkForCtaCityAvailabilty()?.ctaCityId == cityId) {
+    if (!!checkForCtaTime()?.length) {
+      return [checkForCtaCityAvailabilty()];
+    } else {
+      return null;
+    }
+  } else if (isCtaDetailDefault) {
+    return [callToOrderDetails?.ctaDetailsDefault];
+  } else {
+    return null;
+  }
 };
 
 export const calculateDiagnosticCartItems = (
@@ -4561,4 +4632,41 @@ export const getShipmentAndTatInfo = (shipments) => {
         };
       })
     : [];
+};
+
+export const postOfferCardClickEvent = (
+  item: any,
+  sequence: string,
+  offerExpired: boolean,
+  allCurrentPatients: any,
+  currentPatient: any,
+  notchText: string,
+  circleMember: boolean,
+  offerCount: number,
+  triggerType: string
+) => {
+  const eventAttributes = {
+    User_Type: getUserType(allCurrentPatients),
+    'Patient Name': currentPatient?.firstName || 'NA',
+    'Patient UHID': currentPatient?.uhid || 'NA',
+    'Patient age': currentPatient ? getAge(currentPatient?.dateOfBirth) : 'NA',
+    'Circle Member': circleMember ? 'True' : 'False',
+    'Customer ID': currentPatient?.id || 'NA',
+    'Patient gender': currentPatient?.gender || 'NA',
+    'Mobile number': currentPatient?.mobileNumber || 'NA',
+    'Page name': 'HomePage',
+    'Offer Content': item?.title?.text || '',
+    Timer: offerExpired ? 'No' : 'Yes',
+    'Coupon Code': item?.coupon_code,
+    'Offer tile sequence': sequence,
+    LOB: item?.cta?.path?.vertical || '',
+    'Offer Notch Test': notchText,
+    'Offer CTA Text': item?.cta?.text,
+    'Offer Expiry': item?.expired_at,
+    'Offer ID': item?.offer_id,
+    'Offer Subtitle': item?.subtitle?.text,
+    'Number of offers': offerCount,
+    trigger_type: triggerType,
+  };
+  postCleverTapEvent(CleverTapEventName.HOMEPAGE_OFFERS_ACTIVITY, eventAttributes);
 };

@@ -144,7 +144,7 @@ export const SavedCard: React.FC<SavedCardProps> = (props) => {
 
   const renderWhatscvv = () => {
     return (
-      <TouchableOpacity onPress={() => showCVVPopUP()}>
+      <TouchableOpacity activeOpacity={0.5} onPress={() => showCVVPopUP()}>
         <Text style={styles.whatscvv}>What is CVV ?</Text>
       </TouchableOpacity>
     );
@@ -166,6 +166,7 @@ export const SavedCard: React.FC<SavedCardProps> = (props) => {
     return (
       <View style={{ ...styles.container, backgroundColor: '#FAFEFF' }}>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={{
             ...styles.subContainer,
             borderBottomWidth: skipBorder ? 0 : 1,

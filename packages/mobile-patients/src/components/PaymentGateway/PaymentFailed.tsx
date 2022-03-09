@@ -651,7 +651,7 @@ export const PaymentFailed: React.FC<PaymentFailedProps> = (props) => {
           <Text style={styles.orderId}>Order ID:</Text>
           <Text style={styles.id}>{orderIds || orderDetails?.displayId}</Text>
         </View>
-        <TouchableOpacity style={styles.paymentId} onPress={onPressCopy}>
+        <TouchableOpacity activeOpacity={0.5} style={styles.paymentId} onPress={onPressCopy}>
           <Text style={styles.orderId}>Payment Ref. Number:</Text>
           <Text style={styles.id}>{paymentId}</Text>
           <Copy style={styles.iconStyle} />
@@ -664,7 +664,7 @@ export const PaymentFailed: React.FC<PaymentFailedProps> = (props) => {
     return businessLine == 'diagnostics' ||
       businessLine == 'consult' ||
       businessLine == 'pharma' ? (
-      <TouchableOpacity style={styles.retryCont} onPress={onPressRetry}>
+      <TouchableOpacity activeOpacity={0.5} style={styles.retryCont} onPress={onPressRetry}>
         <Text style={styles.retry}>RETRY WITH ANOTHER PAYMENT METHOD</Text>
       </TouchableOpacity>
     ) : null;
@@ -673,7 +673,7 @@ export const PaymentFailed: React.FC<PaymentFailedProps> = (props) => {
   const renderCOD = () => {
     return (businessLine == 'diagnostics' && showCODonDiag) ||
       (businessLine == 'pharma' && showCODonPharma) ? (
-      <TouchableOpacity style={styles.button} onPress={onPressCOD}>
+      <TouchableOpacity activeOpacity={0.5} style={styles.button} onPress={onPressCOD}>
         <Text style={styles.cod}>PLACE ORDER - CASH ON DELIVERY</Text>
       </TouchableOpacity>
     ) : null;

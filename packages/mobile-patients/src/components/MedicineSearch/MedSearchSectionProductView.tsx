@@ -37,7 +37,11 @@ export const MedSearchSectionProductView: React.FC<Props> = ({
   };
 
   return (
-    <TouchableOpacity style={[styles.container, containerStyle]} onPress={onPress}>
+    <TouchableOpacity
+      activeOpacity={0.5}
+      style={[styles.container, containerStyle]}
+      onPress={onPress}
+    >
       {renderImage()}
       {renderTitle()}
     </TouchableOpacity>

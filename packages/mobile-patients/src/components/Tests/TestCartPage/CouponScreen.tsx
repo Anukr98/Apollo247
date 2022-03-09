@@ -27,7 +27,7 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { Overlay } from 'react-native-elements';
-import { createDiagnosticValidateCouponLineItems } from '@aph/mobile-patients/src/utils/commonUtils';
+import { createDiagnosticValidateCouponLineItems } from '@aph/mobile-patients/src/components/Tests/utils/helpers';
 
 const screenHeight = Dimensions.get('window').height;
 export interface CouponScreenProps
@@ -323,7 +323,7 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
             ]}
           >
             <TouchableOpacity
-              activeOpacity={1}
+              activeOpacity={0.5}
               disabled={!isEnableApplyBtn}
               onPress={() => {
                 _onPressApplyCoupon(couponText, false);
@@ -383,6 +383,7 @@ export const CouponScreen: React.FC<CouponScreenProps> = (props) => {
           <Text style={styles.couponCodeText}>{item?.coupon}</Text>
         </View>
         <TouchableOpacity
+          activeOpacity={0.5}
           onPress={() => _onPressApplyCoupon(item?.coupon, true)}
           disabled={isDisabled}
         >

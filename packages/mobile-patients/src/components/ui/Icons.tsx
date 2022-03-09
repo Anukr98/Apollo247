@@ -332,6 +332,13 @@ export const ArrowLeft: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_arrow_left.webp')} />
 );
 
+export const ArrowDownWhite: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/arrow_down_white3x.webp')} />
+);
+
+export const ArrowUpWhite: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/arrow_up_white3x.webp')} />
+);
 export const WhiteArrowRightIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_white_arrow_right.webp')} />
 );
@@ -844,11 +851,26 @@ export const Emoticon4: React.FC<IconProps> = (props) => (
 export const Emoticon5: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/emoticons_13.webp')} />
 );
+export const BagBlue: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/bagBlue3x.webp')} />
+);
+export const VirusGreen: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/virusGreen3x.webp')} />
+);
+export const ClockBlue: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/clockBlue3x.webp')} />
+);
+export const HomeBlue: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/homeBlue3x.webp')} />
+);
 export const PremiumIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/premium_icon_2x.webp')} />
 );
 export const DownloadOrange: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/download_o_3x.webp')} />
+);
+export const AcceptGreen: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/accept3x.webp')} />
 );
 
 export const OneApollo: React.FC<IconProps> = (props) => (
@@ -3009,5 +3031,53 @@ export const WhatsAppCheckTick: React.FC<IconProps> = (props) => (
     style={[props.style]}
     source={require('@aph/mobile-patients/src/images/signUp/check-tick-icon.webp')}
     {...props}
+  />
+);
+
+export const GenderIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/genderIcon.webp')}
+  />
+);
+
+export const AgeGroupIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/ageGroupIcon.webp')}
+  />
+);
+
+export const OrangeCartIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/orangeCartIcon.webp')}
+  />
+);
+
+export const OrangeFAQIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/orangeFAQIcon.webp')}
+  />
+);
+
+export const RelatedPackageIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/releatedPackageIcon.webp')}
+  />
+);
+
+export const SampleTypeIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/sampleType.webp')}
   />
 );

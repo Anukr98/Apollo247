@@ -416,7 +416,7 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
   const renderModeOptionInput = (title: string, mode: ConsultMode) => {
     return (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         style={styles.radioButtonContainer}
         key={1}
         onPress={() => {
@@ -434,7 +434,7 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
   const renderDateOptionInput = (title: string, option: string) => {
     return (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         style={styles.radioButtonContainer}
         key={1}
         onPress={() => {
@@ -518,6 +518,7 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
       {patientProfiles?.map((item: any, index: any, array: any) =>
         item.firstName !== '+ADD MEMBER' ? (
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => {
               setLoading && setLoading(true);
               onSelectedProfile(item);
@@ -577,7 +578,7 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
           }}
         >
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             onPress={() => {
               props.setdisplayoverlay(false);
             }}

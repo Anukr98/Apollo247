@@ -167,7 +167,7 @@ export const SelectLocation: React.FC<SelectLocationProps> = (props) => {
           }}
         />
         {locationInput?.length > 2 && (
-          <TouchableOpacity onPress={() => clearTextInput()}>
+          <TouchableOpacity activeOpacity={0.5} onPress={() => clearTextInput()}>
             <CrossGray style={styles.crossIcon} />
           </TouchableOpacity>
         )}
@@ -308,7 +308,7 @@ export const SelectLocation: React.FC<SelectLocationProps> = (props) => {
 
   const renderLocations = (item: any, index: number) => {
     return (
-      <TouchableOpacity key={index} onPress={() => onPressLocation(item)}>
+      <TouchableOpacity activeOpacity={0.5} key={index} onPress={() => onPressLocation(item)}>
         <Text style={styles.locationText}>{item?.name}</Text>
         <View style={styles.seperatorLine} />
       </TouchableOpacity>

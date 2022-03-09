@@ -906,7 +906,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                     </Text>
                     {data.labTestSource === 'Hospital' && !!item?.loincCode && !resultStr ? (
                       <TouchableOpacity
-                        activeOpacity={1}
+                        activeOpacity={0.5}
                         onPress={() => {
                           handleOnClickForGraphPopUp(
                             item?.parameterName,
@@ -998,6 +998,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                       </Text>
                       {item?.result?.length > 100 ? (
                         <TouchableOpacity
+                          activeOpacity={0.5}
                           onPress={() => renderReadMore(item?.result)}
                           style={[
                             styles.readMoreTouch,
@@ -1015,6 +1016,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                   {trueOR && successMessage && item?.content !== 0 && item?.content?.length > 0 ? (
                     <View style={styles.contentCodeView}>
                       <TouchableOpacity
+                        activeOpacity={0.5}
                         style={styles.contentCodeBtn}
                         onPress={() => pushToInformaticPage(item?.content, item?.desc, item?.title)}
                       >
@@ -1154,7 +1156,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                 const file_Url = item?.file_Url || '';
                 return file_name && file_name.toLowerCase().endsWith('.png') ? (
                   <TouchableOpacity
-                    activeOpacity={1}
+                    activeOpacity={0.5}
                     style={styles.imageViewStyle}
                     onPress={() => {
                       setShowPDF(true);
@@ -1176,7 +1178,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                 const file_Url = item?.file_Url || '';
                 return file_name && file_name.toLowerCase().endsWith('.pdf') ? (
                   <TouchableOpacity
-                    activeOpacity={1}
+                    activeOpacity={0.5}
                     style={styles.imageViewStyle}
                     onPress={() => {
                       setShowPDF(true);
@@ -1193,7 +1195,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                   </TouchableOpacity>
                 ) : (
                   <TouchableOpacity
-                    activeOpacity={1}
+                    activeOpacity={0.5}
                     onPress={() => {
                       props.navigation.navigate(AppRoutes.ImageSliderScreen, {
                         images: [file_Url],
@@ -1243,6 +1245,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
       <View style={styles.topView}>
         <View style={styles.shareIconRender}>
           <TouchableOpacity
+            activeOpacity={0.5}
             onPress={() => (labResults ? downloadPDFTestReport(true) : downloadDocument())}
           >
             <ShareBlueIcon size={'md'} style={{ width: 22, height: 22 }} />

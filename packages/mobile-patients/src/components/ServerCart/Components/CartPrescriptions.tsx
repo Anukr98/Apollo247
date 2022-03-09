@@ -154,7 +154,7 @@ export const CartPrescriptions: React.FC<CartPrescriptionsProps> = (props) => {
   const renderUploadMore = () => {
     return (
       !!onPressUploadMore && (
-        <TouchableOpacity onPress={onPressUploadMore}>
+        <TouchableOpacity activeOpacity={0.5} onPress={onPressUploadMore}>
           <Text style={styles.upload}>UPLOAD MORE</Text>
         </TouchableOpacity>
       )

@@ -20,16 +20,24 @@ const MyOrdersScreen: FC<MyOrdersScreenProps> = (props) => {
 
   const onPressHelp = () => {
     const helpSectionQueryId = AppConfig.Configuration.HELP_SECTION_CUSTOM_QUERIES;
-    props.navigation.navigate(AppRoutes.NeedHelpPharmacyOrder, {
-      queryIdLevel1: helpSectionQueryId.pharmacy,
-      sourcePage: 'My Orders',
-    });
+    props.navigation.navigate(
+      selectedTab === tabs[1].title
+        ? AppRoutes.NeedHelpDiagnosticsOrder
+        : AppRoutes.NeedHelpPharmacyOrder,
+      {
+        queryIdLevel1:
+          selectedTab === tabs[1].title
+            ? helpSectionQueryId.diagnostic
+            : helpSectionQueryId.pharmacy,
+        sourcePage: 'My Orders',
+      }
+    );
   };
 
   const renderHeaderRightComponent = () => {
     return showHelpCTA ? (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         style={{ paddingLeft: 10 }}
         onPress={() => {
           onPressHelp();
@@ -68,11 +76,7 @@ const MyOrdersScreen: FC<MyOrdersScreenProps> = (props) => {
         data={tabs}
         onChange={(selectedTab: string) => {
           setSelectedTab(selectedTab);
-          if (selectedTab === tabs[1].title) {
-            setShowHelpCTA(false);
-          } else {
-            setShowHelpCTA(true);
-          }
+          setShowHelpCTA(true);
         }}
         selectedTab={selectedTab}
       />

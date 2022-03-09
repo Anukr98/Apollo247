@@ -159,6 +159,7 @@ export const ConsultPackagePostPurchase: React.FC<ConsultPackagePostPurchaseProp
         onPressLeftIcon={() => props.navigation.goBack()}
         rightIcon={
           <TouchableOpacity
+            activeOpacity={0.5}
             style={{
               flexDirection: 'row',
               alignSelf: 'flex-end',
@@ -323,6 +324,7 @@ export const ConsultPackagePostPurchase: React.FC<ConsultPackagePostPurchaseProp
               <View style={{ flex: 5, marginLeft: 20 }}>
                 <Text style={styles.mySpecialtiesItemName}>{specialty.name}</Text>
                 <TouchableOpacity
+                  activeOpacity={0.5}
                   onPress={() => {
                     props.navigation.navigate(AppRoutes.ConfirmPackageConsult, {
                       specialityName: specialty.name,
@@ -384,6 +386,7 @@ export const ConsultPackagePostPurchase: React.FC<ConsultPackagePostPurchaseProp
 
       {showMorePopup ? (
         <TouchableOpacity
+          activeOpacity={0.5}
           style={styles.morePopup}
           onPress={() => {
             setShowMorePopup(false);

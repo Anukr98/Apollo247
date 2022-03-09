@@ -16,6 +16,11 @@ export enum APPOINTMENT_STATE {
   TRANSFERRED = 'TRANSFERRED',
 }
 
+export enum CANCELLATION_TIME {
+  POST_BILLING = "POST_BILLING",
+  PRE_BILLING = "PRE_BILLING",
+}
+
 export enum APPOINTMENT_TYPE {
   BOTH = 'BOTH',
   ONLINE = 'ONLINE',
@@ -87,6 +92,14 @@ export enum BookingStatus {
   COMPLETED = "COMPLETED",
   FAILED = "FAILED",
   INPROGRESS = "INPROGRESS",
+}
+
+export enum CANCELLATION_REASONS_CTA {
+  ADD_TESTS = "ADD_TESTS",
+  EDIT_PATIENT_DETAILS = "EDIT_PATIENT_DETAILS",
+  RESCHEDULE = "RESCHEDULE",
+  SAME_DAY = "SAME_DAY",
+  WITHIN_24_HOURS = "WITHIN_24_HOURS",
 }
 
 export enum CODCity {
@@ -2299,6 +2312,21 @@ export enum PrescriptionType {
   LATER = "LATER",
   NA = "NA",
   UPLOADED = "UPLOADED",
+}
+
+export enum DiagnosticCTJourneyType {
+  UPLOAD_PRESCRIPTION = "Upload Prescription",
+  WHATSAPP = 'WhatsApp'
+}
+
+export enum DiagnosticItemType {
+  LABTEST = "LABTEST",
+  PACKAGE = 'PACKAGE'
+}
+
+export interface recommendationInputItem {
+  itemId?: number | null;
+  itemType?: DiagnosticItemType | null;
 }
 
 export interface CartInputData {

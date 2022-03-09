@@ -71,10 +71,10 @@ export const TestListingHeader: React.FC<Props> = ({ navigation, movedFrom, head
     };
 
     const icons = [
-      <TouchableOpacity onPress={onPressSearchIcon}>
+      <TouchableOpacity activeOpacity={0.5} onPress={onPressSearchIcon}>
         <WhiteSearchIcon />
       </TouchableOpacity>,
-      <TouchableOpacity onPress={onPressCartIcon}>
+      <TouchableOpacity activeOpacity={0.5} onPress={onPressCartIcon}>
         <CartIcon />
         {cartItemsCount > 0 && <Badge label={cartItemsCount} />}
       </TouchableOpacity>,

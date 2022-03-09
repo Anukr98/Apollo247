@@ -293,6 +293,7 @@ export const ConsultPackageDetail: React.FC<ConsultPackageDetailProps> = (props)
           {/* map of packages */}
           {packageDetailData?.Plandata?.map((plan: any, index: number) => (
             <TouchableOpacity
+              activeOpacity={0.5}
               style={
                 selectedPlanIndex == index
                   ? styles.planItemContainerSelected

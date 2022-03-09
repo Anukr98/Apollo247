@@ -24,7 +24,7 @@ export const InactivePlanBenefits: React.FC<InactivePlanBenefitsProps> = (props)
                 icon={icon}
                 isActivePlan={isActivePlan}
               />
-              <TouchableOpacity disabled={true} onPress={() => {}}>
+              <TouchableOpacity activeOpacity={0.5} disabled={true} onPress={() => {}}>
                 <Text style={[styles.redeemButtonText, { color: '#f7cc8f' }]}>REDEEM</Text>
               </TouchableOpacity>
               {index + 1 !== benefits.length && <View style={styles.horizontalLine} />}

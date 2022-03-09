@@ -129,6 +129,7 @@ export const PaymentConfirmation: React.FC<PaymentConfirmationProps> = (props) =
           <View style={styles.paymentRef}>
             {textComponent('Payment Ref. Number - ', theme.colors.SHADE_GREY, false)}
             <TouchableOpacity
+              activeOpacity={0.5}
               style={{ flexDirection: 'row' }}
               onPress={() => copyToClipboard(refNumberText)}
             >
@@ -159,6 +160,7 @@ export const PaymentConfirmation: React.FC<PaymentConfirmationProps> = (props) =
     return (
       <View>
         <TouchableOpacity
+          activeOpacity={0.5}
           style={styles.buttonStyle}
           onPress={() => navigateToHome(props.navigation)}
         >

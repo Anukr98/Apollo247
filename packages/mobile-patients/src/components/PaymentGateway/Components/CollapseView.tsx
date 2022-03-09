@@ -16,6 +16,7 @@ export const CollapseView: React.FC<CollapseViewProps> = (props) => {
   const renderHeader = () => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={{ ...styles.header, borderBottomWidth: dropDown ? 0 : 1 }}
         onPress={() => setdropDown(!dropDown)}
       >

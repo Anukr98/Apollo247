@@ -17,7 +17,11 @@ export const CategoryAndSpecialOffers: React.FC<Props> = ({
 }) => {
   const renderShopByCategory = () => {
     return (
-      <TouchableOpacity style={styles.shopByCategoryContainer} onPress={onPressShopByCategory}>
+      <TouchableOpacity
+        activeOpacity={0.5}
+        style={styles.shopByCategoryContainer}
+        onPress={onPressShopByCategory}
+      >
         <Text style={styles.shopByCategoryText}>Shop by Category</Text>
         <DropdownGreen style={styles.dropdownGreen} />
       </TouchableOpacity>
@@ -26,7 +30,11 @@ export const CategoryAndSpecialOffers: React.FC<Props> = ({
 
   const renderSpecialOffers = () => {
     return (
-      <TouchableOpacity style={styles.specialOffersContainer} onPress={onPressSpecialOffers}>
+      <TouchableOpacity
+        activeOpacity={0.5}
+        style={styles.specialOffersContainer}
+        onPress={onPressSpecialOffers}
+      >
         <SpecialOffers style={styles.specialOffers} />
         <Text style={styles.specialOffersText}>{string.specialOffers}</Text>
       </TouchableOpacity>

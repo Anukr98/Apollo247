@@ -492,7 +492,7 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
           }}
         >
           {cancelConsulations ? null : (
-            <TouchableOpacity activeOpacity={1} onPress={onPressPastAppointmentViewDetails}>
+            <TouchableOpacity activeOpacity={0.5} onPress={onPressPastAppointmentViewDetails}>
               <Text
                 style={[
                   styles.prepareForConsult,
@@ -506,7 +506,7 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
             </TouchableOpacity>
           )}
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             onPress={() => {
               setAppoinmentItem(item);
               setdisplayoverlay(true);
@@ -541,7 +541,7 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
       };
       return (
         <View>
-          <TouchableOpacity activeOpacity={1} onPress={onPressTextConsult}>
+          <TouchableOpacity activeOpacity={0.5} onPress={onPressTextConsult}>
             <View style={{ flexDirection: 'row', alignSelf: 'flex-end' }}>
               <ChatBlueIcon style={{ width: 20, height: 20, marginTop: 12 }} />
               <Text
@@ -576,7 +576,7 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
       return (
         <View style={styles.completedConsultViewStyle}>
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             onPress={() => {
               setAppoinmentItem(item);
               setdisplayoverlay(true);
@@ -594,7 +594,7 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             onPress={() => {
               CommonLogEvent(AppRoutes.Consult, 'Prepare for Consult clicked');
               props.navigation.navigate(AppRoutes.DoctorDetails, {
@@ -637,7 +637,7 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
       return (
         <View style={{ flexDirection: 'row' }}>
           <TouchableOpacity
-            activeOpacity={1}
+            activeOpacity={0.5}
             style={{ flex: 1 }}
             onPress={onPressActiveUpcomingButtons}
           >
@@ -682,7 +682,7 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
               {string.common.pickAnotherSlotText}
             </Text>
           </View>
-          <TouchableOpacity activeOpacity={1} onPress={onPressPickAnotherSlot}>
+          <TouchableOpacity activeOpacity={0.5} onPress={onPressPickAnotherSlot}>
             <Text style={styles.prepareForConsult}>PICK ANOTHER SLOT</Text>
           </TouchableOpacity>
         </>
@@ -727,7 +727,7 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
     return (
       <View>
         <TouchableOpacity
-          activeOpacity={1}
+          activeOpacity={0.5}
           style={[styles.doctorView]}
           onPress={onPressDoctorCardClick}
         >

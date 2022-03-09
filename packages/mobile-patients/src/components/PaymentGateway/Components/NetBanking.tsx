@@ -74,6 +74,7 @@ export const NetBanking: React.FC<NetBankingProps> = (props) => {
         }}
       >
         <TouchableOpacity
+          activeOpacity={0.5}
           disabled={outageStatus == 'DOWN' ? true : false}
           onPress={() => onPressBank(item?.item?.payment_method_code)}
         >
@@ -111,6 +112,7 @@ export const NetBanking: React.FC<NetBankingProps> = (props) => {
   const renderShowOtherBanks = () => {
     return (
       <TouchableOpacity
+        activeOpacity={0.5}
         style={{
           flexDirection: 'row',
           justifyContent: 'space-between',
