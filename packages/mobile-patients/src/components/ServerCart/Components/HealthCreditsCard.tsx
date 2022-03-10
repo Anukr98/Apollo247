@@ -49,8 +49,8 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
   },
   iconSize: {
-    height: 0.053 * windowHeight,
-    width: 0.068 * windowHeight,
+    width: 33.6,
+    height: 23.8,
   },
   iconContainer: {
     marginLeft: 10,

@@ -59,6 +59,21 @@ export const ShowBottomPopUp: React.FC<ShowBottomPopUpProps> = (props) => {
     );
   };
 
+  const renderContainer = () => {
+    return (
+      <TouchableWithoutFeedback onPress={() => onDismissPopUp()}>
+        <View style={styles.mainContainer}>
+          <TouchableWithoutFeedback>
+            <View style={styles.popUpContainer}>
+              {renderHeader()}
+              {childComponent}
+            </View>
+          </TouchableWithoutFeedback>
+        </View>
+      </TouchableWithoutFeedback>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       {
@@ -67,25 +82,29 @@ export const ShowBottomPopUp: React.FC<ShowBottomPopUpProps> = (props) => {
           style={{ marginHorizontal: 0, marginBottom: 0 }}
           backdropColor="rgba(0,0,0,0.75)"
           avoidKeyboard={false}
-          // swipeDirection={'down'}
           animationOut={'slideOutDown'}
           animationOutTiming={500}
         >
-          <KeyboardAwareScrollView
-            contentContainerStyle={{ flexGrow: 1 }}
-            extraHeight={Platform.OS == 'ios' ? 325 : undefined}
-          >
-            <TouchableWithoutFeedback onPress={() => onDismissPopUp()}>
-              <View style={styles.mainContainer}>
-                <TouchableWithoutFeedback>
-                  <View style={styles.popUpContainer}>
-                    {renderHeader()}
-                    {childComponent}
-                  </View>
-                </TouchableWithoutFeedback>
-              </View>
-            </TouchableWithoutFeedback>
-          </KeyboardAwareScrollView>
+          {Platform.OS == 'ios' ? (
+            paymentMode == 'NEWCARD' ? (
+              <KeyboardAwareScrollView
+                keyboardShouldPersistTaps={'always'}
+                contentContainerStyle={{ flexGrow: 1 }}
+                extraHeight={325}
+              >
+                {renderContainer()}
+              </KeyboardAwareScrollView>
+            ) : (
+              renderContainer()
+            )
+          ) : (
+            <KeyboardAwareScrollView
+              keyboardShouldPersistTaps={'always'}
+              contentContainerStyle={{ flexGrow: 1 }}
+            >
+              {renderContainer()}
+            </KeyboardAwareScrollView>
+          )}
         </Modal>
       }
     </View>

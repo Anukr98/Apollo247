@@ -180,6 +180,11 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     fetchedPaymentMethods || paymentMethods;
   const linkedWallets = preferred_payment_methods?.linked_wallets;
   const closedPaymentModes = all_payment_modes?.filter((item: any) => item?.state == 'CLOSE');
+  const recently_used_or_defined = preferred_payment_methods?.recently_used_or_defined;
+  const usedWallets = recently_used_or_defined?.find((item: any) => item?.name == 'WALLET')
+    ?.payment_methods;
+  const usedUPIApps = recently_used_or_defined?.find((item: any) => item?.name == 'UPI')
+    ?.payment_methods;
   const preferredSavedCards = preferred_payment_methods?.saved_cards?.cards || [];
   const preferredCardTokens = preferredSavedCards?.map((item: any) => item?.card_token);
   const savedCards =
@@ -211,6 +216,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
   const { deleteServerCart } = useServerCart();
   const [otherPaymentSelected, setOtherPaymentSelected] = useState<any>(null);
+  const allowPhonePeQC = AppConfig.Configuration.ALLOW_PHONEPE_QCLITE;
 
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
@@ -630,14 +636,14 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     const offerId = bestOffer?.offer_id;
     const token = await getClientToken();
     token
-      ? wallet == 'PHONEPE' && phonePeReady
+      ? wallet == 'PHONEPE' && phonePeReady && allowPhonePeQC
         ? InitiateUPISDKTxn(requestId, token, paymentId, wallet, 'ANDROID_PHONEPE', offerId)
         : wallet == 'PAYTM' && payTmReady
         ? InitiateUPISDKTxn(requestId, token, paymentId, wallet, 'ANDROID_PAYTM', offerId)
         : InitiateWalletTxn(requestId, token, paymentId, wallet, offerId)
       : renderErrorPopup();
     const param =
-      wallet == 'PHONEPE' && phonePeReady
+      wallet == 'PHONEPE' && phonePeReady && allowPhonePeQC
         ? 'ANDROID_PHONEPE'
         : wallet == 'PAYTM' && payTmReady
         ? 'ANDROID_PAYTM'
@@ -685,7 +691,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     const token = await getClientToken();
     let paymentCode = app?.payment_method_code;
     paymentCode = Platform.OS == 'android' ? paymentCode : getIOSPackageName(paymentCode);
-    const sdkPresent = paymentCode == 'com.phonepe.app' && phonePeReady ? 'ANDROID_PHONEPE' : '';
+    const sdkPresent =
+      paymentCode == 'com.phonepe.app' && phonePeReady && allowPhonePeQC ? 'ANDROID_PHONEPE' : '';
     const paymentMethod = paymentCode == 'com.phonepe.app' ? 'PHONEPE' : '';
     token
       ? sdkPresent
@@ -854,7 +861,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           payload: payload,
           isCircleAddedToCart: isCircleAddedToCart,
           verticalSpecificEventAttributes,
-          amount: amount,
+          amount: props.navigation.getParam('amount'),
         });
         break;
       case 'consult':
@@ -864,7 +871,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           paymentId: paymentId,
           defaultClevertapEventParams: defaultClevertapEventParams,
           payload: payload,
-          amount: amount,
+          amount: props.navigation.getParam('amount'),
         });
         break;
       case 'pharma':
@@ -883,7 +890,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           );
         props.navigation.navigate(AppRoutes.PaymentStatusPharma, {
           paymentStatus: paymentStatus,
-          amount: amount,
+          amount: props.navigation.getParam('amount'),
           paymentId: paymentId,
           orderDetails: orderDetails,
           checkoutEventAttributes: checkoutEventAttributes,
@@ -916,7 +923,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           orderId: orderDetails?.orderId,
           paymentStatus: paymentStatus,
           paymentId: paymentId,
-          amount: amount,
+          amount: props.navigation.getParam('amount'),
           defaultClevertapEventParams: defaultClevertapEventParams,
           payload: payload,
         });
@@ -1020,6 +1027,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
             offers={offersList}
             fetchOffers={fetchOffers}
             amount={amount}
+            customerInfo={{ clientAuthToken: clientAuthToken, customerId: customerId }}
           />
         );
     }
@@ -1134,9 +1142,18 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const renderWallets = (wallets: any) => {
+    // Do not show linked wallets and wallets shown under preferred payment options
+    const usedWalletCodes = usedWallets?.map((item: any) => item?.payment_method_code);
+    const linkedWalletCodes = linkedWallets?.map((item: any) => item?.wallet);
+    const filteredWallets =
+      wallets?.filter(
+        (item: any) =>
+          !usedWalletCodes?.includes(item?.payment_method_code) &&
+          !linkedWalletCodes?.includes(item?.payment_method_code)
+      ) || [];
     return (
       <Wallets
-        wallets={wallets}
+        wallets={filteredWallets}
         onPressPayNow={onPressWallet}
         onPressLinkWallet={onPressLinkWallet}
         onPressDirectDebit={onPressWalletDirectDebit}
@@ -1156,10 +1173,14 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const renderUPIPayments = (upiApps: any) => {
+    // Do not show the upi apps shown under preferred payment options
+    const usedUPIAppCodes = usedUPIApps?.map((item: any) => item?.payment_method_code);
+    const filteredUPIApps =
+      upiApps?.filter((item: any) => !usedUPIAppCodes?.includes(item?.payment_method_code)) || [];
     return (
       <UPIPayments
         isVPAvalid={isVPAvalid}
-        upiApps={upiApps}
+        upiApps={filteredUPIApps}
         onPressUPIApp={onPressUPIApp}
         onPressUpiCollect={() => setOtherPaymentSelected({ name: 'UPICOLLECT' })}
         setisVPAvalid={setisVPAvalid}
@@ -1245,7 +1266,10 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         <SafeAreaView style={{ flex: 1 }}>
           {renderHeader()}
           {!fetching ? (
-            <ScrollView contentContainerStyle={styles.container}>
+            <ScrollView
+              keyboardShouldPersistTaps={'always'}
+              contentContainerStyle={styles.container}
+            >
               {renderOffers()}
               {renderPreferredPaymentOptions()}
               {showPaymentOptions()}

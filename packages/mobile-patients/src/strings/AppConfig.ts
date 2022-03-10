@@ -24,7 +24,7 @@ export enum AppEnv {
   QA8 = 'QA8',
 }
 
-const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA3 as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -194,7 +194,6 @@ const appStaticVariables = {
   merchantId: 'apollo247',
   jusPayService: 'in.juspay.ec',
   returnUrl: 'https://www.apollo247.com',
-  jusPaybaseUrl: 'https://api.juspay.in/cardbins',
   HdfcHealthLifeText: string.common.HdfcHealthLifeText,
   CorporateMembershipText: string.common.CorporateMembershipText,
   EXPRESS_MAXIMUM_HOURS: 6,
@@ -402,6 +401,7 @@ const appStaticVariables = {
   DIAGNOSTICS_SHOW_HEALTH_CREDITS: true,
   APOLLO247_API_KEY: '',
   ACTIVATE_NEW_JWT_TOKEN: false,
+  ALLOW_PHONEPE_QCLITE: true,
 };
 
 const DEV_top_specialties = [
@@ -812,6 +812,7 @@ const ConfigurationDev = {
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://aph-staging-web-patients.apollo247.com',
+  jusPaybaseUrl: 'https://sandbox.juspay.in',
 };
 
 // QA
@@ -877,6 +878,7 @@ const ConfigurationQA = {
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://aph-staging-web-patients.apollo247.com',
+  jusPaybaseUrl: 'https://sandbox.juspay.in',
 };
 
 // QA2
@@ -940,6 +942,7 @@ const ConfigurationQA2 = {
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://qapatients.apollo247.com',
+  jusPaybaseUrl: 'https://sandbox.juspay.in',
 };
 
 // QA3
@@ -1004,6 +1007,7 @@ const ConfigurationQA3 = {
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://qathreepatients.apollo247.com',
+  jusPaybaseUrl: 'https://sandbox.juspay.in',
 };
 
 const ConfigurationQA5 = {
@@ -1069,6 +1073,7 @@ const ConfigurationQA5 = {
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://qa5patients.apollo247.com',
+  jusPaybaseUrl: 'https://sandbox.juspay.in',
 };
 
 const ConfigurationQA6 = {
@@ -1133,6 +1138,7 @@ const ConfigurationQA6 = {
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://qa6patients.apollo247.com',
+  jusPaybaseUrl: 'https://sandbox.juspay.in',
 };
 
 // VAPT
@@ -1197,6 +1203,7 @@ const ConfigurationVAPT = {
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://stagingpatients.apollo247.com',
+  jusPaybaseUrl: 'https://sandbox.juspay.in',
 };
 //Production
 const ConfigurationProd = {
@@ -1259,6 +1266,7 @@ const ConfigurationProd = {
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://apollo247.com',
+  jusPaybaseUrl: 'https://api.juspay.in',
 };
 
 //PERFORMANCE
@@ -1324,6 +1332,7 @@ const ConfigurationPERFORM = {
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://perfpatients.apollo247.com',
+  jusPaybaseUrl: 'https://sandbox.juspay.in',
 };
 
 //DevelopmentReplica
@@ -1389,6 +1398,7 @@ const ConfigurationDevReplica = {
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_USERNAME: 'content',
   SPECIAL_OFFERS_WIDGETS_UAT_CMS_PASSWORD: 'walmartNUTtokyoHeist',
   WEB_URL_PREFIX: 'https://devpatients.apollo247.com',
+  jusPaybaseUrl: 'https://sandbox.juspay.in',
 };
 
 const Configuration =

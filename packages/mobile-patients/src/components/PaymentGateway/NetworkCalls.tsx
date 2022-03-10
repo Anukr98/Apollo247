@@ -98,6 +98,7 @@ export const InitiateCardTxn = (
       cardExpMonth: cardInfo?.ExpMonth,
       cardExpYear: cardInfo?.ExpYear,
       cardSecurityCode: cardInfo?.CVV,
+      cardNickName: cardInfo?.name,
       saveToLocker: saveCard ? true : false,
       clientAuthToken: clientAuthToken,
       offers: !!offerId ? [offerId] : null,
@@ -129,7 +130,12 @@ export const InitiateWalletTxn = (
 };
 
 export const CardInfo = (sixdigits: string) => {
-  const url = `${AppConfig.Configuration.jusPaybaseUrl}/${sixdigits}?merchant_id=${AppConfig.Configuration.merchantId}`;
+  const url = `${AppConfig.Configuration.jusPaybaseUrl}/cardbins/${sixdigits}?merchant_id=${AppConfig.Configuration.merchantId}`;
+  return Axios.get(url);
+};
+
+export const CardFingetprintInfo = (cardNo: string, clientAuthToken: string, cusId: string) => {
+  const url = `${AppConfig.Configuration.jusPaybaseUrl}/card/fingerprint?card_number=${cardNo}&client_auth_token=${clientAuthToken}&customer_id=${cusId}`;
   return Axios.get(url);
 };
 

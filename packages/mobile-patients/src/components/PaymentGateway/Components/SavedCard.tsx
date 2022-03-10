@@ -65,7 +65,9 @@ export const SavedCard: React.FC<SavedCardProps> = (props) => {
           {cardInfo?.card_issuer?.replace('Bank', ' ') + camelize(cardInfo?.card_type)}
           {' Card'}
         </Text>
-        <Text style={styles.name}>{cardInfo?.name_on_card || 'User'}</Text>
+        {cardInfo?.name_on_card != ' ' && cardInfo?.name_on_card != '' && (
+          <Text style={styles.name}>{cardInfo?.name_on_card}</Text>
+        )}
       </View>
     );
   };
@@ -81,11 +83,9 @@ export const SavedCard: React.FC<SavedCardProps> = (props) => {
   const renderCardInfo = () => {
     return (
       <View style={{ ...styles.cardInfo, opacity: isExpired ? 0.4 : 1 }}>
-        <View>
-          <View style={{ flexDirection: 'row' }}>
-            {renderCardIcon()}
-            {renderCardNo()}
-          </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          {renderCardIcon()}
+          {renderCardNo()}
         </View>
         {cardSelected ? <CircleCheckIcon /> : <CircleUncheckIcon />}
       </View>
@@ -164,7 +164,7 @@ export const SavedCard: React.FC<SavedCardProps> = (props) => {
   const renderSavedCard = () => {
     const outageStatus = cardInfo?.outage;
     return (
-      <View style={{ ...styles.container, backgroundColor: !cardSelected ? '#F6FFFF' : '#F6FFFF' }}>
+      <View style={{ ...styles.container, backgroundColor: '#FAFEFF' }}>
         <TouchableOpacity
           activeOpacity={0.5}
           style={{

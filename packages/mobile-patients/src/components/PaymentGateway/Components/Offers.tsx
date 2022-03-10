@@ -23,7 +23,7 @@ export const Offers: React.FC<offersProps> = (props) => {
             <Text style={styles.offerTitle}>{offer?.offer_description?.title}</Text>
           </View>
           <Text style={styles.TnC} onPress={() => onPressTnC(offer)}>
-            TnC Apply
+            {'T&C Apply'}
           </Text>
         </View>
         <View style={styles.offerCont}>
@@ -57,7 +57,7 @@ export const Offers: React.FC<offersProps> = (props) => {
         style={styles.showMoreCont}
         onPress={() => setShowMore(!showMore)}
       >
-        <Text style={styles.showMore}>{showMore ? 'SHOW LESS' : 'SHOW MORE'}</Text>
+        <Text style={styles.showMore}>{showMore ? 'SHOW LESS' : 'SHOW ALL OFFERS'}</Text>
         <DownOrange
           style={{ ...styles.downArrow, transform: [{ rotate: showMore ? '180deg' : '0deg' }] }}
         />

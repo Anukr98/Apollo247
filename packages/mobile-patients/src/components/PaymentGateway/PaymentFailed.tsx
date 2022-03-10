@@ -45,7 +45,12 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { g, isEmptyObject, navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  isEmptyObject,
+  navigateToHome,
+  clearStackAndNavigate,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
   BookAppointmentInput,
@@ -259,6 +264,23 @@ export const PaymentFailed: React.FC<PaymentFailedProps> = (props) => {
     });
   };
 
+  const createJusPayCODOrder = (amountToCollect: number, paymentOrderId: string) => {
+    const orderInput = {
+      payment_order_id: paymentOrderId,
+      health_credits_used: 0,
+      cash_to_collect: amountToCollect,
+      prepaid_amount: 0,
+      store_code: storeCode,
+      is_mobile_sdk: true,
+      return_url: AppConfig.Configuration.baseUrl,
+    };
+    return client.mutate({
+      mutation: CREATE_ORDER,
+      variables: { order_input: orderInput },
+      fetchPolicy: 'no-cache',
+    });
+  };
+
   const storeAppointmentId = async (appointmentId: string) => {
     if (!appointmentId) return;
     try {
@@ -341,7 +363,7 @@ export const PaymentFailed: React.FC<PaymentFailedProps> = (props) => {
         let orderInfo = orderDetails;
         orderInfo['orderId'] = apptmt?.id;
         orderInfo['displayId'] = apptmt?.displayId;
-        props.navigation.navigate(AppRoutes.PaymentMethods, {
+        clearStackAndNavigate(props.navigation, AppRoutes.PaymentMethods, {
           paymentId: data?.data?.createOrderInternal?.payment_order_id!,
           amount: appointmentInfo?.amountToPay,
           orderDetails: orderInfo,
@@ -354,24 +376,26 @@ export const PaymentFailed: React.FC<PaymentFailedProps> = (props) => {
     }
   };
 
-  const onRetryDiagPayment = async () => {
+  const onRetryDiagPayment = async (isCOD: boolean) => {
     setLoading!(true);
     try {
       if (isCircleAddedToCart && !!selectedCirclePlan) {
         const response = await createUserCircleSubscription();
         const subscriptionId = g(response, 'data', 'CreateUserSubscription', 'response', '_id');
         if (!!subscriptionId) {
-          isModifyFlow ? bookModifiedOrder(subscriptionId) : bookDiagnosticOrder(subscriptionId);
+          isModifyFlow
+            ? bookModifiedOrder(isCOD, subscriptionId)
+            : bookDiagnosticOrder(isCOD, subscriptionId);
         } else {
           renderErrorPopup();
         }
       } else {
-        isModifyFlow ? bookModifiedOrder() : bookDiagnosticOrder();
+        isModifyFlow ? bookModifiedOrder(isCOD) : bookDiagnosticOrder(isCOD);
       }
     } catch {}
   };
 
-  const bookModifiedOrder = async (subscriptionId?: any) => {
+  const bookModifiedOrder = async (isCOD: boolean, subscriptionId?: any) => {
     const input = await AsyncStorage.getItem('modifyBookingInput');
     const modifyBookingInput = !!input ? JSON.parse(input) : {};
     const resp = await saveModifyOrder?.(client, modifyBookingInput?.modifyBookingInput);
@@ -388,21 +412,34 @@ export const PaymentFailed: React.FC<PaymentFailedProps> = (props) => {
       if (response?.data?.createOrderInternal?.success) {
         setLoading?.(false);
         setauthToken?.('');
-        const Info = await AsyncStorage.getItem('orderInfo');
-        let orderInfo = !!Info ? JSON.parse(Info) : {};
-        orderInfo['orderId'] = resp?.data?.saveModifyDiagnosticOrder?.orderId;
-        orderInfo['displayId'] = resp?.data?.saveModifyDiagnosticOrder?.displayId;
-        props.navigation.navigate(AppRoutes.PaymentMethods, {
-          paymentId: response?.data?.createOrderInternal?.payment_order_id!,
-          amount: toPayPrice,
-          orderId: resp?.data?.saveModifyDiagnosticOrder?.orderId, //pass only one
-          orderDetails: orderInfo,
-          orderResponse: array,
-          eventAttributes,
-          businessLine: 'diagnostics',
-          customerId: cusId,
-          isCircleAddedToCart: isCircleAddedToCart,
-        });
+        if (isCOD) {
+          const paymentId = response?.data?.createOrderInternal?.payment_order_id!;
+          const res = await createJusPayCODOrder(toPayPrice, paymentId);
+          const { data } = res;
+          const status =
+            data?.createOrderV2?.payment_status || data?.updateOrderDetails?.payment_status;
+          if (status === 'TXN_SUCCESS') {
+            navigatetoOrderStatus(amount, paymentId);
+          } else {
+            renderErrorPopup();
+          }
+        } else {
+          const Info = await AsyncStorage.getItem('orderInfo');
+          let orderInfo = !!Info ? JSON.parse(Info) : {};
+          orderInfo['orderId'] = resp?.data?.saveModifyDiagnosticOrder?.orderId;
+          orderInfo['displayId'] = resp?.data?.saveModifyDiagnosticOrder?.displayId;
+          clearStackAndNavigate(props.navigation, AppRoutes.PaymentMethods, {
+            paymentId: response?.data?.createOrderInternal?.payment_order_id!,
+            amount: toPayPrice,
+            orderId: resp?.data?.saveModifyDiagnosticOrder?.orderId, //pass only one
+            orderDetails: orderInfo,
+            orderResponse: array,
+            eventAttributes,
+            businessLine: 'diagnostics',
+            customerId: cusId,
+            isCircleAddedToCart: isCircleAddedToCart,
+          });
+        }
       } else {
         renderErrorPopup();
       }
@@ -411,7 +448,7 @@ export const PaymentFailed: React.FC<PaymentFailedProps> = (props) => {
     }
   };
 
-  const bookDiagnosticOrder = async (subscriptionId?: any) => {
+  const bookDiagnosticOrder = async (isCOD: boolean, subscriptionId?: any) => {
     const input = await AsyncStorage.getItem('bookingOrderInfo');
     const bookingOrderInfo = !!input ? JSON.parse(input) : {};
     const resp = await diagnosticSaveBookHcCollectionV2(client, bookingOrderInfo?.bookingOrderInfo);
@@ -431,21 +468,34 @@ export const PaymentFailed: React.FC<PaymentFailedProps> = (props) => {
       if (response?.data?.createOrderInternal?.success) {
         setLoading?.(false);
         setauthToken?.('');
-        const Info = await AsyncStorage.getItem('orderInfo');
-        let orderInfo = !!Info ? JSON.parse(Info) : {};
-        orderInfo['orderId'] = HCResponse?.[0]?.orderID;
-        orderInfo['displayId'] = HCResponse?.[0]?.displayID;
-        props.navigation.navigate(AppRoutes.PaymentMethods, {
-          paymentId: response?.data?.createOrderInternal?.payment_order_id!,
-          amount: toPayPrice,
-          orderId: HCResponse?.[0]?.orderID, //pass only one
-          orderDetails: orderInfo,
-          orderResponse: array,
-          eventAttributes,
-          businessLine: 'diagnostics',
-          customerId: cusId,
-          isCircleAddedToCart: isCircleAddedToCart,
-        });
+        if (isCOD) {
+          const paymentId = response?.data?.createOrderInternal?.payment_order_id!;
+          const res = await createJusPayCODOrder(toPayPrice, paymentId);
+          const { data } = res;
+          const status =
+            data?.createOrderV2?.payment_status || data?.updateOrderDetails?.payment_status;
+          if (status === 'TXN_SUCCESS') {
+            navigatetoOrderStatus(amount, paymentId);
+          } else {
+            renderErrorPopup();
+          }
+        } else {
+          const Info = await AsyncStorage.getItem('orderInfo');
+          let orderInfo = !!Info ? JSON.parse(Info) : {};
+          orderInfo['orderId'] = HCResponse?.[0]?.orderID;
+          orderInfo['displayId'] = HCResponse?.[0]?.displayID;
+          clearStackAndNavigate(props.navigation, AppRoutes.PaymentMethods, {
+            paymentId: response?.data?.createOrderInternal?.payment_order_id!,
+            amount: toPayPrice,
+            orderId: HCResponse?.[0]?.orderID, //pass only one
+            orderDetails: orderInfo,
+            orderResponse: array,
+            eventAttributes,
+            businessLine: 'diagnostics',
+            customerId: cusId,
+            isCircleAddedToCart: isCircleAddedToCart,
+          });
+        }
       } else {
         renderErrorPopup();
       }
@@ -472,7 +522,7 @@ export const PaymentFailed: React.FC<PaymentFailedProps> = (props) => {
           .toFixed(2);
         setLoading?.(false);
         setauthToken?.('');
-        props.navigation.navigate(AppRoutes.PaymentMethods, {
+        clearStackAndNavigate(props.navigation, AppRoutes.PaymentMethods, {
           paymentId: paymentOrderId,
           amount: Number(newCartTotal),
           orderDetails: orderInfo,
@@ -489,29 +539,40 @@ export const PaymentFailed: React.FC<PaymentFailedProps> = (props) => {
     }
   };
 
-  const updatePaymentToCOD = async (amount: number) => {
-    const orderInput = {
-      payment_order_id: paymentId,
-      health_credits_used: 0,
-      cash_to_collect: amount,
-      prepaid_amount: 0,
-      store_code: storeCode,
-      is_mobile_sdk: true,
-      return_url: AppConfig.Configuration.baseUrl,
-    };
-    const response = await client.mutate({
-      mutation: UPDATE_ORDER,
-      variables: { order_input: orderInput },
-      fetchPolicy: 'no-cache',
-    });
-    if (response?.data?.updateOrderDetails?.payment_status) {
-      navigatetoOrderStatus(amount);
-    } else {
+  const updatePharmaPaymentToCOD = async (amount: number) => {
+    setLoading!(true);
+    try {
+      const res = await saveMedicineOrder();
+      const orderResponse = res?.data?.saveMedicineOrderV3;
+      if (orderResponse?.errorMessage) {
+        renderErrorPopup(orderResponse?.errorMessage);
+      } else {
+        const orderData = orderResponse?.data;
+        const { transactionId, orders, isCodEligible, codMessage, paymentOrderId } = orderData;
+        let orderInfo = orderDetails;
+        orderInfo['displayId'] = transactionId;
+        orderInfo['orders'] = orders;
+        const newCartTotal = orders
+          .reduce((currTotal: number, currItem: any) => currTotal + currItem.estimatedAmount, 0)
+          .toFixed(2);
+        const response = await createJusPayCODOrder(Number(newCartTotal), paymentOrderId);
+        const { data } = response;
+        const status =
+          data?.createOrderV2?.payment_status || data?.updateOrderDetails?.payment_status;
+        if (status === 'TXN_SUCCESS') {
+          navigatetoOrderStatus(amount, paymentOrderId);
+        } else {
+          renderErrorPopup();
+        }
+      }
+    } catch {
       renderErrorPopup();
+    } finally {
+      setLoading?.(false);
     }
   };
 
-  const navigatetoOrderStatus = (amount: number) => {
+  const navigatetoOrderStatus = (amount: number, paymentId: string) => {
     switch (businessLine) {
       case 'diagnostics':
         props.navigation.navigate(AppRoutes.PaymentStatusDiag, {
@@ -538,12 +599,11 @@ export const PaymentFailed: React.FC<PaymentFailedProps> = (props) => {
   };
 
   const onPressRetry = () => {
-    console.log('retry');
     if (cancelledOldPayment) {
       businessLine == 'consult'
         ? onRetryConsultPayment()
         : businessLine == 'diagnostics'
-        ? onRetryDiagPayment()
+        ? onRetryDiagPayment(false)
         : businessLine == 'pharma'
         ? onRetryPharmaPayment()
         : null;
@@ -554,9 +614,9 @@ export const PaymentFailed: React.FC<PaymentFailedProps> = (props) => {
 
   const onPressCOD = () => {
     businessLine == 'diagnostics'
-      ? updatePaymentToCOD(grandTotal)
+      ? onRetryDiagPayment(true)
       : businessLine == 'pharma'
-      ? updatePaymentToCOD(amount)
+      ? updatePharmaPaymentToCOD(amount)
       : null;
   };
 

@@ -1,11 +1,18 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, Dimensions, FlatList, Image, ScrollView } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Dimensions,
+  FlatList,
+  Image,
+  ScrollView,
+  TouchableOpacity,
+} from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { SafeAreaView } from 'react-navigation';
-
 export interface offerInfoProps {
   offer: any;
 }
@@ -19,16 +26,22 @@ export const OfferInfo: React.FC<offerInfoProps> = (props) => {
   let termsAndconditions = offer?.offer_description?.tnc;
   termsAndconditions = termsAndconditions?.split('- ');
 
+  console.log(offer);
+
   const renderTitle = () => {
     const imageUrl = `${AppConfig.Configuration.offerIconBaseUrl}${offer?.offer_description?.sponsored_by}.png`;
     return (
-      <View style={{ flexDirection: 'row' }}>
+      <TouchableOpacity style={{ flexDirection: 'row' }}>
         <Image style={styles.offerIcon} source={{ uri: imageUrl }} />
-        <View>
-          <Text style={styles.offerTitle}>{offer?.offer_description?.title}</Text>
-          <Text style={styles.offerDescription}>{offer?.offer_description?.description}</Text>
+        <View style={{ flex: 1 }}>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+            <Text style={styles.offerTitle}>{offer?.offer_description?.title}</Text>
+          </View>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+            <Text style={styles.offerDescription}>{offer?.offer_description?.description}</Text>
+          </View>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -43,10 +56,10 @@ export const OfferInfo: React.FC<offerInfoProps> = (props) => {
 
   const renderTermsAndConditions = () => {
     return (
-      <View>
+      <TouchableOpacity>
         <Text style={styles.conditionsTitle}>Terms and Conditions</Text>
         <FlatList data={termsAndconditions} renderItem={(item: any) => renderItem(item?.item)} />
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -56,7 +69,7 @@ export const OfferInfo: React.FC<offerInfoProps> = (props) => {
 
   const renderOfferInfo = () => {
     return (
-      <View>
+      <View style={{}}>
         {renderTitle()}
         {renderTermsAndConditions()}
         {renderOk()}
@@ -65,25 +78,26 @@ export const OfferInfo: React.FC<offerInfoProps> = (props) => {
   };
 
   return (
-    <>
-      <SafeAreaView style={styles.container}>
-        <ScrollView>{renderOfferInfo()}</ScrollView>
-      </SafeAreaView>
-    </>
+    <View style={styles.container}>
+      <ScrollView nestedScrollEnabled={true} showsVerticalScrollIndicator={false}>
+        {renderOfferInfo()}
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 16,
-    paddingVertical: 16,
-    maxHeight: 0.8 * windowHeight,
+    marginVertical: 16,
+    maxHeight: 0.7 * windowHeight,
   },
   offerTitle: {
     ...theme.fonts.IBMPlexSansBold(16),
     lineHeight: 18,
     color: '#01475B',
     marginLeft: 8,
+    flexWrap: 'wrap',
   },
   offerIcon: {
     height: 32,
@@ -95,6 +109,7 @@ const styles = StyleSheet.create({
     color: '#01475B',
     marginTop: 6,
     marginLeft: 8,
+    flexWrap: 'wrap',
   },
   conditionsTitle: {
     marginLeft: 4,

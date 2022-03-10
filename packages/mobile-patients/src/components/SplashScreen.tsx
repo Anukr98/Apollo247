@@ -1414,6 +1414,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'ACTIVATE_NEW_JWT_TOKEN_QA',
       PROD: 'ACTIVATE_NEW_JWT_TOKEN_PROD',
     },
+    ALLOW_PHONEPE_QCLITE: {
+      QA: 'ALLOW_PHONEPE_QCLITE_QA',
+      PROD: 'ALLOW_PHONEPE_QCLITE_PROD',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1939,6 +1943,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         config.getBoolean(key)
       );
 
+      setAppConfig('ALLOW_PHONEPE_QCLITE', 'ALLOW_PHONEPE_QCLITE', (key) => config.getBoolean(key));
       setAppConfig(
         'HOME_CTA_CONFIG',
         'HOME_CTA_CONFIG',

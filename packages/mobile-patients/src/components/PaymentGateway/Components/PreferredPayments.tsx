@@ -80,11 +80,12 @@ export const PreferredPayments: React.FC<PreferredPaymentsProps> = (props) => {
         onPressSavedCardPayNow={onPressSavedCardPayNow}
         cardTypes={cardTypes}
         selectedCardToken={selectedCardToken}
-        onPressSavedCard={(cardInfo) =>
+        onPressSavedCard={(cardInfo) => {
           selectedCardToken == cardInfo?.card_token
             ? setSelectedCardToken('')
-            : setSelectedCardToken(cardInfo?.card_token)
-        }
+            : setSelectedCardToken(cardInfo?.card_token),
+            setApayselected(false);
+        }}
         cardInfo={item}
         bestOffer={item?.offers?.[0]}
         amount={amount}
@@ -106,9 +107,11 @@ export const PreferredPayments: React.FC<PreferredPaymentsProps> = (props) => {
     return !!wallet ? (
       <View>
         <TouchableOpacity
-          activeOpacity={0.5}
           style={styles.subCont}
-          onPress={() => setApayselected(!Apayselected)}
+          activeOpacity={0.5}
+          onPress={() => {
+            setSelectedCardToken(''), setApayselected(!Apayselected);
+          }}
         >
           <View style={styles.wallet}>
             <WalletIcon
@@ -186,6 +189,8 @@ export const PreferredPayments: React.FC<PreferredPaymentsProps> = (props) => {
             mode == 'wallet'
               ? onPressWallet(item?.payment_method_code, item?.offers?.[0])
               : onPressUPIApp(item);
+            setApayselected(false);
+            setSelectedCardToken('');
           }}
         >
           <View style={{ ...styles.wallet, opacity: outageStatus == 'DOWN' ? 0.5 : 1 }}>
