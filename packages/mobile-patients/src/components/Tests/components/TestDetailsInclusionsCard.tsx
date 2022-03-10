@@ -64,7 +64,7 @@ export const TestDetailsInclusionsCard: React.FC<TestDetailsInclusionsCardProps>
               <TouchableOpacity
                 activeOpacity={0.5}
                 onPress={() => (isParameterPresent ? props.onPressInclusion(item, index) : null)}
-                style={{ marginBottom: '1.5%' }}
+                style={{ marginBottom: 6 }}
               >
                 <View style={[styles.rowStyle, { justifyContent: 'space-between' }]}>
                   <Text style={styles.inclusionsItemText}>

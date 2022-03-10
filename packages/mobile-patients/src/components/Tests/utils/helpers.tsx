@@ -54,6 +54,9 @@ export const getActiveTestItems = (
     status: string;
     startDate: string;
     endDate: string;
+    couponCode: string | undefined | null;
+    mrp: number;
+    price: number;
   }[] = [];
   pricingObjectForItem?.forEach((item: any) =>
     diffPriceForItem.push({
@@ -65,6 +68,9 @@ export const getActiveTestItems = (
       status: item?.status,
       startDate: item?.startDate,
       endDate: item?.endDate,
+      couponCode: item?.couponCode,
+      mrp: item?.mrp,
+      price: item?.price,
     })
   );
 
@@ -89,16 +95,29 @@ export const getActiveTestItems = (
     (item: any) => item?.groupPlan == sortedDiffPriceForItem?.[0].groupPlan
   );
   const promoteCircle = groupPlanToConsider?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE;
+  const arrayToChoose = isItemInActive ? pricingObjectForItem : activeGroupPlansForItem;
 
-  const itemWithAll = pricingObjectForItem?.find(
+  const activeAllItem = arrayToChoose?.find(
     (item: any) => item!.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
   );
-  const itemWithSub = pricingObjectForItem?.find(
+  const activeSubItem = arrayToChoose?.find(
     (item: any) => item!.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
   );
-  const itemWithSpecialDis = pricingObjectForItem?.find(
+  const activeSpecDisItem = arrayToChoose?.find(
     (item: any) => item!.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
   );
+
+  const itemWithAll = !!activeAllItem
+    ? activeAllItem
+    : pricingObjectForItem?.find((item: any) => item!.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL);
+  const itemWithSub = !!activeSubItem
+    ? activeSubItem
+    : pricingObjectForItem?.find((item: any) => item!.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE);
+  const itemWithSpecialDis = !!activeSpecDisItem
+    ? activeSpecDisItem
+    : pricingObjectForItem?.find(
+        (item: any) => item!.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+      );
 
   const activeItemsObject = {
     itemWithAll: itemWithAll,
